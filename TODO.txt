@@ -1,0 +1,17 @@
+-*- outline -*-
+
+* should come in the project management subproject
+** release management utilities
+release-expand, test-dist, etc.
+
+** website
+currently in neurospaces subproject.
+
+** CNS2006 presentation
+
+* should come in a separate subproject
+** build utilities
+*** instrumentor
+** data related utilities
+*** Data::{Transformer,Differences,Merger}
+** Sesa ?
