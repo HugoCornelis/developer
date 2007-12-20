@@ -15,7 +15,8 @@
 
 
 SUBDIRS = 
-#configuration/source/c/snapshots/0
+
+dist_bin_SCRIPTS = bin/release-expand
 
 html-upload-prepare:
 
