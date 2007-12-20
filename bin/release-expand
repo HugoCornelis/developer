@@ -151,7 +151,8 @@ foreach my $file (@$files)
 		{
 		    $matched =~ s/\$\{$info\}/$config->{labels}->{$info}/g;
 
-		    if ($option_verbose > 1
+		    if (defined $option_verbose
+			&& $option_verbose > 1
 			&& $matched =~ m/\$\{$info\}/g)
 		    {
 			print STDERR "For $file: replacing variable $info with $config->{labels}->{$info}\n";
