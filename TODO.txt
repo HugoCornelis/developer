@@ -6,6 +6,7 @@ release-expand, test-dist, etc.
 
 ** website
 currently in neurospaces subproject.
+should go in a separate subproject, called 'website'.
 
 ** CNS2006 presentation
 
