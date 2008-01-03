@@ -1,63 +1,73 @@
 #!/usr/bin/perl -w
 
-my $subprojects
+my $packages
     = {
+       neurospaces_prcs => {
+			    directory => "$ENV{HOME}/neurospaces/source/c/snapshots/0",
+			    priority => 1,
+			    status => 'prcs diff neurospaces.prj `prcs 2>/dev/null execute --not ".*\(directory\|symlink\)" neurospaces.prj | grep -v "neurospaces\.prj" | grep -v "purkinjespine" ` -- --unified ',
+			   },
        neurospaces => {
-		       directory => 'neurospaces/source/c/snapshots/0',
+		       directory => "$ENV{HOME}/neurospaces/source/c/snapshots/0",
 		       priority => 1,
-		       status => 'prcs diff neurospaces.prj `prcs 2>/dev/null execute --not ".*\(directory\|symlink\)" neurospaces.prj | grep -v "neurospaces\.prj" | grep -v "purkinjespine" ` -- --unified ',
+		       status => 'mtn status',
 		      },
        heccer => {
-		  directory => 'heccer/source/c/snapshots/0',
+		  directory => "$ENV{HOME}/heccer/source/c/snapshots/0",
 		  priority => 2,
-		  status => 'mtn diff',
+		  status => 'mtn status',
 		 },
        ssp => {
-	       directory => 'ssp/source/perl/snapshots/0',
+	       directory => "$ENV{HOME}/ssp/source/perl/snapshots/0",
 	       priority => 3,
-	       status => 'mtn diff',
+	       status => 'mtn status',
 	      },
        studio => {
-		  directory => 'studio/source/perl/snapshots/0',
+		  directory => "$ENV{HOME}/studio/source/perl/snapshots/0",
 		  priority => 4,
-		  status => 'mtn diff',
+		  status => 'mtn status',
 		 },
        simulation_browser => {
-			      directory => 'simulation_browser/source/perl/snapshots/0',
+			      directory => "$ENV{HOME}/simulation_browser/source/perl/snapshots/0",
 			      priority => 5,
-			      status => 'mtn diff',
+			      status => 'mtn status',
 			     },
        geometry => {
-		    directory => 'geometry/source/c/snapshots/0',
+		    directory => "$ENV{HOME}/geometry/source/c/snapshots/0",
 		    priority => 6,
-		    status => 'mtn diff',
+		    status => 'mtn status',
 		   },
        configuration => {
-			 directory => 'configuration',
+			 directory => "$ENV{HOME}/configuration",
 			 priority => 7,
-			 status => 'mtn diff',
+			 status => 'mtn status',
 			},
        project => {
-		   directory => '.',
+		   directory => "$ENV{HOME}/project",
 		   priority => 8,
-		   status => 'mtn diff',
+		   status => 'mtn status',
 		  },
+       system => {
+		   directory => "$ENV{HOME}/.",
+		   priority => 8,
+		   status => 'mtn status',
+		 },
       };
 
 
-foreach my $subproject_name (
+foreach my $package_name (
 			     sort
 			     {
-				 $subprojects->{$a}->{priority} <=> $subprojects->{$b}->{priority}
+				 $packages->{$a}->{priority} <=> $packages->{$b}->{priority}
 			     }
 			     keys
-			     %$subprojects)
+			     %$packages)
 {
-    my $subproject = $subprojects->{$subproject_name};
+    my $package = $packages->{$package_name};
 
-    my $directory = $subproject->{directory};
+    my $directory = $package->{directory};
 
-    print "*** subproject $subproject_name\n";
+    print "*** package $package_name\n";
 
     use Cwd;
 
@@ -66,9 +76,9 @@ foreach my $subproject_name (
     use File::chdir;
 
     {
-	local $CWD = $subproject->{directory};
+	local $CWD = $package->{directory};
 
-	my $command = $subproject->{status};
+	my $command = $package->{status};
 
 	system $command;
 

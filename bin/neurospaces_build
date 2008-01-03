@@ -12,31 +12,38 @@ use Getopt::Long;
 my $packages
     = {
        developer => {
-		     directory => 'developer/source/perl/snapshots/0',
+		     directory => "$ENV{HOME}/neurospaces_project/project/developer/source/snapshots/0",
+		     disabled => 1,
 		     order => 0,
 		    },
        geometry => {
-		    directory => 'geometry/source/c/snapshots/0',
+		    directory => "$ENV{HOME}/neurospaces_project/geometry/source/c/snapshots/0",
+		    disabled => 1,
 		    order => 4,
 		   },
        heccer => {
-		  directory => 'heccer/source/c/snapshots/0',
+		  directory => "$ENV{HOME}/neurospaces_project/heccer/source/c/snapshots/0",
+		  disabled => 1,
 		  order => 2,
 		 },
        neurospaces => {
-		       directory => 'neurospaces/source/c/snapshots/0',
+		       directory => "$ENV{HOME}/neurospaces_project/neurospaces/source/c/snapshots/0",
+		       disabled => 1,
 		       order => 1,
 		      },
        simulation_browser => {
-			      directory => 'simulation_browser/source/perl/snapshots/0',
+			      directory => "$ENV{HOME}/neurospaces_project/simulation_browser/source/perl/snapshots/0",
+			      disabled => 1,
 			      order => 6,
 			     },
        ssp => {
-	       directory => 'ssp/source/perl/snapshots/0',
+	       directory => "$ENV{HOME}/neurospaces_project/ssp/source/perl/snapshots/0",
+	       disabled => 1,
 	       order => 3,
 	      },
        studio => {
-		  directory => 'studio/source/perl/snapshots/0',
+		  directory => "$ENV{HOME}/neurospaces_project/studio/source/perl/snapshots/0",
+		  disabled => 1,
 		  order => 5,
 		 },
       };
@@ -87,11 +94,18 @@ options :
 
 if ($option_packages)
 {
-    print "$0: packages in order of installation are (" . (join ' ', sort
-							   {
-							       $packages->{$a}->{order} <=> $packages->{$b}->{order}
-							   }
-							   keys %$packages) . ")\n";
+    print
+	"$0: packages in order of installation are ("
+	    . (
+	       join
+	       ' ',
+	       sort
+	       {
+		   $packages->{$a}->{order} <=> $packages->{$b}->{order}
+	       }
+	       keys %$packages
+	      )
+		. ")\n";
 
     exit 1;
 }
@@ -108,6 +122,11 @@ sub main
 			      keys %$packages)
     {
 	my $package = $packages->{$package_name};
+
+	if ($package->{disabled})
+	{
+	    next;
+	}
 
 	# loop over all installation operations
 
@@ -179,7 +198,7 @@ sub main
 
 		    # perform the operation on the package
 
-		    sys($package_name, @$operation);
+		    system_execute($package_name, @$operation);
 		}
 	    }
 	}
@@ -187,7 +206,7 @@ sub main
 }
 
 
-sub sys
+sub system_execute
 {
     my $package_name = shift;
 
