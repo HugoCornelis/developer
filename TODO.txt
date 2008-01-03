@@ -1,5 +1,8 @@
 -*- outline -*-
 
+* bin/neurospaces_*
+globalize $packages variable.
+
 * should come in the project management subproject
 ** release management utilities
 release-expand, test-dist, etc.
