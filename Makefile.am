@@ -16,7 +16,7 @@
 
 SUBDIRS = 
 
-dist_bin_SCRIPTS = bin/release-expand
+dist_bin_SCRIPTS = bin/release-expand bin/neurospaces_build bin/neurospaces_status
 
 html-upload-prepare:
 
