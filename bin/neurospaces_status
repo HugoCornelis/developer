@@ -1,4 +1,10 @@
 #!/usr/bin/perl -w
+#!/usr/bin/perl -d:ptkdb -w
+#
+
+
+use strict;
+
 
 my $packages
     = {
@@ -80,9 +86,9 @@ foreach my $package_name (
 
     print "*** package $package_name\n";
 
-    use Cwd;
+#     use Cwd;
 
-    my $current_directory = getcwd();
+#     my $current_directory = getcwd();
 
     use File::chdir;
 
