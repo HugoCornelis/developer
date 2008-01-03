@@ -121,10 +121,20 @@ sub main
 			      }
 			      keys %$packages)
     {
+	if ($option_verbose)
+	{
+	    print "$0: examining $package_name\n";
+	}
+
 	my $package = $packages->{$package_name};
 
 	if ($package->{disabled})
 	{
+	    if ($option_verbose)
+	    {
+		print "$0: $package_name skipped, disabled is $package->{disabled}\n";
+	    }
+
 	    next;
 	}
 
@@ -165,6 +175,12 @@ sub main
 		$condition_value = $operation->{condition};
 
 		$operation = $operation->{operation};
+
+		if ($option_verbose > 1)
+		{
+		    print "$0: $package_name [" . (join ' ', @$operation ) . "] translated from operations hash \n";
+		}
+
 	    }
 
 	    # if the uninstall option is given
@@ -179,11 +195,22 @@ sub main
 		    # don't execute
 
 		    $condition_value = 0;
+
+		    if ($option_verbose > 1)
+		    {
+			print "$0: $package_name [" . (join ' ', @$operation ) . "] condition turned to false \n";
+		    }
+
 		}
 	    }
 
 	    if ($condition_value)
 	    {
+		if ($option_verbose > 1)
+		{
+		    print "$0: $package_name [" . (join ' ', @$operation ) . "] preparing to execute \n";
+		}
+
 		# if package directory exists
 
 		my $directory = $package->{directory};
@@ -212,7 +239,7 @@ sub system_execute
 
     my $arguments = [ @_ ];
 
-    print "$0: in $package_name, action (" . (join ' ', @$arguments) . ")\n";
+    print "$0: $package_name [" . (join ' ', @$arguments) . "] executing\n";
 
     system @$arguments;
 
@@ -222,6 +249,12 @@ sub system_execute
 
 	die "*** Error for package_name $package_name, in $CWD";
     }
+
+    if ($option_verbose)
+    {
+	print "$0: $package_name [" . (join ' ', @$arguments ) . "] executed \n";
+    }
+
 }
 
 
