@@ -1,0 +1,59 @@
+-*- outline -*-
+
+* support tools
+** repository servers
+monotone because it allows for distributed development.
+** automated test server
+For every possible software configuration
+*** build (compile, install, check, distcheck) every package in the right order
+*** uninstall
+*** remove everything
+
+** software development tracking
+*** test cases
+**** separation of concerns
+each component is tested individually, unit tests are only used where
+appropriate (judgement of the developer), integration tests are
+packaged and shipped with components as appropriate.
+**** website mirrors test specifications
+Done using 'make html-upload'.  Can include additional information
+like htmlified source code, which is useful for developers.
+**** source code convertors and linkers
+broken for the moment
+*** bug tracking
+unclear what should be used, mainly because of the maintenance
+overhead, and unlikely that regular simulator users are willing to
+fill in detailed bug reports.
+
+* software components
+** STDP
+A first incarnation of the framework is ready for developers (shipped
+with Heccer, the compartmental solver).  People have contributed test
+cases, that will be used as additional targets for the development of
+the module.
+
+** RTXI
+Is waiting for a user project before further development will be done.
+Funding for a potential project has been requested by Kelly Suter,
+working at UTSA.
+
+** Project browser
+A pre-alpha version has been demonstrated during an internal
+presentation.  The core of the project browser is a distributed
+database, that separates software layers of authentication (using
+SSH), authorization (using the filesystem modalities), and file
+distribution logic (using a backup system that was customized for file
+distribution).  In a design phase is currently a trust model for model
+and result review (what result data and what models have a high
+trusted value from trusted parties).  We plan to use cryptographic
+signatures and cryptographic checksums for this.  In a later phase we
+will also add a distribution policy to the system (from what server
+can a given project be addressed).
+
+** Backward compatibility
+A backward compatibility scripting layer is in development.  The core
+is a reduced version of Genesis 2, with embedded objects that let it
+talk to the Neurospaces model container, Heccer and the SSP scheduler.
+Some tutorial scripts are working, yet more work is needed before it
+is useful to regular users.
+

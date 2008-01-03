@@ -1,0 +1,25 @@
+$files = {
+           '_<./build' => [
+                            {
+                              'expr' => undef,
+                              'value' => '1',
+                              'text' => '	if ($condition_value)
+',
+                              'fname' => './build',
+                              'type' => 'user',
+                              'line' => '81'
+                            },
+                            {
+                              'expr' => undef,
+                              'value' => '1',
+                              'text' => '		if (-e $directory)
+',
+                              'fname' => './build',
+                              'type' => 'user',
+                              'line' => 97
+                            }
+                          ]
+         };
+$expr_list = [];
+$eval_saved_text = undef;
+$main_win_geometry = '1455x998+136+0';

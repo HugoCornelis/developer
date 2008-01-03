@@ -1,0 +1,78 @@
+#!/usr/bin/perl -w
+
+my $subprojects
+    = {
+       neurospaces => {
+		       directory => 'neurospaces/source/c/snapshots/0',
+		       priority => 1,
+		       status => 'prcs diff neurospaces.prj `prcs 2>/dev/null execute --not ".*\(directory\|symlink\)" neurospaces.prj | grep -v "neurospaces\.prj" | grep -v "purkinjespine" ` -- --unified ',
+		      },
+       heccer => {
+		  directory => 'heccer/source/c/snapshots/0',
+		  priority => 2,
+		  status => 'mtn diff',
+		 },
+       ssp => {
+	       directory => 'ssp/source/perl/snapshots/0',
+	       priority => 3,
+	       status => 'mtn diff',
+	      },
+       studio => {
+		  directory => 'studio/source/perl/snapshots/0',
+		  priority => 4,
+		  status => 'mtn diff',
+		 },
+       simulation_browser => {
+			      directory => 'simulation_browser/source/perl/snapshots/0',
+			      priority => 5,
+			      status => 'mtn diff',
+			     },
+       geometry => {
+		    directory => 'geometry/source/c/snapshots/0',
+		    priority => 6,
+		    status => 'mtn diff',
+		   },
+       configuration => {
+			 directory => 'configuration',
+			 priority => 7,
+			 status => 'mtn diff',
+			},
+       project => {
+		   directory => '.',
+		   priority => 8,
+		   status => 'mtn diff',
+		  },
+      };
+
+
+foreach my $subproject_name (
+			     sort
+			     {
+				 $subprojects->{$a}->{priority} <=> $subprojects->{$b}->{priority}
+			     }
+			     keys
+			     %$subprojects)
+{
+    my $subproject = $subprojects->{$subproject_name};
+
+    my $directory = $subproject->{directory};
+
+    print "*** subproject $subproject_name\n";
+
+    use Cwd;
+
+    my $current_directory = getcwd();
+
+    use File::chdir;
+
+    {
+	local $CWD = $subproject->{directory};
+
+	my $command = $subproject->{status};
+
+	system $command;
+
+    }
+}
+
+

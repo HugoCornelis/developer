@@ -1,0 +1,211 @@
+#!/usr/bin/perl
+#!/usr/bin/perl -w -d:ptkdb
+#
+
+
+use strict;
+
+
+use Getopt::Long;
+
+
+my $packages
+    = {
+       developer => {
+		     directory => 'developer/source/perl/snapshots/0',
+		     order => 0,
+		    },
+       geometry => {
+		    directory => 'geometry/source/c/snapshots/0',
+		    order => 4,
+		   },
+       heccer => {
+		  directory => 'heccer/source/c/snapshots/0',
+		  order => 2,
+		 },
+       neurospaces => {
+		       directory => 'neurospaces/source/c/snapshots/0',
+		       order => 1,
+		      },
+       simulation_browser => {
+			      directory => 'simulation_browser/source/perl/snapshots/0',
+			      order => 6,
+			     },
+       ssp => {
+	       directory => 'ssp/source/perl/snapshots/0',
+	       order => 3,
+	      },
+       studio => {
+		  directory => 'studio/source/perl/snapshots/0',
+		  order => 5,
+		 },
+      };
+
+
+my $option_clean = 0;
+my $option_configure = 0;
+my $option_dist = 0;
+my $option_distclean = 0;
+my $option_help;
+my $option_packages;
+my $option_verbose;
+my $option_uninstall;
+
+my $result
+    = GetOptions(
+		 "clean!" => \$option_clean,
+		 "configure!" => \$option_configure,
+		 "dist!" => \$option_dist,
+		 "distclean!" => \$option_distclean,
+		 "help!" => \$option_help,
+		 "packages" => \$option_packages,
+		 "verbose+" => \$option_verbose,
+		 "uninstall!" => \$option_uninstall,
+		);
+
+if ($option_help)
+{
+    print
+	"
+$0: configure, compile, check and install one package after another from a set of packages.
+
+options :
+    clean              clean before compiling (default is not to clean).
+    configure          configure before compiling (default is not to configure).
+    dist               build distribution tarballs.
+    distclean          distclean before compiling (default is not to distclean).
+    help               print usage information.
+    packages           print known packages, in order of installation.
+    v|verbose          tell what is being done, specify multiple times to get
+                       more feedback.
+   uninstall           uninstall packages, cannot be combined with installation options.
+";
+
+    exit 1;
+}
+
+
+if ($option_packages)
+{
+    print "$0: packages in order of installation are (" . (join ' ', sort
+							   {
+							       $packages->{$a}->{order} <=> $packages->{$b}->{order}
+							   }
+							   keys %$packages) . ")\n";
+
+    exit 1;
+}
+
+
+sub main
+{
+    # loop over all packages, in dependency order
+
+    foreach my $package_name (sort
+			      {
+				  $packages->{$a}->{order} <=> $packages->{$b}->{order}
+			      }
+			      keys %$packages)
+    {
+	my $package = $packages->{$package_name};
+
+	# loop over all installation operations
+
+	foreach my $operation (
+			       {
+				operation => [ 'make', 'distclean', ],
+				condition => $option_distclean && !$option_uninstall,
+			       },
+			       {
+				operation => [ './configure', ],
+				condition => $option_configure && !$option_uninstall,
+			       },
+			       {
+				operation => [ 'make', 'clean', ],
+				condition => $option_clean && !$option_uninstall,
+			       },
+			       [ 'make', ],
+			       [ 'make', 'check', ],
+			       [ 'sudo', 'make', 'install', ],
+			       {
+				operation => [ 'make', 'dist', ],
+				condition => $option_dist,
+			       },
+			       {
+				operation => [ 'make', 'uninstall', ],
+				condition => $option_uninstall,
+			       },
+			      )
+	{
+	    # if the operation's condition is true
+
+	    my $condition_value = 1;
+
+	    if (ref $operation eq 'HASH')
+	    {
+		$condition_value = $operation->{condition};
+
+		$operation = $operation->{operation};
+	    }
+
+	    # if the uninstall option is given
+
+	    if ($option_uninstall)
+	    {
+		# but this operation is not uninstall
+
+		if (exists $operation->[1]
+		    && $operation->[1] ne 'uninstall')
+		{
+		    # don't execute
+
+		    $condition_value = 0;
+		}
+	    }
+
+	    if ($condition_value)
+	    {
+		# if package directory exists
+
+		my $directory = $package->{directory};
+
+		if (-e $directory)
+		{
+		    # go to package directory
+
+		    use File::chdir;
+
+		    local $CWD = $directory;
+
+		    # perform the operation on the package
+
+		    sys($package_name, @$operation);
+		}
+	    }
+	}
+    }
+}
+
+
+sub sys
+{
+    my $package_name = shift;
+
+    my $arguments = [ @_ ];
+
+    print "$0: in $package_name, action (" . (join ' ', @$arguments) . ")\n";
+
+    system @$arguments;
+
+    if ($?)
+    {
+	#! assume system has given an good error message
+
+	die "*** Error for package_name $package_name, in $CWD";
+    }
+}
+
+
+main();
+
+
