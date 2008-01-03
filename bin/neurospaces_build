@@ -166,9 +166,9 @@ sub main
 			       },
 			      )
 	{
-	    # if the operation's condition is true
-
 	    my $condition_value = 1;
+
+	    # convert flexible hashes to arrays with a command line
 
 	    if (ref $operation eq 'HASH')
 	    {
@@ -192,7 +192,7 @@ sub main
 		if (exists $operation->[1]
 		    && $operation->[1] ne 'uninstall')
 		{
-		    # don't execute
+		    # don't execute, doesnot make sense
 
 		    $condition_value = 0;
 
@@ -203,6 +203,8 @@ sub main
 
 		}
 	    }
+
+	    # if the operation's condition is true
 
 	    if ($condition_value)
 	    {
