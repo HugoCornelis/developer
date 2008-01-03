@@ -49,11 +49,16 @@ my $packages
 			 priority => 7,
 			 status => 'mtn status',
 			},
-       project => {
-		   directory => "$ENV{HOME}/neurospaces_project/project",
-		   priority => 8,
-		   status => 'mtn status',
-		  },
+       developer => {
+		     directory => "$ENV{HOME}/neurospaces_project/project/developer/source/snapshots/0",
+		     priority => 8,
+		     status => 'mtn status',
+		    },
+       user => {
+		directory => "$ENV{HOME}/neurospaces_project/project/user/source/snapshots/0",
+		priority => 8.5,
+		status => 'mtn status',
+	       },
        system => {
 		   directory => "$ENV{HOME}/neurospaces_project/.",
 		   priority => 9,
@@ -94,6 +99,11 @@ foreach my $package_name (
 
     {
 	local $CWD = $package->{directory};
+
+	if ($!)
+	{
+	    die "$0: cannot change to directory ($directory)";
+	}
 
 	my $command = $package->{status};
 

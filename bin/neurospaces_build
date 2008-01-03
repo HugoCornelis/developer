@@ -223,6 +223,11 @@ sub main
 
 		    local $CWD = $directory;
 
+		    if ($!)
+		    {
+			die "$0: cannot change to directory ($directory)";
+		    }
+
 		    # perform the operation on the package
 
 		    system_execute($package_name, @$operation);
