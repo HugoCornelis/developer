@@ -9,54 +9,54 @@ use strict;
 my $packages
     = {
        neurospaces_prcs => {
-			    directory => "$ENV{HOME}/neurospaces/source/c/snapshots/0",
+			    directory => "$ENV{HOME}/neurospaces_project/neurospaces/source/c/snapshots/0",
 			    disabled => 1,
 			    priority => 1,
 			    status => 'prcs diff neurospaces.prj `prcs 2>/dev/null execute --not ".*\(directory\|symlink\)" neurospaces.prj | grep -v "neurospaces\.prj" | grep -v "purkinjespine" ` -- --unified ',
 			   },
        neurospaces => {
-		       directory => "$ENV{HOME}/neurospaces/source/c/snapshots/0",
+		       directory => "$ENV{HOME}/neurospaces_project/neurospaces/source/c/snapshots/0",
 		       priority => 1,
-		       status => 'mtn status',
+		       status => "pwd && echo $ENV{HOME}/neurospaces_project/neurospaces/source/c/snapshots/0 mtn status",
 		      },
        heccer => {
-		  directory => "$ENV{HOME}/heccer/source/c/snapshots/0",
+		  directory => "$ENV{HOME}/neurospaces_project/heccer/source/c/snapshots/0",
 		  priority => 2,
 		  status => 'mtn status',
 		 },
        ssp => {
-	       directory => "$ENV{HOME}/ssp/source/perl/snapshots/0",
+	       directory => "$ENV{HOME}/neurospaces_project/ssp/source/perl/snapshots/0",
 	       priority => 3,
 	       status => 'mtn status',
 	      },
        studio => {
-		  directory => "$ENV{HOME}/studio/source/perl/snapshots/0",
+		  directory => "$ENV{HOME}/neurospaces_project/studio/source/perl/snapshots/0",
 		  priority => 4,
 		  status => 'mtn status',
 		 },
        simulation_browser => {
-			      directory => "$ENV{HOME}/simulation_browser/source/perl/snapshots/0",
+			      directory => "$ENV{HOME}/neurospaces_project/simulation_browser/source/perl/snapshots/0",
 			      priority => 5,
 			      status => 'mtn status',
 			     },
        geometry => {
-		    directory => "$ENV{HOME}/geometry/source/c/snapshots/0",
+		    directory => "$ENV{HOME}/neurospaces_project/geometry/source/c/snapshots/0",
 		    priority => 6,
 		    status => 'mtn status',
 		   },
        configuration => {
-			 directory => "$ENV{HOME}/configuration",
+			 directory => "$ENV{HOME}/neurospaces_project/configuration",
 			 priority => 7,
 			 status => 'mtn status',
 			},
        project => {
-		   directory => "$ENV{HOME}/project",
+		   directory => "$ENV{HOME}/neurospaces_project/project",
 		   priority => 8,
 		   status => 'mtn status',
 		  },
        system => {
-		   directory => "$ENV{HOME}/.",
-		   priority => 8,
+		   directory => "$ENV{HOME}/neurospaces_project/.",
+		   priority => 9,
 		   status => 'mtn status',
 		 },
       };
