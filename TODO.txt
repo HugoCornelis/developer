@@ -13,7 +13,8 @@ release-expand, test-dist, etc.
 *** tests/command_extractor
 
 ** perl
-*** Data::{Differences,Comparator,Transformator,Merger}
+simply add all dependencies as tar files.
+perhaps also Sesa ?
 
 ** website
 currently in neurospaces subproject.
@@ -21,9 +22,4 @@ should go in a separate subproject, called 'website'.
 
 ** CNS2006 presentation
 
-* should come in a separate subproject
-** build utilities
-*** instrumentor
-** data related utilities
-*** Data::{Transformer,Differences,Merger}
-** Sesa ?
+* instrumentor ?
