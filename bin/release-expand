@@ -104,6 +104,8 @@ foreach my $file (@$files)
 
 	# loop over source text
 
+	#! assertion allows '"' to be escaped with a backslash
+
 	while ($content =~ m/\G.*?\$Format: "([^\n]*)"\$/gs)
 	{
 	    my $position = pos($content);
