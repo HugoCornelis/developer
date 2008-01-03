@@ -17,7 +17,7 @@ my $packages
        neurospaces => {
 		       directory => "$ENV{HOME}/neurospaces_project/neurospaces/source/c/snapshots/0",
 		       priority => 1,
-		       status => "pwd && echo $ENV{HOME}/neurospaces_project/neurospaces/source/c/snapshots/0 mtn status",
+		       status => "mtn status",
 		      },
        heccer => {
 		  directory => "$ENV{HOME}/neurospaces_project/heccer/source/c/snapshots/0",
