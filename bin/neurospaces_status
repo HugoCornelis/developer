@@ -4,6 +4,7 @@ my $packages
     = {
        neurospaces_prcs => {
 			    directory => "$ENV{HOME}/neurospaces/source/c/snapshots/0",
+			    disabled => 1,
 			    priority => 1,
 			    status => 'prcs diff neurospaces.prj `prcs 2>/dev/null execute --not ".*\(directory\|symlink\)" neurospaces.prj | grep -v "neurospaces\.prj" | grep -v "purkinjespine" ` -- --unified ',
 			   },
@@ -64,6 +65,16 @@ foreach my $package_name (
 			     %$packages)
 {
     my $package = $packages->{$package_name};
+
+    if ($package->{disabled})
+    {
+# 	if ($option_verbose)
+# 	{
+# 	    print "$0: $package_name skipped, disabled is $package->{disabled}\n";
+# 	}
+
+	next;
+    }
 
     my $directory = $package->{directory};
 
