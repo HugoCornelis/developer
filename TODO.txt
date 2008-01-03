@@ -4,6 +4,14 @@
 ** release management utilities
 release-expand, test-dist, etc.
 
+** test framework
+*** tests/run
+*** tests/tests_2_html
+*** tests/command_extractor
+
+** perl
+*** Data::{Differences,Comparator,Transformator,Merger}
+
 ** website
 currently in neurospaces subproject.
 should go in a separate subproject, called 'website'.
