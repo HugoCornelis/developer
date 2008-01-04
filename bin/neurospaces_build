@@ -27,6 +27,9 @@ my $packages
 		  order => 2,
 		 },
        neurospaces => {
+		       configure => [
+				     '--with-delete-operation',
+				    ],
 		       directory => "$ENV{HOME}/neurospaces_project/neurospaces/source/c/snapshots/0",
 		       disabled => 1,
 		       order => 1,
@@ -232,7 +235,9 @@ sub main
 
 		    # perform the operation on the package
 
-		    system_execute($package_name, @$operation);
+		    my $package_options = $package->{$operation->[0]};
+
+		    system_execute($package_name, @$operation, @$package_options);
 		}
 	    }
 	}
