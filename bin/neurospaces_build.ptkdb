@@ -1,25 +1,34 @@
 $files = {
-           '_<./build' => [
-                            {
-                              'expr' => undef,
-                              'value' => '1',
-                              'text' => '	if ($condition_value)
+           '_<bin/neurospaces_build' => [
+                                          {
+                                            'expr' => undef,
+                                            'value' => '1',
+                                            'text' => '	my $package = $packages->{$package_name};
 ',
-                              'fname' => './build',
-                              'type' => 'user',
-                              'line' => '81'
-                            },
-                            {
-                              'expr' => undef,
-                              'value' => '1',
-                              'text' => '		if (-e $directory)
+                                            'fname' => 'bin/neurospaces_build',
+                                            'type' => 'user',
+                                            'line' => '136'
+                                          },
+                                          {
+                                            'expr' => undef,
+                                            'value' => '1',
+                                            'text' => '	    if ($condition_value)
 ',
-                              'fname' => './build',
-                              'type' => 'user',
-                              'line' => 97
-                            }
-                          ]
+                                            'fname' => 'bin/neurospaces_build',
+                                            'type' => 'user',
+                                            'line' => '225'
+                                          }
+                                        ]
          };
-$expr_list = [];
+$expr_list = [
+               {
+                 'expr' => '$package_name',
+                 'depth' => -1
+               },
+               {
+                 'expr' => '$operation',
+                 'depth' => -1
+               }
+             ];
 $eval_saved_text = undef;
 $main_win_geometry = '1455x998+136+0';

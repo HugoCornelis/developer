@@ -23,15 +23,15 @@ my $packages
 		   },
        heccer => {
 		  directory => "$ENV{HOME}/neurospaces_project/heccer/source/c/snapshots/0",
-		  disabled => 1,
+		  disabled => 0,
 		  order => 2,
 		 },
        neurospaces => {
-		       configure => [
-				     '--with-delete-operation',
-				    ],
+		       './configure' => [
+					 '--with-delete-operation',
+					],
 		       directory => "$ENV{HOME}/neurospaces_project/neurospaces/source/c/snapshots/0",
-		       disabled => 1,
+		       disabled => 0,
 		       order => 1,
 		      },
        simulation_browser => {
@@ -41,7 +41,7 @@ my $packages
 			     },
        ssp => {
 	       directory => "$ENV{HOME}/neurospaces_project/ssp/source/perl/snapshots/0",
-	       disabled => 1,
+	       disabled => 0,
 	       order => 3,
 	      },
        studio => {
@@ -52,20 +52,29 @@ my $packages
       };
 
 
+# default profile: configure, compile and install
+
+my $option_check = 0;
 my $option_clean = 0;
-my $option_configure = 0;
+my $option_compile = 1;
+my $option_configure = 1;
 my $option_dist = 0;
 my $option_distclean = 0;
+my $option_distcheck = 0;
 my $option_help;
+my $option_install = 1;
 my $option_packages;
-my $option_verbose;
+my $option_verbose = 0;
 my $option_uninstall;
 
 my $result
     = GetOptions(
+		 "check!" => \$option_check,
 		 "clean!" => \$option_clean,
 		 "configure!" => \$option_configure,
+		 "compile!" => \$option_compile,
 		 "dist!" => \$option_dist,
+		 "distcheck!" => \$option_distcheck,
 		 "distclean!" => \$option_distclean,
 		 "help!" => \$option_help,
 		 "packages" => \$option_packages,
@@ -79,12 +88,16 @@ if ($option_help)
 	"
 $0: configure, compile, check and install one package after another from a set of packages.
 
-options :
+options:
+    check              check packages (make check).
     clean              clean before compiling (default is not to clean).
     configure          configure before compiling (default is not to configure).
+    compile            compile packages, default true.
     dist               build distribution tarballs.
+    distcheck          check created tarballs (make distcheck).
     distclean          distclean before compiling (default is not to distclean).
     help               print usage information.
+    install            install packages (make install).
     packages           print known packages, in order of installation.
     v|verbose          tell what is being done, specify multiple times to get
                        more feedback.
@@ -150,17 +163,30 @@ sub main
 			       },
 			       {
 				operation => [ './configure', ],
-				condition => $option_configure && !$option_uninstall,
+				condition => $option_configure,
 			       },
 			       {
 				operation => [ 'make', 'clean', ],
-				condition => $option_clean && !$option_uninstall,
+				condition => $option_clean,
 			       },
-			       [ 'make', ],
-			       [ 'make', 'check', ],
-			       [ 'sudo', 'make', 'install', ],
+			       {
+				operation => [ 'make', ],
+				condition => $option_compile,
+			       },
+			       {
+				operation => [ 'make', 'check', ],
+				condition => $option_check,
+			       },
+			       {
+				operation => [ 'sudo', 'make', 'install', ],
+				condition => $option_compile && !$option_uninstall && $option_install,
+			       },
 			       {
 				operation => [ 'make', 'dist', ],
+				condition => $option_dist,
+			       },
+			       {
+				operation => [ 'make', 'distcheck', ],
 				condition => $option_dist,
 			       },
 			       {
