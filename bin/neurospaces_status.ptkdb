@@ -1,0 +1,16 @@
+$files = {
+           '_<bin/neurospaces_status' => [
+                                           {
+                                             'expr' => undef,
+                                             'value' => '1',
+                                             'text' => '    print "*** package $package_name\\n";
+',
+                                             'fname' => 'bin/neurospaces_status',
+                                             'type' => 'user',
+                                             'line' => '88'
+                                           }
+                                         ]
+         };
+$expr_list = [];
+$eval_saved_text = undef;
+$main_win_geometry = '1592x1114+0+0';
