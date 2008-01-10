@@ -16,7 +16,11 @@
 
 SUBDIRS = 
 
-dist_bin_SCRIPTS = bin/release-expand bin/neurospaces_build bin/neurospaces_status
+dist_bin_SCRIPTS = \
+	bin/mcad2doxy \
+	bin/neurospaces_build \
+	bin/neurospaces_status \
+	bin/release-expand
 
 html-upload-prepare:
 
