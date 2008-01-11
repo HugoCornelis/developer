@@ -30,7 +30,7 @@ my $packages
 		       './configure' => [
 					 '--with-delete-operation',
 					],
-		       directory => "$ENV{HOME}/neurospaces_project/neurospaces/source/c/snapshots/0",
+		       directory => "$ENV{HOME}/neurospaces_project/model_container/source/c/snapshots/0",
 		       disabled => 0,
 		       order => 1,
 		      },
@@ -91,7 +91,7 @@ $0: configure, compile, check and install one package after another from a set o
 options:
     check              check packages (make check).
     clean              clean before compiling (default is not to clean).
-    configure          configure before compiling (default is not to configure).
+    configure          configure before compiling (default is to configure).
     compile            compile packages, default true.
     dist               build distribution tarballs.
     distcheck          check created tarballs (make distcheck).
