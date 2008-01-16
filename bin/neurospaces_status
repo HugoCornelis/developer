@@ -9,8 +9,8 @@ use strict;
 my $packages
     = {
        neurospaces_prcs => {
-			    directory => "$ENV{HOME}/neurospaces_project/model_container/source/c/snapshots/0",
-			    disabled => 1,
+			    directory => "$ENV{HOME}/neurospaces_project/model_container/source/c/snapshots/prcs.0",
+# 			    disabled => 1,
 			    priority => 1,
 			    status => 'prcs diff neurospaces.prj `prcs 2>/dev/null execute --not ".*\(directory\|symlink\)" neurospaces.prj | grep -v "neurospaces\.prj" | grep -v "purkinjespine" ` -- --unified ',
 			   },
