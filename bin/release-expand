@@ -166,7 +166,8 @@ foreach my $file (@$files)
 
 	    $content =~ s/\G(.*\n).*\n/$1$matched\n/;
 
-	    if ($option_verbose > 1)
+	    if (defined $option_verbose
+		&& $option_verbose > 1)
 	    {
 		print STDERR "For $file: new content at position $position is $matched\n";
 	    }
