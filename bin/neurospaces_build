@@ -188,7 +188,7 @@ sub main
 			       },
 			       {
 				operation => [ 'make', 'distcheck', ],
-				condition => $option_dist,
+				condition => $option_dist && $option_distcheck,
 			       },
 			       {
 				operation => [ 'make', 'uninstall', ],
