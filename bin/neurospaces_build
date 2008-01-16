@@ -77,6 +77,7 @@ my $result
 		 "distcheck!" => \$option_distcheck,
 		 "distclean!" => \$option_distclean,
 		 "help!" => \$option_help,
+		 "install!" => \$option_install,
 		 "packages" => \$option_packages,
 		 "verbose+" => \$option_verbose,
 		 "uninstall!" => \$option_uninstall,
