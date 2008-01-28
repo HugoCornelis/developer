@@ -26,14 +26,14 @@ my $packages
 		  disabled => 0,
 		  order => 2,
 		 },
-       neurospaces => {
-		       './configure' => [
-					 '--with-delete-operation',
-					],
-		       directory => "$ENV{HOME}/neurospaces_project/model_container/source/c/snapshots/0",
-		       disabled => 0,
-		       order => 1,
-		      },
+       model_container => {
+			   './configure' => [
+					     '--with-delete-operation',
+					    ],
+			   directory => "$ENV{HOME}/neurospaces_project/model_container/source/c/snapshots/0",
+			   disabled => 0,
+			   order => 1,
+			  },
        simulation_browser => {
 			      directory => "$ENV{HOME}/neurospaces_project/simulation_browser/source/perl/snapshots/0",
 			      disabled => 1,
@@ -64,6 +64,7 @@ my $option_distcheck = 0;
 my $option_help;
 my $option_install = 1;
 my $option_packages;
+my $option_regex_selector = ".*";
 my $option_verbose = 0;
 my $option_uninstall;
 
@@ -79,6 +80,7 @@ my $result
 		 "help!" => \$option_help,
 		 "install!" => \$option_install,
 		 "packages" => \$option_packages,
+		 "regex-selector=s" => \$option_regex_selector,
 		 "verbose+" => \$option_verbose,
 		 "uninstall!" => \$option_uninstall,
 		);
@@ -100,6 +102,7 @@ options:
     help               print usage information.
     install            install packages (make install).
     packages           print known packages, in order of installation.
+    regex-selector     defines a regex to select specific packages.
     v|verbose          tell what is being done, specify multiple times to get
                        more feedback.
    uninstall           uninstall packages, cannot be combined with installation options.
@@ -119,6 +122,10 @@ if ($option_packages)
 	       sort
 	       {
 		   $packages->{$a}->{order} <=> $packages->{$b}->{order}
+	       }
+	       grep
+	       {
+		   $_ =~ /$option_regex_selector/i
 	       }
 	       keys %$packages
 	      )
@@ -150,6 +157,16 @@ sub main
 	    if ($option_verbose)
 	    {
 		print "$0: $package_name skipped, disabled is $package->{disabled}\n";
+	    }
+
+	    next;
+	}
+
+	if ($package_name !~ /$option_regex_selector/i)
+	{
+	    if ($option_verbose)
+	    {
+		print "$0: $package_name skipped, not selected using --regex-selector\n";
 	    }
 
 	    next;

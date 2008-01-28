@@ -14,11 +14,11 @@ my $packages
 			    priority => 1,
 			    status => 'prcs diff neurospaces.prj `prcs 2>/dev/null execute --not ".*\(directory\|symlink\)" neurospaces.prj | grep -v "neurospaces\.prj" | grep -v "purkinjespine" ` -- --unified ',
 			   },
-       neurospaces => {
-		       directory => "$ENV{HOME}/neurospaces_project/model_container/source/c/snapshots/0",
-		       priority => 1,
-		       status => "mtn status",
-		      },
+       model_container => {
+			   directory => "$ENV{HOME}/neurospaces_project/model_container/source/c/snapshots/0",
+			   priority => 1,
+			   status => "mtn status",
+			  },
        heccer => {
 		  directory => "$ENV{HOME}/neurospaces_project/heccer/source/c/snapshots/0",
 		  priority => 2,
