@@ -196,16 +196,16 @@ sub main
 				condition => $option_check,
 			       },
 			       {
-				operation => [ 'sudo', 'make', 'install', ],
-				condition => $option_compile && !$option_uninstall && $option_install,
-			       },
-			       {
 				operation => [ 'make', 'dist', ],
 				condition => $option_dist,
 			       },
 			       {
 				operation => [ 'make', 'distcheck', ],
 				condition => $option_dist && $option_distcheck,
+			       },
+			       {
+				operation => [ 'sudo', 'make', 'install', ],
+				condition => $option_compile && !$option_uninstall && $option_install,
 			       },
 			       {
 				operation => [ 'make', 'uninstall', ],
