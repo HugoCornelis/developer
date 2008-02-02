@@ -10,70 +10,114 @@ my $packages
     = {
        neurospaces_prcs => {
 			    directory => "$ENV{HOME}/neurospaces_project/model_container/source/c/snapshots/prcs.0",
-# 			    disabled => 1,
+			    # 			    disabled => 1,
 			    priority => 1,
-			    status => 'prcs diff neurospaces.prj `prcs 2>/dev/null execute --not ".*\(directory\|symlink\)" neurospaces.prj | grep -v "neurospaces\.prj" | grep -v "purkinjespine" ` -- --unified ',
+			    commands => {
+					 missing => undef,
+					 status => 'prcs diff neurospaces.prj `prcs 2>/dev/null execute --not ".*\(directory\|symlink\)" neurospaces.prj | grep -v "neurospaces\.prj" | grep -v "purkinjespine" ` -- --unified ',
+					 unknown => undef,
+					},
 			   },
        model_container => {
 			   directory => "$ENV{HOME}/neurospaces_project/model_container/source/c/snapshots/0",
 			   priority => 1,
-			   status => "mtn status",
+			   commands => {
+					missing => "mtn ls missing",
+					status => "mtn status",
+					unknown => "mtn ls unknown",
+				       },
 			  },
        heccer => {
 		  directory => "$ENV{HOME}/neurospaces_project/heccer/source/c/snapshots/0",
 		  priority => 2,
-		  status => 'mtn status',
+		  commands => {
+			       missing => "mtn ls missing",
+			       status => 'mtn status',
+			       unknown => "mtn ls unknown",
+			      },
 		 },
        ssp => {
 	       directory => "$ENV{HOME}/neurospaces_project/ssp/source/perl/snapshots/0",
 	       priority => 3,
-	       status => 'mtn status',
+	       commands => {
+			    missing => "mtn ls missing",
+			    status => 'mtn status',
+			    unknown => "mtn ls unknown",
+			   },
 	      },
        studio => {
 		  directory => "$ENV{HOME}/neurospaces_project/studio/source/perl/snapshots/0",
 		  priority => 4,
-		  status => 'mtn status',
+		  commands => {
+			       missing => "mtn ls missing",
+			       status => 'mtn status',
+			       unknown => "mtn ls unknown",
+			      },
 		 },
        simulation_browser => {
 			      directory => "$ENV{HOME}/neurospaces_project/simulation_browser/source/perl/snapshots/0",
 			      priority => 5,
-			      status => 'mtn status',
+			      commands => {
+					   missing => "mtn ls missing",
+					   status => 'mtn status',
+					   unknown => "mtn ls unknown",
+					  },
 			     },
        geometry => {
 		    directory => "$ENV{HOME}/neurospaces_project/geometry/source/c/snapshots/0",
 		    priority => 6,
-		    status => 'mtn status',
+		    commands => {
+				 missing => "mtn ls missing",
+				 status => 'mtn status',
+				 unknown => "mtn ls unknown",
+				},
 		   },
        configuration => {
 			 directory => "$ENV{HOME}/neurospaces_project/configuration",
 			 priority => 7,
-			 status => 'mtn status',
+			 commands => {
+				      missing => "mtn ls missing",
+				      status => 'mtn status',
+				      unknown => "mtn ls unknown",
+				     },
 			},
        developer => {
 		     directory => "$ENV{HOME}/neurospaces_project/project/developer/source/snapshots/0",
 		     priority => 8,
-		     status => 'mtn status',
+		     commands => {
+				  missing => "mtn ls missing",
+				  status => 'mtn status',
+				  unknown => "mtn ls unknown",
+				 },
 		    },
        user => {
 		directory => "$ENV{HOME}/neurospaces_project/project/user/source/snapshots/0",
 		priority => 8.5,
-		status => 'mtn status',
+		commands => {
+			     missing => "mtn ls missing",
+			     status => 'mtn status',
+			     unknown => "mtn ls unknown",
+			    },
 	       },
        system => {
-		   directory => "$ENV{HOME}/neurospaces_project/.",
-		   priority => 9,
-		   status => 'mtn status',
+		  directory => "$ENV{HOME}/neurospaces_project/.",
+		  priority => 9,
+		  commands => {
+			       missing => "mtn ls missing",
+			       status => 'mtn status',
+			       unknown => "mtn ls unknown",
+			      },
 		 },
       };
 
 
 foreach my $package_name (
-			     sort
-			     {
-				 $packages->{$a}->{priority} <=> $packages->{$b}->{priority}
-			     }
-			     keys
-			     %$packages)
+			  sort
+			  {
+			      $packages->{$a}->{priority} <=> $packages->{$b}->{priority}
+			  }
+			  keys
+			  %$packages)
 {
     my $package = $packages->{$package_name};
 
@@ -89,7 +133,7 @@ foreach my $package_name (
 
     my $directory = $package->{directory};
 
-    print "*** package $package_name\n";
+    print "$0: *** package $package_name\n";
 
 #     use Cwd;
 
@@ -105,10 +149,17 @@ foreach my $package_name (
 	    die "$0: cannot change to directory ($directory)";
 	}
 
-	my $command = $package->{status};
+	foreach my $command (qw(missing status unknown))
+	{
+	    my $command = $package->{commands}->{$command};
 
-	system $command;
+	    if (defined $command)
+	    {
+		print "$0: $command\n";
 
+		system $command;
+	    }
+	}
     }
 }
 
