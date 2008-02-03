@@ -313,7 +313,7 @@ sub system_execute
 
     print "$0: $package_name [" . (join ' ', @$arguments) . "] executing\n";
 
-    system @$arguments;
+    system join " ", @$arguments;
 
     if ($?)
     {
