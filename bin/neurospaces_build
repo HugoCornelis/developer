@@ -92,21 +92,37 @@ if ($option_help)
 $0: configure, compile, check and install one package after another from a set of packages.
 
 options:
-    check              check packages (make check).
-    clean              clean before compiling (default is not to clean).
-    configure          configure before compiling (default is to configure).
-    compile            compile packages, default true.
+    check              check packages.
+    clean              clean before compiling.
+    configure          configure before compiling.
+    compile            compile packages.
     dist               build distribution tarballs.
-    distcheck          check created tarballs (make distcheck).
-    distclean          distclean before compiling (default is not to distclean).
+    distcheck          check created tarballs.
+    distclean          distclean before compiling.
     help               print usage information.
-    install            install packages (make install).
+    install            install packages.
     packages           print known packages, in order of installation.
     regex-selector     defines a regex to select specific packages.
     v|verbose          tell what is being done, specify multiple times to get
                        more feedback.
    uninstall           uninstall packages, cannot be combined with installation options.
 ";
+
+    print
+	"---\nconfiguration is now:\n"
+	    . ("  check: $option_check\n"
+	       . "  clean: $option_clean\n"
+	       . "  configure: $option_configure\n"
+	       . "  compile: $option_compile\n"
+	       . "  dist: $option_dist\n"
+	       . "  distcheck: $option_distcheck\n"
+	       . "  distclean: $option_distclean\n"
+	       . "  help: $option_help\n"
+	       . "  install: $option_install\n"
+	       . "  package: $option_packages\n"
+	       . "  regex-selector: $option_regex_selector\n"
+	       . "  verbose: $option_verbose\n"
+	       . "  uninstall: $option_uninstall\n");
 
     exit 1;
 }
