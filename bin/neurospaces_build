@@ -8,6 +8,8 @@ use strict;
 
 use Getopt::Long;
 
+use YAML;
+
 
 my $packages
     = {
@@ -54,6 +56,7 @@ my $packages
 
 # default profile: configure, compile and install
 
+my $option_certification_report;
 my $option_check = 0;
 my $option_clean = 0;
 my $option_compile = 1;
@@ -65,6 +68,7 @@ my $option_install = 1;
 my $option_regex_selector = ".*";
 my $option_verbose = 0;
 my $option_uninstall;
+
 
 my $build_report
     = {
@@ -193,6 +197,10 @@ sub main
 				operation => [ 'make', 'uninstall', ],
 				condition => $option_uninstall,
 			       },
+			       {
+				operation => [ 'mtn', 'cert', '"%version"', 'build_report', '"%report"', ],
+				condition => $option_certification_report,
+			       },
 			      )
 	{
 	    my $condition_value = 1;
@@ -244,19 +252,21 @@ sub main
 
 		# if package directory exists
 
-		my $directory = $package->{directory};
+		my $target_directory = $package->{directory};
 
-		if (-e $directory)
+		if (-e $target_directory)
 		{
 		    # go to package directory
 
-		    use File::chdir;
+		    use Cwd;
 
-		    local $CWD = $directory;
+		    my $current_directory = getcwd();
 
-		    if ($!)
+		    my $success = chdir $target_directory;
+
+		    if (!$success)
 		    {
-			die "$0: cannot change to directory ($directory)";
+			die "$0: cannot change from directory ($current_directory) to directory ($target_directory): $!";
 		    }
 
 		    # perform the operation on the package
@@ -274,6 +284,12 @@ sub main
 
 		    push @{$operations->{$package_name}}, [ @$operation, @$package_options, ];
 
+		    my $success = chdir $current_directory;
+
+		    if (!$success)
+		    {
+			die "$0: cannot change from directory ($target_directory) to directory ($current_directory): $!";
+		    }
 		}
 		else
 		{
@@ -299,6 +315,7 @@ sub read_cmd_line
 
     my $result
 	= GetOptions(
+		     "certification-report!" => $option_certification_report,
 		     "check!" => \$option_check,
 		     "clean!" => \$option_clean,
 		     "configure!" => \$option_configure,
@@ -316,6 +333,7 @@ sub read_cmd_line
 
     $build_report->{options}
 	= {
+	   certification_report => $option_certification_report,
 	   check => => $option_check,
 	   clean => => $option_clean,
 	   configure => => $option_configure,
@@ -338,25 +356,27 @@ sub read_cmd_line
 $0: configure, compile, check and install one package after another from a set of packages.
 
 options:
-    check              check packages.
-    clean              clean before compiling.
-    configure          configure before compiling.
-    compile            compile packages.
-    dist               build distribution tarballs.
-    distcheck          check created tarballs.
-    distclean          distclean before compiling.
-    help               print usage information.
-    install            install packages.
-    packages           print known packages, in order of installation.
-    regex-selector     defines a regex to select specific packages.
-    v|verbose          tell what is being done, specify multiple times to get
-                       more feedback.
-   uninstall           uninstall packages, cannot be combined with installation options.
+    certification-report   annotate the (monotone) repository with the build_report.
+    check                  check packages.
+    clean                  clean before compiling.
+    configure              configure before compiling.
+    compile                compile packages.
+    dist                   build distribution tarballs.
+    distcheck              check created tarballs.
+    distclean              distclean before compiling.
+    help                   print usage information.
+    install                install packages.
+    packages               print known packages, in order of installation.
+    regex-selector         defines a regex to select specific packages.
+    v|verbose              tell what is being done, specify multiple times to get
+                           more feedback.
+   uninstall               uninstall packages, cannot be combined with installation options.
 ";
 
 	print
 	    "---\nconfiguration is now:\n"
-		. ("  check: $option_check\n"
+		. ("  certification-report: $option_certification_report\n"
+		   . "  check: $option_check\n"
 		   . "  clean: $option_clean\n"
 		   . "  configure: $option_configure\n"
 		   . "  compile: $option_compile\n"
@@ -415,8 +435,6 @@ sub report_exit
     }
 
     # yaml out the test report
-
-    use YAML;
 
     print Dump($build_report);
 
@@ -479,15 +497,33 @@ sub system_execute
 
     my $arguments = [ @_ ];
 
+    my $monotone_id = `mtn automate get_base_revision_id`;
+
+    chomp $monotone_id;
+
+    my $report_text = Dump($build_report);
+
+    $arguments
+	= [
+	   map
+	   {
+	       s/%version/$monotone_id/g;
+	       s/%report/$report_text/g;
+
+	       $_;
+	   }
+	   @$arguments,
+	  ];
+
     print "$0: $package_name [" . (join ' ', @$arguments) . "] executing\n";
 
     system join " ", @$arguments;
 
     if ($?)
     {
-	#! assume system has given an good error message
+	#! assume system has given a good error message
 
-	die "*** Error for package_name $package_name, in $CWD";
+	die "*** Error for package_name $package_name: $?";
     }
 
     if ($option_verbose)
