@@ -272,7 +272,7 @@ sub main
 			$operations->{$package_name} = [];
 		    }
 
-		    push @{$operations->{$package_name}}, @$operation, @$package_options;
+		    push @{$operations->{$package_name}}, [ @$operation, @$package_options, ];
 
 		}
 		else
