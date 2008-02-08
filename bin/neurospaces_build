@@ -61,98 +61,62 @@ my $option_configure = 1;
 my $option_dist = 0;
 my $option_distclean = 0;
 my $option_distcheck = 0;
-my $option_help;
 my $option_install = 1;
-my $option_packages;
 my $option_regex_selector = ".*";
 my $option_verbose = 0;
 my $option_uninstall;
 
-my $result
-    = GetOptions(
-		 "check!" => \$option_check,
-		 "clean!" => \$option_clean,
-		 "configure!" => \$option_configure,
-		 "compile!" => \$option_compile,
-		 "dist!" => \$option_dist,
-		 "distcheck!" => \$option_distcheck,
-		 "distclean!" => \$option_distclean,
-		 "help!" => \$option_help,
-		 "install!" => \$option_install,
-		 "packages" => \$option_packages,
-		 "regex-selector=s" => \$option_regex_selector,
-		 "verbose+" => \$option_verbose,
-		 "uninstall!" => \$option_uninstall,
-		);
-
-if ($option_help)
-{
-    print
-	"
-$0: configure, compile, check and install one package after another from a set of packages.
-
-options:
-    check              check packages.
-    clean              clean before compiling.
-    configure          configure before compiling.
-    compile            compile packages.
-    dist               build distribution tarballs.
-    distcheck          check created tarballs.
-    distclean          distclean before compiling.
-    help               print usage information.
-    install            install packages.
-    packages           print known packages, in order of installation.
-    regex-selector     defines a regex to select specific packages.
-    v|verbose          tell what is being done, specify multiple times to get
-                       more feedback.
-   uninstall           uninstall packages, cannot be combined with installation options.
-";
-
-    print
-	"---\nconfiguration is now:\n"
-	    . ("  check: $option_check\n"
-	       . "  clean: $option_clean\n"
-	       . "  configure: $option_configure\n"
-	       . "  compile: $option_compile\n"
-	       . "  dist: $option_dist\n"
-	       . "  distcheck: $option_distcheck\n"
-	       . "  distclean: $option_distclean\n"
-	       . "  help: $option_help\n"
-	       . "  install: $option_install\n"
-	       . "  package: $option_packages\n"
-	       . "  regex-selector: $option_regex_selector\n"
-	       . "  verbose: $option_verbose\n"
-	       . "  uninstall: $option_uninstall\n");
-
-    exit 1;
-}
+my $build_report
+    = {
+       description => {
+		       command => $0,
+		       name => "Build report",
+		      },
+       global => {
+# 		  config => $config,
+# 		  error_count => $error_count,
+		  status => 'initializing',
+		  test_count => 0,
+		  time_start => `date`,
+		 },
+       target => {
+		  OS => $^O,
+		 },
+      };
 
 
-if ($option_packages)
-{
-    print
-	"$0: packages in order of installation are ("
-	    . (
-	       join
-	       ' ',
-	       sort
-	       {
-		   $packages->{$a}->{order} <=> $packages->{$b}->{order}
-	       }
-	       grep
-	       {
-		   $_ =~ /$option_regex_selector/i
-	       }
-	       keys %$packages
-	      )
-		. ")\n";
+$SIG{'__DIE__'}
+    = sub
+      {
+	  use Carp;
 
-    exit 1;
-}
+	  print STDERR Carp::longmess(@_);
+
+	  $build_report->{global}->{status} = 'Died';
+
+	  report_exit(3, @_);
+      };
+
+
+$SIG{'INT'}
+    = sub
+      {
+	  $build_report->{global}->{status} = 'Interrupted';
+
+	  report_exit(2);
+      };
 
 
 sub main
 {
+    # set status: running
+
+    $build_report->{global}->{status} = 'Running';
+
+    $build_report->{operations} = {};
+
+    my $operations = $build_report->{operations};
+
     # loop over all packages, in dependency order
 
     foreach my $package_name (sort
@@ -298,10 +262,212 @@ sub main
 		    my $package_options = $package->{$operation->[0]};
 
 		    system_execute($package_name, @$operation, @$package_options);
+
+		    # register that we did the operation for this package
+
+		    if (!$operations->{$package_name})
+		    {
+			$operations->{$package_name} = [];
+		    }
+
+		    push @{$operations->{$package_name}}, $operation, $package_options;
+
+		}
+		else
+		{
+		    if ($option_verbose)
+		    {
+			print "$0: skipped $package_name [" . (join ' ', @$operation) . "], directory not found, assuming this package source is not installed\n";
+		    }
 		}
 	    }
 	}
     }
+
+    $build_report->{global}->{status} = 'Finished';
+
+    report_exit(0);
+}
+
+
+sub read_cmd_line
+{
+    my $option_help;
+    my $option_packages;
+
+    my $result
+	= GetOptions(
+		     "check!" => \$option_check,
+		     "clean!" => \$option_clean,
+		     "configure!" => \$option_configure,
+		     "compile!" => \$option_compile,
+		     "dist!" => \$option_dist,
+		     "distcheck!" => \$option_distcheck,
+		     "distclean!" => \$option_distclean,
+		     "help!" => \$option_help,
+		     "install!" => \$option_install,
+		     "packages" => \$option_packages,
+		     "regex-selector=s" => \$option_regex_selector,
+		     "verbose+" => \$option_verbose,
+		     "uninstall!" => \$option_uninstall,
+		    );
+
+    $build_report->{options}
+	= {
+	   check => => $option_check,
+	   clean => => $option_clean,
+	   configure => => $option_configure,
+	   compile => => $option_compile,
+	   dist => => $option_dist,
+	   distcheck => => $option_distcheck,
+	   distclean => => $option_distclean,
+	   help => => $option_help,
+	   install => => $option_install,
+	   packages => => $option_packages,
+	   regex_selector => => $option_regex_selector,
+	   verbose => => $option_verbose,
+	   uninstall => => $option_uninstall,
+	  };
+
+    if ($option_help)
+    {
+	print
+	    "
+$0: configure, compile, check and install one package after another from a set of packages.
+
+options:
+    check              check packages.
+    clean              clean before compiling.
+    configure          configure before compiling.
+    compile            compile packages.
+    dist               build distribution tarballs.
+    distcheck          check created tarballs.
+    distclean          distclean before compiling.
+    help               print usage information.
+    install            install packages.
+    packages           print known packages, in order of installation.
+    regex-selector     defines a regex to select specific packages.
+    v|verbose          tell what is being done, specify multiple times to get
+                       more feedback.
+   uninstall           uninstall packages, cannot be combined with installation options.
+";
+
+	print
+	    "---\nconfiguration is now:\n"
+		. ("  check: $option_check\n"
+		   . "  clean: $option_clean\n"
+		   . "  configure: $option_configure\n"
+		   . "  compile: $option_compile\n"
+		   . "  dist: $option_dist\n"
+		   . "  distcheck: $option_distcheck\n"
+		   . "  distclean: $option_distclean\n"
+		   . "  help: $option_help\n"
+		   . "  install: $option_install\n"
+		   . "  package: $option_packages\n"
+		   . "  regex-selector: $option_regex_selector\n"
+		   . "  verbose: $option_verbose\n"
+		   . "  uninstall: $option_uninstall\n");
+
+	exit 1;
+    }
+
+
+    if ($option_packages)
+    {
+	print
+	    "$0: packages in order of installation are ("
+		. (
+		   join
+		   ' ',
+		   sort
+		   {
+		       $packages->{$a}->{order} <=> $packages->{$b}->{order}
+		   }
+		   grep
+		   {
+		       $_ =~ /$option_regex_selector/i
+		   }
+		   keys %$packages
+		  )
+		    . ")\n";
+
+	exit 1;
+    }
+
+
+}
+
+
+sub report_exit
+{
+    my $exit_code = shift;
+
+    my $description = shift;
+
+    $build_report->{global}->{time_end} = `date`;
+
+    if (defined $description
+        && $exit_code eq 3)
+    {
+	print "*** die: $description\n";
+    }
+
+    # yaml out the test report
+
+    use YAML;
+
+    print Dump($build_report);
+
+    # if there were errors
+
+#     if ($error_count)
+    {
+	# exit with failure
+
+	$exit_code ||= 1;
+
+	print "$0: exit_code $exit_code\n";
+
+	exit $exit_code;
+    }
+
+#     # else
+
+#     else
+#     {
+# 	# exit, possibly success
+
+# 	exit $exit_code;
+#     }
+}
+
+
+sub report_message
+{
+    my $header = shift;
+
+    my $trailer = shift;
+
+    my $message = shift;
+
+    my $lines = [ split '\n', $message, ];
+
+    my $longest = 0;
+
+    map
+    {
+	($longest < length) && ($longest = length)
+    }
+	@$lines;
+
+    my $line = '-' x $longest;
+
+    print "\n";
+    print "$line\n" for 0 .. $header;
+    print "\n";
+    print "$message\n\n";
+    print "$line\n" for 0 .. $trailer;
+    print "\n";
 }
 
 
