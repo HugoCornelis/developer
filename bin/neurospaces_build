@@ -109,6 +109,8 @@ $SIG{'INT'}
 
 sub main
 {
+    read_cmd_line();
+
     # set status: running
 
     $build_report->{global}->{status} = 'Running';
@@ -270,7 +272,7 @@ sub main
 			$operations->{$package_name} = [];
 		    }
 
-		    push @{$operations->{$package_name}}, $operation, $package_options;
+		    push @{$operations->{$package_name}}, @$operation, @$package_options;
 
 		}
 		else
@@ -421,24 +423,24 @@ sub report_exit
     # if there were errors
 
 #     if ($error_count)
-    {
-	# exit with failure
+#     {
+# 	# exit with failure
 
-	$exit_code ||= 1;
+# 	$exit_code ||= 1;
 
-	print "$0: exit_code $exit_code\n";
+# 	print "$0: exit_code $exit_code\n";
 
-	exit $exit_code;
-    }
+# 	exit $exit_code;
+#     }
 
 #     # else
 
 #     else
-#     {
-# 	# exit, possibly success
+    {
+	# exit, possibly success
 
-# 	exit $exit_code;
-#     }
+	exit $exit_code;
+    }
 }
 
 
