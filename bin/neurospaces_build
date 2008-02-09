@@ -56,7 +56,7 @@ my $packages
 
 # default profile: configure, compile and install
 
-my $option_certification_report;
+my $option_certification_report = 0;
 my $option_check = 0;
 my $option_clean = 0;
 my $option_compile = 1;
@@ -67,7 +67,7 @@ my $option_distcheck = 0;
 my $option_install = 1;
 my $option_regex_selector = ".*";
 my $option_verbose = 0;
-my $option_uninstall;
+my $option_uninstall = 0;
 
 
 my $build_report
@@ -315,7 +315,7 @@ sub read_cmd_line
 
     my $result
 	= GetOptions(
-		     "certification-report!" => $option_certification_report,
+		     "certification-report!" => \$option_certification_report,
 		     "check!" => \$option_check,
 		     "clean!" => \$option_clean,
 		     "configure!" => \$option_configure,
