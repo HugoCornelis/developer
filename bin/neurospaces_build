@@ -507,7 +507,7 @@ sub system_execute
 
     chomp $monotone_id;
 
-    my $report_text = Dump($build_report);
+    my $report_text = Dump( { build_report => $build_report, }, ) . "\n";
 
     $arguments
 	= [
