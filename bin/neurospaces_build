@@ -198,7 +198,7 @@ sub main
 				condition => $option_uninstall,
 			       },
 			       {
-				operation => [ 'mtn', 'cert', '"%version"', 'build_report', '"%report"', ],
+				operation => [ 'mtn', 'cert', '\'%version\'', 'build_report', '\'%report\'', ],
 				condition => $option_certification_report,
 			       },
 			      )
