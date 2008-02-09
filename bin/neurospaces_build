@@ -355,6 +355,11 @@ sub read_cmd_line
 	    "
 $0: configure, compile, check and install one package after another from a set of packages.
 
+To disable a build stage, prefix the corresponding option with
+'--no-', eg. to disable configure, use '--no-configure'.
+
+To see what packages are known in the database, use the '--packages' option.
+
 options:
     certification-report   annotate the (monotone) repository with the build_report.
     check                  check packages.
