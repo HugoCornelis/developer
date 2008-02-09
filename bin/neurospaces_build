@@ -390,7 +390,7 @@ options:
 		   . "  distclean: $option_distclean\n"
 		   . "  help: $option_help\n"
 		   . "  install: $option_install\n"
-		   . "  package: $option_packages\n"
+		   . "  packages: $option_packages\n"
 		   . "  regex-selector: $option_regex_selector\n"
 		   . "  verbose: $option_verbose\n"
 		   . "  uninstall: $option_uninstall\n");
