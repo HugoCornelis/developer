@@ -1,9 +1,5 @@
 Makefile
 ^neurospaces-developer-.*.tar.gz$
-aclocal.m4
 config.log
 config.status
-configure
-install-sh
 installed
-missing
