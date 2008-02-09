@@ -310,8 +310,8 @@ sub main
 
 sub read_cmd_line
 {
-    my $option_help;
-    my $option_packages;
+    my $option_help = 0;
+    my $option_packages = 0;
 
     my $result
 	= GetOptions(
