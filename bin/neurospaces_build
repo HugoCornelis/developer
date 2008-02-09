@@ -507,7 +507,11 @@ sub system_execute
 
     chomp $monotone_id;
 
-    my $report_text = Dump( { build_report => $build_report, }, ) . "\n";
+    #! to prevent monotone from interpreting the yaml as an option,
+    #! we prefix the report with something that does not look like an
+    #! option.
+
+    my $report_text = "yaml_text follows\n" . Dump( { build_report => $build_report, }, ) . "\n";
 
     $arguments
 	= [
