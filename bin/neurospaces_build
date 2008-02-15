@@ -48,7 +48,7 @@ my $packages
 	      },
        studio => {
 		  directory => "$ENV{HOME}/neurospaces_project/studio/source/perl/snapshots/0",
-		  disabled => 1,
+		  disabled => 0,
 		  order => 5,
 		 },
       };
