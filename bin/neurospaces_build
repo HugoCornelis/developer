@@ -98,7 +98,7 @@ $SIG{'__DIE__'}
 
 	  print STDERR Carp::longmess(@_);
 
-	  $build_report->{global}->{status} = 'Died';
+	  $build_report->{global}->{status} = 'Died: ' . join " ", @_;
 
 	  report_exit(3, @_);
       };
@@ -341,6 +341,11 @@ sub read_cmd_line
 		     "uninstall!" => \$option_uninstall,
 		     "verbose+" => \$option_verbose,
 		    );
+
+    if (!$result)
+    {
+	die "$0: Error in option processing";
+    }
 
     $build_report->{options}
 	= {
