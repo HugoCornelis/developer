@@ -66,6 +66,7 @@ my $option_distclean = 0;
 my $option_distcheck = 0;
 my $option_install = 1;
 my $option_regex_selector = ".*";
+my $option_tag = 0;
 my $option_verbose = 0;
 my $option_uninstall = 0;
 
@@ -201,6 +202,10 @@ sub main
 				operation => [ 'mtn', 'cert', '\'%version\'', '--', 'build_report', '\'%report\'', ],
 				condition => $option_certification_report,
 			       },
+			       {
+				operation => [ 'mtn', 'tag', "'$option_tag'", ],
+				condition => $option_tag,
+			       },
 			      )
 	{
 	    my $condition_value = 1;
@@ -327,6 +332,7 @@ sub read_cmd_line
 		     "install!" => \$option_install,
 		     "packages" => \$option_packages,
 		     "regex-selector=s" => \$option_regex_selector,
+		     "tag=s" => \$option_tag,
 		     "verbose+" => \$option_verbose,
 		     "uninstall!" => \$option_uninstall,
 		    );
@@ -345,6 +351,7 @@ sub read_cmd_line
 	   install => => $option_install,
 	   packages => => $option_packages,
 	   regex_selector => => $option_regex_selector,
+	   tag => $option_tag,
 	   verbose => => $option_verbose,
 	   uninstall => => $option_uninstall,
 	  };
@@ -393,6 +400,7 @@ options:
 		   . "  install: $option_install\n"
 		   . "  packages: $option_packages\n"
 		   . "  regex-selector: $option_regex_selector\n"
+		   . "  tag: $option_tag\n"
 		   . "  verbose: $option_verbose\n"
 		   . "  uninstall: $option_uninstall\n");
 
