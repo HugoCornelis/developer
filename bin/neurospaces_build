@@ -198,7 +198,7 @@ sub main
 				condition => $option_uninstall,
 			       },
 			       {
-				operation => [ 'mtn', 'cert', '\'%version\'', 'build_report', '\'%report\'', ],
+				operation => [ 'mtn', 'cert', '\'%version\'', '--', 'build_report', '\'%report\'', ],
 				condition => $option_certification_report,
 			       },
 			      )
@@ -511,7 +511,7 @@ sub system_execute
     #! we prefix the report with something that does not look like an
     #! option.
 
-    my $report_text = "yaml_text follows\n" . Dump( { build_report => $build_report, }, ) . "\n";
+    my $report_text = Dump( { build_report => $build_report, }, ) . "\n";
 
     $arguments
 	= [
@@ -519,6 +519,10 @@ sub system_execute
 	   {
 	       s/%version/$monotone_id/g;
 	       s/%report/$report_text/g;
+
+	       # replace non-LDH characters: underscores
+
+	       s/_/-/g;
 
 	       $_;
 	   }
