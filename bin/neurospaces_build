@@ -62,13 +62,14 @@ my $option_clean = 0;
 my $option_compile = 1;
 my $option_configure = 1;
 my $option_dist = 0;
-my $option_distclean = 0;
 my $option_distcheck = 0;
+my $option_distclean = 0;
+my $option_dry_run = 0;
 my $option_install = 1;
 my $option_regex_selector = ".*";
 my $option_tag = 0;
-my $option_verbose = 0;
 my $option_uninstall = 0;
+my $option_verbose = 0;
 
 
 my $build_report
@@ -203,7 +204,10 @@ sub main
 				condition => $option_certification_report,
 			       },
 			       {
-				operation => [ 'mtn', 'tag', "'$option_tag'", ],
+				operation => [
+					      ("test", "!", '"`mtn ls unknown && mtn ls missing && mtn ls changed`"', ),
+					      ( "&&", 'mtn', 'tag', "'$option_tag'", ),
+					     ],
 				condition => $option_tag,
 			       },
 			      )
@@ -323,37 +327,39 @@ sub read_cmd_line
 		     "certification-report!" => \$option_certification_report,
 		     "check!" => \$option_check,
 		     "clean!" => \$option_clean,
-		     "configure!" => \$option_configure,
 		     "compile!" => \$option_compile,
+		     "configure!" => \$option_configure,
 		     "dist!" => \$option_dist,
 		     "distcheck!" => \$option_distcheck,
 		     "distclean!" => \$option_distclean,
+		     "dry-run!" => \$option_dry_run,
 		     "help!" => \$option_help,
 		     "install!" => \$option_install,
 		     "packages" => \$option_packages,
 		     "regex-selector=s" => \$option_regex_selector,
 		     "tag=s" => \$option_tag,
-		     "verbose+" => \$option_verbose,
 		     "uninstall!" => \$option_uninstall,
+		     "verbose+" => \$option_verbose,
 		    );
 
     $build_report->{options}
 	= {
 	   certification_report => $option_certification_report,
-	   check => => $option_check,
-	   clean => => $option_clean,
-	   configure => => $option_configure,
-	   compile => => $option_compile,
-	   dist => => $option_dist,
-	   distcheck => => $option_distcheck,
-	   distclean => => $option_distclean,
-	   help => => $option_help,
-	   install => => $option_install,
-	   packages => => $option_packages,
-	   regex_selector => => $option_regex_selector,
+	   check => $option_check,
+	   clean => $option_clean,
+	   compile => $option_compile,
+	   configure => $option_configure,
+	   dist => $option_dist,
+	   distcheck => $option_distcheck,
+	   distclean => $option_distclean,
+	   dry_run => $option_dry_run,
+	   help => $option_help,
+	   install => $option_install,
+	   packages => $option_packages,
+	   regex_selector => $option_regex_selector,
 	   tag => $option_tag,
-	   verbose => => $option_verbose,
-	   uninstall => => $option_uninstall,
+	   uninstall => $option_uninstall,
+	   verbose => $option_verbose,
 	  };
 
     if ($option_help)
@@ -376,13 +382,15 @@ options:
     dist                   build distribution tarballs.
     distcheck              check created tarballs.
     distclean              distclean before compiling.
+    dry-run                do not execute any command, just report what would be done.
     help                   print usage information.
     install                install packages.
     packages               print known packages, in order of installation.
     regex-selector         defines a regex to select specific packages.
+    tag                    set this tag on all packages.
+    uninstall               uninstall packages, cannot be combined with installation options.
     v|verbose              tell what is being done, specify multiple times to get
                            more feedback.
-   uninstall               uninstall packages, cannot be combined with installation options.
 
 ";
 
@@ -391,18 +399,19 @@ options:
 		. ("  certification-report: $option_certification_report\n"
 		   . "  check: $option_check\n"
 		   . "  clean: $option_clean\n"
-		   . "  configure: $option_configure\n"
 		   . "  compile: $option_compile\n"
+		   . "  configure: $option_configure\n"
 		   . "  dist: $option_dist\n"
 		   . "  distcheck: $option_distcheck\n"
 		   . "  distclean: $option_distclean\n"
+		   . "  dry-run: $option_dry_run\n"
 		   . "  help: $option_help\n"
 		   . "  install: $option_install\n"
 		   . "  packages: $option_packages\n"
 		   . "  regex-selector: $option_regex_selector\n"
 		   . "  tag: $option_tag\n"
-		   . "  verbose: $option_verbose\n"
-		   . "  uninstall: $option_uninstall\n");
+		   . "  uninstall: $option_uninstall\n"
+		   . "  verbose: $option_verbose\n");
 
 	exit 1;
     }
@@ -537,22 +546,31 @@ sub system_execute
 	   @$arguments,
 	  ];
 
-    print "$0: $package_name [" . (join ' ', @$arguments) . "] executing\n";
-
-    system join " ", @$arguments;
-
-    if ($?)
+    if (!$option_dry_run)
     {
-	#! assume system has given a good error message
+	print "$0: $package_name [" . (join ' ', @$arguments) . "] executing\n";
 
-	die "*** Error for package_name $package_name: $?";
+	system join " ", @$arguments;
+
+	if ($?)
+	{
+	    #! assume system has given a good error message
+
+	    die "*** Error for package_name $package_name: $?";
+	}
+
+	if ($option_verbose)
+	{
+	    print "$0: $package_name [" . (join ' ', @$arguments ) . "] executed \n";
+	}
     }
-
-    if ($option_verbose)
+    else
     {
-	print "$0: $package_name [" . (join ' ', @$arguments ) . "] executed \n";
+	if ($option_verbose)
+	{
+	    print "$0: $package_name [" . (join ' ', @$arguments ) . "] not executed, dry_run is $option_dry_run\n";
+	}
     }
-
 }
 
 
