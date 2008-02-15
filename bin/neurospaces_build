@@ -121,7 +121,7 @@ sub main
 
     $build_report->{global}->{status} = 'Running';
 
-    $build_report->{operations} = {};
+    $build_report->{operations} = [];
 
     my $operations = $build_report->{operations};
 
@@ -286,12 +286,7 @@ sub main
 
 		    # register that we did the operation for this package
 
-		    if (!$operations->{$package_name})
-		    {
-			$operations->{$package_name} = [];
-		    }
-
-		    push @{$operations->{$package_name}}, [ @$operation, @$package_options, ];
+		    push @$operations, { package_name => $package_name, operations => [ @$operation, @$package_options, ], };
 
 		    my $success = chdir $current_directory;
 
