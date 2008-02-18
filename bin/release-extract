@@ -81,7 +81,7 @@ else
     $release_label = $release_label->[0];
 }
 
-$release_label =~ m/([^-])+-([^-])+-([^-])+/;
+$release_label =~ m/([^-]+)-([^-]+)?(?:-([^-]+))?/;
 
 my $release_major = $1 || 'untracked';
 
