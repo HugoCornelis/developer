@@ -184,6 +184,14 @@ sub main
 				condition => $option_check,
 			       },
 			       {
+				operation => [
+					      ("test", "!", '"`mtn ls unknown && mtn ls missing && mtn ls changed`"', ),
+					      ( "&&", 'mtn', 'tag', "'$option_tag'", ),
+					      ( "&&", 'make', ),
+					     ],
+				condition => $option_tag,
+			       },
+			       {
 				operation => [ 'make', 'dist', ],
 				condition => $option_dist,
 			       },
@@ -202,13 +210,6 @@ sub main
 			       {
 				operation => [ 'mtn', 'cert', '\'%version\'', '--', 'build_report', '\'%report\'', ],
 				condition => $option_certification_report,
-			       },
-			       {
-				operation => [
-					      ("test", "!", '"`mtn ls unknown && mtn ls missing && mtn ls changed`"', ),
-					      ( "&&", 'mtn', 'tag', "'$option_tag'", ),
-					     ],
-				condition => $option_tag,
 			       },
 			      )
 	{

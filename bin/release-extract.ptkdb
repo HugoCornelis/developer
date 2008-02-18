@@ -1,0 +1,25 @@
+$files = {
+           '_<bin/release-extract' => [
+                                        {
+                                          'expr' => undef,
+                                          'value' => '1',
+                                          'text' => 'my $tag = [ `mtn log --last 1`, ];
+',
+                                          'fname' => 'bin/release-extract',
+                                          'type' => 'user',
+                                          'line' => '57'
+                                        },
+                                        {
+                                          'expr' => undef,
+                                          'value' => '1',
+                                          'text' => 'if (scalar @$release_label ne 1)
+',
+                                          'fname' => 'bin/release-extract',
+                                          'type' => 'user',
+                                          'line' => '76'
+                                        }
+                                      ]
+         };
+$expr_list = [];
+$eval_saved_text = undef;
+$main_win_geometry = '1592x1114+0+0';

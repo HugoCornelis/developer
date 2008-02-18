@@ -1,0 +1,113 @@
+#!/usr/bin/perl
+#!/usr/bin/perl -w -d:ptkdb
+#
+
+
+use strict;
+
+
+use Getopt::Long;
+
+
+# parse options
+
+my $option_help;
+my $option_release_major;
+my $option_release_micro;
+my $option_release_minor;
+my $option_verbose;
+
+
+sub read_cmd_line
+{
+    my $result
+	= GetOptions
+	    (
+	     "help!" => \$option_help,
+	     "major!" => \$option_release_major,
+	     "micro!" => \$option_release_micro,
+	     "minor!" => \$option_release_minor,
+	     "v|verbose+" => \$option_verbose,
+	    );
+
+    if ($option_help)
+    {
+	print
+	    "
+$0: insert labels in a set of files.
+
+$0 <options> package major minor micro label email
+
+options :
+    help            print usage information.
+    major           print release major label.
+    micro           print release micro label.
+    minor           print release minor label.
+    verbose         set verbosity level.
+";
+
+	exit 1;
+    }
+
+}
+
+read_cmd_line();
+
+my $tag = [ `mtn log --last 1`, ];
+
+my $release_label
+    = [
+       map
+       {
+	   s/.*Tag:\s*//;
+
+	   s/\s*//g;
+
+	   $_;
+       }
+       grep
+       {
+	   m'Tag:';
+       }
+       @$tag,
+      ];
+
+if (scalar @$release_label ne 1)
+{
+    $release_label = 'untracked';
+}
+else
+{
+    $release_label = $release_label->[0];
+}
+
+$release_label =~ m/([^-])+-([^-])+-([^-])+/;
+
+my $release_major = $1 || 'untracked';
+
+my $release_minor = $2 || 0;
+
+my $release_micro = $3 || 0;
+
+
+foreach (
+	 qw(
+	    major
+	    micro
+	    minor
+	   )
+	)
+{
+    eval
+	"
+    if (\$option_release_$_)
+    {
+	print \"\$release_$_\n\";
+    }
+";
+}
+
+
+exit 0;
+
+
