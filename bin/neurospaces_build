@@ -64,6 +64,7 @@ my $option_configure = 1;
 my $option_dist = 0;
 my $option_distcheck = 0;
 my $option_distclean = 0;
+my $option_dist_keywords = 0;
 my $option_dry_run = 0;
 my $option_install = 1;
 my $option_regex_selector = ".*";
@@ -166,6 +167,10 @@ sub main
 			       {
 				operation => [ 'make', 'distclean', ],
 				condition => $option_distclean && !$option_uninstall,
+			       },
+			       {
+				operation => [ 'make', 'dist-keywords', '&&', 'make', 'clean', '&&', 'make', 'clean', ],
+				condition => $option_dist_keywords,
 			       },
 			       {
 				operation => [ './configure', ],
