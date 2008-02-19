@@ -64,7 +64,7 @@ my $option_configure = 1;
 my $option_dist = 0;
 my $option_distcheck = 0;
 my $option_distclean = 0;
-my $option_dist_keywords = 0;
+my $option_distkeywords = 0;
 my $option_dry_run = 0;
 my $option_install = 1;
 my $option_regex_selector = ".*";
@@ -169,8 +169,16 @@ sub main
 				condition => $option_distclean && !$option_uninstall,
 			       },
 			       {
+				operation => [
+					      ("test", "!", '"`mtn ls unknown && mtn ls missing && mtn ls changed`"', ),
+					      ( "&&", 'mtn', 'tag', "'$option_tag'", ),
+					      ( "&&", 'make', ),
+					     ],
+				condition => $option_tag,
+			       },
+			       {
 				operation => [ 'make', 'dist-keywords', '&&', 'make', 'clean', '&&', 'make', 'clean', ],
-				condition => $option_dist_keywords,
+				condition => $option_distkeywords,
 			       },
 			       {
 				operation => [ './configure', ],
@@ -187,14 +195,6 @@ sub main
 			       {
 				operation => [ 'make', 'check', ],
 				condition => $option_check,
-			       },
-			       {
-				operation => [
-					      ("test", "!", '"`mtn ls unknown && mtn ls missing && mtn ls changed`"', ),
-					      ( "&&", 'mtn', 'tag', "'$option_tag'", ),
-					      ( "&&", 'make', ),
-					     ],
-				condition => $option_tag,
 			       },
 			       {
 				operation => [ 'make', 'dist', ],
@@ -333,6 +333,7 @@ sub read_cmd_line
 		     "dist!" => \$option_dist,
 		     "distcheck!" => \$option_distcheck,
 		     "distclean!" => \$option_distclean,
+		     "distkeywords!" => \$option_distkeywords,
 		     "dry-run!" => \$option_dry_run,
 		     "help!" => \$option_help,
 		     "install!" => \$option_install,
@@ -358,6 +359,7 @@ sub read_cmd_line
 	   dist => $option_dist,
 	   distcheck => $option_distcheck,
 	   distclean => $option_distclean,
+	   distkeywords => $option_distkeywords,
 	   dry_run => $option_dry_run,
 	   help => $option_help,
 	   install => $option_install,
@@ -394,7 +396,7 @@ options:
     packages               print known packages, in order of installation.
     regex-selector         defines a regex to select specific packages.
     tag                    set this tag on all packages.
-    uninstall               uninstall packages, cannot be combined with installation options.
+    uninstall              uninstall packages, cannot be combined with installation options.
     v|verbose              tell what is being done, specify multiple times to get
                            more feedback.
 
@@ -410,6 +412,7 @@ options:
 		   . "  dist: $option_dist\n"
 		   . "  distcheck: $option_distcheck\n"
 		   . "  distclean: $option_distclean\n"
+		   . "  distkeywords: $option_distkeywords\n"
 		   . "  dry-run: $option_dry_run\n"
 		   . "  help: $option_help\n"
 		   . "  install: $option_install\n"
