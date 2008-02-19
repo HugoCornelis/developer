@@ -55,6 +55,23 @@ read_cmd_line();
 
 my $tag = [ `mtn log --last 1`, ];
 
+my $monotone_id
+    = [
+       map
+       {
+	   s/.*Revision:\s*//;
+
+	   s/\s*//g;
+
+	   $_;
+       }
+       grep
+       {
+	   m'Revision:';
+       }
+       @$tag,
+      ];
+
 my $release_label
     = [
        map
@@ -74,7 +91,7 @@ my $release_label
 
 if (scalar @$release_label ne 1)
 {
-    $release_label = 'untracked';
+    $release_label = $monotone_id->[0];
 }
 else
 {
@@ -83,7 +100,7 @@ else
 
 $release_label =~ m/([^-]+)-([^-]+)?(?:-([^-]+))?/;
 
-my $release_major = $1 || 'untracked';
+my $release_major = $1 || $monotone_id->[0];
 
 my $release_minor = $2 || 0;
 
