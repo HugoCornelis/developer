@@ -376,6 +376,13 @@ sub read_cmd_line
 	    "
 $0: configure, compile, check and install one package after another from a set of packages.
 
+$0 creates a matrix of packages and build operations.  The options
+fill in the matrix, then $0 goes through the matrix packages first,
+and performs one build operation after the other for each package.  To
+find out what packages are in the database, use the '--packages'
+option, to select individual packages, use the '--regex-selector'
+option.  To find out about the known build operations, use '--help'.
+
 To disable a build stage, prefix the corresponding option with
 '--no-', eg. to disable configure, use '--no-configure'.
 
