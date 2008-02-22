@@ -161,6 +161,37 @@ sub main
 	    next;
 	}
 
+	#! copied from release-extract
+
+	my $log = [ `mtn log --last 1`, ];
+
+	my $monotone_id
+	    = [
+	       map
+	       {
+		   s/.*Revision:\s*//;
+
+		   s/\s*//g;
+
+		   $_;
+	       }
+	       grep
+	       {
+		   m'Revision:';
+	       }
+	       @$log,
+	      ];
+
+	my $release_label = $option_tag;
+
+	$release_label =~ m/([^-]+)-([^-]+)?(?:-([^-]+))?/;
+
+	my $release_major = $1 || $monotone_id->[0];
+
+	my $release_minor = $2 || 0;
+
+	my $release_micro = $3 || 0;
+
 	# loop over all installation operations
 
 	foreach my $operation (
@@ -170,15 +201,30 @@ sub main
 			       },
 			       {
 				operation => [
+					      ( '&&', 'make', 'dist-keywords', ),
+					      ( '&&', 'make', 'clean', ),
+					      ( '&&', 'make', 'clean', ),
+					     ],
+				condition => $option_distkeywords,
+			       },
+			       {
+				operation => [
 					      ( "test", "!", '"`mtn ls unknown && mtn ls missing && mtn ls changed`"', ),
+					      ( '&&', 'release-expand', "'$package_name'", "'$release_major'", "'$release_minor'", "'$release_micro'", "'$release_major-$release_minor'", 'hugo.cornelis@gmail.com', '--verbose', ),
+					      ( '&&', 'make', 'clean', ),
+					      ( '&&', 'make', 'clean', ),
+					      ( "&&", 'mtn', 'ci', "-m", "'1. Keywords only: $option_tag\n'", ),
 					      ( "&&", 'mtn', 'tag', '\'%version\'', "'$option_tag'", ),
-					      ( "&&", 'make', ),
 					     ],
 				condition => $option_tag,
 			       },
 			       {
-				operation => [ 'make', 'dist-keywords', '&&', 'make', 'clean', '&&', 'make', 'clean', ],
-				condition => $option_distkeywords,
+				operation => [
+					      #! in a separate operation such that we have the correct %version
+
+					      ( 'mtn', 'tag', '\'%version\'', "'$option_tag'", ),
+					     ],
+				condition => $option_tag,
 			       },
 			       {
 				operation => [ './configure', ],
