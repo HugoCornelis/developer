@@ -170,7 +170,7 @@ sub main
 			       },
 			       {
 				operation => [
-					      ("test", "!", '"`mtn ls unknown && mtn ls missing && mtn ls changed`"', ),
+					      ( "test", "!", '"`mtn ls unknown && mtn ls missing && mtn ls changed`"', ),
 					      ( "&&", 'mtn', 'tag', '\'%version\'', "'$option_tag'", ),
 					      ( "&&", 'make', ),
 					     ],
