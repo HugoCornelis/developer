@@ -215,6 +215,7 @@ sub main
 					      ( '&&', 'make', 'clean', ),
 					      ( "&&", 'mtn', 'ci', "-m", "'1. Keywords only: $option_tag\n'", ),
 					      ( "&&", 'mtn', 'tag', '\'%version\'', "'$option_tag'", ),
+					      ( "test", "!", '"`mtn ls unknown && mtn ls missing && mtn ls changed`"', ),
 					     ],
 				condition => $option_tag,
 			       },
