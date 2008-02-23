@@ -118,6 +118,10 @@ sub main
 {
     read_cmd_line();
 
+    # tell neurospaces_harness never to send emails for this
+
+    $ENV{NEUROSPACES_HARNESS_OPTION_EMAIL} = 0;
+
     # set status: running
 
     $build_report->{global}->{status} = 'Running';
@@ -214,8 +218,7 @@ sub main
 					      ( '&&', 'make', 'clean', ),
 					      ( '&&', 'make', 'clean', ),
 					      ( "&&", 'mtn', 'ci', "-m", "'1. Keywords only: $option_tag\n'", ),
-					      ( "&&", 'mtn', 'tag', '\'%version\'', "'$option_tag'", ),
-					      ( "test", "!", '"`mtn ls unknown && mtn ls missing && mtn ls changed`"', ),
+					      ( "&&", "test", "!", '"`mtn ls unknown && mtn ls missing && mtn ls changed`"', ),
 					     ],
 				condition => $option_tag,
 			       },
@@ -335,11 +338,7 @@ sub main
 
 		    my $package_options = $package->{$operation->[0]};
 
-		    system_execute($package_name, @$operation, @$package_options);
-
-		    # register that we did the operation for this package
-
-		    push @$operations, { package_name => $package_name, operations => [ @$operation, @$package_options, ], };
+		    system_execute($operations, $package_name, @$operation, @$package_options);
 
 		    my $success = chdir $current_directory;
 
@@ -579,6 +578,8 @@ sub report_message
 
 sub system_execute
 {
+    my $operations = shift;
+
     my $package_name = shift;
 
     my $arguments = [ @_ ];
@@ -586,6 +587,21 @@ sub system_execute
     my $monotone_id = `mtn automate get_base_revision_id`;
 
     chomp $monotone_id;
+
+    $arguments
+	= [
+	   map
+	   {
+	       s/%version/$monotone_id/g;
+
+	       # replace non-LDH characters: underscores
+
+	       s/_/-/g;
+
+	       $_;
+	   }
+	   @$arguments,
+	  ];
 
     #! to prevent monotone from interpreting the yaml as an option,
     #! we prefix the report with something that does not look like an
@@ -597,17 +613,16 @@ sub system_execute
 	= [
 	   map
 	   {
-	       s/%version/$monotone_id/g;
 	       s/%report/$report_text/g;
-
-	       # replace non-LDH characters: underscores
-
-	       s/_/-/g;
 
 	       $_;
 	   }
 	   @$arguments,
 	  ];
+
+    # register that we are about to do this operation for this package
+
+    push @$operations, { package_name => $package_name, operations => $arguments, };
 
     if (!$option_dry_run)
     {
