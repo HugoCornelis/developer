@@ -3,20 +3,11 @@ $files = {
                                           {
                                             'expr' => undef,
                                             'value' => '1',
-                                            'text' => '	my $package = $packages->{$package_name};
+                                            'text' => '	    if (ref $all_operation eq \'HASH\')
 ',
                                             'fname' => 'bin/neurospaces_build',
                                             'type' => 'user',
-                                            'line' => '136'
-                                          },
-                                          {
-                                            'expr' => undef,
-                                            'value' => '1',
-                                            'text' => '	    if ($condition_value)
-',
-                                            'fname' => 'bin/neurospaces_build',
-                                            'type' => 'user',
-                                            'line' => '225'
+                                            'line' => '250'
                                           }
                                         ]
          };

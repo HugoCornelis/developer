@@ -11,7 +11,98 @@ use Getopt::Long;
 use YAML;
 
 
-my $packages
+# default profile: configure, compile and install
+
+my $option_certification_report = 0;
+my $option_check = 0;
+my $option_clean = 0;
+my $option_compile = 1;
+my $option_configure = 1;
+my $option_dist = 0;
+my $option_distcheck = 0;
+my $option_distclean = 0;
+my $option_distkeywords = 0;
+my $option_dry_run = 0;
+my $option_install = 1;
+my $option_regex_selector = ".*";
+my $option_tag = 0;
+my $option_uninstall = 0;
+my $option_verbose = 0;
+
+
+my $all_operations = [];
+#     = [
+#        {
+# 	operation => [ 'make', 'distclean', ],
+# 	condition => $option_distclean && !$option_uninstall,
+#        },
+#        {
+# 	operation => [
+# 		      ( 'make', 'dist-keywords', ),
+# 		      ( '&&', 'make', 'clean', ),
+# 		      ( '&&', 'make', 'clean', ),
+# 		     ],
+# 	condition => $option_distkeywords,
+#        },
+#        {
+# 	operation => [
+# 		      ( "test", "!", '"`mtn ls unknown && mtn ls missing && mtn ls changed`"', ),
+# 		      ( '&&', 'release-expand', "'%package'", "'%release_major'", "'%release_minor'", "'%release_micro'", "'%release_major-%release_minor'", 'hugo.cornelis@gmail.com', '--verbose', ),
+# 		      ( '&&', 'make', 'clean', ),
+# 		      ( '&&', 'make', 'clean', ),
+# 		      ( "&&", 'mtn', 'ci', "-m", "'1. Keywords only: $option_tag\n'", ),
+# 		      ( "&&", "test", "!", '"`mtn ls unknown && mtn ls missing && mtn ls changed`"', ),
+# 		     ],
+# 	condition => $option_tag,
+#        },
+#        {
+# 	operation => [
+# 		      #! in a separate operation such that we have the correct %version
+
+# 		      ( 'mtn', 'tag', '\'%version\'', "'$option_tag'", ),
+# 		     ],
+# 	condition => $option_tag,
+#        },
+#        {
+# 	operation => [ './configure', ],
+# 	condition => $option_configure,
+#        },
+#        {
+# 	operation => [ 'make', 'clean', ],
+# 	condition => $option_clean,
+#        },
+#        {
+# 	operation => [ 'make', ],
+# 	condition => $option_compile,
+#        },
+#        {
+# 	operation => [ 'make', 'check', ],
+# 	condition => $option_check,
+#        },
+#        {
+# 	operation => [ 'make', 'dist', ],
+# 	condition => $option_dist,
+#        },
+#        {
+# 	operation => [ 'make', 'distcheck', ],
+# 	condition => $option_distcheck,
+#        },
+#        {
+# 	operation => [ 'make', '&&', 'sudo', 'make', 'install', ],
+# 	condition => $option_compile && !$option_uninstall && $option_install,
+#        },
+#        {
+# 	operation => [ 'make', 'uninstall', ],
+# 	condition => $option_uninstall,
+#        },
+#        {
+# 	operation => [ 'mtn', 'cert', '\'%version\'', '--', 'build_report', '\'%report\'', ],
+# 	condition => $option_certification_report,
+#        },
+#       ];
+
+
+my $all_packages
     = {
        developer => {
 		     directory => "$ENV{HOME}/neurospaces_project/project/developer/source/snapshots/0",
@@ -52,25 +143,6 @@ my $packages
 		  order => 5,
 		 },
       };
-
-
-# default profile: configure, compile and install
-
-my $option_certification_report = 0;
-my $option_check = 0;
-my $option_clean = 0;
-my $option_compile = 1;
-my $option_configure = 1;
-my $option_dist = 0;
-my $option_distcheck = 0;
-my $option_distclean = 0;
-my $option_distkeywords = 0;
-my $option_dry_run = 0;
-my $option_install = 1;
-my $option_regex_selector = ".*";
-my $option_tag = 0;
-my $option_uninstall = 0;
-my $option_verbose = 0;
 
 
 my $build_report
@@ -134,16 +206,16 @@ sub main
 
     foreach my $package_name (sort
 			      {
-				  $packages->{$a}->{order} <=> $packages->{$b}->{order}
+				  $all_packages->{$a}->{order} <=> $all_packages->{$b}->{order}
 			      }
-			      keys %$packages)
+			      keys %$all_packages)
     {
 	if ($option_verbose)
 	{
 	    print "$0: examining $package_name\n";
 	}
 
-	my $package = $packages->{$package_name};
+	my $package = $all_packages->{$package_name};
 
 	if ($package->{disabled})
 	{
@@ -165,122 +237,25 @@ sub main
 	    next;
 	}
 
-	#! copied from release-extract
-
-	my $log = [ `mtn log --last 1`, ];
-
-	my $monotone_id
-	    = [
-	       map
-	       {
-		   s/.*Revision:\s*//;
-
-		   s/\s*//g;
-
-		   $_;
-	       }
-	       grep
-	       {
-		   m'Revision:';
-	       }
-	       @$log,
-	      ];
-
-	my $release_label = $option_tag;
-
-	$release_label =~ m/([^-]+)-([^-]+)?(?:-([^-]+))?/;
-
-	my $release_major = $1 || $monotone_id->[0];
-
-	my $release_minor = $2 || 0;
-
-	my $release_micro = $3 || 0;
-
 	# loop over all installation operations
 
-	foreach my $operation (
-			       {
-				operation => [ 'make', 'distclean', ],
-				condition => $option_distclean && !$option_uninstall,
-			       },
-			       {
-				operation => [
-					      ( '&&', 'make', 'dist-keywords', ),
-					      ( '&&', 'make', 'clean', ),
-					      ( '&&', 'make', 'clean', ),
-					     ],
-				condition => $option_distkeywords,
-			       },
-			       {
-				operation => [
-					      ( "test", "!", '"`mtn ls unknown && mtn ls missing && mtn ls changed`"', ),
-					      ( '&&', 'release-expand', "'$package_name'", "'$release_major'", "'$release_minor'", "'$release_micro'", "'$release_major-$release_minor'", 'hugo.cornelis@gmail.com', '--verbose', ),
-					      ( '&&', 'make', 'clean', ),
-					      ( '&&', 'make', 'clean', ),
-					      ( "&&", 'mtn', 'ci', "-m", "'1. Keywords only: $option_tag\n'", ),
-					      ( "&&", "test", "!", '"`mtn ls unknown && mtn ls missing && mtn ls changed`"', ),
-					     ],
-				condition => $option_tag,
-			       },
-			       {
-				operation => [
-					      #! in a separate operation such that we have the correct %version
-
-					      ( 'mtn', 'tag', '\'%version\'', "'$option_tag'", ),
-					     ],
-				condition => $option_tag,
-			       },
-			       {
-				operation => [ './configure', ],
-				condition => $option_configure,
-			       },
-			       {
-				operation => [ 'make', 'clean', ],
-				condition => $option_clean,
-			       },
-			       {
-				operation => [ 'make', ],
-				condition => $option_compile,
-			       },
-			       {
-				operation => [ 'make', 'check', ],
-				condition => $option_check,
-			       },
-			       {
-				operation => [ 'make', 'dist', ],
-				condition => $option_dist,
-			       },
-			       {
-				operation => [ 'make', 'distcheck', ],
-				condition => $option_distcheck,
-			       },
-			       {
-				operation => [ 'make', '&&', 'sudo', 'make', 'install', ],
-				condition => $option_compile && !$option_uninstall && $option_install,
-			       },
-			       {
-				operation => [ 'make', 'uninstall', ],
-				condition => $option_uninstall,
-			       },
-			       {
-				operation => [ 'mtn', 'cert', '\'%version\'', '--', 'build_report', '\'%report\'', ],
-				condition => $option_certification_report,
-			       },
-			      )
+	foreach my $all_operation (@$all_operations)
 	{
 	    my $condition_value = 1;
 
+	    my $operation = $all_operation;
+
 	    # convert flexible hashes to arrays with a command line
 
-	    if (ref $operation eq 'HASH')
+	    if (ref $all_operation eq 'HASH')
 	    {
-		$condition_value = $operation->{condition};
+		$condition_value = $all_operation->{condition};
 
-		$operation = $operation->{operation};
+		$operation = $all_operation->{operation};
 
 		if ($option_verbose > 1)
 		{
-		    print "$0: $package_name [" . (join ' ', @$operation ) . "] translated from operations hash \n";
+		    print "$0: $package_name [" . (join ' ', @$operation ) . "] translated from operations hash, condition_value is $condition_value\n";
 		}
 
 	    }
@@ -355,6 +330,13 @@ sub main
 		    }
 		}
 	    }
+	    else
+	    {
+		if ($option_verbose > 1)
+		{
+		    print "$0: $package_name [" . (join ' ', @$operation ) . "] skipped, condition_value is $condition_value\n";
+		}
+	    }
 	}
     }
 
@@ -367,6 +349,7 @@ sub main
 sub read_cmd_line
 {
     my $option_help = 0;
+    my $option_help_all = 0;
     my $option_packages = 0;
 
     my $result
@@ -382,6 +365,7 @@ sub read_cmd_line
 		     "distkeywords!" => \$option_distkeywords,
 		     "dry-run!" => \$option_dry_run,
 		     "help!" => \$option_help,
+		     "help-all!" => \$option_help_all,
 		     "install!" => \$option_install,
 		     "packages" => \$option_packages,
 		     "regex-selector=s" => \$option_regex_selector,
@@ -408,6 +392,7 @@ sub read_cmd_line
 	   distkeywords => $option_distkeywords,
 	   dry_run => $option_dry_run,
 	   help => $option_help,
+	   help_all => $option_help_all,
 	   install => $option_install,
 	   packages => $option_packages,
 	   regex_selector => $option_regex_selector,
@@ -416,18 +401,109 @@ sub read_cmd_line
 	   verbose => $option_verbose,
 	  };
 
-    if ($option_help)
+    $all_operations
+	= [
+	   {
+	    operation => [ 'make', 'distclean', ],
+	    condition => $option_distclean && !$option_uninstall,
+	   },
+	   {
+	    operation => [
+			  #! after keyword expansion, regenerate the
+			  #! autotool related files that perhaps are
+			  #! checked in.
+
+			  ( 'make', 'dist-keywords', ),
+			  ( '&&', 'make', 'clean', ),
+			  ( '&&', 'make', 'clean', ),
+			 ],
+	    condition => $option_distkeywords,
+	   },
+	   {
+	    operation => [
+			  ( "test", "!", '"`mtn ls unknown && mtn ls missing && mtn ls changed`"', ),
+			  ( '&&', 'release-expand', "'%package'", "'%release_major'", "'%release_minor'", "'%release_micro'", "'%release_major-%release_minor'", 'hugo.cornelis@gmail.com', '--verbose', ),
+
+			  #! after keyword expansion, regenerate the
+			  #! autotool related files that perhaps are
+			  #! checked in.
+
+			  ( '&&', 'make', 'clean', ),
+			  ( '&&', 'make', 'clean', ),
+			  ( "&&", 'mtn', 'ci', "-m", "'1. Keywords only: $option_tag\n'", ),
+			  ( "&&", "test", "!", '"`mtn ls unknown && mtn ls missing && mtn ls changed`"', ),
+			 ],
+	    condition => $option_tag,
+	   },
+	   {
+	    operation => [
+			  #! in a separate operation such that we have the correct %version
+
+			  ( 'mtn', 'tag', '\'%version\'', "'$option_tag'", ),
+			 ],
+	    condition => $option_tag,
+	   },
+	   {
+	    operation => [ './configure', ],
+	    condition => $option_configure,
+	   },
+	   {
+	    operation => [ 'make', 'clean', ],
+	    condition => $option_clean,
+	   },
+	   {
+	    operation => [ 'make', ],
+	    condition => $option_compile,
+	   },
+	   {
+	    operation => [ 'make', 'check', ],
+	    condition => $option_check,
+	   },
+	   {
+	    operation => [ 'make', 'dist', ],
+	    condition => $option_dist,
+	   },
+	   {
+	    operation => [ 'make', 'distcheck', ],
+	    condition => $option_distcheck,
+	   },
+	   {
+	    #! always make as the regular user to avoid cluttering the
+	    #! source directory with root owned files
+
+	    operation => [ 'make', '&&', 'sudo', 'make', 'install', ],
+	    condition => $option_compile && !$option_uninstall && $option_install,
+	   },
+	   {
+	    operation => [ 'make', 'uninstall', ],
+	    condition => $option_uninstall,
+	   },
+	   {
+	    operation => [ 'mtn', 'cert', '\'%version\'', '--', 'build_report', '\'%report\'', ],
+	    condition => $option_certification_report,
+	   },
+	  ];
+
+    if ($option_help
+        || $option_help_all)
     {
+	$0 =~ m(.*/(.*));
+
+	my $program_name = $1;
+
 	print
 	    "
-$0: configure, compile, check and install one package after another from a set of packages.
 
-$0 creates a matrix of packages and build operations.  The options
-fill in the matrix, then $0 goes through the matrix packages first,
-and performs one build operation after the other for each package.  To
-find out what packages are in the database, use the '--packages'
-option, to select individual packages, use the '--regex-selector'
-option.  To find out about the known build operations, use '--help'.
+$0: configure, compile, check, install, tag and build releases of
+packages selected from a set of packages.
+
+$program_name creates a matrix of packages and build operations.  The
+options fill in the matrix, then $program_name goes through the matrix
+packages first, and performs one build operation after the other for
+each package.  To find out what packages are in the database, use the
+'--packages' option, to select individual packages, use the
+'--regex-selector' option.  To find out about the known build
+operations, use '--help'.
 
 To disable a build stage, prefix the corresponding option with
 '--no-', eg. to disable configure, use '--no-configure'.
@@ -445,6 +521,7 @@ options:
     distclean              distclean before compiling.
     dry-run                do not execute any command, just report what would be done.
     help                   print usage information.
+    help-all               print usage, all packages and all operations.
     install                install packages.
     packages               print known packages, in order of installation.
     regex-selector         defines a regex to select specific packages.
@@ -468,12 +545,23 @@ options:
 		   . "  distkeywords: $option_distkeywords\n"
 		   . "  dry-run: $option_dry_run\n"
 		   . "  help: $option_help\n"
+		   . "  help-all: $option_help_all\n"
 		   . "  install: $option_install\n"
 		   . "  packages: $option_packages\n"
 		   . "  regex-selector: $option_regex_selector\n"
 		   . "  tag: $option_tag\n"
 		   . "  uninstall: $option_uninstall\n"
 		   . "  verbose: $option_verbose\n");
+
+	if ($option_help_all)
+	{
+	    print Dump(
+		       {
+			all_packages => $all_packages,
+			all_operations => $all_operations,
+		       },
+		      );
+	}
 
 	exit 1;
     }
@@ -488,13 +576,13 @@ options:
 		   ' ',
 		   sort
 		   {
-		       $packages->{$a}->{order} <=> $packages->{$b}->{order}
+		       $all_packages->{$a}->{order} <=> $all_packages->{$b}->{order}
 		   }
 		   grep
 		   {
 		       $_ =~ /$option_regex_selector/i
 		   }
-		   keys %$packages
+		   keys %$all_packages
 		  )
 		    . ")\n";
 
@@ -584,19 +672,54 @@ sub system_execute
 
     my $arguments = [ @_ ];
 
+    # get monotone id
+
     my $monotone_id = `mtn automate get_base_revision_id`;
 
     chomp $monotone_id;
+
+    # define release labels
+
+    #! copied from release-extract
+
+    my $log = [ `mtn log --last 1`, ];
+
+#     my $monotone_id
+# 	= [
+# 	   map
+# 	   {
+# 	       s/.*Revision:\s*//;
+
+# 	       s/\s*//g;
+
+# 	       $_;
+# 	   }
+# 	   grep
+# 	   {
+# 	       m'Revision:';
+# 	   }
+# 	   @$log,
+# 	  ];
+
+    my $release_label = $option_tag;
+
+    $release_label =~ m/([^-]+)-([^-]+)?(?:-([^-]+))?/;
+
+    my $release_major = $1 || $monotone_id;
+
+    my $release_minor = $2 || 0;
+
+    my $release_micro = $3 || 0;
 
     $arguments
 	= [
 	   map
 	   {
+	       s/%package/$package_name/g;
+	       s/%release_major/$release_major/g;
+	       s/%release_micro/$release_micro/g;
+	       s/%release_minor/$release_minor/g;
 	       s/%version/$monotone_id/g;
-
-	       # replace non-LDH characters: underscores
-
-	       s/_/-/g;
 
 	       $_;
 	   }
@@ -614,6 +737,10 @@ sub system_execute
 	   map
 	   {
 	       s/%report/$report_text/g;
+
+	       # replace non-LDH characters: underscores
+
+	       s/_/-/g;
 
 	       $_;
 	   }
