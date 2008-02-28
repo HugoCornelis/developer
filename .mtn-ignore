@@ -1,5 +1,5 @@
 Makefile$
-^neurospaces-developer-.*.tar.gz$
+^developer-.*.tar.gz$
 config.log
 config.status
 installed
