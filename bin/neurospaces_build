@@ -13,7 +13,7 @@ use YAML;
 
 # options related to operation mode selection:
 
-my $option_client = 1;
+my $option_client = 0;
 my $option_developer = 0;
 
 # operation execution profile: default is configure, compile and install
@@ -429,6 +429,28 @@ sub read_cmd_line
     {
 	die "$0: Error in option processing";
     }
+
+    # process operation mode options
+
+    #! we give client mode precedence over developer mode
+
+    if (!$option_client
+	&& !$option_developer)
+    {
+	$option_client = 1;
+    }
+
+    if ($option_client)
+    {
+	$option_developer = 0;
+    }
+
+    if ($option_developer)
+    {
+	$option_client = 0;
+    }
+
+    # fill in the build report
 
     $build_report->{options}
 	= {
