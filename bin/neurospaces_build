@@ -11,7 +11,12 @@ use Getopt::Long;
 use YAML;
 
 
-# default profile: configure, compile and install
+# options related to operation mode selection:
+
+my $option_client = 1;
+my $option_developer = 0;
+
+# operation execution profile: default is configure, compile and install
 
 my $option_certification_report = 0;
 my $option_check = 0;
@@ -28,6 +33,11 @@ my $option_regex_selector = ".*";
 my $option_tag = 0;
 my $option_uninstall = 0;
 my $option_verbose = 0;
+
+# options related to installation on a client machine
+
+my $option_src_tag;
+my $option_src_dir;
 
 
 my $all_operations = [];
@@ -158,7 +168,7 @@ my $build_report
 		  test_count => 0,
 		  time_start => `date`,
 		 },
-       target => {
+       client => {
 		  OS => $^O,
 		 },
       };
@@ -197,6 +207,22 @@ sub main
     # set status: running
 
     $build_report->{global}->{status} = 'Running';
+
+    # execute all operations
+
+    operations_execute();
+
+    # finish
+
+    $build_report->{global}->{status} = 'Finished';
+
+    report_exit(0);
+}
+
+
+sub operations_execute
+{
+    # initialize operations related matters
 
     $build_report->{operations} = [];
 
@@ -290,9 +316,26 @@ sub main
 		    print "$0: $package_name [" . (join ' ', @$operation ) . "] preparing to execute \n";
 		}
 
-		# if package directory exists
+		# construct package directory
 
 		my $target_directory = $package->{directory};
+
+		# if we are working on a client machine
+
+		if ($option_client)
+		{
+		    if (!defined $option_src_dir
+			|| !defined $option_src_tag)
+		    {
+			die "$0: you must set option_src_dir and option_src_tag when working in client mode";
+		    }
+
+		    # construct a target directory from the src-* options
+
+		    $target_directory = $option_src_dir . "/" . $package_name . "-" . $option_src_tag;
+		}
+
+		# if package directory exists
 
 		if (-e $target_directory)
 		{
@@ -339,10 +382,6 @@ sub main
 	    }
 	}
     }
-
-    $build_report->{global}->{status} = 'Finished';
-
-    report_exit(0);
 }
 
 
@@ -354,6 +393,13 @@ sub read_cmd_line
 
     my $result
 	= GetOptions(
+		     # options related to operation mode selection:
+
+		     "client!" => \$option_client,
+		     "developer!" => \$option_developer,
+
+		     # operation execution profile: default is configure, compile and install
+
 		     "certification-report!" => \$option_certification_report,
 		     "check!" => \$option_check,
 		     "clean!" => \$option_clean,
@@ -372,6 +418,11 @@ sub read_cmd_line
 		     "tag=s" => \$option_tag,
 		     "uninstall!" => \$option_uninstall,
 		     "verbose+" => \$option_verbose,
+
+		     # options related to installation on a client machine
+
+		     "src-tag=s" => \$option_src_tag,
+		     "src-dir=s" => \$option_src_dir,
 		    );
 
     if (!$result)
@@ -381,25 +432,40 @@ sub read_cmd_line
 
     $build_report->{options}
 	= {
-	   certification_report => $option_certification_report,
-	   check => $option_check,
-	   clean => $option_clean,
-	   compile => $option_compile,
-	   configure => $option_configure,
-	   dist => $option_dist,
-	   distcheck => $option_distcheck,
-	   distclean => $option_distclean,
-	   distkeywords => $option_distkeywords,
-	   dry_run => $option_dry_run,
-	   help => $option_help,
-	   help_all => $option_help_all,
-	   install => $option_install,
-	   packages => $option_packages,
-	   regex_selector => $option_regex_selector,
-	   tag => $option_tag,
-	   uninstall => $option_uninstall,
-	   verbose => $option_verbose,
+	   # options related to operation mode selection:
+
+	   "client!" => $option_client,
+	   "developer!" => $option_developer,
+
+	   # operation execution profile: default is configure, compile and install
+
+	   "certification-report!" => $option_certification_report,
+	   "check!" => $option_check,
+	   "clean!" => $option_clean,
+	   "compile!" => $option_compile,
+	   "configure!" => $option_configure,
+	   "dist!" => $option_dist,
+	   "distcheck!" => $option_distcheck,
+	   "distclean!" => $option_distclean,
+	   "distkeywords!" => $option_distkeywords,
+	   "dry-run!" => $option_dry_run,
+	   "help!" => $option_help,
+	   "help-all!" => $option_help_all,
+	   "install!" => $option_install,
+	   "packages" => $option_packages,
+	   "regex-selector=s" => $option_regex_selector,
+	   "tag=s" => $option_tag,
+	   "uninstall!" => $option_uninstall,
+	   "verbose+" => $option_verbose,
+
+	   # options related to installation on a client machine
+
+	   "src-tag=s" => $option_src_tag,
+	   "src-dir=s" => $option_src_dir,
 	  };
+
+    # merge operations with options that affect the execution of the
+    # operations
 
     $all_operations
 	= [
@@ -497,6 +563,13 @@ sub read_cmd_line
 $0: configure, compile, check, install, tag and build releases of
 packages selected from a set of packages.
 
+$program_name can operate in two modes: the default one is for a
+client machine, assuming a user who tries to install the packages.
+The second mode is for a developer who follows the Neurospaces
+conventions where to put the src code of the packages.  The main
+difference between the two modes is where this script finds the source
+code.
+
 $program_name creates a matrix of packages and build operations.  The
 options fill in the matrix, then $program_name goes through the matrix
 packages first, and performs one build operation after the other for
@@ -510,7 +583,11 @@ To disable a build stage, prefix the corresponding option with
 
 To see what packages are known in the database, use the '--packages' option.
 
-options:
+options related to operation mode selection:
+    client                 execute in client mode (for regular users, default).
+    developer              execute in developer mode.
+
+options related to operation execution profile:
     certification-report   annotate the (monotone) repository with the build_report.
     check                  check packages.
     clean                  clean before compiling.
@@ -530,28 +607,17 @@ options:
     v|verbose              tell what is being done, specify multiple times to get
                            more feedback.
 
+options related to installation on a client machine:
+    src-tag                use this tag for finding src directories on a client machine.
+    src-dir                use this dir as the base for directories on a client machine.
+
+So on a client machine, for package xxx, the src are found in the
+directory <src-dir>/xxx-<src-tag>.  From there the build starts as
+usual.
+
 ";
 
-	print
-	    "---\nconfiguration is now:\n"
-		. ("  certification-report: $option_certification_report\n"
-		   . "  check: $option_check\n"
-		   . "  clean: $option_clean\n"
-		   . "  compile: $option_compile\n"
-		   . "  configure: $option_configure\n"
-		   . "  dist: $option_dist\n"
-		   . "  distcheck: $option_distcheck\n"
-		   . "  distclean: $option_distclean\n"
-		   . "  distkeywords: $option_distkeywords\n"
-		   . "  dry-run: $option_dry_run\n"
-		   . "  help: $option_help\n"
-		   . "  help-all: $option_help_all\n"
-		   . "  install: $option_install\n"
-		   . "  packages: $option_packages\n"
-		   . "  regex-selector: $option_regex_selector\n"
-		   . "  tag: $option_tag\n"
-		   . "  uninstall: $option_uninstall\n"
-		   . "  verbose: $option_verbose\n");
+	print Dump($build_report->{options});
 
 	if ($option_help_all)
 	{
