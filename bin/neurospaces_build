@@ -38,6 +38,7 @@ my $option_verbose = 0;
 
 my $option_src_tag;
 my $option_src_dir;
+my $option_download_server;
 
 
 my $all_operations = [];
@@ -210,7 +211,7 @@ sub main
 
     # execute all operations
 
-    operations_execute();
+    all_operations_execute();
 
     # finish
 
@@ -220,7 +221,7 @@ sub main
 }
 
 
-sub operations_execute
+sub all_operations_execute
 {
     # initialize operations related matters
 
@@ -267,24 +268,11 @@ sub operations_execute
 
 	foreach my $all_operation (@$all_operations)
 	{
-	    my $condition_value = 1;
+	    my $condition_value = $all_operation->{condition};
 
-	    my $operation = $all_operation;
+	    my $operation = $all_operation->{operation};
 
-	    # convert flexible hashes to arrays with a command line
-
-	    if (ref $all_operation eq 'HASH')
-	    {
-		$condition_value = $all_operation->{condition};
-
-		$operation = $all_operation->{operation};
-
-		if ($option_verbose > 1)
-		{
-		    print "$0: $package_name [" . (join ' ', @$operation ) . "] translated from operations hash, condition_value is $condition_value\n";
-		}
-
-	    }
+	    my $description = $all_operation->{description} || (join ' ', @$operation );
 
 	    # if the uninstall option is given
 
@@ -292,7 +280,8 @@ sub operations_execute
 	    {
 		# but this operation is not uninstall
 
-		if (exists $operation->[1]
+		if (ref $operation eq 'ARRAY'
+		    && exists $operation->[1]
 		    && $operation->[1] ne 'uninstall')
 		{
 		    # don't execute, doesnot make sense
@@ -301,7 +290,7 @@ sub operations_execute
 
 		    if ($option_verbose > 1)
 		    {
-			print "$0: $package_name [" . (join ' ', @$operation ) . "] condition turned to false \n";
+			print "$0: $package_name [" . $description . "] condition turned to false \n";
 		    }
 
 		}
@@ -313,7 +302,7 @@ sub operations_execute
 	    {
 		if ($option_verbose > 1)
 		{
-		    print "$0: $package_name [" . (join ' ', @$operation ) . "] preparing to execute \n";
+		    print "$0: $package_name [" . $description . "] preparing to execute \n";
 		}
 
 		# construct package directory
@@ -339,37 +328,79 @@ sub operations_execute
 
 		if (-e $target_directory)
 		{
-		    # go to package directory
+		    # if this is perl code
 
-		    use Cwd;
-
-		    my $current_directory = getcwd();
-
-		    my $success = chdir $target_directory;
-
-		    if (!$success)
+		    if (ref $operation eq 'CODE')
 		    {
-			die "$0: cannot change from directory ($current_directory) to directory ($target_directory): $!";
+			# register that we are about to do this operation for this package
+
+			push @$operations, { package_name => $package_name, operations => $operation, };
+
+			if (!$option_dry_run)
+			{
+			    my $filename = $option_src_dir . "/" . $package_name . "-" . $option_src_tag . ".tar.gz";
+
+			    my $url = "http://" . $option_download_server . "/neurospaces/" . $filename;
+
+			    my $result
+				= &$operation
+				    (
+				     {
+				      filename => $filename,
+				      url => $url,
+				     },
+				    );
+			}
+			else
+			{
+			    if ($option_verbose)
+			    {
+				# embedded perl code
+
+				use Data::Dumper;
+
+				local $Data::Dumper::Deparse = 1;
+
+				my $perl_code = Dumper($operation);
+
+				print "$0: $package_name [" . (join ' ', $perl_code ) . "] not executed, dry_run is $option_dry_run\n";
+			    }
+			}
 		    }
-
-		    # perform the operation on the package
-
-		    my $package_options = $package->{$operation->[0]};
-
-		    system_execute($operations, $package_name, @$operation, @$package_options);
-
-		    my $success = chdir $current_directory;
-
-		    if (!$success)
+		    else
 		    {
-			die "$0: cannot change from directory ($target_directory) to directory ($current_directory): $!";
+			# go to package directory
+
+			use Cwd;
+
+			my $current_directory = getcwd();
+
+			my $success = chdir $target_directory;
+
+			if (!$success)
+			{
+			    die "$0: cannot change from directory ($current_directory) to directory ($target_directory): $!";
+			}
+
+			# perform the operation on the package
+
+			my $package_options = $package->{$operation->[0]};
+
+			operation_execute($operations, $package_name, @$operation, @$package_options);
+
+			my $success = chdir $current_directory;
+
+			if (!$success)
+			{
+			    die "$0: cannot change from directory ($target_directory) to directory ($current_directory): $!";
+			}
 		    }
 		}
 		else
 		{
 		    if ($option_verbose)
 		    {
-			print "$0: skipped $package_name [" . (join ' ', @$operation) . "], directory not found, assuming this package source is not installed\n";
+			print "$0: skipped $package_name [" . $description . "], directory not found, assuming this package source is not installed\n";
 		    }
 		}
 	    }
@@ -377,7 +408,7 @@ sub operations_execute
 	    {
 		if ($option_verbose > 1)
 		{
-		    print "$0: $package_name [" . (join ' ', @$operation ) . "] skipped, condition_value is $condition_value\n";
+		    print "$0: $package_name [" . $description . "] skipped, condition_value is $condition_value\n";
 		}
 	    }
 	}
@@ -492,10 +523,11 @@ sub read_cmd_line
     $all_operations
 	= [
 	   {
-	    operation => [ 'make', 'distclean', ],
 	    condition => $option_distclean && !$option_uninstall,
+	    operation => [ 'make', 'distclean', ],
 	   },
 	   {
+	    condition => $option_distkeywords,
 	    operation => [
 			  #! after keyword expansion, regenerate the
 			  #! autotool related files that perhaps are
@@ -505,9 +537,9 @@ sub read_cmd_line
 			  ( '&&', 'make', 'clean', ),
 			  ( '&&', 'make', 'clean', ),
 			 ],
-	    condition => $option_distkeywords,
 	   },
 	   {
+	    condition => $option_tag,
 	    operation => [
 			  ( "test", "!", '"`mtn ls unknown && mtn ls missing && mtn ls changed`"', ),
 			  ( '&&', 'release-expand', "'%package'", "'%release_major'", "'%release_minor'", "'%release_micro'", "'%release_major-%release_minor'", 'hugo.cornelis@gmail.com', '--verbose', ),
@@ -521,54 +553,79 @@ sub read_cmd_line
 			  ( "&&", 'mtn', 'ci', "-m", "'1. Keywords only: $option_tag\n'", ),
 			  ( "&&", "test", "!", '"`mtn ls unknown && mtn ls missing && mtn ls changed`"', ),
 			 ],
-	    condition => $option_tag,
 	   },
 	   {
+	    condition => $option_tag,
 	    operation => [
 			  #! in a separate operation such that we have the correct %version
 
 			  ( 'mtn', 'tag', '\'%version\'', "'$option_tag'", ),
 			 ],
-	    condition => $option_tag,
 	   },
 	   {
-	    operation => [ './configure', ],
+	    condition => $option_download_server,
+	    description => "downloading",
+	    operation =>
+	    sub
+	    {
+		my $package_information = shift;
+
+		# download the package
+
+		use LWP::Simple;
+
+		my $http_response = getstore($package_information->{url}, $package_information->{filename});
+
+		if (!is_success($http_response))
+		{
+		    die "$0: error downloading from $option_download_server: $http_response";
+		}
+	    },
+	   },
+	   {
+	    condition => $option_download_server,
+	    operation => [
+			  'tar', "xfz", "'%package-$option_tag.tar.gz'",
+			 ],
+	   },
+	   {
 	    condition => $option_configure,
+	    operation => [ './configure', ],
 	   },
 	   {
-	    operation => [ 'make', 'clean', ],
 	    condition => $option_clean,
+	    operation => [ 'make', 'clean', ],
 	   },
 	   {
-	    operation => [ 'make', ],
 	    condition => $option_compile,
+	    operation => [ 'make', ],
 	   },
 	   {
-	    operation => [ 'make', 'check', ],
 	    condition => $option_check,
+	    operation => [ 'make', 'check', ],
 	   },
 	   {
-	    operation => [ 'make', 'dist', ],
 	    condition => $option_dist,
+	    operation => [ 'make', 'dist', ],
 	   },
 	   {
-	    operation => [ 'make', 'distcheck', ],
 	    condition => $option_distcheck,
+	    operation => [ 'make', 'distcheck', ],
 	   },
 	   {
 	    #! always make as the regular user to avoid cluttering the
 	    #! source directory with root owned files
 
-	    operation => [ 'make', '&&', 'sudo', 'make', 'install', ],
 	    condition => $option_compile && !$option_uninstall && $option_install,
+	    operation => [ 'make', '&&', 'sudo', 'make', 'install', ],
 	   },
 	   {
-	    operation => [ 'make', 'uninstall', ],
 	    condition => $option_uninstall,
+	    operation => [ 'make', 'uninstall', ],
 	   },
 	   {
-	    operation => [ 'mtn', 'cert', '\'%version\'', '--', 'build_report', '\'%report\'', ],
 	    condition => $option_certification_report,
+	    operation => [ 'mtn', 'cert', '\'%version\'', '--', 'build_report', '\'%report\'', ],
 	   },
 	  ];
 
@@ -752,7 +809,7 @@ sub report_message
 }
 
 
-sub system_execute
+sub operation_execute
 {
     my $operations = shift;
 
