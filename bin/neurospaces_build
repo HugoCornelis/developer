@@ -462,6 +462,7 @@ sub read_cmd_line
 
 		     # options related to installation on a client machine
 
+		     "download-server=s" => \$option_download_server,
 		     "src-tag=s" => \$option_src_tag,
 		     "src-dir=s" => \$option_src_dir,
 		    );
@@ -523,6 +524,7 @@ sub read_cmd_line
 
 	   # options related to installation on a client machine
 
+	   "download-server=s" => $option_download_server,
 	   "src-tag=s" => $option_src_tag,
 	   "src-dir=s" => $option_src_dir,
 	  };
