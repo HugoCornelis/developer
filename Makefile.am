@@ -19,7 +19,6 @@ SUBDIRS =
 dist_bin_SCRIPTS = \
 	bin/mcad2doxy \
 	bin/neurospaces_build \
-	bin/neurospaces_build.ptkdb \
 	bin/neurospaces_status \
 	bin/release-expand \
 	bin/release-extract
