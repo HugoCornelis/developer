@@ -84,6 +84,7 @@ dist!: 0
 distcheck!: 0
 distclean!: 0
 distkeywords!: 0
+download-server=s: ~
 dry-run!: 0
 help!: 1
 help-all!: 0

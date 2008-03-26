@@ -49,6 +49,7 @@ options:
   distcheck!: 0
   distclean!: 0
   distkeywords!: 0
+  download-server=s: ~
   dry-run!: 1
   help!: 0
   help-all!: 0
