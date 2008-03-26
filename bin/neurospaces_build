@@ -757,6 +757,14 @@ sub report_exit
 
     $build_report->{global}->{time_end} = `date`;
 
+    #! I remove the times here, just to ease the regression testing
+
+    if ($ENV{NEUROSPACES_BUILD_TESTING})
+    {
+	delete $build_report->{global}->{time_end};
+	delete $build_report->{global}->{time_start};
+    }
+
     if (defined $description
         && $exit_code eq 3)
     {
