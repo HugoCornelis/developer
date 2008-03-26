@@ -375,6 +375,11 @@ sub all_operations_execute
 
 			my $current_directory = getcwd();
 
+			if ($option_verbose > 1)
+			{
+			    print "$0: for $package_name, chdir from ($current_directory) to ($target_directory)\n";
+			}
+
 			my $success = chdir $target_directory;
 
 			if (!$success)
@@ -387,6 +392,11 @@ sub all_operations_execute
 			my $package_options = $package->{$operation->[0]};
 
 			operation_execute($operations, $package_name, @$operation, @$package_options);
+
+			if ($option_verbose > 1)
+			{
+			    print "$0: for $package_name, chdir from ($target_directory) to ($current_directory)\n";
+			}
 
 			my $success = chdir $current_directory;
 
