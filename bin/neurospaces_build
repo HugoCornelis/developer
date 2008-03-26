@@ -649,8 +649,8 @@ sub read_cmd_line
 	print
 	    "
 
-$0: configure, compile, check, install, tag and build releases of
-packages selected from a set of packages.
+$program_name: configure, compile, check, install, tag and build
+releases of packages selected from a set of packages.
 
 $program_name can operate in two modes: the default one is for a
 client machine, assuming a user who tries to install the packages.
@@ -670,7 +670,8 @@ operations, use '--help'.
 To disable a build stage, prefix the corresponding option with
 '--no-', eg. to disable configure, use '--no-configure'.
 
-To see what packages are known in the database, use the '--packages' option.
+To see what packages are known in the database, use the '--packages'
+option.
 
 options related to operation mode selection:
     client                 execute in client mode (for regular users, default).
