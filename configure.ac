@@ -18,7 +18,7 @@ dnl ##########################################################################
 AC_PREREQ(2.59)
 
 # $Format: "AC_INIT(${package}, ${label}, ${email})"$
-AC_INIT(developer, build-10, hugo.cornelis@gmail.com)
+AC_INIT(developer, 4c182b54aa68dd2132eef2219121f2b19f18f425-0, hugo.cornelis@gmail.com)
 
 AC_CONFIG_SRCDIR([Makefile.am])
 
@@ -27,7 +27,7 @@ dnl dnl all subdirs
 dnl AC_CONFIG_SUBDIRS()
 
 # $Format: "AM_INIT_AUTOMAKE(${package}, ${label})"$
-AM_INIT_AUTOMAKE(developer, build-10)
+AM_INIT_AUTOMAKE(developer, 4c182b54aa68dd2132eef2219121f2b19f18f425-0)
 
 # Checks for programs.
 
@@ -38,6 +38,12 @@ AM_INIT_AUTOMAKE(developer, build-10)
 # Checks for typedefs, structures, and compiler characteristics.
 
 # Checks for library functions.
+
+# determine the test library to install
+
+TEST_SPECIFICATION_FILES=`echo -n "tests/introduction.html " && find tests/specifications -name "*.t" -printf "%p " && find tests/specifications/strings -name "*.txt" -printf "%p " && find tests/data -name "*.yml" -printf "%p "`
+AC_SUBST(TEST_SPECIFICATION_FILES)
+
 
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
