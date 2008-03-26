@@ -3,11 +3,11 @@ $files = {
                                           {
                                             'expr' => undef,
                                             'value' => '1',
-                                            'text' => '	    if (ref $all_operation eq \'HASH\')
+                                            'text' => '    all_operations_execute();
 ',
                                             'fname' => 'bin/neurospaces_build',
                                             'type' => 'user',
-                                            'line' => '250'
+                                            'line' => '214'
                                           }
                                         ]
          };
