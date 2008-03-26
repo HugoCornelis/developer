@@ -700,6 +700,7 @@ options related to operation execution profile:
                            more feedback.
 
 options related to installation on a client machine:
+    download-server        enable downloading packages from this server.
     src-tag                use this tag for finding src directories on a client machine.
     src-dir                use this dir as the base for directories on a client machine.
 
