@@ -324,50 +324,50 @@ sub all_operations_execute
 		    $target_directory = $option_src_dir . "/" . $package_name . "-" . $option_src_tag;
 		}
 
-		# if package directory exists
+		# if this is perl code
 
-		if (-e $target_directory)
+		if (ref $operation eq 'CODE')
 		{
-		    # if this is perl code
+		    # register that we are about to do this operation for this package
 
-		    if (ref $operation eq 'CODE')
+		    push @$operations, { package_name => $package_name, operations => $operation, };
+
+		    if (!$option_dry_run)
 		    {
-			# register that we are about to do this operation for this package
+			my $filename = $option_src_dir . "/" . $package_name . "-" . $option_src_tag . ".tar.gz";
 
-			push @$operations, { package_name => $package_name, operations => $operation, };
+			my $url = "http://" . $option_download_server . "/neurospaces/" . $filename;
 
-			if (!$option_dry_run)
-			{
-			    my $filename = $option_src_dir . "/" . $package_name . "-" . $option_src_tag . ".tar.gz";
-
-			    my $url = "http://" . $option_download_server . "/neurospaces/" . $filename;
-
-			    my $result
-				= &$operation
-				    (
-				     {
-				      filename => $filename,
-				      url => $url,
-				     },
-				    );
-			}
-			else
-			{
-			    if ($option_verbose)
-			    {
-				# embedded perl code
-
-				use Data::Dumper;
-
-				local $Data::Dumper::Deparse = 1;
-
-				my $perl_code = Dumper($operation);
-
-				print "$0: $package_name [" . (join ' ', $perl_code ) . "] not executed, dry_run is $option_dry_run\n";
-			    }
-			}
+			my $result
+			    = &$operation
+				(
+				 {
+				  filename => $filename,
+				  url => $url,
+				 },
+				);
 		    }
 		    else
+		    {
+			if ($option_verbose)
+			{
+				# embedded perl code
+
+			    use Data::Dumper;
+
+			    local $Data::Dumper::Deparse = 1;
+
+			    my $perl_code = Dumper($operation);
+
+			    print "$0: $package_name [" . (join ' ', $perl_code ) . "] not executed, dry_run is $option_dry_run\n";
+			}
+		    }
+		}
+		else
+		{
+		    # if package directory exists
+
+		    if (-e $target_directory)
 		    {
 			# go to package directory
 
@@ -405,12 +405,12 @@ sub all_operations_execute
 			    die "$0: cannot change from directory ($target_directory) to directory ($current_directory): $!";
 			}
 		    }
-		}
-		else
-		{
-		    if ($option_verbose)
+		    else
 		    {
-			print "$0: skipped $package_name [" . $description . "], directory not found, assuming this package source is not installed\n";
+			if ($option_verbose)
+			{
+			    print "$0: skipped $package_name [" . $description . "], directory not found, assuming this package source is not installed\n";
+			}
 		    }
 		}
 	    }
@@ -582,11 +582,25 @@ sub read_cmd_line
 	    {
 		my $package_information = shift;
 
+		# get specific arguments
+
+		my $filename = $package_information->{filename};
+
+		my $url = $package_information->{url};
+
+		# create the directory
+
+		$filename =~ /.*\/(.*)$/;
+
+		my $directory = $1;
+
+		mkdir $directory;
+
 		# download the package
 
 		use LWP::Simple;
 
-		my $http_response = getstore($package_information->{url}, $package_information->{filename});
+		my $http_response = getstore($url, $filename);
 
 		if (!is_success($http_response))
 		{
