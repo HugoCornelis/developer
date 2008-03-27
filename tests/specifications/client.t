@@ -132,12 +132,12 @@ verbose+: 0
 				command_tests => [
 						  {
 						   description => "Is an error message given when invoking the build script with wrong options ?",
-						   read => "bin/neurospaces_build: examining developer
-bin/neurospaces_build: developer [make distclean] skipped, condition_value is 0
-bin/neurospaces_build: developer [make dist-keywords && make clean && make clean] skipped, condition_value is 0
-bin/neurospaces_build: developer [test ! \"`mtn ls unknown && mtn ls missing && mtn ls changed`\" && release-expand '%package' '%release_major' '%release_minor' '%release_micro' '%release_major-%release_minor' hugo.cornelis\@gmail.com --verbose && make clean && make clean && mtn ci -m '1. Keywords only: build-10
+						   read => "bin/neurospaces_build: examining package developer
+bin/neurospaces_build: package developer [make distclean] skipped, condition_value is 0
+bin/neurospaces_build: package developer [make dist-keywords && make clean && make clean] skipped, condition_value is 0
+bin/neurospaces_build: package developer [test ! \"`mtn ls unknown && mtn ls missing && mtn ls changed`\" && release-expand '%package' '%release_major' '%release_minor' '%release_micro' '%release_major-%release_minor' hugo.cornelis\@gmail.com --verbose && make clean && make clean && mtn ci -m '1. Keywords only: build-10
 ' && test ! \"`mtn ls unknown && mtn ls missing && mtn ls changed`\"] preparing to execute 
-bin/neurospaces_build: you must set option_src_dir and option_src_tag when working in client mode",
+bin/neurospaces_build: *** Error: you must set option_src_dir and option_src_tag when working in client mode",
 						  },
 						 ],
 				description => "wrong options",

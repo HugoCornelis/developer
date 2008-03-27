@@ -239,7 +239,7 @@ sub all_operations_execute
     {
 	if ($option_verbose)
 	{
-	    print "$0: examining $package_name\n";
+	    print "$0: examining package $package_name\n";
 	}
 
 	my $package = $all_packages->{$package_name};
@@ -248,7 +248,7 @@ sub all_operations_execute
 	{
 	    if ($option_verbose)
 	    {
-		print "$0: $package_name skipped, disabled is $package->{disabled}\n";
+		print "$0: package $package_name skipped, disabled is $package->{disabled}\n";
 	    }
 
 	    next;
@@ -258,7 +258,7 @@ sub all_operations_execute
 	{
 	    if ($option_verbose)
 	    {
-		print "$0: $package_name skipped, not selected using --regex-selector\n";
+		print "$0: package $package_name skipped, not selected using --regex-selector\n";
 	    }
 
 	    next;
@@ -290,7 +290,7 @@ sub all_operations_execute
 
 		    if ($option_verbose > 1)
 		    {
-			print "$0: $package_name [" . $description . "] condition turned to false \n";
+			print "$0: package $package_name [" . $description . "] condition turned to false \n";
 		    }
 
 		}
@@ -302,7 +302,7 @@ sub all_operations_execute
 	    {
 		if ($option_verbose > 1)
 		{
-		    print "$0: $package_name [" . $description . "] preparing to execute \n";
+		    print "$0: package $package_name [" . $description . "] preparing to execute \n";
 		}
 
 		# construct package directory
@@ -316,7 +316,7 @@ sub all_operations_execute
 		    if (!defined $option_src_dir
 			|| !defined $option_src_tag)
 		    {
-			die "$0: you must set option_src_dir and option_src_tag when working in client mode";
+			die "$0: *** Error: you must set option_src_dir and option_src_tag when working in client mode";
 		    }
 
 		    # construct a target directory from the src-* options
@@ -343,6 +343,8 @@ sub all_operations_execute
 				(
 				 {
 				  filename => $filename,
+				  operations => $operations,
+				  package_name => $package_name,
 				  url => $url,
 				 },
 				);
@@ -351,7 +353,7 @@ sub all_operations_execute
 		    {
 			if ($option_verbose)
 			{
-				# embedded perl code
+			    # embedded perl code
 
 			    use Data::Dumper;
 
@@ -359,7 +361,7 @@ sub all_operations_execute
 
 			    my $perl_code = Dumper($operation);
 
-			    print "$0: $package_name [" . (join ' ', $perl_code ) . "] not executed, dry_run is $option_dry_run\n";
+			    print "$0: package $package_name [" . (join ' ', $perl_code ) . "] not executed, dry_run is $option_dry_run\n";
 			}
 		    }
 		}
@@ -377,39 +379,39 @@ sub all_operations_execute
 
 			if ($option_verbose > 1)
 			{
-			    print "$0: for $package_name, chdir from ($current_directory) to ($target_directory)\n";
+			    print "$0: package $package_name, chdir from ($current_directory) to ($target_directory)\n";
 			}
 
 			my $success = chdir $target_directory;
 
 			if (!$success)
 			{
-			    die "$0: cannot change from directory ($current_directory) to directory ($target_directory): $!";
+			    die "$0: *** Error: package $package_name cannot change from directory ($current_directory) to directory ($target_directory): $!";
 			}
 
 			# perform the operation on the package
 
 			my $package_options = $package->{$operation->[0]};
 
-			operation_execute($operations, $package_name, @$operation, @$package_options);
+			operation_execute($operations, $description, $package_name, @$operation, @$package_options);
 
 			if ($option_verbose > 1)
 			{
-			    print "$0: for $package_name, chdir from ($target_directory) to ($current_directory)\n";
+			    print "$0: package $package_name, chdir from ($target_directory) to ($current_directory)\n";
 			}
 
 			my $success = chdir $current_directory;
 
 			if (!$success)
 			{
-			    die "$0: cannot change from directory ($target_directory) to directory ($current_directory): $!";
+			    die "$0: *** Error: package $package_name, cannot change from directory ($target_directory) to directory ($current_directory): $!";
 			}
 		    }
 		    else
 		    {
 			if ($option_verbose)
 			{
-			    print "$0: skipped $package_name [" . $description . "], directory ($target_directory) not found, assuming this package source is not installed\n";
+			    print "$0: package $package_name skipped, [" . $description . "], directory ($target_directory) not found, assuming this package source is not installed\n";
 			}
 		    }
 		}
@@ -418,7 +420,7 @@ sub all_operations_execute
 	    {
 		if ($option_verbose > 1)
 		{
-		    print "$0: $package_name [" . $description . "] skipped, condition_value is $condition_value\n";
+		    print "$0: package $package_name [" . $description . "] skipped, condition_value is $condition_value\n";
 		}
 	    }
 	}
@@ -469,7 +471,7 @@ sub read_cmd_line
 
     if (!$result)
     {
-	die "$0: Error in option processing";
+	die "$0: *** Error: Error in option processing";
     }
 
     # process operation mode options
@@ -584,13 +586,15 @@ sub read_cmd_line
 
 		# get specific arguments
 
+		my $description = $package_information->{description};
+
 		my $filename = $package_information->{filename};
 
 		my $url = $package_information->{url};
 
 		# create the directory
 
-		$filename =~ /.*\/(.*)$/;
+		$filename =~ /(.*)\/(.*)$/;
 
 		my $directory = $1;
 
@@ -604,15 +608,40 @@ sub read_cmd_line
 
 		if (!is_success($http_response))
 		{
-		    die "$0: error downloading from $option_download_server: $http_response";
+		    die "$0: *** Error: $description from $option_download_server: $http_response";
 		}
 	    },
 	   },
 	   {
 	    condition => $option_download_server,
-	    operation => [
-			  'tar', "xfz", "'%package-$option_tag.tar.gz'",
-			 ],
+	    description => "unpacking",
+	    operation =>
+	    sub
+	    {
+		my $package_information = shift;
+
+		# get specific arguments
+
+		my $description = $package_information->{description};
+
+		my $filename = $package_information->{filename};
+
+		my $operations = $package_information->{operations};
+
+		my $package_name = $package_information->{package_name};
+
+		# change the directory
+
+		$filename =~ /(.*)\/(.*)$/;
+
+		my $directory = $1;
+
+		chdir $directory;
+
+		# unpack the package
+
+		operation_execute($operations, $description, $package_name, ( 'tar', 'xfvz', '%package', ), );
+	    },
 	   },
 	   {
 	    condition => $option_configure,
@@ -849,6 +878,8 @@ sub operation_execute
 {
     my $operations = shift;
 
+    my $description = shift;
+
     my $package_name = shift;
 
     my $arguments = [ @_ ];
@@ -930,11 +961,11 @@ sub operation_execute
 
     # register that we are about to do this operation for this package
 
-    push @$operations, { package_name => $package_name, operations => $arguments, };
+    push @$operations, { description => $description, package_name => $package_name, operations => $arguments, };
 
     if (!$option_dry_run)
     {
-	print "$0: $package_name [" . (join ' ', @$arguments) . "] executing\n";
+	print "$0: package $package_name [" . (join ' ', @$arguments) . "] executing\n";
 
 	system join " ", @$arguments;
 
@@ -942,19 +973,19 @@ sub operation_execute
 	{
 	    #! assume system has given a good error message
 
-	    die "*** Error for package_name $package_name: $?";
+	    die "$0: *** Error: package $package_name: $?";
 	}
 
 	if ($option_verbose)
 	{
-	    print "$0: $package_name [" . (join ' ', @$arguments ) . "] executed \n";
+	    print "$0: package $package_name [" . (join ' ', @$arguments ) . "] executed \n";
 	}
     }
     else
     {
 	if ($option_verbose)
 	{
-	    print "$0: $package_name [" . (join ' ', @$arguments ) . "] not executed, dry_run is $option_dry_run\n";
+	    print "$0: package $package_name [" . (join ' ', @$arguments ) . "] not executed, dry_run is $option_dry_run\n";
 	}
     }
 }
