@@ -7,7 +7,16 @@ $files = {
 ',
                                             'fname' => 'bin/neurospaces_build',
                                             'type' => 'user',
-                                            'line' => '214'
+                                            'line' => 215
+                                          },
+                                          {
+                                            'expr' => undef,
+                                            'value' => '1',
+                                            'text' => '	    if ($option_uninstall)
+',
+                                            'fname' => 'bin/neurospaces_build',
+                                            'type' => 'user',
+                                            'line' => '280'
                                           }
                                         ]
          };

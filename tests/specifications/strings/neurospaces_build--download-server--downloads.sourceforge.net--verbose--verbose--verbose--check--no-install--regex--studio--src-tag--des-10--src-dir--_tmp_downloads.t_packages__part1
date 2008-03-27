@@ -1,0 +1,105 @@
+bin/neurospaces_build: examining package developer
+bin/neurospaces_build: package developer skipped, not selected using --regex-selector
+bin/neurospaces_build: examining package model_container
+bin/neurospaces_build: package model_container skipped, not selected using --regex-selector
+bin/neurospaces_build: examining package heccer
+bin/neurospaces_build: package heccer skipped, not selected using --regex-selector
+bin/neurospaces_build: examining package ssp
+bin/neurospaces_build: package ssp skipped, not selected using --regex-selector
+bin/neurospaces_build: examining package geometry
+bin/neurospaces_build: package geometry skipped, disabled is 1
+bin/neurospaces_build: examining package studio
+bin/neurospaces_build: package studio [make distclean] skipped, condition_value is 0
+bin/neurospaces_build: package studio [make dist-keywords && make clean && make clean] skipped, condition_value is 0
+bin/neurospaces_build: package studio [test ! "`mtn ls unknown && mtn ls missing && mtn ls changed`" && release-expand '%package' '%release_major' '%release_minor' '%release_micro' '%release_major-%release_minor' hugo.cornelis@gmail.com --verbose && make clean && make clean && mtn ci -m '1. Keywords only: 0
+' && test ! "`mtn ls unknown && mtn ls missing && mtn ls changed`"] skipped, condition_value is 0
+bin/neurospaces_build: package studio [mtn tag '%version' '0'] skipped, condition_value is 0
+bin/neurospaces_build: package studio [downloading] preparing to execute 
+bin/neurospaces_build: package studio [unpacking] preparing to execute 
+bin/neurospaces_build: package studio [tar xfvz studio-des-10.tar.gz] executing
+studio-des-10/
+studio-des-10/bin/
+studio-des-10/bin/neurospaces
+studio-des-10/configure.ac
+studio-des-10/aclocal.m4
+studio-des-10/Makefile.am
+studio-des-10/Makefile.in
+studio-des-10/configure
+studio-des-10/install-sh
+studio-des-10/missing
+studio-des-10/perl/
+studio-des-10/perl/Neurospaces/
+studio-des-10/perl/Neurospaces/GUI/
+studio-des-10/perl/Neurospaces/GUI/Components/
+studio-des-10/perl/Neurospaces/GUI/Components/Cell.pm
+studio-des-10/perl/Neurospaces/GUI/Components/Link.pm
+studio-des-10/perl/Neurospaces/GUI/Components/Network.pm
+studio-des-10/perl/Neurospaces/GUI/Components/Node.pm
+studio-des-10/perl/Neurospaces/GUI/Components/Atomic.pm
+studio-des-10/perl/Neurospaces/GUI/Components/Root.pm
+studio-des-10/perl/Neurospaces/GUI/Components/Mechanism.pm
+studio-des-10/perl/Neurospaces/GUI/Tools/
+studio-des-10/perl/Neurospaces/GUI/Tools/Renderer.pm
+studio-des-10/perl/Neurospaces/GUI/Tools/Renderer/
+studio-des-10/perl/Neurospaces/GUI/Tools/Renderer/External.pm
+studio-des-10/perl/Neurospaces/GUI/Tools/numbers-7x11.txt
+studio-des-10/perl/Neurospaces/GUI/Algorithms.pm
+studio-des-10/perl/Neurospaces/GUI/Command.pm
+studio-des-10/perl/Neurospaces/GUI/Extractor.pm
+studio-des-10/perl/Neurospaces/GUI/Files.pm
+studio-des-10/perl/Neurospaces/GUI/Matrix.pm
+studio-des-10/perl/Neurospaces/GUI/Namespaces.pm
+studio-des-10/perl/Neurospaces/GUI/Workload.pm
+studio-des-10/perl/Neurospaces/Biolevels.pm
+studio-des-10/perl/Neurospaces/GUI.pm
+studio-des-10/perl/Neurospaces/Modeler.pm
+studio-des-10/perl/Neurospaces/SolverInfo.pm
+studio-des-10/perl/Neurospaces/Studio.pm
+studio-des-10/perl/Neurospaces/Project/
+studio-des-10/perl/Neurospaces/Project/Modules/
+studio-des-10/perl/Neurospaces/Project/Modules/Morphology.pm
+studio-des-10/perl/Neurospaces/Project.pm
+studio-des-10/perl/Neurospaces/Morphology.pm
+studio-des-10/perl/Threads.pm
+studio-des-10/perl/stubs.pm
+studio-des-10/perl/Makefile.am
+studio-des-10/perl/Makefile.in
+studio-des-10/tests/
+studio-des-10/tests/Makefile.am
+studio-des-10/tests/Makefile.in
+studio-des-10/tests/specifications/
+studio-des-10/tests/specifications/reporting.t~
+studio-des-10/tests/specifications/reporting.t
+studio-des-10/tests/specifications/operators.t
+studio-des-10/tests/specifications/operators.t~
+studio-des-10/tests/neurospaces_harness
+studio-des-10/tests/tests_2_html
+studio-des-10/tests/tests.config
+studio-des-10/tests/html/
+studio-des-10/tests/html/specifications/
+studio-des-10/tests/html/specifications/main.html
+studio-des-10/tests/html/specifications/operators.html
+studio-des-10/tests/html/specifications/reporting.html
+studio-des-10/tests/html/index.html
+studio-des-10/tests/bin/
+studio-des-10/tests/bin/neurospaces.source.html
+studio-des-10/license.txt
+studio-des-10/tests.config
+bin/neurospaces_build: package studio [tar xfvz studio-des-10.tar.gz] executed 
+bin/neurospaces_build: package studio [./configure] preparing to execute 
+bin/neurospaces_build: package studio, chdir from (/tmp/downloads.t/packages) to (/tmp/downloads.t/packages/studio-des-10)
+bin/neurospaces_build: package studio [./configure] executing
+checking for a BSD-compatible install... /usr/bin/install -c
+checking whether build environment is sane... yes
+checking for gawk... gawk
+checking whether make sets $(MAKE)... yes
+configure: creating ./config.status
+config.status: creating Makefile
+config.status: creating perl/Makefile
+config.status: creating tests/Makefile
+bin/neurospaces_build: package studio [./configure] executed 
+bin/neurospaces_build: package studio, chdir from (/tmp/downloads.t/packages/studio-des-10) to (/tmp/downloads.t/packages)
+bin/neurospaces_build: package studio [make clean] skipped, condition_value is 0
+bin/neurospaces_build: package studio [make] preparing to execute 
+bin/neurospaces_build: package studio, chdir from (/tmp/downloads.t/packages) to (/tmp/downloads.t/packages/studio-des-10)
+bin/neurospaces_build: package studio [make] executing

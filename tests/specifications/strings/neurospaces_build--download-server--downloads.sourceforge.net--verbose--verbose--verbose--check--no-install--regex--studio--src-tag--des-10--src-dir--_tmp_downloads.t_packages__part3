@@ -1,0 +1,66 @@
+bin/neurospaces_build: package studio [make check] executed 
+bin/neurospaces_build: package studio, chdir from (/tmp/downloads.t/packages/studio-des-10) to (/tmp/downloads.t/packages)
+bin/neurospaces_build: package studio [make dist] skipped, condition_value is 0
+bin/neurospaces_build: package studio [make distcheck] skipped, condition_value is 0
+bin/neurospaces_build: package studio [make && sudo make install] skipped, condition_value is 0
+bin/neurospaces_build: package studio [make uninstall] skipped, condition_value is 0
+bin/neurospaces_build: package studio [mtn cert '%version' -- build_report '%report'] skipped, condition_value is 0
+bin/neurospaces_build: examining package simulation_browser
+bin/neurospaces_build: package simulation_browser skipped, disabled is 1
+---
+client:
+  OS: linux
+description:
+  command: bin/neurospaces_build
+  name: Build report
+global:
+  status: Finished
+  test_count: 0
+operations:
+  - operations: !!perl/code '{ "DUMMY" }'
+    package_name: studio
+  - operations: !!perl/code '{ "DUMMY" }'
+    package_name: studio
+  - description: unpacking
+    operations:
+      - tar
+      - xfvz
+      - studio-des-10.tar.gz
+    package_name: studio
+  - description: ./configure
+    operations:
+      - ./configure
+    package_name: studio
+  - description: make
+    operations:
+      - make
+    package_name: studio
+  - description: make check
+    operations:
+      - make
+      - check
+    package_name: studio
+options:
+  certification-report!: 0
+  check!: 1
+  clean!: 0
+  client!: 1
+  compile!: 1
+  configure!: 1
+  developer!: 0
+  dist!: 0
+  distcheck!: 0
+  distclean!: 0
+  distkeywords!: 0
+  download-server=s: downloads.sourceforge.net
+  dry-run!: 0
+  help!: 0
+  help-all!: 0
+  install!: 0
+  packages: 0
+  regex-selector=s: studio
+  src-dir=s: /tmp/downloads.t/packages
+  src-tag=s: des-10
+  tag=s: 0
+  uninstall!: 0
+  verbose+: 3

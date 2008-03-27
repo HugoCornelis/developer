@@ -334,7 +334,9 @@ sub all_operations_execute
 
 		    if (!$option_dry_run)
 		    {
-			my $filename = $option_src_dir . "/" . $package_name . "-" . $option_src_tag . ".tar.gz";
+			my $directory = $option_src_dir;
+
+			my $filename = $package_name . "-" . $option_src_tag . ".tar.gz";
 
 			my $url = "http://" . $option_download_server . "/neurospaces/" . $filename;
 
@@ -342,6 +344,8 @@ sub all_operations_execute
 			    = &$operation
 				(
 				 {
+				  description => $description,
+				  directory => $directory,
 				  filename => $filename,
 				  operations => $operations,
 				  package_name => $package_name,
@@ -393,14 +397,26 @@ sub all_operations_execute
 
 			my $package_options = $package->{$operation->[0]};
 
-			operation_execute($operations, $description, $package_name, @$operation, @$package_options);
+			operation_execute
+			    (
+			     $operations,
+			     {
+			      description => $description,
+			      keywords => $option_developer,
+			      package_name => $package_name,
+			     },
+			     [
+			      @$operation,
+			      @{$package_options || []},
+			     ],
+			    );
 
 			if ($option_verbose > 1)
 			{
 			    print "$0: package $package_name, chdir from ($target_directory) to ($current_directory)\n";
 			}
 
-			my $success = chdir $current_directory;
+			$success = chdir $current_directory;
 
 			if (!$success)
 			{
@@ -588,15 +604,13 @@ sub read_cmd_line
 
 		my $description = $package_information->{description};
 
+		my $directory = $package_information->{directory};
+
 		my $filename = $package_information->{filename};
 
 		my $url = $package_information->{url};
 
 		# create the directory
-
-		$filename =~ /(.*)\/(.*)$/;
-
-		my $directory = $1;
 
 		mkdir $directory;
 
@@ -604,7 +618,7 @@ sub read_cmd_line
 
 		use LWP::Simple;
 
-		my $http_response = getstore($url, $filename);
+		my $http_response = getstore($url, $directory . '/' . $filename);
 
 		if (!is_success($http_response))
 		{
@@ -624,6 +638,8 @@ sub read_cmd_line
 
 		my $description = $package_information->{description};
 
+		my $directory = $package_information->{directory};
+
 		my $filename = $package_information->{filename};
 
 		my $operations = $package_information->{operations};
@@ -632,15 +648,25 @@ sub read_cmd_line
 
 		# change the directory
 
-		$filename =~ /(.*)\/(.*)$/;
-
-		my $directory = $1;
-
 		chdir $directory;
 
 		# unpack the package
 
-		operation_execute($operations, $description, $package_name, ( 'tar', 'xfvz', '%package', ), );
+		operation_execute
+		    (
+		     $operations,
+		     {
+		      description => $description,
+
+		      #t always zero here, but I guess this simply depends on working in client mode ?
+
+		      keywords => 0,
+		      package_name => $package_name,
+		     },
+		     [
+		      'tar', 'xfvz', $filename,
+		     ],
+		    );
 	    },
 	   },
 	   {
@@ -878,86 +904,95 @@ sub operation_execute
 {
     my $operations = shift;
 
-    my $description = shift;
+    my $environment = shift;
 
-    my $package_name = shift;
+    my $arguments = shift;
 
-    my $arguments = [ @_ ];
+    my $description = $environment->{description};
 
-    # get monotone id
+    my $keywords = defined $environment->{keywords} ? $environment->{keywords} : 1;
 
-    my $monotone_id = `mtn automate get_base_revision_id`;
+    my $package_name = $environment->{package_name};
 
-    chomp $monotone_id;
+    # if keyword expansions
 
-    # define release labels
+    if ($keywords)
+    {
+	# get monotone id
 
-    #! copied from release-extract
+	my $monotone_id = `mtn automate get_base_revision_id`;
 
-    my $log = [ `mtn log --last 1`, ];
+	chomp $monotone_id;
 
-#     my $monotone_id
-# 	= [
-# 	   map
-# 	   {
-# 	       s/.*Revision:\s*//;
+	# define release labels
 
-# 	       s/\s*//g;
+	#! copied from release-extract
 
-# 	       $_;
-# 	   }
-# 	   grep
-# 	   {
-# 	       m'Revision:';
-# 	   }
-# 	   @$log,
-# 	  ];
+	my $log = [ `mtn log --last 1`, ];
 
-    my $release_label = $option_tag;
+# 	my $monotone_id
+# 	    = [
+# 	       map
+# 	       {
+# 		   s/.*Revision:\s*//;
 
-    $release_label =~ m/([^-]+)-([^-]+)?(?:-([^-]+))?/;
+# 		   s/\s*//g;
 
-    my $release_major = $1 || $monotone_id;
+# 		   $_;
+# 	       }
+# 	       grep
+# 	       {
+# 		   m'Revision:';
+# 	       }
+# 	       @$log,
+# 	      ];
 
-    my $release_minor = $2 || 0;
+	my $release_label = $option_tag;
 
-    my $release_micro = $3 || 0;
+	$release_label =~ m/([^-]+)-([^-]+)?(?:-([^-]+))?/;
 
-    $arguments
-	= [
-	   map
-	   {
-	       s/%package/$package_name/g;
-	       s/%release_major/$release_major/g;
-	       s/%release_micro/$release_micro/g;
-	       s/%release_minor/$release_minor/g;
-	       s/%version/$monotone_id/g;
+	my $release_major = $1 || $monotone_id;
 
-	       $_;
-	   }
-	   @$arguments,
-	  ];
+	my $release_minor = $2 || 0;
 
-    #! to prevent monotone from interpreting the yaml as an option,
-    #! we prefix the report with something that does not look like an
-    #! option.
+	my $release_micro = $3 || 0;
 
-    my $report_text = Dump( { build_report => $build_report, }, ) . "\n";
+	$arguments
+	    = [
+	       map
+	       {
+		   s/%package/$package_name/g;
+		   s/%release_major/$release_major/g;
+		   s/%release_micro/$release_micro/g;
+		   s/%release_minor/$release_minor/g;
+		   s/%version/$monotone_id/g;
 
-    $arguments
-	= [
-	   map
-	   {
-	       s/%report/$report_text/g;
+		   $_;
+	       }
+	       @$arguments,
+	      ];
 
-	       # replace non-LDH characters: underscores
+	#! to prevent monotone from interpreting the yaml as an option,
+	#! we prefix the report with something that does not look like an
+	#! option.
 
-	       s/_/-/g;
+	my $report_text = Dump( { build_report => $build_report, }, ) . "\n";
 
-	       $_;
-	   }
-	   @$arguments,
-	  ];
+	$arguments
+	    = [
+	       map
+	       {
+		   s/%report/$report_text/g;
+
+		   # replace non-LDH characters: underscores
+
+		   s/_/-/g;
+
+		   $_;
+	       }
+	       @$arguments,
+	      ];
+    }
 
     # register that we are about to do this operation for this package
 

@@ -1,0 +1,531 @@
+bin/neurospaces_build: examining package developer
+bin/neurospaces_build: package developer skipped, not selected using --regex-selector
+bin/neurospaces_build: examining package model_container
+bin/neurospaces_build: package model_container skipped, not selected using --regex-selector
+bin/neurospaces_build: examining package heccer
+bin/neurospaces_build: package heccer skipped, not selected using --regex-selector
+bin/neurospaces_build: examining package ssp
+bin/neurospaces_build: package ssp skipped, not selected using --regex-selector
+bin/neurospaces_build: examining package geometry
+bin/neurospaces_build: package geometry skipped, disabled is 1
+bin/neurospaces_build: examining package studio
+bin/neurospaces_build: package studio [make distclean] skipped, condition_value is 0
+bin/neurospaces_build: package studio [make dist-keywords && make clean && make clean] skipped, condition_value is 0
+bin/neurospaces_build: package studio [test ! "`mtn ls unknown && mtn ls missing && mtn ls changed`" && release-expand '%package' '%release_major' '%release_minor' '%release_micro' '%release_major-%release_minor' hugo.cornelis@gmail.com --verbose && make clean && make clean && mtn ci -m '1. Keywords only: 0
+' && test ! "`mtn ls unknown && mtn ls missing && mtn ls changed`"] skipped, condition_value is 0
+bin/neurospaces_build: package studio [mtn tag '%version' '0'] skipped, condition_value is 0
+bin/neurospaces_build: package studio [downloading] preparing to execute 
+bin/neurospaces_build: package studio [unpacking] preparing to execute 
+bin/neurospaces_build: package studio [tar xfvz studio-des-10.tar.gz] executing
+studio-des-10/
+studio-des-10/bin/
+studio-des-10/bin/neurospaces
+studio-des-10/configure.ac
+studio-des-10/aclocal.m4
+studio-des-10/Makefile.am
+studio-des-10/Makefile.in
+studio-des-10/configure
+studio-des-10/install-sh
+studio-des-10/missing
+studio-des-10/perl/
+studio-des-10/perl/Neurospaces/
+studio-des-10/perl/Neurospaces/GUI/
+studio-des-10/perl/Neurospaces/GUI/Components/
+studio-des-10/perl/Neurospaces/GUI/Components/Cell.pm
+studio-des-10/perl/Neurospaces/GUI/Components/Link.pm
+studio-des-10/perl/Neurospaces/GUI/Components/Network.pm
+studio-des-10/perl/Neurospaces/GUI/Components/Node.pm
+studio-des-10/perl/Neurospaces/GUI/Components/Atomic.pm
+studio-des-10/perl/Neurospaces/GUI/Components/Root.pm
+studio-des-10/perl/Neurospaces/GUI/Components/Mechanism.pm
+studio-des-10/perl/Neurospaces/GUI/Tools/
+studio-des-10/perl/Neurospaces/GUI/Tools/Renderer.pm
+studio-des-10/perl/Neurospaces/GUI/Tools/Renderer/
+studio-des-10/perl/Neurospaces/GUI/Tools/Renderer/External.pm
+studio-des-10/perl/Neurospaces/GUI/Tools/numbers-7x11.txt
+studio-des-10/perl/Neurospaces/GUI/Algorithms.pm
+studio-des-10/perl/Neurospaces/GUI/Command.pm
+studio-des-10/perl/Neurospaces/GUI/Extractor.pm
+studio-des-10/perl/Neurospaces/GUI/Files.pm
+studio-des-10/perl/Neurospaces/GUI/Matrix.pm
+studio-des-10/perl/Neurospaces/GUI/Namespaces.pm
+studio-des-10/perl/Neurospaces/GUI/Workload.pm
+studio-des-10/perl/Neurospaces/Biolevels.pm
+studio-des-10/perl/Neurospaces/GUI.pm
+studio-des-10/perl/Neurospaces/Modeler.pm
+studio-des-10/perl/Neurospaces/SolverInfo.pm
+studio-des-10/perl/Neurospaces/Studio.pm
+studio-des-10/perl/Neurospaces/Project/
+studio-des-10/perl/Neurospaces/Project/Modules/
+studio-des-10/perl/Neurospaces/Project/Modules/Morphology.pm
+studio-des-10/perl/Neurospaces/Project.pm
+studio-des-10/perl/Neurospaces/Morphology.pm
+studio-des-10/perl/Threads.pm
+studio-des-10/perl/stubs.pm
+studio-des-10/perl/Makefile.am
+studio-des-10/perl/Makefile.in
+studio-des-10/tests/
+studio-des-10/tests/Makefile.am
+studio-des-10/tests/Makefile.in
+studio-des-10/tests/specifications/
+studio-des-10/tests/specifications/reporting.t~
+studio-des-10/tests/specifications/reporting.t
+studio-des-10/tests/specifications/operators.t
+studio-des-10/tests/specifications/operators.t~
+studio-des-10/tests/neurospaces_harness
+studio-des-10/tests/tests_2_html
+studio-des-10/tests/tests.config
+studio-des-10/tests/html/
+studio-des-10/tests/html/specifications/
+studio-des-10/tests/html/specifications/main.html
+studio-des-10/tests/html/specifications/operators.html
+studio-des-10/tests/html/specifications/reporting.html
+studio-des-10/tests/html/index.html
+studio-des-10/tests/bin/
+studio-des-10/tests/bin/neurospaces.source.html
+studio-des-10/license.txt
+studio-des-10/tests.config
+bin/neurospaces_build: package studio [tar xfvz studio-des-10.tar.gz] executed 
+bin/neurospaces_build: package studio [./configure] preparing to execute 
+bin/neurospaces_build: package studio, chdir from (/tmp/downloads.t/packages) to (/tmp/downloads.t/packages/studio-des-10)
+bin/neurospaces_build: package studio [./configure] executing
+checking for a BSD-compatible install... /usr/bin/install -c
+checking whether build environment is sane... yes
+checking for gawk... gawk
+checking whether make sets $(MAKE)... yes
+configure: creating ./config.status
+config.status: creating Makefile
+config.status: creating perl/Makefile
+config.status: creating tests/Makefile
+bin/neurospaces_build: package studio [./configure] executed 
+bin/neurospaces_build: package studio, chdir from (/tmp/downloads.t/packages/studio-des-10) to (/tmp/downloads.t/packages)
+bin/neurospaces_build: package studio [make clean] skipped, condition_value is 0
+bin/neurospaces_build: package studio [make] preparing to execute 
+bin/neurospaces_build: package studio, chdir from (/tmp/downloads.t/packages) to (/tmp/downloads.t/packages/studio-des-10)
+bin/neurospaces_build: package studio [make] executing
+Making all in perl
+make[1]: Entering directory `/tmp/downloads.t/packages/studio-des-10/perl'
+make[1]: Nothing to be done for `all'.
+make[1]: Leaving directory `/tmp/downloads.t/packages/studio-des-10/perl'
+Making all in tests
+make[1]: Entering directory `/tmp/downloads.t/packages/studio-des-10/tests'
+make[1]: Nothing to be done for `all'.
+make[1]: Leaving directory `/tmp/downloads.t/packages/studio-des-10/tests'
+make[1]: Entering directory `/tmp/downloads.t/packages/studio-des-10'
+make[1]: Nothing to be done for `all-am'.
+make[1]: Leaving directory `/tmp/downloads.t/packages/studio-des-10'
+bin/neurospaces_build: package studio [make] executed 
+bin/neurospaces_build: package studio, chdir from (/tmp/downloads.t/packages/studio-des-10) to (/tmp/downloads.t/packages)
+bin/neurospaces_build: package studio [make check] preparing to execute 
+bin/neurospaces_build: package studio, chdir from (/tmp/downloads.t/packages) to (/tmp/downloads.t/packages/studio-des-10)
+bin/neurospaces_build: package studio [make check] executing
+Making check in perl
+make[1]: Entering directory `/tmp/downloads.t/packages/studio-des-10/perl'
+make[1]: Nothing to be done for `check'.
+make[1]: Leaving directory `/tmp/downloads.t/packages/studio-des-10/perl'
+Making check in tests
+make[1]: Entering directory `/tmp/downloads.t/packages/studio-des-10/tests'
+make  ./neurospaces_harness 
+make[2]: Entering directory `/tmp/downloads.t/packages/studio-des-10/tests'
+make[2]: Nothing to be done for `neurospaces_harness'.
+make[2]: Leaving directory `/tmp/downloads.t/packages/studio-des-10/tests'
+make  check-TESTS
+make[2]: Entering directory `/tmp/downloads.t/packages/studio-des-10/tests'
+Found ENV{srcdir} (.), using it for finding perl modules
+mtn: misuse: workspace required but not found
+././neurospaces_harness: core_directory is ./../
+Executable is ././neurospaces_harness,
+core_directory is ./../
+
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+
+Running tests of module application of operators to reported fields
+
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+
+
+-------------------------------------
+-------------------------------------
+-------------------------------------
+
+Running tests of surface accumulation
+
+-------------------------------------
+-------------------------------------
+
+*** Executing ./../bin/neurospaces '/var/neurospaces/simulation_projects/purkinje-comparison/morphologies/genesis/gp_pc1.p' '--no-use-library' '--shrinkage' '1.114' '--traversal-symbol' '/' '--type' '^T_sym_segment$' '--reporting-fields' 'LENGTH' '--condition' '$d->{context} !~ /Purk_spine/i' '--operator' 'cumulate'
+*** Test : Is surface accumulation done correctly ?
+Name "Neurospaces::Studio::renderer" used only once: possible typo at ./../bin/neurospaces line 255.
+./../bin/neurospaces: initialized rendering engine
+./../bin/neurospaces: could not initialize geometry module
+tempfile(): temporary filename requested but not opened.
+Possibly unsafe, consider using tempfile() with OPEN set to true
+calling morphology2ndf  --no-use-library --shrinkage 1.114 "/var/neurospaces/simulation_projects/purkinje-comparison/morphologies/genesis/gp_pc1.p" >"/tmp/morphologyze14zS.ndf"
+./../bin/neurospaces: No errors for /tmp/morphologyze14zS.ndf.
+---
+cumulate:
+  description: cumulated value
+  final_value: 0.012075620569123
+
+------------------------------------------------
+------------------------------------------------
+
+End for tests of surface accumulation
+Total of 1 tests (encountered 0 error(s) so far)
+
+------------------------------------------------
+------------------------------------------------
+------------------------------------------------
+
+
+---------------------------------
+---------------------------------
+---------------------------------
+
+Running tests of minimum operator
+
+---------------------------------
+---------------------------------
+
+*** Executing ./../bin/neurospaces '/var/neurospaces/simulation_projects/purkinje-comparison/morphologies/genesis/gp_pc1.p' '--no-use-library' '--shrinkage' '1.114' '--traversal-symbol' '/' '--type' '^T_sym_segment$' '--reporting-fields' 'LENGTH' '--condition' '$d->{context} !~ /Purk_spine/i' '--condition' '$d->{context} !~ /soma/i' '--operator' 'minimum'
+*** Test : Is the minimum operator applied correctly ?
+Name "Neurospaces::Studio::renderer" used only once: possible typo at ./../bin/neurospaces line 255.
+./../bin/neurospaces: initialized rendering engine
+./../bin/neurospaces: could not initialize geometry module
+tempfile(): temporary filename requested but not opened.
+Possibly unsafe, consider using tempfile() with OPEN set to true
+calling morphology2ndf  --no-use-library --shrinkage 1.114 "/var/neurospaces/simulation_projects/purkinje-comparison/morphologies/genesis/gp_pc1.p" >"/tmp/morphologyeKeLOu.ndf"
+./../bin/neurospaces: No errors for /tmp/morphologyeKeLOu.ndf.
+---
+minimum:
+  description: /gp_pc1/segments/p0b1b2b2b2b1b2b2b2b1b2[1]->LENGTH
+  final_value: 5.56999999999999e-07
+
+------------------------------------------------
+------------------------------------------------
+
+End for tests of minimum operator
+Total of 2 tests (encountered 0 error(s) so far)
+
+------------------------------------------------
+------------------------------------------------
+------------------------------------------------
+
+
+---------------------------------
+---------------------------------
+---------------------------------
+
+Running tests of maximum operator
+
+---------------------------------
+---------------------------------
+
+*** Executing ./../bin/neurospaces '/var/neurospaces/simulation_projects/purkinje-comparison/morphologies/genesis/gp_pc1.p' '--no-use-library' '--shrinkage' '1.114' '--traversal-symbol' '/' '--type' '^T_sym_segment$' '--reporting-fields' 'LENGTH' '--condition' '$d->{context} !~ /Purk_spine/i' '--operator' 'maximum'
+*** Test : Is the maximum operator applied correctly ?
+Name "Neurospaces::Studio::renderer" used only once: possible typo at ./../bin/neurospaces line 255.
+./../bin/neurospaces: initialized rendering engine
+./../bin/neurospaces: could not initialize geometry module
+tempfile(): temporary filename requested but not opened.
+Possibly unsafe, consider using tempfile() with OPEN set to true
+calling morphology2ndf  --no-use-library --shrinkage 1.114 "/var/neurospaces/simulation_projects/purkinje-comparison/morphologies/genesis/gp_pc1.p" >"/tmp/morphologyCFXcZ9.ndf"
+./../bin/neurospaces: No errors for /tmp/morphologyCFXcZ9.ndf.
+---
+maximum:
+  description: /gp_pc1/segments/p0b1b2b2b2b2b2b2b2b2b2b2b2b2b2b2b1b2b2b2b2b2[0]->LENGTH
+  final_value: 2.64677585375113e-05
+
+------------------------------------------------
+------------------------------------------------
+
+End for tests of maximum operator
+Total of 3 tests (encountered 0 error(s) so far)
+
+------------------------------------------------
+------------------------------------------------
+------------------------------------------------
+
+
+------------------------------------------------------------------
+------------------------------------------------------------------
+
+End of tests of module application of operators to reported fields
+Total of 3 tests (encountered 0 error(s) so far)
+
+------------------------------------------------------------------
+------------------------------------------------------------------
+------------------------------------------------------------------
+
+
+--------------------------------------------------------------
+--------------------------------------------------------------
+--------------------------------------------------------------
+
+Running tests of module information reporting on loaded models
+
+--------------------------------------------------------------
+--------------------------------------------------------------
+
+
+------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------
+
+Running tests of spine reporting for a passive morphology that was populated with active channels and spines
+
+------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------
+
+*** Executing ./../bin/neurospaces '/var/neurospaces/simulation_projects/purkinje-comparison/morphologies/genesis/gp_pc1.p' '--no-use-library' '--traversal-symbol' '/' '--spine' 'Purk_spine' '--condition' '$d->{context} =~ m(segments/.{22}/head/par/exp)i'
+*** Test : Are spines present ?
+Name "Neurospaces::Studio::renderer" used only once: possible typo at ./../bin/neurospaces line 255.
+./../bin/neurospaces: initialized rendering engine
+./../bin/neurospaces: could not initialize geometry module
+tempfile(): temporary filename requested but not opened.
+Possibly unsafe, consider using tempfile() with OPEN set to true
+calling morphology2ndf  --no-use-library --spine-prototypes Purk_spine "/var/neurospaces/simulation_projects/purkinje-comparison/morphologies/genesis/gp_pc1.p" >"/tmp/morphologyYvA9yC.ndf"
+./../bin/neurospaces: No errors for /tmp/morphologyYvA9yC.ndf.
+/gp_pc1/segments/p0b1b1[0]/Purk_spine_0/head/par/exp2
+/gp_pc1/segments/p0b1b1[1]/Purk_spine_0/head/par/exp2
+/gp_pc1/segments/p0b1b1[2]/Purk_spine_0/head/par/exp2
+/gp_pc1/segments/p0b1b1[3]/Purk_spine_0/head/par/exp2
+/gp_pc1/segments/p0b1b1[4]/Purk_spine_0/head/par/exp2
+
+------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------
+
+End for tests of spine reporting for a passive morphology that was populated with active channels and spines
+Total of 4 tests (encountered 0 error(s) so far)
+
+------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------
+
+
+-------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------
+
+Running tests of delayed rectifier reporting for a passive morphology that was populated with active channels
+
+-------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------
+
+*** Executing ./../bin/neurospaces '/var/neurospaces/simulation_projects/purkinje-comparison/morphologies/genesis/gp_pc1.p' '--no-use-library' '--traversal-symbol' '/' '--shrinkage' '1.1111111' '--condition' '$d->{context} =~ m(kdr)i' '--reporting-fields' 'GMAX'
+*** Test : Are delayed rectifier channels present ?
+Name "Neurospaces::Studio::renderer" used only once: possible typo at ./../bin/neurospaces line 255.
+./../bin/neurospaces: initialized rendering engine
+./../bin/neurospaces: could not initialize geometry module
+tempfile(): temporary filename requested but not opened.
+Possibly unsafe, consider using tempfile() with OPEN set to true
+calling morphology2ndf  --no-use-library --shrinkage 1.1111111 "/var/neurospaces/simulation_projects/purkinje-comparison/morphologies/genesis/gp_pc1.p" >"/tmp/morphologySYWEj8.ndf"
+./../bin/neurospaces: No errors for /tmp/morphologySYWEj8.ndf.
+/gp_pc1/segments/soma/kdr->GMAX = 6000
+/gp_pc1/segments/p0b1[0]/kdr->GMAX = 600
+/gp_pc1/segments/p0b1[1]/kdr->GMAX = 600
+/gp_pc1/segments/p0b1[2]/kdr->GMAX = 600
+/gp_pc1/segments/p0b1[3]/kdr->GMAX = 600
+/gp_pc1/segments/p0b1b2[0]/kdr->GMAX = 600
+/gp_pc1/segments/p0b1b2b2[0]/kdr->GMAX = 600
+/gp_pc1/segments/p0b1b2b2[1]/kdr->GMAX = 600
+/gp_pc1/segments/p0b1b2b2[2]/kdr->GMAX = 600
+/gp_pc1/segments/p0b1b2b2b2[0]/kdr->GMAX = 600
+
+-------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------
+
+End for tests of delayed rectifier reporting for a passive morphology that was populated with active channels
+Total of 5 tests (encountered 0 error(s) so far)
+
+-------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------
+
+
+------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------
+
+Running tests of spines algorithm reporting for a passive morphology that was populated with active channels
+
+------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------
+
+*** Executing ./../bin/neurospaces '/var/neurospaces/simulation_projects/purkinje-comparison/morphologies/genesis/gp_pc2.p' '--no-use-library' '--shrinkage' '1.1111111' '--spine' 'Purk_spine' '--algorithm' 'Spines'
+*** Test : Has the spines algorithm worked correctly ?
+Name "Neurospaces::Studio::renderer" used only once: possible typo at ./../bin/neurospaces line 255.
+./../bin/neurospaces: initialized rendering engine
+./../bin/neurospaces: could not initialize geometry module
+tempfile(): temporary filename requested but not opened.
+Possibly unsafe, consider using tempfile() with OPEN set to true
+calling morphology2ndf  --no-use-library --spine-prototypes Purk_spine --shrinkage 1.1111111 "/var/neurospaces/simulation_projects/purkinje-comparison/morphologies/genesis/gp_pc2.p" >"/tmp/morphologyvT8Sc0.ndf"
+./../bin/neurospaces: No errors for /tmp/morphologyvT8Sc0.ndf.
+---
+name: SpinesInstance Spines__0__Purk_spine
+report:
+    number_of_added_spines: 1444
+    number_of_virtual_spines: 111513.676986
+    number_of_spiny_segments: 1444
+    number_of_failures_adding_spines: 0
+    SpinesInstance_prototype: Purk_spine
+    SpinesInstance_surface: 1.33079e-12
+
+------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------
+
+End for tests of spines algorithm reporting for a passive morphology that was populated with active channels
+Total of 6 tests (encountered 0 error(s) so far)
+
+------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------
+
+
+------------------------------------------------
+------------------------------------------------
+------------------------------------------------
+
+Running tests of cumulated spiny dendrite length
+
+------------------------------------------------
+------------------------------------------------
+
+*** Executing ./../bin/neurospaces '/var/neurospaces/simulation_projects/purkinje-comparison/morphologies/genesis/gp_pc1.p' '--no-use-library' '--shrinkage' '1.114' '--traversal-symbol' '/' '--type' '^T_sym_segment$' '--reporting-fields' 'LENGTH' '--condition' '$d->{context} !~ /Purk_spine/i' '--operator' 'cumulate'
+*** Test : What is the cumulated spiny dendrite length ?
+Name "Neurospaces::Studio::renderer" used only once: possible typo at ./../bin/neurospaces line 255.
+./../bin/neurospaces: initialized rendering engine
+./../bin/neurospaces: could not initialize geometry module
+tempfile(): temporary filename requested but not opened.
+Possibly unsafe, consider using tempfile() with OPEN set to true
+calling morphology2ndf  --no-use-library --shrinkage 1.114 "/var/neurospaces/simulation_projects/purkinje-comparison/morphologies/genesis/gp_pc1.p" >"/tmp/morphologyU9xX0M.ndf"
+./../bin/neurospaces: No errors for /tmp/morphologyU9xX0M.ndf.
+---
+cumulate:
+  description: cumulated value
+  final_value: 0.012075620569123
+
+------------------------------------------------
+------------------------------------------------
+
+End for tests of cumulated spiny dendrite length
+Total of 7 tests (encountered 0 error(s) so far)
+
+------------------------------------------------
+------------------------------------------------
+------------------------------------------------
+
+
+-------------------------------------------------------------
+-------------------------------------------------------------
+
+End of tests of module information reporting on loaded models
+Total of 7 tests (encountered 0 error(s) so far)
+
+-------------------------------------------------------------
+-------------------------------------------------------------
+-------------------------------------------------------------
+
+---
+description:
+  command: ././neurospaces_harness
+  name: Test report
+  package:
+    label: des-10
+    name: studio
+    version: des-10-0
+    version_control_id: ''
+global:
+  error_count: 0
+  status: Finished
+  test_count: 7
+  time_end: "Thu Mar 27 17:35:00 CDT 2008\n"
+  time_start: "Thu Mar 27 17:34:35 CDT 2008\n"
+options:
+  flattenout: ~
+  help: ~
+  numerical_compare: 0
+  random_order: ~
+  regex_selector: .*
+  timeout_multiplier: 1
+  verbose: ~
+random_seed: not randomized
+target:
+  OS: linux
+PASS: ./neurospaces_harness
+==================
+All 1 tests passed
+==================
+make[2]: Leaving directory `/tmp/downloads.t/packages/studio-des-10/tests'
+make[1]: Leaving directory `/tmp/downloads.t/packages/studio-des-10/tests'
+make[1]: Entering directory `/tmp/downloads.t/packages/studio-des-10'
+make[1]: Nothing to be done for `check-am'.
+make[1]: Leaving directory `/tmp/downloads.t/packages/studio-des-10'
+bin/neurospaces_build: package studio [make check] executed 
+bin/neurospaces_build: package studio, chdir from (/tmp/downloads.t/packages/studio-des-10) to (/tmp/downloads.t/packages)
+bin/neurospaces_build: package studio [make dist] skipped, condition_value is 0
+bin/neurospaces_build: package studio [make distcheck] skipped, condition_value is 0
+bin/neurospaces_build: package studio [make && sudo make install] skipped, condition_value is 0
+bin/neurospaces_build: package studio [make uninstall] skipped, condition_value is 0
+bin/neurospaces_build: package studio [mtn cert '%version' -- build_report '%report'] skipped, condition_value is 0
+bin/neurospaces_build: examining package simulation_browser
+bin/neurospaces_build: package simulation_browser skipped, disabled is 1
+---
+client:
+  OS: linux
+description:
+  command: bin/neurospaces_build
+  name: Build report
+global:
+  status: Finished
+  test_count: 0
+operations:
+  - operations: !!perl/code '{ "DUMMY" }'
+    package_name: studio
+  - operations: !!perl/code '{ "DUMMY" }'
+    package_name: studio
+  - description: unpacking
+    operations:
+      - tar
+      - xfvz
+      - studio-des-10.tar.gz
+    package_name: studio
+  - description: ./configure
+    operations:
+      - ./configure
+    package_name: studio
+  - description: make
+    operations:
+      - make
+    package_name: studio
+  - description: make check
+    operations:
+      - make
+      - check
+    package_name: studio
+options:
+  certification-report!: 0
+  check!: 1
+  clean!: 0
+  client!: 1
+  compile!: 1
+  configure!: 1
+  developer!: 0
+  dist!: 0
+  distcheck!: 0
+  distclean!: 0
+  distkeywords!: 0
+  download-server=s: downloads.sourceforge.net
+  dry-run!: 0
+  help!: 0
+  help-all!: 0
+  install!: 0
+  packages: 0
+  regex-selector=s: studio
+  src-dir=s: /tmp/downloads.t/packages
+  src-tag=s: des-10
+  tag=s: 0
+  uninstall!: 0
+  verbose+: 3
