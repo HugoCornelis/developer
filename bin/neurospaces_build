@@ -409,7 +409,7 @@ sub all_operations_execute
 		    {
 			if ($option_verbose)
 			{
-			    print "$0: skipped $package_name [" . $description . "], directory not found, assuming this package source is not installed\n";
+			    print "$0: skipped $package_name [" . $description . "], directory ($target_directory) not found, assuming this package source is not installed\n";
 			}
 		    }
 		}
