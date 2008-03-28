@@ -282,8 +282,8 @@ sub all_operations_execute
 		# but this operation is not uninstall
 
 		if (ref $operation eq 'ARRAY'
-		    && exists $operation->[1]
-		    && $operation->[1] ne 'uninstall')
+		    && exists $operation->[4]
+		    && $operation->[4] ne 'uninstall')
 		{
 		    # don't execute, doesnot make sense
 
