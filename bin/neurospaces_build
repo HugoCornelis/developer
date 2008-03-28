@@ -282,8 +282,8 @@ sub all_operations_execute
 		# but this operation is not uninstall
 
 		if (ref $operation eq 'ARRAY'
-		    && exists $operation->[4]
-		    && $operation->[4] ne 'uninstall')
+		    && exists $operation->[5]
+		    && $operation->[5] ne 'uninstall')
 		{
 		    # don't execute, doesnot make sense
 
@@ -712,7 +712,7 @@ sub read_cmd_line
 	   },
 	   {
 	    condition => $option_uninstall,
-	    operation => [ 'make', '&&', 'sudo', 'make', 'uninstall', ],
+	    operation => [ 'make', 'clean', '&&', 'sudo', 'make', 'uninstall', ],
 	   },
 	   {
 	    condition => $option_certification_report,
