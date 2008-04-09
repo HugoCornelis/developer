@@ -723,7 +723,8 @@ sub read_cmd_line
 	  ];
 
     if ($option_help
-        || $option_help_all)
+        || $option_help_all
+        || scalar @ARGV)
     {
 	$0 =~ m(.*/(.*));
 
