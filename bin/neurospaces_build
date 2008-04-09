@@ -341,7 +341,9 @@ sub all_operations_execute
 
 			my $filename = $filename_base . "-" . $option_src_tag . ".tar.gz";
 
-			my $url = "http://" . $option_download_server . "/neurospaces/" . $filename;
+			my $prefix = $option_download_server =~ m|://| ? '' : 'http://';
+
+			my $url = $prefix . $option_download_server . "/neurospaces/" . $filename;
 
 			my $result
 			    = &$operation
