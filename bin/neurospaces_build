@@ -806,19 +806,21 @@ conventions where to put the src code of the packages.  The main
 difference between the two modes is where this script finds the source
 code.
 
-$program_name creates a matrix of packages and build operations.  The
-options fill in the matrix, then $program_name goes through the matrix
-packages first, and performs one build operation after the other for
-each package.  To find out what packages are in the database, use the
-'--packages' option, to select individual packages, use the
-'--regex-selector' option.  To find out about the known build
-operations, use '--help'.
+$program_name creates a matrix of packages (rows) and build operations
+(columns).  $program_name goes through the matrix, packages first, and
+performs one build operation after the other for the selected package.
+The options select or deselect cells in the matrix.
 
-To disable a build stage, prefix the corresponding option with
+To find out what packages are in the database, use the '--packages'
+option.  Disabled packages are not put in the matrix, enabled packages
+are.  To disable packages, use the '--disable' option with a regex
+argument.  To enable packages, use the '--enable' option with a regex
+argument.  After building the matrix, rows are selected using
+'--regex-selector' option, which by default selects all rows.
+
+To find out about the known build operations, use '--help'.  To
+disable a build operation, prefix the corresponding option with
 '--no-', eg. to disable configure, use '--no-configure'.
-
-To see what packages are known in the database, use the '--packages'
-option.
 
 options related to operation mode selection:
     client                 execute in client mode (for regular users, default).
