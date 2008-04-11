@@ -115,9 +115,11 @@ my $all_operations = [];
 
 my $all_packages
     = {
+       # the developer package is always disabled, unless overriden by the --enable option.
+
        developer => {
 		     directory => "$ENV{HOME}/neurospaces_project/project/developer/source/snapshots/0",
-		     disabled => 0,
+		     disabled => 1,
 		     order => 0,
 		    },
        geometry => {
@@ -451,6 +453,8 @@ sub all_operations_execute
 
 sub read_cmd_line
 {
+    my $option_disable;
+    my $option_enable;
     my $option_help = 0;
     my $option_help_all = 0;
     my $option_packages = 0;
@@ -469,11 +473,13 @@ sub read_cmd_line
 		     "clean!" => \$option_clean,
 		     "compile!" => \$option_compile,
 		     "configure!" => \$option_configure,
+		     "disable=s" => \$option_disable,
 		     "dist!" => \$option_dist,
 		     "distcheck!" => \$option_distcheck,
 		     "distclean!" => \$option_distclean,
 		     "distkeywords!" => \$option_distkeywords,
 		     "dry-run!" => \$option_dry_run,
+		     "enable=s" => \$option_enable,
 		     "help!" => \$option_help,
 		     "help-all!" => \$option_help_all,
 		     "install!" => \$option_install,
@@ -531,11 +537,13 @@ sub read_cmd_line
 	   "clean!" => $option_clean,
 	   "compile!" => $option_compile,
 	   "configure!" => $option_configure,
+	   "disable=s" => $option_disable,
 	   "dist!" => $option_dist,
 	   "distcheck!" => $option_distcheck,
 	   "distclean!" => $option_distclean,
 	   "distkeywords!" => $option_distkeywords,
 	   "dry-run!" => $option_dry_run,
+	   "enable=s" => $option_enable,
 	   "help!" => $option_help,
 	   "help-all!" => $option_help_all,
 	   "install!" => $option_install,
@@ -551,6 +559,61 @@ sub read_cmd_line
 	   "src-tag=s" => $option_src_tag,
 	   "src-dir=s" => $option_src_dir,
 	  };
+
+    # process enable and disable options overhere, such that there
+    # effect is mirrored in the help output
+
+    if ($option_enable)
+    {
+	# loop over all packages, in dependency order
+
+	foreach my $package_name (sort
+				  {
+				      $all_packages->{$a}->{order} <=> $all_packages->{$b}->{order}
+				  }
+				  keys %$all_packages)
+	{
+	    # if should be enabled
+
+	    if ($package_name =~ /$option_enable/)
+	    {
+		# enable but don't overwrite existing value
+
+		my $package = $all_packages->{$package_name};
+
+		if ($package->{disabled})
+		{
+		    $package->{disabled} = 0;
+		}
+	    }
+	}
+    }
+
+    if ($option_disable)
+    {
+	# loop over all packages, in dependency order
+
+	foreach my $package_name (sort
+				  {
+				      $all_packages->{$a}->{order} <=> $all_packages->{$b}->{order}
+				  }
+				  keys %$all_packages)
+	{
+	    # if should be disabled
+
+	    if ($package_name =~ /$option_disable/)
+	    {
+		# disable but don't overwrite existing value
+
+		my $package = $all_packages->{$package_name};
+
+		if (!$package->{disabled})
+		{
+		    $package->{disabled} = $option_disable;
+		}
+	    }
+	}
+    }
 
     # merge operations with options that affect the execution of the
     # operations
@@ -767,14 +830,16 @@ options related to operation execution profile:
     clean                  clean before compiling.
     configure              configure before compiling.
     compile                compile packages.
+    disable                explicitly disable these regex of packages in the configuration.
     dist                   build distribution tarballs.
     distcheck              check created tarballs.
     distclean              distclean before compiling.
     dry-run                do not execute any command, just report what would be done.
+    enable                 explicitly enable these regex of packages in the configuration.
     help                   print usage information.
     help-all               print usage, all packages and all operations.
     install                install packages.
-    packages               print known packages, in order of installation.
+    packages               print known packages, in order of build.
     regex-selector         defines a regex to select specific packages.
     tag                    set this tag on all packages.
     uninstall              uninstall packages, cannot be combined with installation options.
@@ -811,7 +876,7 @@ usual.
     if ($option_packages)
     {
 	print
-	    "$0: packages in order of installation are ("
+	    "$0: packages in order of build are ("
 		. (
 		   join
 		   ' ',
@@ -856,11 +921,14 @@ sub report_exit
 	print "*** die: $description\n";
     }
 
-    # yaml out the test report
+    # yaml out the build report
 
-    print Dump($build_report);
+    if ($option_verbose > 1)
+    {
+	print Dump($build_report);
+    }
 
-    # if there were errors
+#     # if there were errors
 
 #     if ($error_count)
 #     {
