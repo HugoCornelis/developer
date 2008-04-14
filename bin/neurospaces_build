@@ -595,74 +595,6 @@ sub read_cmd_line
 			 ],
 	   },
 	   {
-	    condition => $option_upload_server,
-	    description => "uploading",
-	    operation =>
-	    sub
-	    {
-		my $package_information = shift;
-
-		# get specific arguments
-
-		my $description = $package_information->{description};
-
-		my $directory = $package_information->{directory};
-
-		my $filename = $package_information->{filename};
-
-		my $package_name = $package_information->{package_name};
-
-		my $url = $package_information->{url};
-
-		if (!$filename)
-		{
-		    die "$0: *** Error: no filename defined for uploading";
-		}
-
-		if ($option_verbose > 1)
-		{
-		    print "$0: package $package_name [$description $filename to $option_upload_server] executing\n";
-		}
-
-		# change the directory
-
-		chdir $directory;
-
-		# upload the package
-
-		use Net::FTP;
-
-		$option_upload_server =~ m((ftp://)?([^/]+)(.*));
-
-		my $upload_protocol = $1 || 'ftp';
-
-		my $upload_host = $2;
-
-		my $upload_directory = $3;
-
-		my $ftp
-		    = Net::FTP->new($upload_host, Debug => 0)
-			or die "$0: *** Error: Cannot connect to $upload_host: $@";
-
-		$ftp->login("anonymous", '-anonymous@')
-		    or die "$0: *** Error: Cannot login to $upload_host", $ftp->message();
-
-		$ftp->cwd($upload_directory)
-		    or die "$0: *** Error: Cannot change working directory to $upload_directory", $ftp->message();
-
-		$ftp->binary()
-		    or die "$0: *** Error: Cannot switch to binary ftp mode", $ftp->message();
-
-		$ftp->hash()
-		    or die "$0: *** Error: Cannot enable hash printing", $ftp->message();
-
-		$ftp->put($filename)
-		    or die "$0: *** Error: Net::FTP::put() failed ", $ftp->message();
-
-		$ftp->quit();
-	    },
-	   },
-	   {
 	    condition => $option_download_server,
 	    description => "downloading",
 	    operation =>
@@ -780,6 +712,74 @@ sub read_cmd_line
 	   {
 	    condition => $option_uninstall,
 	    operation => [ 'make', 'clean', '&&', 'sudo', 'make', 'uninstall', ],
+	   },
+	   {
+	    condition => $option_upload_server,
+	    description => "uploading",
+	    operation =>
+	    sub
+	    {
+		my $package_information = shift;
+
+		# get specific arguments
+
+		my $description = $package_information->{description};
+
+		my $directory = $package_information->{directory};
+
+		my $filename = $package_information->{filename};
+
+		my $package_name = $package_information->{package_name};
+
+		my $url = $package_information->{url};
+
+		if (!$filename)
+		{
+		    die "$0: *** Error: no filename defined for uploading";
+		}
+
+		if ($option_verbose > 1)
+		{
+		    print "$0: package $package_name [$description $filename to $option_upload_server] executing\n";
+		}
+
+		# change the directory
+
+		chdir $directory;
+
+		# upload the package
+
+		use Net::FTP;
+
+		$option_upload_server =~ m((ftp://)?([^/]+)(.*));
+
+		my $upload_protocol = $1 || 'ftp';
+
+		my $upload_host = $2;
+
+		my $upload_directory = $3;
+
+		my $ftp
+		    = Net::FTP->new($upload_host, Debug => 0)
+			or die "$0: *** Error: Cannot connect to $upload_host: $@";
+
+		$ftp->login("anonymous", '-anonymous@')
+		    or die "$0: *** Error: Cannot login to $upload_host", $ftp->message();
+
+		$ftp->cwd($upload_directory)
+		    or die "$0: *** Error: Cannot change working directory to $upload_directory", $ftp->message();
+
+		$ftp->binary()
+		    or die "$0: *** Error: Cannot switch to binary ftp mode", $ftp->message();
+
+		$ftp->hash()
+		    or die "$0: *** Error: Cannot enable hash printing", $ftp->message();
+
+		$ftp->put($filename)
+		    or die "$0: *** Error: Net::FTP::put() failed ", $ftp->message();
+
+		$ftp->quit();
+	    },
 	   },
 	   {
 	    condition => $option_certification_report,
