@@ -32,6 +32,7 @@ my $option_install = 1;
 my $option_regex_selector = ".*";
 my $option_tag = 0;
 my $option_uninstall = 0;
+my $option_upload_server;
 my $option_verbose = 0;
 
 # options related to installation on a client machine
@@ -42,75 +43,6 @@ my $option_download_server;
 
 
 my $all_operations = [];
-#     = [
-#        {
-# 	operation => [ 'make', 'distclean', ],
-# 	condition => $option_distclean && !$option_uninstall,
-#        },
-#        {
-# 	operation => [
-# 		      ( 'make', 'dist-keywords', ),
-# 		      ( '&&', 'make', 'clean', ),
-# 		      ( '&&', 'make', 'clean', ),
-# 		     ],
-# 	condition => $option_distkeywords,
-#        },
-#        {
-# 	operation => [
-# 		      ( "test", "!", '"`mtn ls unknown && mtn ls missing && mtn ls changed`"', ),
-# 		      ( '&&', 'release-expand', "'%package'", "'%release_major'", "'%release_minor'", "'%release_micro'", "'%release_major-%release_minor'", 'hugo.cornelis@gmail.com', '--verbose', ),
-# 		      ( '&&', 'make', 'clean', ),
-# 		      ( '&&', 'make', 'clean', ),
-# 		      ( "&&", 'mtn', 'ci', "-m", "'1. Keywords only: $option_tag\n'", ),
-# 		      ( "&&", "test", "!", '"`mtn ls unknown && mtn ls missing && mtn ls changed`"', ),
-# 		     ],
-# 	condition => $option_tag,
-#        },
-#        {
-# 	operation => [
-# 		      #! in a separate operation such that we have the correct %version
-
-# 		      ( 'mtn', 'tag', '\'%version\'', "'$option_tag'", ),
-# 		     ],
-# 	condition => $option_tag,
-#        },
-#        {
-# 	operation => [ './configure', ],
-# 	condition => $option_configure,
-#        },
-#        {
-# 	operation => [ 'make', 'clean', ],
-# 	condition => $option_clean,
-#        },
-#        {
-# 	operation => [ 'make', ],
-# 	condition => $option_compile,
-#        },
-#        {
-# 	operation => [ 'make', 'check', ],
-# 	condition => $option_check,
-#        },
-#        {
-# 	operation => [ 'make', 'dist', ],
-# 	condition => $option_dist,
-#        },
-#        {
-# 	operation => [ 'make', 'distcheck', ],
-# 	condition => $option_distcheck,
-#        },
-#        {
-# 	operation => [ 'make', '&&', 'sudo', 'make', 'install', ],
-# 	condition => $option_compile && !$option_uninstall && $option_install,
-#        },
-#        {
-# 	operation => [ 'make', 'uninstall', ],
-# 	condition => $option_uninstall,
-#        },
-#        {
-# 	operation => [ 'mtn', 'cert', '\'%version\'', '--', 'build_report', '\'%report\'', ],
-# 	condition => $option_certification_report,
-#        },
-#       ];
 
 
 my $all_packages
@@ -487,6 +419,7 @@ sub read_cmd_line
 		     "regex-selector=s" => \$option_regex_selector,
 		     "tag=s" => \$option_tag,
 		     "uninstall!" => \$option_uninstall,
+		     "upload-server=s" => \$option_upload_server,
 		     "verbose+" => \$option_verbose,
 
 		     # options related to installation on a client machine
@@ -551,6 +484,7 @@ sub read_cmd_line
 	   "regex-selector=s" => $option_regex_selector,
 	   "tag=s" => $option_tag,
 	   "uninstall!" => $option_uninstall,
+	   "upload-server=s" => $option_upload_server,
 	   "verbose+" => $option_verbose,
 
 	   # options related to installation on a client machine
@@ -659,6 +593,59 @@ sub read_cmd_line
 
 			  ( 'mtn', 'tag', '\'%version\'', "'$option_tag'", ),
 			 ],
+	   },
+	   {
+	    condition => $option_upload_server,
+	    description => "uploading",
+	    operation =>
+	    sub
+	    {
+		my $package_information = shift;
+
+		# get specific arguments
+
+		my $description = $package_information->{description};
+
+		my $directory = $package_information->{directory};
+
+		my $filename = $package_information->{filename};
+
+		my $package_name = $package_information->{package_name};
+
+		my $url = $package_information->{url};
+
+		if ($option_verbose > 1)
+		{
+		    print "$0: package $package_name [$description from $url to $filename] executing\n";
+		}
+
+		# upload the package
+
+		use Net::FTP;
+
+		$option_upload_server =~ m((ftp://)?([^/]+)(.*));
+
+		my $upload_protocol = $1 || 'ftp';
+
+		my $upload_host = $2;
+
+		my $upload_directory = $3;
+
+		my $ftp
+		    = Net::FTP->new($upload_host, Debug => 0)
+			or die "Cannot connect to $upload_host: $@";
+
+		$ftp->login("anonymous", '-anonymous@')
+		    or die "Cannot login to $upload_host", $ftp->message();
+
+		$ftp->cwd($upload_directory)
+		    or die "Cannot change working directory to $upload_directory", $ftp->message();
+
+		$ftp->put($filename)
+		    or die "Net::FTP::put() failed ", $ftp->message();
+
+		$ftp->quit();
+	    },
 	   },
 	   {
 	    condition => $option_download_server,
@@ -845,6 +832,7 @@ options related to operation execution profile:
     regex-selector         defines a regex to select specific packages.
     tag                    set this tag on all packages.
     uninstall              uninstall packages, cannot be combined with installation options.
+    upload-server          enable uploading packages to this server (e.g. ftp://upload.sourceforge.net/incoming).
     v|verbose              tell what is being done, specify multiple times to get
                            more feedback.
 
