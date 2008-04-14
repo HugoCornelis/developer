@@ -696,11 +696,11 @@ sub read_cmd_line
 	   },
 	   {
 	    condition => $option_dist,
-	    operation => [ 'make', 'dist', ],
+	    operation => [ 'export', 'NEUROSPACES_RELEASE=1', '&&', 'make', 'dist', ],
 	   },
 	   {
 	    condition => $option_distcheck,
-	    operation => [ 'make', 'distcheck', ],
+	    operation => [ 'export', 'NEUROSPACES_RELEASE=1', '&&', 'make', 'distcheck', ],
 	   },
 	   {
 	    #! always make as the regular user to avoid cluttering the
