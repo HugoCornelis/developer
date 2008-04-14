@@ -71,7 +71,7 @@ my $all_packages
 			   directory => "$ENV{HOME}/neurospaces_project/model_container/source/c/snapshots/0",
 			   disabled => 0,
 			   order => 1,
-# 			   target_name => 'neurospacesread',
+			   target_name => 'model-container',
 			  },
        simulation_browser => {
 			      directory => "$ENV{HOME}/neurospaces_project/simulation_browser/source/perl/snapshots/0",
@@ -624,6 +624,10 @@ sub read_cmd_line
 		    print "$0: package $package_name [$description $filename to $option_upload_server] executing\n";
 		}
 
+		# change the directory
+
+		chdir $directory;
+
 		# upload the package
 
 		use Net::FTP;
@@ -645,6 +649,12 @@ sub read_cmd_line
 
 		$ftp->cwd($upload_directory)
 		    or die "$0: *** Error: Cannot change working directory to $upload_directory", $ftp->message();
+
+		$ftp->binary()
+		    or die "$0: *** Error: Cannot switch to binary ftp mode", $ftp->message();
+
+		$ftp->hash()
+		    or die "$0: *** Error: Cannot enable hash printing", $ftp->message();
 
 		$ftp->put($filename)
 		    or die "$0: *** Error: Net::FTP::put() failed ", $ftp->message();
