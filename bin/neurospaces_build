@@ -269,7 +269,7 @@ sub all_operations_execute
 
 		    if (!$option_dry_run)
 		    {
-			my $directory = $option_src_dir;
+			my $directory = $option_src_dir ? $option_src_dir : $target_directory;
 
 			my $filename_base = $package->{target_name} || $package_name;
 
@@ -285,7 +285,7 @@ sub all_operations_execute
 				 {
 				  description => $description,
 				  directory => $directory,
-				  filename => $filename,
+				  ( $option_src_tag ? (filename => $filename,) : (), ),
 				  operations => $operations,
 				  package_name => $package_name,
 				  url => $url,
@@ -614,9 +614,14 @@ sub read_cmd_line
 
 		my $url = $package_information->{url};
 
+		if (!$filename)
+		{
+		    die "$0: *** Error: no filename defined for uploading";
+		}
+
 		if ($option_verbose > 1)
 		{
-		    print "$0: package $package_name [$description from $url to $filename] executing\n";
+		    print "$0: package $package_name [$description $filename to $option_upload_server] executing\n";
 		}
 
 		# upload the package
@@ -633,16 +638,16 @@ sub read_cmd_line
 
 		my $ftp
 		    = Net::FTP->new($upload_host, Debug => 0)
-			or die "Cannot connect to $upload_host: $@";
+			or die "$0: *** Error: Cannot connect to $upload_host: $@";
 
 		$ftp->login("anonymous", '-anonymous@')
-		    or die "Cannot login to $upload_host", $ftp->message();
+		    or die "$0: *** Error: Cannot login to $upload_host", $ftp->message();
 
 		$ftp->cwd($upload_directory)
-		    or die "Cannot change working directory to $upload_directory", $ftp->message();
+		    or die "$0: *** Error: Cannot change working directory to $upload_directory", $ftp->message();
 
 		$ftp->put($filename)
-		    or die "Net::FTP::put() failed ", $ftp->message();
+		    or die "$0: *** Error: Net::FTP::put() failed ", $ftp->message();
 
 		$ftp->quit();
 	    },
