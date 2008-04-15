@@ -118,7 +118,12 @@ TEST_SPECIFICATION_FILES = @TEST_SPECIFICATION_FILES@
 VERSION = @VERSION@
 ac_ct_STRIP = @ac_ct_STRIP@
 am__leading_dot = @am__leading_dot@
-am__tar = @am__tar@
+#	release-expand developer des 10 0 des-10 hugo.cornelis@gmail.com --verbose
+
+# the tests are copied overhere.
+#
+# The variable EXTRA_DIST could also be used here.
+am__tar = ${AMTAR} chf - --format=posix "$$tardir"
 am__untar = @am__untar@
 bindir = @bindir@
 build_alias = @build_alias@
@@ -688,11 +693,6 @@ show-release-labels:
 
 dist-keywords:
 	release-expand developer $(RELEASE_MAJOR) $(RELEASE_MINOR) $(RELEASE_MICRO) $(RELEASE_MAJOR)-$(RELEASE_MINOR) hugo.cornelis@gmail.com --verbose
-#	release-expand developer des 10 0 des-10 hugo.cornelis@gmail.com --verbose
-
-# the tests are copied overhere.
-#
-# The variable EXTRA_DIST could also be used here.
 
 dist-hook: dist-keywords
 #	cd $(srcdir) && if test -n "`mtn ls changed `" ; then false ; else true ; fi

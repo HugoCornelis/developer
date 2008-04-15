@@ -41,6 +41,8 @@ dist-keywords:
 #
 # The variable EXTRA_DIST could also be used here.
 
+am__tar = ${AMTAR} chf - --format=posix "$$tardir"
+
 dist-hook: dist-keywords
 #	cd $(srcdir) && if test -n "`mtn ls changed `" ; then false ; else true ; fi
 	find $(distdir) -name _Inline -exec chmod u+w -R \{\} \;
