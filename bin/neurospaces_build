@@ -738,7 +738,7 @@ sub read_cmd_line
 		    die "$0: *** Error: no filename defined for uploading";
 		}
 
-		if ($option_verbose > 1)
+		if ($option_verbose)
 		{
 		    print "$0: package $package_name [$description $filename to $option_upload_server] executing\n";
 		}
