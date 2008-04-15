@@ -118,7 +118,7 @@ TEST_SPECIFICATION_FILES = @TEST_SPECIFICATION_FILES@
 VERSION = @VERSION@
 ac_ct_STRIP = @ac_ct_STRIP@
 am__leading_dot = @am__leading_dot@
-#	release-expand developer des 10 0 des-10 hugo.cornelis@gmail.com --verbose
+#	release-expand installer des 10 0 des-10 hugo.cornelis@gmail.com --verbose
 
 # the tests are copied overhere.
 #
@@ -153,7 +153,7 @@ dist_bin_SCRIPTS = \
 	bin/release-expand \
 	bin/release-extract
 
-developertestdir = $(prefix)/developer
+developertestdir = $(prefix)/neurospaces/installer
 nobase_dist_developertest_DATA = @TEST_SPECIFICATION_FILES@
 RELEASE_MAJOR = `release-extract --major`
 RELEASE_MINOR = `release-extract --minor`
@@ -692,7 +692,7 @@ show-release-labels:
 	echo "Release information (major-minor-micro): $(RELEASE_MAJOR)-$(RELEASE_MINOR)-$(RELEASE_MICRO)"
 
 dist-keywords:
-	release-expand developer $(RELEASE_MAJOR) $(RELEASE_MINOR) $(RELEASE_MICRO) $(RELEASE_MAJOR)-$(RELEASE_MINOR) hugo.cornelis@gmail.com --verbose
+	release-expand installer $(RELEASE_MAJOR) $(RELEASE_MINOR) $(RELEASE_MICRO) $(RELEASE_MAJOR)-$(RELEASE_MINOR) hugo.cornelis@gmail.com --verbose
 
 dist-hook: dist-keywords
 #	cd $(srcdir) && if test -n "`mtn ls changed `" ; then false ; else true ; fi

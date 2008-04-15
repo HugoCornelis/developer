@@ -81,8 +81,8 @@ my $packages
 				      unknown => "mtn ls unknown",
 				     },
 			},
-       developer => {
-		     directory => "$ENV{HOME}/neurospaces_project/project/developer/source/snapshots/0",
+       installer => {
+		     directory => "$ENV{HOME}/neurospaces_project/installer/source/snapshots/0",
 		     priority => 8,
 		     commands => {
 				  missing => "mtn ls missing",
