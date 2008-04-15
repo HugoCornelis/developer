@@ -23,7 +23,7 @@ dist_bin_SCRIPTS = \
 	bin/release-expand \
 	bin/release-extract
 
-developertestdir=$(prefix)/developer
+developertestdir=$(prefix)/neurospaces/installer
 nobase_dist_developertest_DATA=@TEST_SPECIFICATION_FILES@
 
 RELEASE_MAJOR=`release-extract --major`
@@ -34,8 +34,8 @@ show-release-labels:
 	echo "Release information (major-minor-micro): $(RELEASE_MAJOR)-$(RELEASE_MINOR)-$(RELEASE_MICRO)"
 
 dist-keywords:
-	release-expand developer $(RELEASE_MAJOR) $(RELEASE_MINOR) $(RELEASE_MICRO) $(RELEASE_MAJOR)-$(RELEASE_MINOR) hugo.cornelis@gmail.com --verbose
-#	release-expand developer des 10 0 des-10 hugo.cornelis@gmail.com --verbose
+	release-expand installer $(RELEASE_MAJOR) $(RELEASE_MINOR) $(RELEASE_MICRO) $(RELEASE_MAJOR)-$(RELEASE_MINOR) hugo.cornelis@gmail.com --verbose
+#	release-expand installer des 10 0 des-10 hugo.cornelis@gmail.com --verbose
 
 # the tests are copied overhere.
 #
