@@ -64,15 +64,15 @@ my $all_packages
 		  disabled => 0,
 		  order => 2,
 		 },
-       model_container => {
-			   './configure' => [
-					     '--with-delete-operation',
-					    ],
-			   directory => "$ENV{HOME}/neurospaces_project/model_container/source/c/snapshots/0",
-			   disabled => 0,
-			   order => 1,
-			   target_name => 'model-container',
-			  },
+       'model-container' => {
+			     './configure' => [
+					       '--with-delete-operation',
+					      ],
+			     directory => "$ENV{HOME}/neurospaces_project/model-container/source/c/snapshots/0",
+			     disabled => 0,
+			     order => 1,
+			     target_name => 'model-container',
+			    },
        simulation_browser => {
 			      directory => "$ENV{HOME}/neurospaces_project/simulation_browser/source/perl/snapshots/0",
 			      disabled => 1,

@@ -18,15 +18,15 @@ my $packages
 					 unknown => undef,
 					},
 			   },
-       model_container => {
-			   directory => "$ENV{HOME}/neurospaces_project/model_container/source/c/snapshots/0",
-			   priority => 1,
-			   commands => {
-					missing => "mtn ls missing",
-					status => "mtn status",
-					unknown => "mtn ls unknown",
-				       },
-			  },
+       'model-container' => {
+			     directory => "$ENV{HOME}/neurospaces_project/model-container/source/c/snapshots/0",
+			     priority => 1,
+			     commands => {
+					  missing => "mtn ls missing",
+					  status => "mtn status",
+					  unknown => "mtn ls unknown",
+					 },
+			    },
        heccer => {
 		  directory => "$ENV{HOME}/neurospaces_project/heccer/source/c/snapshots/0",
 		  priority => 2,
