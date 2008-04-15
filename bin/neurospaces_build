@@ -1000,6 +1000,8 @@ sub operation_execute
 
     my $package_name = $environment->{package_name};
 
+    my $reported_arguments = [ @$arguments, ];
+
     # if keyword expansions
 
     if ($keywords)
@@ -1064,17 +1066,19 @@ sub operation_execute
 
 	my $report_text = Dump( { build_report => $build_report, }, ) . "\n";
 
-	$arguments
+	$reported_arguments
 	    = [
 	       map
 	       {
-		   s/%report/$report_text/g;
+		   my $argument = $_;
+
+		   $argument =~ s/%report/$report_text/g;
 
 		   # replace non-LDH characters: underscores
 
-		   s/_/-/g;
+		   $argument =~ s/_/-/g;
 
-		   $_;
+		   $argument;
 	       }
 	       @$arguments,
 	      ];
@@ -1082,7 +1086,7 @@ sub operation_execute
 
     # register that we are about to do this operation for this package
 
-    push @$operations, { description => $description, package_name => $package_name, operations => $arguments, };
+    push @$operations, { description => $description, package_name => $package_name, operations => $reported_arguments, };
 
     if (!$option_dry_run)
     {
