@@ -49,8 +49,8 @@ my $all_packages
     = {
        # the developer package is always disabled, unless overriden by the --enable option.
 
-       developer => {
-		     directory => "$ENV{HOME}/neurospaces_project/project/developer/source/snapshots/0",
+       installer => {
+		     directory => "$ENV{HOME}/neurospaces_project/installer/source/snapshots/0",
 		     disabled => 1,
 		     order => 0,
 		    },
