@@ -9,7 +9,7 @@ use strict;
 my $packages
     = {
        neurospaces_prcs => {
-			    directory => "$ENV{HOME}/neurospaces_project/model_container/source/c/snapshots/prcs.0",
+			    directory => "$ENV{HOME}/neurospaces_project/model-container/source/c/snapshots/prcs.0",
 			    # 			    disabled => 1,
 			    priority => 1,
 			    commands => {
