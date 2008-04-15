@@ -761,22 +761,22 @@ sub read_cmd_line
 
 		my $ftp
 		    = Net::FTP->new($upload_host, Debug => 0)
-			or die "$0: *** Error: Cannot connect to $upload_host: $@";
+			or die "$0: *** Error: for $filename: cannot connect to $upload_host: $@";
 
 		$ftp->login("anonymous", '-anonymous@')
-		    or die "$0: *** Error: Cannot login to $upload_host", $ftp->message();
+		    or die "$0: *** Error: for $filename: cannot login to $upload_host", $ftp->message();
 
 		$ftp->cwd($upload_directory)
-		    or die "$0: *** Error: Cannot change working directory to $upload_directory", $ftp->message();
+		    or die "$0: *** Error: for $filename: cannot change working directory to $upload_directory", $ftp->message();
 
 		$ftp->binary()
-		    or die "$0: *** Error: Cannot switch to binary ftp mode", $ftp->message();
+		    or die "$0: *** Error: for $filename: cannot switch to binary ftp mode", $ftp->message();
 
 		$ftp->hash()
-		    or die "$0: *** Error: Cannot enable hash printing", $ftp->message();
+		    or die "$0: *** Error: for $filename: cannot enable hash printing", $ftp->message();
 
 		$ftp->put($filename)
-		    or die "$0: *** Error: Net::FTP::put() failed ", $ftp->message();
+		    or die "$0: *** Error: for $filename: Net::FTP::put() failed ", $ftp->message();
 
 		$ftp->quit();
 	    },

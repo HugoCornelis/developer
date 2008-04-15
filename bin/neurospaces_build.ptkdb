@@ -1,24 +1,24 @@
 $files = {
-           '_<bin/neurospaces_build' => [
-                                          {
-                                            'expr' => undef,
-                                            'value' => '1',
-                                            'text' => '    all_operations_execute();
+           '_<./neurospaces_build' => [
+                                        {
+                                          'expr' => undef,
+                                          'value' => '1',
+                                          'text' => '	    if ($option_uninstall)
 ',
-                                            'fname' => 'bin/neurospaces_build',
-                                            'type' => 'user',
-                                            'line' => '149'
-                                          },
-                                          {
-                                            'expr' => undef,
-                                            'value' => '1',
-                                            'text' => '	    if ($condition_value)
+                                          'fname' => './neurospaces_build',
+                                          'type' => 'user',
+                                          'line' => '215'
+                                        },
+                                        {
+                                          'expr' => undef,
+                                          'value' => '1',
+                                          'text' => '    all_operations_execute();
 ',
-                                            'fname' => 'bin/neurospaces_build',
-                                            'type' => 'user',
-                                            'line' => '236'
-                                          }
-                                        ]
+                                          'fname' => './neurospaces_build',
+                                          'type' => 'user',
+                                          'line' => '150'
+                                        }
+                                      ]
          };
 $expr_list = [
                {
