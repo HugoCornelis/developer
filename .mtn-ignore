@@ -1,5 +1,5 @@
 Makefile$
-^developer-.*.tar.gz$
+^installer-.*.tar.gz$
 config.log
 config.status
 installed
