@@ -133,7 +133,9 @@ foreach my $package_name (
 
     my $directory = $package->{directory};
 
-    print "$0: *** package $package_name\n";
+    my $text = "$0: *** package $package_name";
+
+    print "\n\n" . ("-" x length $text) . "\n$text\n";
 
 #     use Cwd;
 
