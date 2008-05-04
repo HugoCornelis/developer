@@ -130,6 +130,27 @@ verbose+: 0
 			       },
 			       {
 				arguments => [
+					      '--environment',
+					      'NEUROSPACES_HARNESS_OPTION_EMAIL=1',
+					      '--environment',
+					      'a=b',
+					      '--help',
+					     ],
+				command => 'bin/neurospaces_build',
+				command_tests => [
+						  {
+						   description => "Can we set environment variables ?",
+						   read => "
+environment=s:
+  - NEUROSPACES_HARNESS_OPTION_EMAIL=1
+  - a=b
+",
+						  },
+						 ],
+				description => "help message",
+			       },
+			       {
+				arguments => [
 					      '--tag',
 					      'build-10',
 					      '--verbose',
@@ -159,8 +180,8 @@ bin/neurospaces_build: *** Error: you must set option_src_dir and option_src_tag
 				description => "wrong options",
 			       },
 			      ],
-       description => "build testing in client mode",
-       name => 'client.t',
+       description => "build testing logic, and operations not specific to client or developer mode",
+       name => 'global.t',
       };
 
 
