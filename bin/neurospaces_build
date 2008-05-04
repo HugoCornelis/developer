@@ -140,23 +140,6 @@ sub main
 {
     read_cmd_line();
 
-#     # tell neurospaces_harness if to send emails for this
-
-#     $ENV{NEUROSPACES_HARNESS_OPTION_EMAIL} = $option_neurospaces_harness_email;
-
-    # build the environment for external applications
-
-    foreach my $environment_setting (@$option_environment)
-    {
-	$environment_setting =~ /^(.*?)=(.*)$/;
-
-	my $variable = $1;
-
-	my $value = $2;
-
-	$ENV{$variable} = $value;
-    }
-
     # set status: running
 
     $build_report->{global}->{status} = 'Running';
@@ -879,6 +862,35 @@ sub read_cmd_line
 	   },
 	  ];
 
+    # process environment options
+
+#     # tell neurospaces_harness if to send emails for this
+
+#     $ENV{NEUROSPACES_HARNESS_OPTION_EMAIL} = $option_neurospaces_harness_email;
+
+    # build the environment for external applications
+
+    foreach my $environment_setting (@$option_environment)
+    {
+	$environment_setting =~ /^(.*?)=(.*)$/;
+
+	my $variable = $1;
+
+	my $value = $2;
+
+	$ENV{$variable} = $value;
+    }
+
+    if ($option_verbose
+	&& @$option_environment)
+    {
+	use YAML;
+
+	print Dump(\%ENV);
+    }
+
+    # reporting options
+
     if ($option_help
         || $option_help_all
         || scalar @ARGV)
@@ -974,7 +986,6 @@ options related to behavior of external applications:
 	exit 1;
     }
 
-
     if ($option_packages)
     {
 	print
@@ -996,7 +1007,6 @@ options related to behavior of external applications:
 
 	exit 1;
     }
-
 
 }
 
