@@ -1,0 +1,68 @@
+bin/neurospaces_build: examining package installer
+bin/neurospaces_build: package installer [make distclean] skipped, condition_value is 0
+bin/neurospaces_build: package installer [make dist-keywords && make clean && make clean] skipped, condition_value is 0
+bin/neurospaces_build: package installer [test ! "`mtn ls unknown && mtn ls missing && mtn ls changed`" && release-expand '%package' '%release_major' '%release_minor' '%release_micro' '%release_major-%release_minor' hugo.cornelis@gmail.com --verbose && make clean && make clean && mtn ci -m '1. Keywords only: 0
+' && test ! "`mtn ls unknown && mtn ls missing && mtn ls changed`"] skipped, condition_value is 0
+bin/neurospaces_build: package installer [mtn tag '%version' '0'] skipped, condition_value is 0
+bin/neurospaces_build: package installer [putting the tag in the tag database] skipped, condition_value is 0
+bin/neurospaces_build: package installer [downloading] skipped, condition_value is 
+bin/neurospaces_build: package installer [unpacking] skipped, condition_value is 
+bin/neurospaces_build: package installer [./configure] skipped, condition_value is 0
+bin/neurospaces_build: package installer [make clean] skipped, condition_value is 0
+bin/neurospaces_build: package installer [make] skipped, condition_value is 0
+bin/neurospaces_build: package installer [make check] skipped, condition_value is 0
+bin/neurospaces_build: package installer [export NEUROSPACES_RELEASE=1 && make dist] skipped, condition_value is 0
+bin/neurospaces_build: package installer [export NEUROSPACES_RELEASE=1 && make distcheck] skipped, condition_value is 0
+bin/neurospaces_build: package installer [make && sudo make install] skipped, condition_value is 0
+bin/neurospaces_build: package installer [make clean && sudo make uninstall] skipped, condition_value is 0
+bin/neurospaces_build: package installer [uploading] skipped, condition_value is 
+bin/neurospaces_build: package installer [mtn cert '%version' -- build_report '%report'] skipped, condition_value is 0
+bin/neurospaces_build: examining package model-container
+bin/neurospaces_build: package model-container skipped, not selected using --regex-selector
+bin/neurospaces_build: examining package heccer
+bin/neurospaces_build: package heccer skipped, not selected using --regex-selector
+bin/neurospaces_build: examining package ssp
+bin/neurospaces_build: package ssp skipped, not selected using --regex-selector
+bin/neurospaces_build: examining package geometry
+bin/neurospaces_build: package geometry skipped, disabled is 1
+bin/neurospaces_build: examining package studio
+bin/neurospaces_build: package studio skipped, not selected using --regex-selector
+bin/neurospaces_build: examining package simulation_browser
+bin/neurospaces_build: package simulation_browser skipped, disabled is 1
+---
+client:
+  OS: linux
+description:
+  command: bin/neurospaces_build
+  name: Build report
+global:
+  status: Finished
+  test_count: 0
+operations: []
+options:
+  certification-report!: 0
+  check!: 0
+  clean!: 0
+  client!: 0
+  compile!: 0
+  configure!: 0
+  developer!: 1
+  disable=s: ~
+  dist!: 0
+  distcheck!: 0
+  distclean!: 0
+  distkeywords!: 0
+  download-server=s: ~
+  dry-run!: 1
+  enable=s: installer
+  help!: 0
+  help-all!: 0
+  install!: 0
+  packages: 0
+  regex-selector=s: installer
+  src-dir=s: ~
+  src-tag=s: ~
+  tag=s: 0
+  uninstall!: 0
+  upload-server=s: ~
+  verbose+: 3

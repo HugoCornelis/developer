@@ -1,0 +1,105 @@
+bin/neurospaces_build: examining installer
+bin/neurospaces_build: installer [make distclean] skipped, condition_value is 0
+bin/neurospaces_build: installer [make dist-keywords && make clean && make clean] skipped, condition_value is 0
+bin/neurospaces_build: installer [test ! "`mtn ls unknown && mtn ls missing && mtn ls changed`" && release-expand '%package' '%release_major' '%release_minor' '%release_micro' '%release_major-%release_minor' hugo.cornelis@gmail.com --verbose && make clean && make clean && mtn ci -m '1. Keywords only: build-10
+' && test ! "`mtn ls unknown && mtn ls missing && mtn ls changed`"] preparing to execute 
+bin/neurospaces_build: for installer, chdir from (/local_home/local_home/hugo/neurospaces_project/project/installer/source/snapshots/0) to (/local_home/local_home/hugo/neurospaces_project/project/installer/source/snapshots/0)
+bin/neurospaces_build: installer [test ! "`mtn ls unknown && mtn ls missing && mtn ls changed`" && release-expand 'installer' 'build' '10' '0' 'build-10' hugo.cornelis@gmail.com --verbose && make clean && make clean && mtn ci -m '1. Keywords only: build-10
+' && test ! "`mtn ls unknown && mtn ls missing && mtn ls changed`"] not executed, dry_run is 1
+bin/neurospaces_build: for installer, chdir from (/local_home/local_home/hugo/neurospaces_project/project/installer/source/snapshots/0) to (/local_home/local_home/hugo/neurospaces_project/project/installer/source/snapshots/0)
+bin/neurospaces_build: installer [mtn tag '%version' 'build-10'] preparing to execute 
+bin/neurospaces_build: for installer, chdir from (/local_home/local_home/hugo/neurospaces_project/project/installer/source/snapshots/0) to (/local_home/local_home/hugo/neurospaces_project/project/installer/source/snapshots/0)
+bin/neurospaces_build: installer [mtn tag '2959b3d828e0c56edefcd30d3868fa1a6b6a4594' 'build-10'] not executed, dry_run is 1
+bin/neurospaces_build: for installer, chdir from (/local_home/local_home/hugo/neurospaces_project/project/installer/source/snapshots/0) to (/local_home/local_home/hugo/neurospaces_project/project/installer/source/snapshots/0)
+bin/neurospaces_build: installer [downloading] skipped, condition_value is 
+bin/neurospaces_build: installer [tar xfz '%package-build-10.tar.gz'] skipped, condition_value is 
+bin/neurospaces_build: installer [./configure] skipped, condition_value is 0
+bin/neurospaces_build: installer [make clean] skipped, condition_value is 0
+bin/neurospaces_build: installer [make] skipped, condition_value is 0
+bin/neurospaces_build: installer [make check] skipped, condition_value is 0
+bin/neurospaces_build: installer [make dist] skipped, condition_value is 0
+bin/neurospaces_build: installer [make distcheck] skipped, condition_value is 0
+bin/neurospaces_build: installer [make && sudo make install] skipped, condition_value is 0
+bin/neurospaces_build: installer [make uninstall] skipped, condition_value is 0
+bin/neurospaces_build: installer [mtn cert '%version' -- build_report '%report'] skipped, condition_value is 0
+bin/neurospaces_build: examining model_container
+bin/neurospaces_build: model_container skipped, not selected using --regex-selector
+bin/neurospaces_build: examining heccer
+bin/neurospaces_build: heccer skipped, not selected using --regex-selector
+bin/neurospaces_build: examining ssp
+bin/neurospaces_build: ssp skipped, not selected using --regex-selector
+bin/neurospaces_build: examining geometry
+bin/neurospaces_build: geometry skipped, disabled is 1
+bin/neurospaces_build: examining studio
+bin/neurospaces_build: studio skipped, not selected using --regex-selector
+bin/neurospaces_build: examining simulation_browser
+bin/neurospaces_build: simulation_browser skipped, disabled is 1
+---
+client:
+  OS: linux
+description:
+  command: bin/neurospaces_build
+  name: Build report
+global:
+  status: Finished
+  test_count: 0
+operations:
+  - operations:
+      - test
+      - '!'
+      - '"`mtn ls unknown && mtn ls missing && mtn ls changed`"'
+      - '&&'
+      - release-expand
+      - "'installer'"
+      - "'build'"
+      - "'10'"
+      - "'0'"
+      - "'build-10'"
+      - hugo.cornelis@gmail.com
+      - --verbose
+      - '&&'
+      - make
+      - clean
+      - '&&'
+      - make
+      - clean
+      - '&&'
+      - mtn
+      - ci
+      - -m
+      - "'1. Keywords only: build-10\n'"
+      - '&&'
+      - test
+      - '!'
+      - '"`mtn ls unknown && mtn ls missing && mtn ls changed`"'
+    package_name: installer
+  - operations:
+      - mtn
+      - tag
+      - "'2959b3d828e0c56edefcd30d3868fa1a6b6a4594'"
+      - "'build-10'"
+    package_name: installer
+options:
+  certification-report!: 0
+  check!: 0
+  clean!: 0
+  client!: 0
+  compile!: 0
+  configure!: 0
+  developer!: 1
+  dist!: 0
+  distcheck!: 0
+  distclean!: 0
+  distkeywords!: 0
+  download-server=s: ~
+  dry-run!: 1
+  help!: 0
+  help-all!: 0
+  install!: 0
+  packages: 0
+  regex-selector=s: installer
+  src-dir=s: ~
+  src-tag=s: ~
+  tag=s: build-10
+  uninstall!: 0
+  verbose+: 3

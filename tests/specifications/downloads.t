@@ -63,7 +63,9 @@ my $test
 					      '--verbose',
 					      '--no-install',
 					      '--regex',
-					      'developer',
+					      'installer',
+					      '--enable',
+					      'installer',
 					      '--src-tag',
 					      'des-10',
 					      '--src-dir',
@@ -75,29 +77,34 @@ my $test
 						  {
 						   comment => 'the test of this output is plit in two part to avoid the use of regexes in the expected output, part 1.',
 						   description => "Do we get an appropriate error message when attempting to download from a non-existent download server, part 1 ?",
-						   read => "bin/neurospaces_build: examining package developer
-bin/neurospaces_build: package developer [make distclean] skipped, condition_value is 0
-bin/neurospaces_build: package developer [make dist-keywords && make clean && make clean] skipped, condition_value is 0
-bin/neurospaces_build: package developer [test ! \"`mtn ls unknown && mtn ls missing && mtn ls changed`\" && release-expand '%package' '%release_major' '%release_minor' '%release_micro' '%release_major-%release_minor' hugo.cornelis\@gmail.com --verbose && make clean && make clean && mtn ci -m '1. Keywords only: 0
+						   read => "bin/neurospaces_build: examining package installer
+bin/neurospaces_build: package installer [make distclean] skipped, condition_value is 0
+bin/neurospaces_build: package installer [make dist-keywords && make clean && make clean] skipped, condition_value is 0
+bin/neurospaces_build: package installer [test ! \"`mtn ls unknown && mtn ls missing && mtn ls changed`\" && release-expand '%package' '%release_major' '%release_minor' '%release_micro' '%release_major-%release_minor' hugo.cornelis\@gmail.com --verbose && make clean && make clean && mtn ci -m '1. Keywords only: 0
 ' && test ! \"`mtn ls unknown && mtn ls missing && mtn ls changed`\"] skipped, condition_value is 0
-bin/neurospaces_build: package developer [mtn tag '%version' '0'] skipped, condition_value is 0
-bin/neurospaces_build: package developer [downloading] preparing to execute 
-bin/neurospaces_build: package developer [\$VAR1 = sub {
+bin/neurospaces_build: package installer [mtn tag '%version' '0'] skipped, condition_value is 0
+bin/neurospaces_build: package installer [putting the tag in the tag database] skipped, condition_value is 0
+bin/neurospaces_build: package installer [downloading] preparing to execute 
+bin/neurospaces_build: package installer [\$VAR1 = sub {
             use strict 'refs';
             my \$package_information = shift \@_;
             my \$description = \$\$package_information{'description'};
             my \$directory = \$\$package_information{'directory'};
             my \$filename = \$\$package_information{'filename'};
+            my \$package_name = \$\$package_information{'package_name'};
             my \$url = \$\$package_information{'url'};
             mkdir \$directory;
+            if (\$option_verbose > 1) {
+                print \"\$0: package \$package_name [\$description from \$url to \$filename] executing\\n\";
+            }
             my \$http_response = getstore(\$url, \$directory . '/' . \$filename);
             if (not is_success \$http_response) {
-                die \"\$0: *** Error: \$description from \${option_download_server}: \$http_response\";
+                warn \"\$0: *** Warning: \$description from \${option_download_server}: \$http_response\";
             }
         };
 ] not executed, dry_run is 1
-bin/neurospaces_build: package developer [unpacking] preparing to execute 
-bin/neurospaces_build: package developer [\$VAR1 = sub {
+bin/neurospaces_build: package installer [unpacking] preparing to execute 
+bin/neurospaces_build: package installer [\$VAR1 = sub {
             use strict 'refs';
             my \$package_information = shift \@_;
             my \$description = \$\$package_information{'description'};
@@ -109,19 +116,20 @@ bin/neurospaces_build: package developer [\$VAR1 = sub {
             operation_execute(\$operations, {'description', \$description, 'keywords', 0, 'package_name', \$package_name}, ['tar', 'xfvz', \$filename]);
         };
 ] not executed, dry_run is 1
-bin/neurospaces_build: package developer [./configure] preparing to execute 
-bin/neurospaces_build: package developer skipped, [./configure], directory (/tmp/downloads.t/packages/developer-des-10) not found, assuming this package source is not installed
-bin/neurospaces_build: package developer [make clean] skipped, condition_value is 0
-bin/neurospaces_build: package developer [make] preparing to execute 
-bin/neurospaces_build: package developer skipped, [make], directory (/tmp/downloads.t/packages/developer-des-10) not found, assuming this package source is not installed
-bin/neurospaces_build: package developer [make check] skipped, condition_value is 0
-bin/neurospaces_build: package developer [make dist] skipped, condition_value is 0
-bin/neurospaces_build: package developer [make distcheck] skipped, condition_value is 0
-bin/neurospaces_build: package developer [make && sudo make install] skipped, condition_value is 0
-bin/neurospaces_build: package developer [make uninstall] skipped, condition_value is 0
-bin/neurospaces_build: package developer [mtn cert '%version' -- build_report '%report'] skipped, condition_value is 0
-bin/neurospaces_build: examining package model_container
-bin/neurospaces_build: package model_container skipped, not selected using --regex-selector
+bin/neurospaces_build: package installer [./configure] preparing to execute 
+bin/neurospaces_build: package installer skipped, [./configure], directory (/tmp/downloads.t/packages/installer-des-10) not found, assuming this package source is not installed
+bin/neurospaces_build: package installer [make clean] skipped, condition_value is 0
+bin/neurospaces_build: package installer [make] preparing to execute 
+bin/neurospaces_build: package installer skipped, [make], directory (/tmp/downloads.t/packages/installer-des-10) not found, assuming this package source is not installed
+bin/neurospaces_build: package installer [make check] skipped, condition_value is 0
+bin/neurospaces_build: package installer [export NEUROSPACES_RELEASE=1 && make dist] skipped, condition_value is 0
+bin/neurospaces_build: package installer [export NEUROSPACES_RELEASE=1 && make distcheck] skipped, condition_value is 0
+bin/neurospaces_build: package installer [make && sudo make install] skipped, condition_value is 0
+bin/neurospaces_build: package installer [make clean && sudo make uninstall] skipped, condition_value is 0
+bin/neurospaces_build: package installer [uploading] skipped, condition_value is 
+bin/neurospaces_build: package installer [mtn cert '%version' -- build_report '%report'] skipped, condition_value is 0
+bin/neurospaces_build: examining package model-container
+bin/neurospaces_build: package model-container skipped, not selected using --regex-selector
 bin/neurospaces_build: examining package heccer
 bin/neurospaces_build: package heccer skipped, not selected using --regex-selector
 bin/neurospaces_build: examining package ssp
@@ -143,9 +151,9 @@ global:
   test_count: 0
 operations:
   - operations: !!perl/code '{ \"DUMMY\" }'
-    package_name: developer
+    package_name: installer
   - operations: !!perl/code '{ \"DUMMY\" }'
-    package_name: developer
+    package_name: installer
 options:
   certification-report!: 0
   check!: 0
@@ -154,21 +162,24 @@ options:
   compile!: 1
   configure!: 1
   developer!: 0
+  disable=s: ~
   dist!: 0
   distcheck!: 0
   distclean!: 0
   distkeywords!: 0
   download-server=s: downloads.neurospaces.org
   dry-run!: 1
+  enable=s: installer
   help!: 0
   help-all!: 0
   install!: 0
   packages: 0
-  regex-selector=s: developer
+  regex-selector=s: installer
   src-dir=s: /tmp/downloads.t/packages
   src-tag=s: des-10
   tag=s: 0
   uninstall!: 0
+  upload-server=s: ~
   verbose+: 3
 ",
 						  },
