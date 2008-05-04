@@ -549,6 +549,8 @@ sub read_cmd_line
 	}
     }
 
+    my $tag_set_in_tag_database = 0;
+
     # merge operations with options that affect the execution of the
     # operations
 
@@ -593,6 +595,71 @@ sub read_cmd_line
 
 			  ( 'mtn', 'tag', '\'%version\'', "'$option_tag'", ),
 			 ],
+	   },
+	   {
+	    condition => $option_tag,
+	    description => "putting the tag in the tag database",
+	    operation =>
+	    sub
+	    {
+		my $package_information = shift;
+
+		# get specific arguments
+
+		my $description = $package_information->{description};
+
+		my $directory = $package_information->{directory};
+
+		my $filename = $package_information->{filename};
+
+		my $package_name = $package_information->{package_name};
+
+		my $url = $package_information->{url};
+
+		# if the tag has already been added for this run
+
+		if ($tag_set_in_tag_database)
+		{
+		    # return
+
+		    return;
+		}
+
+		use YAML;
+
+		my $tag_database_filename = '/etc/neurospaces/tag_database.yml';
+
+		my $tag_database = YAML::LoadFile($tag_database_filename);
+
+		if (!$tag_database)
+		{
+		    die "$0: *** Error: cannot read $tag_database_filename";
+		}
+
+		if ($option_verbose > 1)
+		{
+		    print "$0: package $package_name [$description ($option_tag)] executing\n";
+		}
+
+		my $tags = $tag_database->{tags};
+
+		push
+		    @$tags,
+		    {
+		     'date' => `date`,
+		     'regex-selector' => $option_regex_selector,
+		     'tag' => $option_tag,
+		    };
+
+		YAML::DumpFile($tag_database_filename, $tag_database);
+
+		# we do this at most once per run
+
+		$tag_set_in_tag_database = 1;
+
+		#t do a checkin of the configuration package (contains
+		#t the tag_database).
+	    },
 	   },
 	   {
 	    condition => $option_download_server,
