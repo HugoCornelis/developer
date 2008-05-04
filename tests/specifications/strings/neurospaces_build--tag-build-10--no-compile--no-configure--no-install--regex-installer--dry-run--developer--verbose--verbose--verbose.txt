@@ -93,6 +93,7 @@ options:
   distkeywords!: 0
   download-server=s: ~
   dry-run!: 1
+  environment=s: []
   help!: 0
   help-all!: 0
   install!: 0

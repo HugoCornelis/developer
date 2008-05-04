@@ -170,6 +170,7 @@ options:
   download-server=s: downloads.neurospaces.org
   dry-run!: 1
   enable=s: installer
+  environment=s: []
   help!: 0
   help-all!: 0
   install!: 0

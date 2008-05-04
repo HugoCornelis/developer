@@ -78,6 +78,11 @@ So on a client machine, for package xxx, the src are found in the
 directory <src-dir>/xxx-<src-tag>.  From there the build starts as
 usual.
 
+
+options related to behavior of external applications:
+    environment            fills in the environment, can be given multiple times.
+                           e.g. environment NEUROSPACES_HARNESS_OPTION_EMAIL=1 generates emails for checks that fail.
+
 ---
 certification-report!: 0
 check!: 0
@@ -94,6 +99,7 @@ distkeywords!: 0
 download-server=s: ~
 dry-run!: 0
 enable=s: ~
+environment=s: []
 help!: 1
 help-all!: 0
 install!: 1

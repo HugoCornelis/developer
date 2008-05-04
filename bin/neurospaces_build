@@ -41,6 +41,10 @@ my $option_src_tag;
 my $option_src_dir;
 my $option_download_server;
 
+# options related to behavior of external applications
+
+my $option_environment = [];
+
 
 my $all_operations = [];
 
@@ -136,9 +140,22 @@ sub main
 {
     read_cmd_line();
 
-    # tell neurospaces_harness never to send emails for this
+#     # tell neurospaces_harness if to send emails for this
 
-    $ENV{NEUROSPACES_HARNESS_OPTION_EMAIL} = 0;
+#     $ENV{NEUROSPACES_HARNESS_OPTION_EMAIL} = $option_neurospaces_harness_email;
+
+    # build the environment for external applications
+
+    foreach my $environment_setting (@$option_environment)
+    {
+	$environment_setting =~ /^(.*?)=(.*)$/;
+
+	my $variable = $1;
+
+	my $value = $2;
+
+	$ENV{$variable} = $value;
+    }
 
     # set status: running
 
@@ -427,6 +444,10 @@ sub read_cmd_line
 		     "download-server=s" => \$option_download_server,
 		     "src-tag=s" => \$option_src_tag,
 		     "src-dir=s" => \$option_src_dir,
+
+		     # options related to behavior of external applications
+
+		     "environment=s" => $option_environment,
 		    );
 
     if (!$result)
@@ -492,6 +513,10 @@ sub read_cmd_line
 	   "download-server=s" => $option_download_server,
 	   "src-tag=s" => $option_src_tag,
 	   "src-dir=s" => $option_src_dir,
+
+	   # options related to behavior of external applications
+
+	   "environment=s" => $option_environment,
 	  };
 
     # process enable and disable options overhere, such that there
@@ -926,6 +951,11 @@ options related to installation on a client machine:
 So on a client machine, for package xxx, the src are found in the
 directory <src-dir>/xxx-<src-tag>.  From there the build starts as
 usual.
+
+
+options related to behavior of external applications:
+    environment            fills in the environment, can be given multiple times.
+                           e.g. environment NEUROSPACES_HARNESS_OPTION_EMAIL=1 generates emails for checks that fail.
 
 ";
 

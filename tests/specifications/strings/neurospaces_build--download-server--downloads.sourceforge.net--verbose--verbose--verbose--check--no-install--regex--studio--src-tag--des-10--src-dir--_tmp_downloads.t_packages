@@ -519,6 +519,7 @@ options:
   distkeywords!: 0
   download-server=s: downloads.sourceforge.net
   dry-run!: 0
+  environment=s: []
   help!: 0
   help-all!: 0
   install!: 0
