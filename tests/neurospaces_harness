@@ -109,12 +109,13 @@ use Getopt::Long;
 use YAML;
 
 
-my $option_email = defined $ENV{NEUROSPACES_HARNESS_OPTION_EMAIL} ? $ENV{NEUROSPACES_HARNESS_OPTION_EMAIL} : 1 ;
+my $option_email = defined $ENV{NEUROSPACES_HARNESS_OPTION_EMAIL} ? $ENV{NEUROSPACES_HARNESS_OPTION_EMAIL} : 0 ;
 my $option_flattenout;
 my $option_help;
 my $option_numerical_compare = $config->{numerical_compare} || 0;
 my $option_random_order;
 my $option_regex_selector = ".*";
+my $option_report_disabled;
 my $option_timeout_multiplier = 1;
 my $option_timings;
 my $option_verbose;
@@ -223,9 +224,15 @@ my $test_report
 		 },
        target => {
 		  OS => $^O,
+		  system => {
+			     libc => (join '', `ls -l /lib/libc-* && ls -l /usr/lib/libc-*`),
+			     uname => (join '', `uname -a`),
+			    },
 		  packages => {
-			       gcc => (join '', `gcc 2>&1 -v`),
-			       perl => (join '', `perl 2>&1 -V`),
+			       bison => (join '', `bison --version`),
+			       flex => (join '', `flex --version`),
+			       gcc => (join '', `gcc 2>&1 --version && gcc 2>&1 -v`),
+			       perl => (join '', `perl 2>&1 -v && perl 2>&1 -V`),
 			       swig => (join '', `swig 2>&1 -version`),
 			      },
 		 },
@@ -364,6 +371,19 @@ Total of $test_report->{global}->{test_count} tests (encountered $error_count er
 	}
 
 	report_message(2, 1, "Running tests of module $module_definition->{description}");
+
+	my $preparation = $module_definition->{preparation};
+
+	my $module_preparation_result;
+
+	if ($preparation)
+	  {
+	    print "*** Preparing Module $module_name ($preparation->{description})\n";
+
+	    my $preparer = $preparation->{preparer};
+
+	    $module_preparation_result = &$preparer();
+	  }
 
 	# loop over commands for this module
 
@@ -740,6 +760,36 @@ Total of $test_report->{global}->{test_count} tests (encountered $error_count er
 	    $previous_side_effects ||= $command_definition->{side_effects} || 0;
 	}
 
+	my $reparation = $module_definition->{reparation};
+
+	if ($reparation)
+	  {
+	    print "*** Reparing Module $module_name ($reparation->{description})\n";
+
+	    my $reparer = $reparation->{reparer};
+
+	    my $reparation_error = &$reparer($module_preparation_result);
+
+	    # process errors
+
+	    if ($reparation_error)
+	      {
+		my $description = $reparation_error;
+
+		my $module_definition_description = $module_definition->{description};
+
+		report_error_add
+		  (
+		   {
+		    description => $description,
+		    error => $reparation_error,
+		    module_name => $module_name,
+		    subdescription => $module_definition_description,
+		   },
+		  );
+	      }
+	  }
+
 	# if library checksum mismatch
 
 	if (defined ($config->{model_library}))
@@ -803,6 +853,7 @@ sub read_cmd_line
 	     "numerical-compare!" => \$option_numerical_compare,
 	     "randomize-order=s" => \$option_random_order,
 	     "regex-selector=s" => \$option_regex_selector,
+	     "report-disabled" => \$option_report_disabled,
 	     "timeout-multiplier=s" => \$option_timeout_multiplier,
 	     "timings!" => \$option_timings,
 	     "v|verbose+" => \$option_verbose,
@@ -821,6 +872,7 @@ sub read_cmd_line
 	   numerical_compare => $option_numerical_compare,
 	   random_order => $option_random_order,
 	   regex_selector => $option_regex_selector,
+	   report_disabled => $option_report_disabled,
 	   timeout_multiplier => $option_timeout_multiplier,
 	   timings => $option_timings,
 	   verbose => $option_verbose,
@@ -841,6 +893,7 @@ options :
     numerical-compare  attempt to compare numbers numerically when string differences are found (default enabled).
     randomize-order    randomize the order of the tests before executing them (require List::Util to be installed).
     regex-selector     defines a regex to run specific tests.
+    report-disabled    include information of disabled tests in the test report.
     timeout-multiplier multiply all timeout values with this constant.
     timings            add timing information about the tests to the report.
     verbose            set verbosity level.
@@ -929,16 +982,19 @@ sub report_exit
 
     # yaml out the test report
 
-    print
-	("\n"
-	 . Dump(
-		{
-		 description => $test_report->{description},
-		 errors => $test_report->{errors},
-		 global => $test_report->{global},
-		},
-	       )
-	);
+    my $report_text
+	= "\n"
+	    . Dump(
+		   {
+		    description => $test_report->{description},
+		    ($option_report_disabled ? (disabled => $test_report->{disabled}) : ()),
+		    errors => $test_report->{errors},
+		    global => $test_report->{global},
+		    ($error_count ? (target => $test_report->{target}) : ()),
+		   },
+		  );
+
+    print($report_text);
 
     # if email enabled by the options
 
