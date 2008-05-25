@@ -68,6 +68,11 @@ my $all_packages
 		  disabled => 0,
 		  order => 2,
 		 },
+       dash => {
+		directory => "$ENV{HOME}/neurospaces_project/dash/source/c/snapshots/0",
+		disabled => 1,
+		order => 2,
+	       },
        'model-container' => {
 			     './configure' => [
 					       '--with-delete-operation',
