@@ -54,15 +54,15 @@ my $packages
 			       unknown => "mtn ls unknown",
 			      },
 		 },
-       simulation_browser => {
-			      directory => "$ENV{HOME}/neurospaces_project/simulation_browser/source/perl/snapshots/0",
-			      priority => 5,
-			      commands => {
-					   missing => "mtn ls missing",
-					   status => 'mtn status',
-					   unknown => "mtn ls unknown",
-					  },
-			     },
+       'project-browser' => {
+			     directory => "$ENV{HOME}/neurospaces_project/project-browser/source/perl/snapshots/0",
+			     priority => 5,
+			     commands => {
+					  missing => "mtn ls missing",
+					  status => 'mtn status',
+					  unknown => "mtn ls unknown",
+					 },
+			    },
        geometry => {
 		    directory => "$ENV{HOME}/neurospaces_project/geometry/source/c/snapshots/0",
 		    priority => 6,
