@@ -21,14 +21,16 @@ bin/neurospaces_build: examining package model-container
 bin/neurospaces_build: package model-container skipped, not selected using --regex-selector
 bin/neurospaces_build: examining package heccer
 bin/neurospaces_build: package heccer skipped, not selected using --regex-selector
+bin/neurospaces_build: examining package dash
+bin/neurospaces_build: package dash skipped, disabled is 1
 bin/neurospaces_build: examining package ssp
 bin/neurospaces_build: package ssp skipped, not selected using --regex-selector
 bin/neurospaces_build: examining package geometry
 bin/neurospaces_build: package geometry skipped, disabled is 1
 bin/neurospaces_build: examining package studio
 bin/neurospaces_build: package studio skipped, not selected using --regex-selector
-bin/neurospaces_build: examining package simulation_browser
-bin/neurospaces_build: package simulation_browser skipped, disabled is 1
+bin/neurospaces_build: examining package project-browser
+bin/neurospaces_build: package project-browser skipped, disabled is 1
 ---
 client:
   OS: linux

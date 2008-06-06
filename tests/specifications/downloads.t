@@ -19,7 +19,7 @@ my $test
 					      '--regex',
 					      'studio',
 					      '--src-tag',
-					      'des-10',
+					      'build-37',
 					      '--src-dir',
 					      '/tmp/downloads.t/packages',
 					     ],
@@ -27,17 +27,17 @@ my $test
 				command_tests => [
 						  {
 						   description => "Can we download packages from downloads.sourceforge.net, part 1 ?",
-						   read => (join '', `cat $::config->{core_directory}/tests/specifications/strings/neurospaces_build--download-server--downloads.sourceforge.net--verbose--verbose--verbose--check--no-install--regex--studio--src-tag--des-10--src-dir--_tmp_downloads.t_packages__part1`),
+						   read => (join '', `cat $::config->{core_directory}/tests/specifications/strings/neurospaces_build--download-server--downloads.sourceforge.net--verbose--verbose--verbose--check--no-install--regex--studio--src-tag--build-37--src-dir--_tmp_downloads.t_packages__part1`),
 						   timeout => 100,
 						  },
 						  {
 						   description => "Can we download packages from downloads.sourceforge.net, part 2 ?",
-						   read => (join '', `cat $::config->{core_directory}/tests/specifications/strings/neurospaces_build--download-server--downloads.sourceforge.net--verbose--verbose--verbose--check--no-install--regex--studio--src-tag--des-10--src-dir--_tmp_downloads.t_packages__part2`),
+						   read => (join '', `cat $::config->{core_directory}/tests/specifications/strings/neurospaces_build--download-server--downloads.sourceforge.net--verbose--verbose--verbose--check--no-install--regex--studio--src-tag--build-37--src-dir--_tmp_downloads.t_packages__part2`),
 						   timeout => 100,
 						  },
 						  {
 						   description => "Can we download packages from downloads.sourceforge.net, part 3 ?",
-						   read => (join '', `cat $::config->{core_directory}/tests/specifications/strings/neurospaces_build--download-server--downloads.sourceforge.net--verbose--verbose--verbose--check--no-install--regex--studio--src-tag--des-10--src-dir--_tmp_downloads.t_packages__part3`),
+						   read => (join '', `cat $::config->{core_directory}/tests/specifications/strings/neurospaces_build--download-server--downloads.sourceforge.net--verbose--verbose--verbose--check--no-install--regex--studio--src-tag--build-37--src-dir--_tmp_downloads.t_packages__part3`),
 						   timeout => 100,
 						  },
 						 ],
@@ -67,7 +67,7 @@ my $test
 					      '--enable',
 					      'installer',
 					      '--src-tag',
-					      'des-10',
+					      'build-37',
 					      '--src-dir',
 					      '/tmp/downloads.t/packages',
 					      '--dry-run',
@@ -117,10 +117,10 @@ bin/neurospaces_build: package installer [\$VAR1 = sub {
         };
 ] not executed, dry_run is 1
 bin/neurospaces_build: package installer [./configure] preparing to execute 
-bin/neurospaces_build: package installer skipped, [./configure], directory (/tmp/downloads.t/packages/installer-des-10) not found, assuming this package source is not installed
+bin/neurospaces_build: package installer skipped, [./configure], directory (/tmp/downloads.t/packages/installer-build-37) not found, assuming this package source is not installed
 bin/neurospaces_build: package installer [make clean] skipped, condition_value is 0
 bin/neurospaces_build: package installer [make] preparing to execute 
-bin/neurospaces_build: package installer skipped, [make], directory (/tmp/downloads.t/packages/installer-des-10) not found, assuming this package source is not installed
+bin/neurospaces_build: package installer skipped, [make], directory (/tmp/downloads.t/packages/installer-build-37) not found, assuming this package source is not installed
 bin/neurospaces_build: package installer [make check] skipped, condition_value is 0
 bin/neurospaces_build: package installer [export NEUROSPACES_RELEASE=1 && make dist] skipped, condition_value is 0
 bin/neurospaces_build: package installer [export NEUROSPACES_RELEASE=1 && make distcheck] skipped, condition_value is 0
@@ -132,14 +132,16 @@ bin/neurospaces_build: examining package model-container
 bin/neurospaces_build: package model-container skipped, not selected using --regex-selector
 bin/neurospaces_build: examining package heccer
 bin/neurospaces_build: package heccer skipped, not selected using --regex-selector
+bin/neurospaces_build: examining package dash
+bin/neurospaces_build: package dash skipped, disabled is 1
 bin/neurospaces_build: examining package ssp
 bin/neurospaces_build: package ssp skipped, not selected using --regex-selector
 bin/neurospaces_build: examining package geometry
 bin/neurospaces_build: package geometry skipped, disabled is 1
 bin/neurospaces_build: examining package studio
 bin/neurospaces_build: package studio skipped, not selected using --regex-selector
-bin/neurospaces_build: examining package simulation_browser
-bin/neurospaces_build: package simulation_browser skipped, disabled is 1
+bin/neurospaces_build: examining package project-browser
+bin/neurospaces_build: package project-browser skipped, disabled is 1
 ---
 client:
   OS: linux
@@ -177,7 +179,7 @@ options:
   packages: 0
   regex-selector=s: installer
   src-dir=s: /tmp/downloads.t/packages
-  src-tag=s: des-10
+  src-tag=s: build-37
   tag=s: 0
   uninstall!: 0
   upload-server=s: ~

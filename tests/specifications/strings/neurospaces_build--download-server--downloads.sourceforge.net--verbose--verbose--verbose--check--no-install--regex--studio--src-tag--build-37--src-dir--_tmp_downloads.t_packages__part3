@@ -1,12 +1,12 @@
 bin/neurospaces_build: package studio [make check] executed 
-bin/neurospaces_build: package studio, chdir from (/tmp/downloads.t/packages/studio-des-10) to (/tmp/downloads.t/packages)
+bin/neurospaces_build: package studio, chdir from (/tmp/downloads.t/packages/studio-build-37) to (/tmp/downloads.t/packages)
 bin/neurospaces_build: package studio [make dist] skipped, condition_value is 0
 bin/neurospaces_build: package studio [make distcheck] skipped, condition_value is 0
 bin/neurospaces_build: package studio [make && sudo make install] skipped, condition_value is 0
 bin/neurospaces_build: package studio [make uninstall] skipped, condition_value is 0
 bin/neurospaces_build: package studio [mtn cert '%version' -- build_report '%report'] skipped, condition_value is 0
-bin/neurospaces_build: examining package simulation_browser
-bin/neurospaces_build: package simulation_browser skipped, disabled is 1
+bin/neurospaces_build: examining package project-browser
+bin/neurospaces_build: package project-browser skipped, disabled is 1
 ---
 client:
   OS: linux
@@ -25,7 +25,7 @@ operations:
     operations:
       - tar
       - xfvz
-      - studio-des-10.tar.gz
+      - studio-build-37.tar.gz
     package_name: studio
   - description: ./configure
     operations:
@@ -61,7 +61,7 @@ options:
   packages: 0
   regex-selector=s: studio
   src-dir=s: /tmp/downloads.t/packages
-  src-tag=s: des-10
+  src-tag=s: build-37
   tag=s: 0
   uninstall!: 0
   verbose+: 3

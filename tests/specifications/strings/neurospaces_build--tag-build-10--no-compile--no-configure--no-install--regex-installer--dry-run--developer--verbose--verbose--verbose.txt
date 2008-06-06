@@ -32,8 +32,8 @@ bin/neurospaces_build: examining geometry
 bin/neurospaces_build: geometry skipped, disabled is 1
 bin/neurospaces_build: examining studio
 bin/neurospaces_build: studio skipped, not selected using --regex-selector
-bin/neurospaces_build: examining simulation_browser
-bin/neurospaces_build: simulation_browser skipped, disabled is 1
+bin/neurospaces_build: examining project-browser
+bin/neurospaces_build: project-browser skipped, disabled is 1
 ---
 client:
   OS: linux
