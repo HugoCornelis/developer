@@ -1,24 +1,33 @@
 $files = {
-           '_<./neurospaces_build' => [
-                                        {
-                                          'expr' => undef,
-                                          'value' => '1',
-                                          'text' => '	    if ($option_uninstall)
+           '_<bin/neurospaces_build' => [
+                                          {
+                                            'expr' => undef,
+                                            'value' => '1',
+                                            'text' => '		if ($try_something_very_sophisticated_with_broken_libraries eq \'yes\')
 ',
-                                          'fname' => './neurospaces_build',
-                                          'type' => 'user',
-                                          'line' => '215'
-                                        },
-                                        {
-                                          'expr' => undef,
-                                          'value' => '1',
-                                          'text' => '    all_operations_execute();
+                                            'fname' => 'bin/neurospaces_build',
+                                            'type' => 'user',
+                                            'line' => '857'
+                                          },
+                                          {
+                                            'expr' => undef,
+                                            'value' => '1',
+                                            'text' => '	    if ($option_uninstall)
 ',
-                                          'fname' => './neurospaces_build',
-                                          'type' => 'user',
-                                          'line' => '150'
-                                        }
-                                      ]
+                                            'fname' => 'bin/neurospaces_build',
+                                            'type' => 'user',
+                                            'line' => 219
+                                          },
+                                          {
+                                            'expr' => undef,
+                                            'value' => '1',
+                                            'text' => 'main();
+',
+                                            'fname' => 'bin/neurospaces_build',
+                                            'type' => 'user',
+                                            'line' => 1331
+                                          }
+                                        ]
          };
 $expr_list = [
                {

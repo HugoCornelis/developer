@@ -829,36 +829,154 @@ sub read_cmd_line
 
 		# upload the package
 
-		use Net::FTP;
+		$option_upload_server =~ m(((.*)://)?([^/]+)(.*));
 
-		$option_upload_server =~ m((ftp://)?([^/]+)(.*));
+		my $upload_protocol = $2 || 'https';
 
-		my $upload_protocol = $1 || 'ftp';
+		my $upload_host = $3;
 
-		my $upload_host = $2;
+		my $upload_directory = $4;
 
-		my $upload_directory = $3;
+		my $package_names
+		    = {
+		       ftp => 'Net::FTP',
+		       https => 'HTTP::DAV',
+		       sftp => 'Net::SFTP',
+		      };
 
-		my $ftp
-		    = Net::FTP->new($upload_host, Debug => 0)
-			or die "$0: *** Error: for $filename: cannot connect to $upload_host: $@";
+		my $package_name = $package_names->{$upload_protocol};
 
-		$ftp->login("anonymous", '-anonymous@')
-		    or die "$0: *** Error: for $filename: cannot login to $upload_host", $ftp->message();
+		my $login_info = YAML::LoadFile("$ENV{HOME}/.sourceforge_login");
 
-		$ftp->cwd($upload_directory)
-		    or die "$0: *** Error: for $filename: cannot change working directory to $upload_directory", $ftp->message();
+		my $user = $login_info->{user};
 
-		$ftp->binary()
-		    or die "$0: *** Error: for $filename: cannot switch to binary ftp mode", $ftp->message();
+		my $password = $login_info->{password};
 
-		$ftp->hash()
-		    or die "$0: *** Error: for $filename: cannot enable hash printing", $ftp->message();
+		my $try_something_very_sophisticated_with_broken_libraries = 'no';
 
-		$ftp->put($filename)
-		    or die "$0: *** Error: for $filename: Net::FTP::put() failed ", $ftp->message();
+		if ($try_something_very_sophisticated_with_broken_libraries eq 'yes')
+		{
+		    my $loaded_protocol_module = eval "require $package_name";
 
-		$ftp->quit();
+		    if ($@)
+		    {
+			no strict "refs";
+
+			if (exists ${"::"}{verbose} && $::option_verbose)
+			{
+			    print STDERR "$0: cannot load protocol module Net::$package_name because of: $@\n";
+			    print STDERR "$0: continuing.\n";
+			}
+		    }
+
+		    my $ftp;
+
+		    if ($upload_protocol =~ /^s?ftp$/)
+		    {
+			$ftp
+			    = eval "$package_name->new('$upload_host', Debug => 0, user => '$user', password => '$password', )"
+				or die "$0: *** Error: for $filename: cannot connect to $upload_host: $@";
+		    }
+		    else
+		    {
+			$ftp
+			    = eval "HTTP::DAV->new()"
+				or die "$0: *** Error: for $filename: cannot connect to $upload_host: $@";
+
+			$ftp->credentials
+			    (
+			     -user=> $user,
+			     -pass => $password,
+			     -url => $option_upload_server,
+			    );
+
+			$ftp->open( -url=> $option_upload_server, )
+			    or die("$0: *** Error: cannot open $option_upload_server: " . $ftp->message() . "\n");
+		    }
+
+# 		    $ftp->login("anonymous", '-anonymous@')
+# 			or die "$0: *** Error: for $filename: cannot login to $upload_host", $ftp->message();
+
+		    $ftp->cwd($upload_directory)
+			or die "$0: *** Error: for $filename: cannot change working directory to $upload_directory", $ftp->message();
+
+		    if ($upload_protocol =~ /^s?ftp$/)
+		    {
+			$ftp->binary()
+			    or die "$0: *** Error: for $filename: cannot switch to binary ftp mode", $ftp->message();
+
+			$ftp->hash()
+			    or die "$0: *** Error: for $filename: cannot enable hash printing", $ftp->message();
+		    }
+
+		    $ftp->put($filename)
+			or die "$0: *** Error: for $filename: Net::FTP::put() failed ", $ftp->message();
+
+		    if ($upload_protocol =~ /^s?ftp$/)
+		    {
+			$ftp->quit();
+		    }
+		    else
+		    {
+			$ftp->unlock();
+		    }
+		}
+
+		# else we are trying a hardcoded solution that should work
+
+		else
+		{
+		    use Expect;
+
+		    my $expector = Expect->new();
+
+# 		    #! see the expect manual for this one
+
+# 		    $expector->raw_pty(1);
+
+		    $expector->spawn('sftp', "$user\@$upload_host",)
+			or die "$0: cannot spawn 'sftp': $!\n";
+
+		    my ($matched_pattern_position,
+			$error,
+			$successfully_matching_string,
+			$before_match,
+			$after_match)
+			= $expector->expect(5, "word:", );
+
+		    $expector->send("$password\n");
+
+		    my $prompt = "sftp>";
+
+		    ($matched_pattern_position,
+		     $error,
+		     $successfully_matching_string,
+		     $before_match,
+		     $after_match)
+			= $expector->expect(5, $prompt, );
+
+		    $upload_directory =~ s|^/||;
+
+		    $expector->send("cd $upload_directory\n");
+
+		    ($matched_pattern_position,
+		     $error,
+		     $successfully_matching_string,
+		     $before_match,
+		     $after_match)
+			= $expector->expect(5, $prompt, );
+
+		    $expector->send("put '$filename'\n");
+
+		    ($matched_pattern_position,
+		     $error,
+		     $successfully_matching_string,
+		     $before_match,
+		     $after_match)
+			= $expector->expect(45, $prompt, );
+
+		    $expector->send("quit\n");
+		}
 	    },
 	   },
 	   {
