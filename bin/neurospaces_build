@@ -82,10 +82,15 @@ my $all_packages
 			     order => 1,
 			     target_name => 'model-container',
 			    },
+       'ns-genesis-SLI' => {
+			    directory => "$ENV{HOME}/neurospaces_project/ns-genesis-SLI",
+			    disabled => 1,
+			    order => 6,
+			   },
        'project-browser' => {
 			     directory => "$ENV{HOME}/neurospaces_project/project-browser/source/perl/snapshots/0",
 			     disabled => 1,
-			     order => 6,
+			     order => 7,
 			    },
        ssp => {
 	       directory => "$ENV{HOME}/neurospaces_project/ssp/source/perl/snapshots/0",

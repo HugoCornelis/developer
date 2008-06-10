@@ -54,9 +54,18 @@ my $packages
 			       unknown => "mtn ls unknown",
 			      },
 		 },
+       'ns-genesis-SLI' => {
+			    directory => "$ENV{HOME}/neurospaces_project/ns-genesis-SLI",
+			    priority => 6,
+			    commands => {
+					 missing => "mtn ls missing",
+					 status => 'mtn status',
+					 unknown => "mtn ls unknown",
+					},
+			   },
        'project-browser' => {
 			     directory => "$ENV{HOME}/neurospaces_project/project-browser/source/perl/snapshots/0",
-			     priority => 5,
+			     priority => 7,
 			     commands => {
 					  missing => "mtn ls missing",
 					  status => 'mtn status',
