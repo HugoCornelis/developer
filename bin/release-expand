@@ -5,7 +5,7 @@
 ##'
 ##' Insert labels in a set of files.
 ##'
-##' Copyright (C) 2006-2007 Hugo Cornelis, hugo.cornelis@gmail.com
+##' Copyright (C) 2006-2008 Hugo Cornelis, hugo.cornelis@gmail.com
 ##'
 ##############################################################################
 
@@ -366,7 +366,7 @@ Hugo Cornelis <hugo.cornelis@gmail.com>
 
 =head1 COPYRIGHT
 
-Copyright (c) 2007. Hugo Cornelis. All rights reserved.
+Copyright (c) 2007-2008. Hugo Cornelis. All rights reserved.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
