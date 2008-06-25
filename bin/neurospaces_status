@@ -160,7 +160,7 @@ foreach my $package_name (
 	    die "$0: cannot change to directory ($directory)";
 	}
 
-	foreach my $command (qw(missing status unknown))
+	foreach my $command (qw(missing unknown status))
 	{
 	    my $command = $package->{commands}->{$command};
 
