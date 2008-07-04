@@ -1,5 +1,8 @@
 -*- outline -*-
 
+* add operation
+** for putting tar balls in a neurospaces_project specific developer place.
+
 * bin/neurospaces_*
 globalize $packages variable.
 
