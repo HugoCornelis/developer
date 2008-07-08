@@ -1079,7 +1079,7 @@ options related to operation execution profile:
     regex-selector         defines a regex to select specific packages.
     tag                    set this tag on all packages.
     uninstall              uninstall packages, cannot be combined with installation options.
-    upload-server          enable uploading packages to this server (e.g. ftp://upload.sourceforge.net/incoming).
+    upload-server          enable uploading packages to this server (e.g. https://frs.sourceforge.net/uploads).
     v|verbose              tell what is being done, specify multiple times to get
                            more feedback.
 
