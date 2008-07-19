@@ -26,6 +26,7 @@ my $option_configure = 1;
 my $option_dist = 0;
 my $option_distcheck = 0;
 my $option_distclean = 0;
+my $option_dist_dir = [];
 my $option_distkeywords = 0;
 my $option_dry_run = 0;
 my $option_install = 1;
@@ -420,6 +421,7 @@ sub read_cmd_line
 		     "dist!" => \$option_dist,
 		     "distcheck!" => \$option_distcheck,
 		     "distclean!" => \$option_distclean,
+		     "dist-dir=s" => $option_dist_dir,
 		     "distkeywords!" => \$option_distkeywords,
 		     "dry-run!" => \$option_dry_run,
 		     "enable=s" => \$option_enable,
@@ -490,6 +492,7 @@ sub read_cmd_line
 	   "dist!" => $option_dist,
 	   "distcheck!" => $option_distcheck,
 	   "distclean!" => $option_distclean,
+	   "dist-dir=s" => $option_dist_dir,
 	   "distkeywords!" => $option_distkeywords,
 	   "dry-run!" => $option_dry_run,
 	   "enable=s" => $option_enable,
@@ -984,6 +987,59 @@ sub read_cmd_line
 			= $expector->expect(45, $prompt, );
 
 		    $expector->send("quit\n");
+		}
+	    },
+	   },
+	   {
+	    condition => (scalar @$option_dist_dir),
+	    description => "copying files to the distribution directories",
+	    operation =>
+	    sub
+	    {
+		my $package_information = shift;
+
+		# get specific arguments
+
+		my $description = $package_information->{description};
+
+		my $directory = $package_information->{directory};
+
+		my $filename = $package_information->{filename};
+
+		my $operations = $package_information->{operations};
+
+		my $package_name = $package_information->{package_name};
+
+		my $url = $package_information->{url};
+
+		if (!$filename)
+		{
+		    die "$0: *** Error: no filename defined to copy to the distribution directories";
+		}
+
+		# change the directory
+
+		chdir $directory;
+
+		foreach my $dist_dir (@$option_dist_dir)
+		{
+		    # copy the package
+
+		    operation_execute
+			(
+			 $operations,
+			 {
+			  description => $description,
+
+			  #t always zero here
+
+			  keywords => 0,
+			  package_name => $package_name,
+			 },
+			 [
+			  'cp', $filename, $dist_dir,
+			 ],
+			);
 		}
 	    },
 	   },
