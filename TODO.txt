@@ -1,9 +1,5 @@
 -*- outline -*-
 
-* seperate out
-** downloading and unpacking
-unpacking should be enabled by downloading, and should be possible just by itself.
-
 * add operation
 ** for putting tar balls in a neurospaces_project specific developer place.
 

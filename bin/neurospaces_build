@@ -40,6 +40,7 @@ my $option_verbose = 0;
 my $option_src_tag;
 my $option_src_dir;
 my $option_download_server;
+my $option_unpack;
 
 # options related to behavior of external applications
 
@@ -437,6 +438,7 @@ sub read_cmd_line
 		     "download-server=s" => \$option_download_server,
 		     "src-tag=s" => \$option_src_tag,
 		     "src-dir=s" => \$option_src_dir,
+		     "unpack!" => \$option_unpack,
 
 		     # options related to behavior of external applications
 
@@ -506,6 +508,7 @@ sub read_cmd_line
 	   "download-server=s" => $option_download_server,
 	   "src-tag=s" => $option_src_tag,
 	   "src-dir=s" => $option_src_dir,
+	   "unpack!" => $option_unpack,
 
 	   # options related to behavior of external applications
 
@@ -721,7 +724,7 @@ sub read_cmd_line
 	    },
 	   },
 	   {
-	    condition => $option_download_server,
+	    condition => $option_download_server || $option_unpack,
 	    description => "unpacking",
 	    operation =>
 	    sub
