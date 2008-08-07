@@ -984,7 +984,7 @@ sub read_cmd_line
 		     $successfully_matching_string,
 		     $before_match,
 		     $after_match)
-			= $expector->expect(45, $prompt, );
+			= $expector->expect(600, $prompt, );
 
 		    $expector->send("quit\n");
 		}
