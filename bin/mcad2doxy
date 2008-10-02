@@ -38,9 +38,15 @@ $content =~ s(/// RTN..: )(/// \\return )g;
 
 $content =~ s(/// DESCR: ([^\n]+))(/// \\brief $1\n///\n/// \\details )g;
 
+$content =~ s(/// DESCR:([^\n]*))(///\n/// \\details )g;
+
 # process notes docs
 
 $content =~ s(///\s*NOTE\.:)(/// \\note )g;
+
+# process todo docs
+
+$content =~ s(///\s*TODO\.:)(/// \\todo )g;
 
 # process arguments, up to 6 arguments, first prefix all arguments with the \arg command.
 
