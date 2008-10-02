@@ -24,7 +24,7 @@ $content =~ s(^///\n)(/// \n)gm;
 
 # process function headers
 
-$content =~ s(/// \*+)()g;
+$content =~ s(/// \*+ *\n)()g;
 
 # process function headers
 
@@ -42,21 +42,28 @@ $content =~ s(/// DESCR: ([^\n]+))(/// \\brief $1\n///\n/// \\details )g;
 
 $content =~ s(///\s*NOTE\.:)(/// \\note )g;
 
-# process arguments, up to 5 arguments
+# process arguments, up to 6 arguments, first prefix all arguments with the \arg command.
 
 # $content =~ s(///\s*([a-zA-Z_]+)\S+)(/// \\arg $1)g;
 
-$content =~ s((/// ARGS.:\s*\n///\s*\n(///\s+[^\n]+\n){0})///\s*([a-zA-Z_]+)\S+)($1/// \\arg $3)g;
+$content =~ s((/// ARGS.:[ \t]*\n///[ \t]*\n(///[ \t]+[^\n]+\n){0})///[ \t]*([a-z][ \t\.:a-zA-Z_\(\)]+)\n)($1/// \\arg $3\n)g;
 
-$content =~ s((/// ARGS.:\s*\n///\s*\n(///\s+[^\n]+\n){1})///\s*([a-zA-Z_]+)\S+)($1/// \\arg $3)g;
+$content =~ s((/// ARGS.:[ \t]*\n///[ \t]*\n(///[ \t]+[^\n]+\n){1})///[ \t]*([a-z][ \t\.:a-zA-Z_\(\)]+)\n)($1/// \\arg $3\n)g;
 
-$content =~ s((/// ARGS.:\s*\n///\s*\n(///\s+[^\n]+\n){2})///\s*([a-zA-Z_]+)\S+)($1/// \\arg $3)g;
+$content =~ s((/// ARGS.:[ \t]*\n///[ \t]*\n(///[ \t]+[^\n]+\n){2})///[ \t]*([a-z][ \t\.:a-zA-Z_\(\)]+)\n)($1/// \\arg $3\n)g;
 
-$content =~ s((/// ARGS.:\s*\n///\s*\n(///\s+[^\n]+\n){3})///\s*([a-zA-Z_]+)\S+)($1/// \\arg $3)g;
+$content =~ s((/// ARGS.:[ \t]*\n///[ \t]*\n(///[ \t]+[^\n]+\n){3})///[ \t]*([a-z][ \t\.:a-zA-Z_\(\)]+)\n)($1/// \\arg $3\n)g;
 
-$content =~ s((/// ARGS.:\s*\n///\s*\n(///\s+[^\n]+\n){4})///\s*([a-zA-Z_]+)\S+)($1/// \\arg $3)g;
+$content =~ s((/// ARGS.:[ \t]*\n///[ \t]*\n(///[ \t]+[^\n]+\n){4})///[ \t]*([a-z][ \t\.:a-zA-Z_\(\)]+)\n)($1/// \\arg $3\n)g;
 
-$content =~ s(/// ARGS.:\s*\n)(///\n)g;
+$content =~ s((/// ARGS.:[ \t]*\n///[ \t]*\n(///[ \t]+[^\n]+\n){5})///[ \t]*([a-z][ \t\.:a-zA-Z_\(\)]+)\n)($1/// \\arg $3\n)g;
+
+$content =~ s(/// ARGS.:[ \t]*\n)(///\n)g;
+
+
+# process arguments, convert mcad dotted-colon style to doxy style
+
+$content =~ s((/// \\arg [^\.]*)\.*:[ \t](.*)\n)($1 $2\n)g;
 
 
 # remove all empty lines
