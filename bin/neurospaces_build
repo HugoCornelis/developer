@@ -953,7 +953,7 @@ sub read_cmd_line
 			$successfully_matching_string,
 			$before_match,
 			$after_match)
-			= $expector->expect(5, "word:", );
+			= $expector->expect(15, "word:", );
 
 		    $expector->send("$password\n");
 
