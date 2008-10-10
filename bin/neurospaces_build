@@ -1186,6 +1186,7 @@ options related to operation execution profile:
     upload-server          enable uploading packages to this server (e.g. https://frs.sourceforge.net/uploads).
     v|verbose              tell what is being done, specify multiple times to get
                            more feedback.
+    version                give version information.
 
 options related to installation on a client machine:
     download-server        enable downloading packages from this server (e.g. downloads.sourceforge.net).
