@@ -30,6 +30,7 @@ my $option_dist_dir = [];
 my $option_distkeywords = 0;
 my $option_dry_run = 0;
 my $option_install = 1;
+my $option_installed_versions = 1;
 my $option_regex_selector = ".*";
 my $option_tag = 0;
 my $option_uninstall = 0;
@@ -59,11 +60,13 @@ my $all_packages
 		     directory => "$ENV{HOME}/neurospaces_project/installer/source/snapshots/0",
 		     disabled => 1,
 		     order => 0,
+		     version_script => 'neurospaces_build --version',
 		    },
        geometry => {
 		    directory => "$ENV{HOME}/neurospaces_project/geometry/source/c/snapshots/0",
 		    disabled => 1,
 		    order => 4,
+		    version_script => 0,
 		   },
        heccer => {
 		  directory => "$ENV{HOME}/neurospaces_project/heccer/source/c/snapshots/0",
@@ -74,6 +77,7 @@ my $all_packages
 		directory => "$ENV{HOME}/neurospaces_project/dash/source/c/snapshots/0",
 		disabled => 1,
 		order => 2,
+		version_script => 0,
 	       },
        'model-container' => {
 			     './configure' => [
@@ -88,11 +92,13 @@ my $all_packages
 			    directory => "$ENV{HOME}/neurospaces_project/ns-genesis-SLI",
 			    disabled => 1,
 			    order => 6,
+			    version_script => 0,
 			   },
        'project-browser' => {
 			     directory => "$ENV{HOME}/neurospaces_project/project-browser/source/perl/snapshots/0",
 			     disabled => 1,
 			     order => 7,
+			     version_script => 0,
 			    },
        ssp => {
 	       directory => "$ENV{HOME}/neurospaces_project/ssp/source/perl/snapshots/0",
@@ -103,6 +109,7 @@ my $all_packages
 		  directory => "$ENV{HOME}/neurospaces_project/studio/source/perl/snapshots/0",
 		  disabled => 0,
 		  order => 5,
+		  version_script => 'neurospaces --version',
 		 },
       };
 
@@ -299,6 +306,7 @@ sub all_operations_execute
 				  directory => $directory,
 				  ( $option_src_tag ? (filename => $filename,) : (), ),
 				  operations => $operations,
+				  package => $package,
 				  package_name => $package_name,
 				  url => $url,
 				 },
@@ -429,6 +437,7 @@ sub read_cmd_line
 		     "help!" => \$option_help,
 		     "help-all!" => \$option_help_all,
 		     "install!" => \$option_install,
+		     "installed-versions!" => \$option_installed_versions,
 		     "packages" => \$option_packages,
 		     "regex-selector=s" => \$option_regex_selector,
 		     "tag=s" => \$option_tag,
@@ -501,6 +510,7 @@ sub read_cmd_line
 	   "help!" => $option_help,
 	   "help-all!" => $option_help_all,
 	   "install!" => $option_install,
+	   "installed-versions!" => $option_installed_versions,
 	   "packages" => $option_packages,
 	   "regex-selector=s" => $option_regex_selector,
 	   "tag=s" => $option_tag,
@@ -811,6 +821,29 @@ sub read_cmd_line
 
 	    condition => $option_compile && !$option_uninstall && $option_install,
 	    operation => [ 'make', '&&', 'sudo', 'make', 'install', ],
+	   },
+	   {
+	    condition => $option_installed_versions,
+	    description => 'installed versions',
+	    operation =>
+	    sub
+	    {
+		my $package_information = shift;
+
+		my $package = $package_information->{package};
+
+		my $version_script = $package->{version_script};
+
+		if (!defined $version_script)
+		{
+		    $version_script = "$package_information->{package_name} --version";
+		}
+
+		if ($version_script ne 0)
+		{
+		    system $version_script;
+		}
+	    },
 	   },
 	   {
 	    condition => $option_uninstall,
