@@ -54,7 +54,7 @@ my $all_operations = [];
 
 my $all_packages
     = {
-       # the developer package is always disabled, unless overriden by the --enable option.
+       # the installer package is always disabled, unless overriden by the --enable option.
 
        installer => {
 		     directory => "$ENV{HOME}/neurospaces_project/installer/source/snapshots/0",
