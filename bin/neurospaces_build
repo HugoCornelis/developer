@@ -402,6 +402,7 @@ sub read_cmd_line
     my $option_help = 0;
     my $option_help_all = 0;
     my $option_packages = 0;
+    my $option_version;
 
     my $result
 	= GetOptions(
@@ -434,6 +435,7 @@ sub read_cmd_line
 		     "uninstall!" => \$option_uninstall,
 		     "upload-server=s" => \$option_upload_server,
 		     "verbose+" => \$option_verbose,
+		     "version" => \$option_version,
 
 		     # options related to installation on a client machine
 
@@ -505,6 +507,7 @@ sub read_cmd_line
 	   "uninstall!" => $option_uninstall,
 	   "upload-server=s" => $option_upload_server,
 	   "verbose+" => $option_verbose,
+	   "version" => $option_version,
 
 	   # options related to installation on a client machine
 
@@ -517,6 +520,15 @@ sub read_cmd_line
 
 	   "environment=s" => $option_environment,
 	  };
+
+    if ($option_version)
+    {
+	my $version = version();
+
+	print $version . "\n";
+
+	exit 1;
+    }
 
     # process enable and disable options overhere, such that there
     # effect is mirrored in the help output
@@ -1407,6 +1419,15 @@ sub operation_execute
 	    print "$0: package $package_name [" . (join ' ', @$arguments ) . "] not executed, dry_run is $option_dry_run\n";
 	}
     }
+}
+
+
+sub version
+{
+    # $Format: "    my $version=\"${package}-${label}\";"$
+    my $version="installer-python-2";
+
+    return $version;
 }
 
 
