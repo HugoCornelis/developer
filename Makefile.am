@@ -20,6 +20,7 @@ dist_bin_SCRIPTS = \
 	bin/mcad2doxy \
 	bin/neurospaces_build \
 	bin/neurospaces_status \
+	bin/neurospaces_versions \
 	bin/release-expand \
 	bin/release-extract
 
