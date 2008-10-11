@@ -9,7 +9,7 @@ use strict;
 my $packages
     = {
        neurospaces_prcs => {
-			    directory => "$ENV{HOME}/neurospaces_project/model-container/source/c/snapshots/prcs.0",
+			    directory => "$ENV{HOME}/neurospaces_project/model-container/source/snapshots/prcs.0",
 			    # 			    disabled => 1,
 			    priority => 1,
 			    commands => {
@@ -19,7 +19,7 @@ my $packages
 					},
 			   },
        'model-container' => {
-			     directory => "$ENV{HOME}/neurospaces_project/model-container/source/c/snapshots/0",
+			     directory => "$ENV{HOME}/neurospaces_project/model-container/source/snapshots/0",
 			     priority => 1,
 			     commands => {
 					  missing => "mtn ls missing",
@@ -28,7 +28,7 @@ my $packages
 					 },
 			    },
        heccer => {
-		  directory => "$ENV{HOME}/neurospaces_project/heccer/source/c/snapshots/0",
+		  directory => "$ENV{HOME}/neurospaces_project/heccer/source/snapshots/0",
 		  priority => 2,
 		  commands => {
 			       missing => "mtn ls missing",
@@ -37,7 +37,7 @@ my $packages
 			      },
 		 },
        ssp => {
-	       directory => "$ENV{HOME}/neurospaces_project/ssp/source/perl/snapshots/0",
+	       directory => "$ENV{HOME}/neurospaces_project/ssp/source/snapshots/0",
 	       priority => 3,
 	       commands => {
 			    missing => "mtn ls missing",
@@ -46,7 +46,7 @@ my $packages
 			   },
 	      },
        studio => {
-		  directory => "$ENV{HOME}/neurospaces_project/studio/source/perl/snapshots/0",
+		  directory => "$ENV{HOME}/neurospaces_project/studio/source/snapshots/0",
 		  priority => 4,
 		  commands => {
 			       missing => "mtn ls missing",
@@ -55,7 +55,7 @@ my $packages
 			      },
 		 },
        'ns-genesis-SLI' => {
-			    directory => "$ENV{HOME}/neurospaces_project/ns-genesis-SLI",
+			    directory => "$ENV{HOME}/neurospaces_project/ns-genesis-SLI/source/snapshots/0",
 			    priority => 6,
 			    commands => {
 					 missing => "mtn ls missing",
@@ -64,7 +64,7 @@ my $packages
 					},
 			   },
        'project-browser' => {
-			     directory => "$ENV{HOME}/neurospaces_project/project-browser/source/perl/snapshots/0",
+			     directory => "$ENV{HOME}/neurospaces_project/project-browser/source/snapshots/0",
 			     priority => 7,
 			     commands => {
 					  missing => "mtn ls missing",
@@ -73,7 +73,7 @@ my $packages
 					 },
 			    },
        geometry => {
-		    directory => "$ENV{HOME}/neurospaces_project/geometry/source/c/snapshots/0",
+		    directory => "$ENV{HOME}/neurospaces_project/geometry/source/snapshots/0",
 		    priority => 6,
 		    commands => {
 				 missing => "mtn ls missing",
@@ -99,15 +99,6 @@ my $packages
 				  unknown => "mtn ls unknown",
 				 },
 		    },
-       user => {
-		directory => "$ENV{HOME}/neurospaces_project/project/user/source/snapshots/0",
-		priority => 8.5,
-		commands => {
-			     missing => "mtn ls missing",
-			     status => 'mtn status',
-			     unknown => "mtn ls unknown",
-			    },
-	       },
        system => {
 		  directory => "$ENV{HOME}/neurospaces_project/.",
 		  priority => 9,
