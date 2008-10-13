@@ -22,7 +22,7 @@ close $fh;
 
 $content =~ s(^///\n)(/// \n)gm;
 
-# process function headers
+# process function delineators
 
 $content =~ s(/// \*+ *\n)()g;
 
@@ -70,6 +70,31 @@ $content =~ s(/// ARGS.:[ \t]*\n)(///\n)g;
 # process arguments, convert mcad dotted-colon style to doxy style
 
 $content =~ s((/// \\arg [^\.]*)\.*:[ \t](.*)\n)($1 $2\n)g;
+
+
+# process structs
+
+$content =~ s(//s)(/// \\struct)g;
+
+# process members
+
+$content =~ s(//m)(///)g;
+
+
+# process pp #defines
+
+$content =~ s(//d)(/// \\def)g;
+
+
+# process function prototypes
+
+$content =~ s(//f .*)(///)g;
+
+
+# informational commments
+
+$content =~ s(//! )(/// \\note )g;
+$content =~ s(//!)(///)g;
 
 
 # remove all empty lines
