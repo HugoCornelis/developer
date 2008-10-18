@@ -23,6 +23,7 @@ my $option_check = 0;
 my $option_clean = 0;
 my $option_compile = 1;
 my $option_configure = 1;
+my $option_directories = 0;
 my $option_dist = 0;
 my $option_distcheck = 0;
 my $option_distclean = 0;
@@ -32,6 +33,9 @@ my $option_dry_run = 0;
 my $option_install = 1;
 my $option_installed_versions = 1;
 my $option_regex_selector = ".*";
+my $option_repo_pull = 0;
+my $option_repo_sync = 0;
+my $option_repo_co = 0;
 my $option_tag = 0;
 my $option_uninstall = 0;
 my $option_upload_server;
@@ -60,6 +64,9 @@ my $all_packages
 		     directory => "$ENV{HOME}/neurospaces_project/installer/source/snapshots/0",
 		     disabled => 1,
 		     order => 0,
+		     version_control => {
+					 port_number => 4696,
+					},
 		     version_script => 'neurospaces_build --version',
 		    },
        geometry => {
@@ -72,6 +79,9 @@ my $all_packages
 		  directory => "$ENV{HOME}/neurospaces_project/heccer/source/snapshots/0",
 		  disabled => 0,
 		  order => 2,
+		  version_control => {
+				      port_number => 4694,
+				     },
 		 },
        dash => {
 		directory => "$ENV{HOME}/neurospaces_project/dash/source/snapshots/0",
@@ -87,11 +97,17 @@ my $all_packages
 			     disabled => 0,
 			     order => 1,
 			     target_name => 'model-container',
+			     version_control => {
+						 port_number => 4693,
+						},
 			    },
        'ns-genesis-SLI' => {
 			    directory => "$ENV{HOME}/neurospaces_project/ns-genesis-SLI/source/snapshots/0",
 			    disabled => 1,
 			    order => 6,
+			    version_control => {
+						port_number => 4692,
+					       },
 			    version_script => 0,
 			   },
        'project-browser' => {
@@ -104,6 +120,9 @@ my $all_packages
 	       directory => "$ENV{HOME}/neurospaces_project/ssp/source/snapshots/0",
 	       disabled => 0,
 	       order => 3,
+	       version_control => {
+				   port_number => 4695,
+				  },
 	      },
        studio => {
 		  directory => "$ENV{HOME}/neurospaces_project/studio/source/snapshots/0",
@@ -426,6 +445,7 @@ sub read_cmd_line
 		     "clean!" => \$option_clean,
 		     "compile!" => \$option_compile,
 		     "configure!" => \$option_configure,
+		     "directories!" => \$option_directories,
 		     "disable=s" => \$option_disable,
 		     "dist!" => \$option_dist,
 		     "distcheck!" => \$option_distcheck,
@@ -440,6 +460,9 @@ sub read_cmd_line
 		     "installed-versions!" => \$option_installed_versions,
 		     "packages" => \$option_packages,
 		     "regex-selector=s" => \$option_regex_selector,
+		     "repo-pull=s" => \$option_repo_pull,
+		     "repo-sync=s" => \$option_repo_sync,
+		     "repo-co=s" => \$option_repo_co,
 		     "tag=s" => \$option_tag,
 		     "uninstall!" => \$option_uninstall,
 		     "upload-server=s" => \$option_upload_server,
@@ -499,6 +522,7 @@ sub read_cmd_line
 	   "clean!" => $option_clean,
 	   "compile!" => $option_compile,
 	   "configure!" => $option_configure,
+	   "directories!" => $option_directories,
 	   "disable=s" => $option_disable,
 	   "dist!" => $option_dist,
 	   "distcheck!" => $option_distcheck,
@@ -513,6 +537,9 @@ sub read_cmd_line
 	   "installed-versions!" => $option_installed_versions,
 	   "packages" => $option_packages,
 	   "regex-selector=s" => $option_regex_selector,
+	   "repo-pull=s" => $option_repo_pull,
+	   "repo-sync=s" => $option_repo_sync,
+	   "repo-co!" => $option_repo_co,
 	   "tag=s" => $option_tag,
 	   "uninstall!" => $option_uninstall,
 	   "upload-server=s" => $option_upload_server,
@@ -602,6 +629,203 @@ sub read_cmd_line
 
     $all_operations
 	= [
+	   {
+	    condition => $option_directories,
+	    description => "creating directory",
+	    operation =>
+	    sub
+	    {
+		my $package_information = shift;
+
+		# get specific arguments
+
+		my $description = $package_information->{description};
+
+		my $directory = $package_information->{directory};
+
+		my $operations = $package_information->{operations};
+
+		my $package_name = $package_information->{package_name};
+
+		# create directory
+
+		operation_execute
+		    (
+		     $operations,
+		     {
+		      description => $description,
+
+		      #t always zero here, but I guess this simply depends on working in client mode ?
+
+		      keywords => 0,
+		      package_name => $package_name,
+		     },
+		     [
+		      'mkdir', '--parents', $directory,
+		     ],
+		    );
+	    },
+	   },
+	   {
+	    condition => $option_repo_pull,
+	    operation =>
+	    sub
+	    {
+		my $package_information = shift;
+
+		# get specific arguments
+
+		my $description = $package_information->{description};
+
+		my $directory = $package_information->{directory};
+
+		my $operations = $package_information->{operations};
+
+		my $package_name = $package_information->{package_name};
+
+		my $repository_name = $directory . '/' . $package_name . 'mtn';
+
+		my $port_number = $package_information->{version_control}->{port_number};
+
+		# initialize the repository if necessary
+
+		operation_execute
+		    (
+		     $operations,
+		     {
+		      description => $description,
+
+		      #t always zero here, but I guess this simply depends on working in client mode ?
+
+		      keywords => 0,
+		      package_name => $package_name,
+		     },
+		     [
+		      'test', '-f', $repository_name, '||', 'mtn', '--db', $repository_name, 'db', 'init',
+		     ],
+		    );
+
+		# pull the repository
+
+		operation_execute
+		    (
+		     $operations,
+		     {
+		      description => $description,
+
+		      #t always zero here, but I guess this simply depends on working in client mode ?
+
+		      keywords => 0,
+		      package_name => $package_name,
+		     },
+		     [
+		      'mtn', '--db', $repository_name, 'pull', "$option_repo_pull:$port_number",
+		     ],
+		    );
+	    },
+	   },
+	   {
+	    condition => $option_repo_sync,
+	    operation =>
+	    sub
+	    {
+		my $package_information = shift;
+
+		# get specific arguments
+
+		my $description = $package_information->{description};
+
+		my $directory = $package_information->{directory};
+
+		my $operations = $package_information->{operations};
+
+		my $package_name = $package_information->{package_name};
+
+		my $repository_name = $directory . '/' . $package_name . 'mtn';
+
+		my $port_number = $package_information->{version_control}->{port_number};
+
+		# initialize the repository if necessary
+
+		operation_execute
+		    (
+		     $operations,
+		     {
+		      description => $description,
+
+		      #t always zero here, but I guess this simply depends on working in client mode ?
+
+		      keywords => 0,
+		      package_name => $package_name,
+		     },
+		     [
+		      'test', '-f', $repository_name, '||', 'mtn', '--db', $repository_name, 'db', 'init',
+		     ],
+		    );
+
+		# sync the repository
+
+		operation_execute
+		    (
+		     $operations,
+		     {
+		      description => $description,
+
+		      #t always zero here, but I guess this simply depends on working in client mode ?
+
+		      keywords => 0,
+		      package_name => $package_name,
+		     },
+		     [
+		      'mtn', '--db', $repository_name, 'sync', "$option_repo_sync:$port_number",
+		     ],
+		    );
+	    },
+	   },
+	   {
+	    condition => $option_repo_co,
+	    operation =>
+	    sub
+	    {
+		my $package_information = shift;
+
+		# get specific arguments
+
+		my $description = $package_information->{description};
+
+		my $directory = $package_information->{directory};
+
+		my $operations = $package_information->{operations};
+
+		my $package_name = $package_information->{package_name};
+
+		my $repository_name = $directory . '/' . $package_name . 'mtn';
+
+		my $port_number = $package_information->{version_control}->{port_number};
+
+		# change the directory
+
+		chdir $directory;
+
+		# checkout code
+
+		operation_execute
+		    (
+		     $operations,
+		     {
+		      description => $description,
+
+		      #t always zero here, but I guess this simply depends on working in client mode ?
+
+		      keywords => 0,
+		      package_name => $package_name,
+		     },
+		     [
+		      'mtn', '--db', $repository_name, '--branch', '0', 'co', '.',
+		     ],
+		    );
+	    },
+	   },
 	   {
 	    condition => $option_distclean && !$option_uninstall,
 	    operation => [ 'make', 'distclean', ],
@@ -1170,7 +1394,8 @@ options related to operation execution profile:
     clean                  clean before compiling.
     configure              configure before compiling.
     compile                compile packages.
-    disable                explicitly disable these regex of packages in the configuration.
+    directories            create package directory structure.
+    disable                explicitly disable this regex of packages in the configuration.
     dist                   build distribution tarballs.
     distcheck              check created tarballs.
     distclean              distclean before compiling.
@@ -1181,6 +1406,9 @@ options related to operation execution profile:
     install                install packages.
     packages               print known packages, in order of build.
     regex-selector         defines a regex to select specific packages.
+    repo-pull              pull the repositories from this server (e.g. virtual2.cbi.utsa.edu).
+    repo-sync              sync the repositories with this server (e.g. virtual2.cbi.utsa.edu).
+    repo-co                checkout the code from the repository.
     tag                    set this tag on all packages.
     uninstall              uninstall packages, cannot be combined with installation options.
     upload-server          enable uploading packages to this server (e.g. https://frs.sourceforge.net/uploads).
