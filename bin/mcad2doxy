@@ -48,6 +48,9 @@ $content =~ s(///\s*NOTE\.:)(/// \\note )g;
 
 $content =~ s(///\s*TODO\.:)(/// \\todo )g;
 
+$content =~ s(//t )(/// \\todo )g;
+$content =~ s(//t)(///)g;
+
 # process arguments, up to 6 arguments, first prefix all arguments with the \arg command.
 
 # $content =~ s(///\s*([a-zA-Z_]+)\S+)(/// \\arg $1)g;
@@ -89,6 +92,12 @@ $content =~ s(//d)(/// \\def)g;
 # process function prototypes
 
 $content =~ s(//f .*)(///)g;
+
+
+# process variables
+
+$content =~ s(//v )(/// )g;
+$content =~ s(//v\n)()g;
 
 
 # informational commments
