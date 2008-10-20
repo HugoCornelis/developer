@@ -962,7 +962,21 @@ sub read_cmd_line
 
 		# create the directory
 
-		mkdir $directory;
+		operation_execute
+		    (
+		     $operations,
+		     {
+		      description => $description,
+
+		      #t always zero here, but I guess this simply depends on working in client mode ?
+
+		      keywords => 0,
+		      package_name => $package_name,
+		     },
+		     [
+		      'mkdir', '--parents', $directory,
+		     ],
+		    );
 
 		if ($option_verbose > 1)
 		{
