@@ -89,6 +89,12 @@ my $all_packages
 		order => 2,
 		version_script => 0,
 	       },
+       gshell => {
+		  directory => "$ENV{HOME}/neurospaces_project/gshell/source/snapshots/0",
+		  disabled => 1,
+		  order => 13,
+		  version_script => 0,
+		 },
        'model-container' => {
 			     './configure' => [
 					       '--with-delete-operation',
@@ -116,12 +122,6 @@ my $all_packages
 			     order => 7,
 			     version_script => 'pb-version',
 			    },
-       shell => {
-		 directory => "$ENV{HOME}/neurospaces_project/shell/source/snapshots/0",
-		 disabled => 1,
-		 order => 13,
-		 version_script => 0,
-		},
        ssp => {
 	       directory => "$ENV{HOME}/neurospaces_project/ssp/source/snapshots/0",
 	       disabled => 0,

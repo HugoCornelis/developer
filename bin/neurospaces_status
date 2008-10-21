@@ -36,6 +36,15 @@ my $packages
 			       unknown => "mtn ls unknown",
 			      },
 		 },
+       gshell => {
+		  directory => "$ENV{HOME}/neurospaces_project/gshell/source/snapshots/0",
+		  priority => 13,
+		  commands => {
+			       missing => "mtn ls missing",
+			       status => 'mtn status',
+			       unknown => "mtn ls unknown",
+			      },
+		 },
        ssp => {
 	       directory => "$ENV{HOME}/neurospaces_project/ssp/source/snapshots/0",
 	       priority => 3,
