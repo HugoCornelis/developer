@@ -66,6 +66,7 @@ my $all_packages
 		     order => 0,
 		     version_control => {
 					 port_number => 4696,
+					 repository => "$ENV{HOME}/MTN/neurospaces-developer.mtn",
 					},
 		     version_script => 'neurospaces_build --version',
 		    },
@@ -81,6 +82,7 @@ my $all_packages
 		  order => 2,
 		  version_control => {
 				      port_number => 4694,
+				      repository => "$ENV{HOME}/MTN/heccer.mtn",
 				     },
 		 },
        dash => {
@@ -105,6 +107,7 @@ my $all_packages
 			     target_name => 'model-container',
 			     version_control => {
 						 port_number => 4693,
+						 repository => "$ENV{HOME}/MTN/model-container.mtn",
 						},
 			    },
        'ns-genesis-SLI' => {
@@ -113,6 +116,7 @@ my $all_packages
 			    order => 6,
 			    version_control => {
 						port_number => 4692,
+						repository => "$ENV{HOME}/MTN/ns-gen.mtn",
 					       },
 			    version_script => 0,
 			   },
@@ -128,6 +132,7 @@ my $all_packages
 	       order => 3,
 	       version_control => {
 				   port_number => 4695,
+				   repository => "$ENV{HOME}/MTN/ssp.mtn",
 				  },
 	      },
        studio => {
@@ -690,9 +695,23 @@ sub read_cmd_line
 
 		my $package_name = $package_information->{package_name};
 
-		my $repository_name = $directory . '/' . $package_name . 'mtn';
+		my $repository_name
+		    = $package_information->{version_control}->{repository}
+			|| $directory . '/' . $package_name . 'mtn';
 
 		my $port_number = $package_information->{version_control}->{port_number};
+
+		# if not enough information for pulling
+
+		if (not -f $repository_name)
+		{
+		    die "$0: *** Error: cannot pull repository, repository_name not set";
+		}
+
+		if (not $port_number)
+		{
+		    die "$0: *** Error: cannot pull repository, port_number not set";
+		}
 
 		# initialize the repository if necessary
 
@@ -749,9 +768,23 @@ sub read_cmd_line
 
 		my $package_name = $package_information->{package_name};
 
-		my $repository_name = $directory . '/' . $package_name . 'mtn';
+		my $repository_name
+		    = $package_information->{version_control}->{repository}
+			|| $directory . '/' . $package_name . 'mtn';
 
 		my $port_number = $package_information->{version_control}->{port_number};
+
+		# if not enough information for syncing
+
+		if (not -f $repository_name)
+		{
+		    die "$0: *** Error: cannot sync repository, repository_name not set";
+		}
+
+		if (not $port_number)
+		{
+		    die "$0: *** Error: cannot sync repository, port_number not set";
+		}
 
 		# initialize the repository if necessary
 
@@ -808,9 +841,23 @@ sub read_cmd_line
 
 		my $package_name = $package_information->{package_name};
 
-		my $repository_name = $directory . '/' . $package_name . 'mtn';
+		my $repository_name
+		    = $package_information->{version_control}->{repository}
+			|| $directory . '/' . $package_name . 'mtn';
 
 		my $port_number = $package_information->{version_control}->{port_number};
+
+		# if not enough information for commiting
+
+		if (not -f $repository_name)
+		{
+		    die "$0: *** Error: cannot commit to repository, repository_name not set";
+		}
+
+		if (not $port_number)
+		{
+		    die "$0: *** Error: cannot commit to repository, port_number not set";
+		}
 
 		# change the directory
 
