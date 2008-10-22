@@ -696,10 +696,10 @@ sub read_cmd_line
 		my $package_name = $package_information->{package_name};
 
 		my $repository_name
-		    = $package_information->{version_control}->{repository}
-			|| $directory . '/' . $package_name . 'mtn';
+		    = $package_information->{package}->{version_control}->{repository}
+			|| $directory . '/' . $package_name . '/' . 'mtn';
 
-		my $port_number = $package_information->{version_control}->{port_number};
+		my $port_number = $package_information->{package}->{version_control}->{port_number};
 
 		# if not enough information for pulling
 
@@ -769,10 +769,10 @@ sub read_cmd_line
 		my $package_name = $package_information->{package_name};
 
 		my $repository_name
-		    = $package_information->{version_control}->{repository}
-			|| $directory . '/' . $package_name . 'mtn';
+		    = $package_information->{package}->{version_control}->{repository}
+			|| $directory . '/' . $package_name . '/' . 'mtn';
 
-		my $port_number = $package_information->{version_control}->{port_number};
+		my $port_number = $package_information->{package}->{version_control}->{port_number};
 
 		# if not enough information for syncing
 
@@ -842,10 +842,10 @@ sub read_cmd_line
 		my $package_name = $package_information->{package_name};
 
 		my $repository_name
-		    = $package_information->{version_control}->{repository}
-			|| $directory . '/' . $package_name . 'mtn';
+		    = $package_information->{package}->{version_control}->{repository}
+			|| $directory . '/' . $package_name . '/' . 'mtn';
 
-		my $port_number = $package_information->{version_control}->{port_number};
+		my $port_number = $package_information->{package}->{version_control}->{port_number};
 
 		# if not enough information for commiting
 

@@ -3,11 +3,11 @@ $files = {
                                           {
                                             'expr' => undef,
                                             'value' => '1',
-                                            'text' => '		if ($try_something_very_sophisticated_with_broken_libraries eq \'yes\')
+                                            'text' => 'my $all_packages
 ',
                                             'fname' => 'bin/neurospaces_build',
                                             'type' => 'user',
-                                            'line' => '857'
+                                            'line' => '59'
                                           },
                                           {
                                             'expr' => undef,
@@ -16,16 +16,7 @@ $files = {
 ',
                                             'fname' => 'bin/neurospaces_build',
                                             'type' => 'user',
-                                            'line' => 219
-                                          },
-                                          {
-                                            'expr' => undef,
-                                            'value' => '1',
-                                            'text' => 'main();
-',
-                                            'fname' => 'bin/neurospaces_build',
-                                            'type' => 'user',
-                                            'line' => 1331
+                                            'line' => '263'
                                           }
                                         ]
          };
@@ -36,6 +27,10 @@ $expr_list = [
                },
                {
                  'expr' => '$operation',
+                 'depth' => -1
+               },
+               {
+                 'expr' => '$description',
                  'depth' => -1
                }
              ];
