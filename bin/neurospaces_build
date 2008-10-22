@@ -954,6 +954,8 @@ sub read_cmd_line
 
 		my $directory = $package_information->{directory};
 
+		my $operations = $package_information->{operations};
+
 		my $filename = $package_information->{filename};
 
 		my $package_name = $package_information->{package_name};
