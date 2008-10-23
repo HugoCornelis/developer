@@ -66,7 +66,7 @@ my $all_packages
 		     order => 0,
 		     version_control => {
 					 port_number => 4696,
-					 repository => "$ENV{HOME}/MTN/neurospaces-developer.mtn",
+					 repository => "$ENV{HOME}/neurospaces_project/MTN/neurospaces-developer.mtn",
 					},
 		     version_script => 'neurospaces_build --version',
 		    },
@@ -82,7 +82,7 @@ my $all_packages
 		  order => 2,
 		  version_control => {
 				      port_number => 4694,
-				      repository => "$ENV{HOME}/MTN/heccer.mtn",
+				      repository => "$ENV{HOME}/neurospaces_project/MTN/heccer.mtn",
 				     },
 		 },
        dash => {
@@ -107,7 +107,7 @@ my $all_packages
 			     target_name => 'model-container',
 			     version_control => {
 						 port_number => 4693,
-						 repository => "$ENV{HOME}/MTN/model-container.mtn",
+						 repository => "$ENV{HOME}/neurospaces_project/MTN/model-container.mtn",
 						},
 			    },
        'ns-genesis-SLI' => {
@@ -116,7 +116,7 @@ my $all_packages
 			    order => 6,
 			    version_control => {
 						port_number => 4692,
-						repository => "$ENV{HOME}/MTN/ns-gen.mtn",
+						repository => "$ENV{HOME}/neurospaces_project/MTN/ns-gen.mtn",
 					       },
 			    version_script => 0,
 			   },
@@ -132,7 +132,7 @@ my $all_packages
 	       order => 3,
 	       version_control => {
 				   port_number => 4695,
-				   repository => "$ENV{HOME}/MTN/ssp.mtn",
+				   repository => "$ENV{HOME}/neurospaces_project/MTN/ssp.mtn",
 				  },
 	      },
        studio => {
@@ -473,7 +473,7 @@ sub read_cmd_line
 		     "regex-selector=s" => \$option_regex_selector,
 		     "repo-pull=s" => \$option_repo_pull,
 		     "repo-sync=s" => \$option_repo_sync,
-		     "repo-co=s" => \$option_repo_co,
+		     "repo-co!" => \$option_repo_co,
 		     "tag=s" => \$option_tag,
 		     "uninstall!" => \$option_uninstall,
 		     "upload-server=s" => \$option_upload_server,
@@ -701,18 +701,6 @@ sub read_cmd_line
 
 		my $port_number = $package_information->{package}->{version_control}->{port_number};
 
-		# if not enough information for pulling
-
-		if (not -f $repository_name)
-		{
-		    die "$0: *** Error: cannot pull repository, repository_name not set";
-		}
-
-		if (not $port_number)
-		{
-		    die "$0: *** Error: cannot pull repository, port_number not set";
-		}
-
 		# initialize the repository if necessary
 
 		operation_execute
@@ -731,6 +719,18 @@ sub read_cmd_line
 		     ],
 		    );
 
+		# if not enough information for pulling
+
+		if (not -f $repository_name)
+		{
+		    die "$0: *** Error: cannot pull repository, repository_name not set";
+		}
+
+		if (not $port_number)
+		{
+		    die "$0: *** Error: cannot pull repository, port_number not set";
+		}
+
 		# pull the repository
 
 		operation_execute
@@ -745,7 +745,7 @@ sub read_cmd_line
 		      package_name => $package_name,
 		     },
 		     [
-		      'mtn', '--db', $repository_name, 'pull', "$option_repo_pull:$port_number",
+		      'mtn', '--db', $repository_name, 'pull', "$option_repo_pull:$port_number", '"*"',
 		     ],
 		    );
 	    },
@@ -825,7 +825,7 @@ sub read_cmd_line
 	   },
 	   {
 	    condition => $option_repo_co,
-	    description => "commiting to repository",
+	    description => "checkout from repository",
 	    operation =>
 	    sub
 	    {
@@ -847,21 +847,24 @@ sub read_cmd_line
 
 		my $port_number = $package_information->{package}->{version_control}->{port_number};
 
-		# if not enough information for commiting
+		# if not enough information for checkout
 
 		if (not -f $repository_name)
 		{
-		    die "$0: *** Error: cannot commit to repository, repository_name not set";
+		    die "$0: *** Error: cannot checkout from repository, repository_name not set";
 		}
 
 		if (not $port_number)
 		{
-		    die "$0: *** Error: cannot commit to repository, port_number not set";
+		    die "$0: *** Error: cannot checkout from repository, port_number not set";
 		}
 
 		# change the directory
 
-		chdir $directory;
+		if (not chdir $directory)
+		{
+		    die "$0: *** Error: cannot change to directory $directory";
+		}
 
 		# checkout code
 
