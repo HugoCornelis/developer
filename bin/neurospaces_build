@@ -143,6 +143,10 @@ my $all_packages
 		  directory => "$ENV{HOME}/neurospaces_project/studio/source/snapshots/0",
 		  disabled => 0,
 		  order => 5,
+		  version_control => {
+				      port_number => 4698,
+				      repository => "$ENV{HOME}/neurospaces_project/MTN/studio.mtn",
+				     },
 		  version_script => 'neurospaces --version',
 		 },
       };
