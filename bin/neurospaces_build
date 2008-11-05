@@ -124,6 +124,10 @@ my $all_packages
 			     directory => "$ENV{HOME}/neurospaces_project/project-browser/source/snapshots/0",
 			     disabled => 1,
 			     order => 7,
+			     version_control => {
+						 port_number => 4697,
+						 repository => "$ENV{HOME}/neurospaces_project/MTN/neurospacesweb.mtn",
+						},
 			     version_script => 'pb-version',
 			    },
        ssp => {
