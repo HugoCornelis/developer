@@ -833,7 +833,7 @@ sub read_cmd_line
 	   },
 	   {
 	    condition => $option_repo_co,
-	    description => "checkout from repository",
+	    description => "checkout or update from repository",
 	    operation =>
 	    sub
 	    {
@@ -888,7 +888,45 @@ sub read_cmd_line
 		      package_name => $package_name,
 		     },
 		     [
-		      'mtn', '--db', $repository_name, '--branch', '0', 'co', '.',
+		      'test', '-d', '_MTN',
+		      '||', 'mtn', '--db', $repository_name, '--branch', '0', 'co', '.',
+		     ],
+		    );
+
+		# merge code
+
+		operation_execute
+		    (
+		     $operations,
+		     {
+		      description => $description,
+
+		      #t always zero here, but I guess this simply depends on working in client mode ?
+
+		      keywords => 0,
+		      package_name => $package_name,
+		     },
+		     [
+		      'test', '-d', '_MTN',
+		      '||', 'mtn', '--db', $repository_name, '--branch', '0', 'merge',
+		     ],
+		    );
+
+		# update code
+
+		operation_execute
+		    (
+		     $operations,
+		     {
+		      description => $description,
+
+		      #t always zero here, but I guess this simply depends on working in client mode ?
+
+		      keywords => 0,
+		      package_name => $package_name,
+		     },
+		     [
+		      'mtn', '--db', $repository_name, '--branch', '0', 'update',
 		     ],
 		    );
 	    },
@@ -1491,7 +1529,7 @@ options related to operation execution profile:
     regex-selector         defines a regex to select specific packages.
     repo-pull              pull the repositories from this server (e.g. virtual2.cbi.utsa.edu).
     repo-sync              sync the repositories with this server (e.g. virtual2.cbi.utsa.edu).
-    repo-co                checkout the code from the repository.
+    repo-co                checkout or update the code from the repository.
     tag                    set this tag on all packages.
     uninstall              uninstall packages, cannot be combined with installation options.
     upload-server          enable uploading packages to this server (e.g. https://frs.sourceforge.net/uploads).

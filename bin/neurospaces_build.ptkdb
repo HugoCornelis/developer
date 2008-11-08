@@ -7,7 +7,7 @@ $files = {
 ',
                                             'fname' => 'bin/neurospaces_build',
                                             'type' => 'user',
-                                            'line' => '59'
+                                            'line' => 59
                                           },
                                           {
                                             'expr' => undef,
@@ -16,7 +16,7 @@ $files = {
 ',
                                             'fname' => 'bin/neurospaces_build',
                                             'type' => 'user',
-                                            'line' => '263'
+                                            'line' => 263
                                           }
                                         ]
          };
@@ -35,4 +35,4 @@ $expr_list = [
                }
              ];
 $eval_saved_text = undef;
-$main_win_geometry = '1455x998+136+0';
+$main_win_geometry = '1280x951+0+0';
