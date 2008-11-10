@@ -93,7 +93,6 @@ my $all_packages
 	       },
        gshell => {
 		  directory => "$ENV{HOME}/neurospaces_project/gshell/source/snapshots/0",
-		  disabled => 1,
 		  order => 13,
 		  version_script => 0,
 		 },
