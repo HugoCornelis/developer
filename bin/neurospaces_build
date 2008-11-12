@@ -94,7 +94,11 @@ my $all_packages
        gshell => {
 		  directory => "$ENV{HOME}/neurospaces_project/gshell/source/snapshots/0",
 		  order => 13,
-		  version_script => 0,
+		  version_control => {
+				      port_number => 4699,
+				      repository => "$ENV{HOME}/neurospaces_project/MTN/neurospaces-developer.mtn",
+				     },
+		  version_script => 'genesis-g3 --version',
 		 },
        'model-container' => {
 			     './configure' => [
