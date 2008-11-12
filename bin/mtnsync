@@ -1,0 +1,30 @@
+#!/bin/sh
+
+MTNDIR=~/neurospaces_project/MTN
+
+echo Syncing ns-genesis.sli
+
+mtn --db=$MTNDIR/ns-gen.mtn sync virtual2.cbi.utsa.edu:4692 "*"
+
+
+echo Syncing model-container
+
+mtn --db=$MTNDIR/model-container.mtn sync virtual2.cbi.utsa.edu:4693 "*"
+
+
+echo Syncing Heccer
+
+mtn --db=$MTNDIR/heccer.mtn sync virtual2.cbi.utsa.edu:4694 "*"
+
+
+
+echo Syncing ssp
+
+mtn --db=$MTNDIR/ssp.mtn sync virtual2.cbi.utsa.edu:4695 "*"
+
+
+echo Syncing Installer
+
+mtn --db=$MTNDIR/neurospaces-developer.mtn sync virtual2.cbi.utsa.edu:4696 "*"
+
+echo Done syncing...
