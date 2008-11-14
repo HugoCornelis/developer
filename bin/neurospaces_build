@@ -25,17 +25,17 @@ my $option_compile = 1;
 my $option_configure = 1;
 my $option_directories_create = 0;
 my $option_dist = 0;
+my $option_dist_dir = [];
 my $option_distcheck = 0;
 my $option_distclean = 0;
-my $option_dist_dir = [];
 my $option_distkeywords = 0;
 my $option_dry_run = 0;
 my $option_install = 1;
 my $option_installed_versions = 1;
 my $option_regex_selector = ".*";
+my $option_repo_co = 0;
 my $option_repo_pull = 0;
 my $option_repo_sync = 0;
-my $option_repo_co = 0;
 my $option_tag = 0;
 my $option_uninstall = 0;
 my $option_upload_server;
@@ -712,13 +712,35 @@ sub read_cmd_line
 
 		my $port_number = $package_information->{package}->{version_control}->{port_number};
 
+		# create repository directory
+
+		my $repository_directory = $repository_name;
+
+		$repository_directory =~ s((.*)/.*)($1);
+
+		operation_execute
+		    (
+		     $operations,
+		     {
+		      description => "$description (creating repository directory)",
+
+		      #t always zero here, but I guess this simply depends on working in client mode ?
+
+		      keywords => 0,
+		      package_name => $package_name,
+		     },
+		     [
+		      'mkdir', '--parents', $repository_directory,
+		     ],
+		    );
+
 		# initialize the repository if necessary
 
 		operation_execute
 		    (
 		     $operations,
 		     {
-		      description => $description,
+		      description => "$description: (initializing the repository)",
 
 		      #t always zero here, but I guess this simply depends on working in client mode ?
 
