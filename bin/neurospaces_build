@@ -899,25 +899,6 @@ sub read_cmd_line
 		    die "$0: *** Error: cannot change to directory $directory";
 		}
 
-		# checkout code
-
-		operation_execute
-		    (
-		     $operations,
-		     {
-		      description => $description,
-
-		      #t always zero here, but I guess this simply depends on working in client mode ?
-
-		      keywords => 0,
-		      package_name => $package_name,
-		     },
-		     [
-		      'test', '-d', '_MTN',
-		      '||', 'mtn', '--db', $repository_name, '--branch', '0', 'co', '.',
-		     ],
-		    );
-
 		# merge code
 
 		operation_execute
@@ -934,6 +915,25 @@ sub read_cmd_line
 		     [
 		      'test', '-d', '_MTN',
 		      '||', 'mtn', '--db', $repository_name, '--branch', '0', 'merge',
+		     ],
+		    );
+
+		# checkout code
+
+		operation_execute
+		    (
+		     $operations,
+		     {
+		      description => $description,
+
+		      #t always zero here, but I guess this simply depends on working in client mode ?
+
+		      keywords => 0,
+		      package_name => $package_name,
+		     },
+		     [
+		      'test', '-d', '_MTN',
+		      '||', 'mtn', '--db', $repository_name, '--branch', '0', 'co', '.',
 		     ],
 		    );
 
