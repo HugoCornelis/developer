@@ -784,79 +784,6 @@ sub read_cmd_line
 	    },
 	   },
 	   {
-	    condition => $option_repo_sync,
-	    description => 'syncing repository',
-	    operation =>
-	    sub
-	    {
-		my $package_information = shift;
-
-		# get specific arguments
-
-		my $description = $package_information->{description};
-
-		my $directory = $package_information->{directory};
-
-		my $operations = $package_information->{operations};
-
-		my $package_name = $package_information->{package_name};
-
-		my $repository_name
-		    = $package_information->{package}->{version_control}->{repository}
-			|| $directory . '/' . $package_name . '/' . 'mtn';
-
-		my $port_number = $package_information->{package}->{version_control}->{port_number};
-
-		# if not enough information for syncing
-
-		if (not -f $repository_name)
-		{
-		    die "$0: *** Error: cannot sync repository, repository_name not set";
-		}
-
-		if (not $port_number)
-		{
-		    die "$0: *** Error: cannot sync repository, port_number not set";
-		}
-
-		# initialize the repository if necessary
-
-		operation_execute
-		    (
-		     $operations,
-		     {
-		      description => $description,
-
-		      #t always zero here, but I guess this simply depends on working in client mode ?
-
-		      keywords => 0,
-		      package_name => $package_name,
-		     },
-		     [
-		      'test', '-f', $repository_name, '||', 'mtn', '--db', $repository_name, 'db', 'init',
-		     ],
-		    );
-
-		# sync the repository
-
-		operation_execute
-		    (
-		     $operations,
-		     {
-		      description => $description,
-
-		      #t always zero here, but I guess this simply depends on working in client mode ?
-
-		      keywords => 0,
-		      package_name => $package_name,
-		     },
-		     [
-		      'mtn', '--db', $repository_name, 'sync', "$option_repo_sync:$port_number",
-		     ],
-		    );
-	    },
-	   },
-	   {
 	    condition => $option_repo_co,
 	    description => "checkout or update from repository",
 	    operation =>
@@ -1461,6 +1388,79 @@ sub read_cmd_line
 	   {
 	    condition => $option_certification_report,
 	    operation => [ 'mtn', 'cert', '\'%version\'', '--', 'build_report', '\'%report\'', ],
+	   },
+	   {
+	    condition => $option_repo_sync,
+	    description => 'syncing repository',
+	    operation =>
+	    sub
+	    {
+		my $package_information = shift;
+
+		# get specific arguments
+
+		my $description = $package_information->{description};
+
+		my $directory = $package_information->{directory};
+
+		my $operations = $package_information->{operations};
+
+		my $package_name = $package_information->{package_name};
+
+		my $repository_name
+		    = $package_information->{package}->{version_control}->{repository}
+			|| $directory . '/' . $package_name . '/' . 'mtn';
+
+		my $port_number = $package_information->{package}->{version_control}->{port_number};
+
+		# if not enough information for syncing
+
+		if (not -f $repository_name)
+		{
+		    die "$0: *** Error: cannot sync repository, repository_name not set";
+		}
+
+		if (not $port_number)
+		{
+		    die "$0: *** Error: cannot sync repository, port_number not set";
+		}
+
+		# initialize the repository if necessary
+
+		operation_execute
+		    (
+		     $operations,
+		     {
+		      description => $description,
+
+		      #t always zero here, but I guess this simply depends on working in client mode ?
+
+		      keywords => 0,
+		      package_name => $package_name,
+		     },
+		     [
+		      'test', '-f', $repository_name, '||', 'mtn', '--db', $repository_name, 'db', 'init',
+		     ],
+		    );
+
+		# sync the repository
+
+		operation_execute
+		    (
+		     $operations,
+		     {
+		      description => $description,
+
+		      #t always zero here, but I guess this simply depends on working in client mode ?
+
+		      keywords => 0,
+		      package_name => $package_name,
+		     },
+		     [
+		      'mtn', '--db', $repository_name, 'sync', "$option_repo_sync:$port_number",
+		     ],
+		    );
+	    },
 	   },
 	  ];
 
