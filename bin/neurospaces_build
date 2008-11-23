@@ -36,6 +36,7 @@ my $option_regex_selector = ".*";
 my $option_repo_co = 0;
 my $option_repo_pull = 0;
 my $option_repo_sync = 0;
+my $option_repo_status = 0;
 my $option_tag = 0;
 my $option_uninstall = 0;
 my $option_upload_server;
@@ -58,6 +59,43 @@ my $all_operations = [];
 
 my $all_packages
     = {
+       configuration => {
+			 directory => "$ENV{HOME}/neurospaces_project/configuration",
+			 disabled => 1,
+			 order => 27,
+			 version_script => 0,
+			},
+       dash => {
+		directory => "$ENV{HOME}/neurospaces_project/dash/source/snapshots/0",
+		disabled => 1,
+		order => 2,
+		version_script => 0,
+	       },
+       geometry => {
+		    directory => "$ENV{HOME}/neurospaces_project/geometry/source/snapshots/0",
+		    disabled => 1,
+		    order => 4,
+		    version_script => 0,
+		   },
+       gshell => {
+		  directory => "$ENV{HOME}/neurospaces_project/gshell/source/snapshots/0",
+		  order => 13,
+		  version_control => {
+				      port_number => 4699,
+				      repository => "$ENV{HOME}/neurospaces_project/MTN/gshell.mtn",
+				     },
+		  version_script => 'genesis-g3 --version',
+		 },
+       heccer => {
+		  directory => "$ENV{HOME}/neurospaces_project/heccer/source/snapshots/0",
+		  disabled => 0,
+		  order => 2,
+		  version_control => {
+				      port_number => 4694,
+				      repository => "$ENV{HOME}/neurospaces_project/MTN/heccer.mtn",
+				     },
+		 },
+
        # the installer package is always disabled, unless overriden by the --enable option.
 
        installer => {
@@ -70,36 +108,6 @@ my $all_packages
 					},
 		     version_script => 'neurospaces_build --version',
 		    },
-       geometry => {
-		    directory => "$ENV{HOME}/neurospaces_project/geometry/source/snapshots/0",
-		    disabled => 1,
-		    order => 4,
-		    version_script => 0,
-		   },
-       heccer => {
-		  directory => "$ENV{HOME}/neurospaces_project/heccer/source/snapshots/0",
-		  disabled => 0,
-		  order => 2,
-		  version_control => {
-				      port_number => 4694,
-				      repository => "$ENV{HOME}/neurospaces_project/MTN/heccer.mtn",
-				     },
-		 },
-       dash => {
-		directory => "$ENV{HOME}/neurospaces_project/dash/source/snapshots/0",
-		disabled => 1,
-		order => 2,
-		version_script => 0,
-	       },
-       gshell => {
-		  directory => "$ENV{HOME}/neurospaces_project/gshell/source/snapshots/0",
-		  order => 13,
-		  version_control => {
-				      port_number => 4699,
-				      repository => "$ENV{HOME}/neurospaces_project/MTN/gshell.mtn",
-				     },
-		  version_script => 'genesis-g3 --version',
-		 },
        'model-container' => {
 			     './configure' => [
 					       '--with-delete-operation',
@@ -113,6 +121,19 @@ my $all_packages
 						 repository => "$ENV{HOME}/neurospaces_project/MTN/model-container.mtn",
 						},
 			    },
+       neurospaces_prcs => {
+			    directory => "$ENV{HOME}/neurospaces_project/model-container/source/snapshots/prcs.0",
+			    disabled => 'obsoleted by the model-container under mtn control rather than prcs',
+			    order => 0.5,
+			    version_control => {
+						commands => {
+							     missing => undef,
+							     status => 'prcs diff neurospaces.prj `prcs 2>/dev/null execute --not ".*\(directory\|symlink\)" neurospaces.prj | grep -v "neurospaces\.prj" | grep -v "purkinjespine" ` -- --unified ',
+							     unknown => undef,
+							    },
+					       },
+			    version_script => 'prcsentry Project-Version',
+			   },
        'ns-genesis-SLI' => {
 			    directory => "$ENV{HOME}/neurospaces_project/ns-genesis-SLI/source/snapshots/0",
 			    disabled => 1,
@@ -151,6 +172,12 @@ my $all_packages
 				      repository => "$ENV{HOME}/neurospaces_project/MTN/studio.mtn",
 				     },
 		  version_script => 'neurospaces --version',
+		 },
+       system => {
+		  directory => "$ENV{HOME}/neurospaces_project/.",
+		  disabled => 1,
+		  order => 29,
+		  version_script => 0,
 		 },
       };
 
@@ -450,7 +477,8 @@ sub read_cmd_line
     my $option_enable;
     my $option_help = 0;
     my $option_help_all = 0;
-    my $option_packages = 0;
+    my $option_help_operations = 0;
+    my $option_help_packages = 0;
     my $option_version;
 
     my $result
@@ -478,13 +506,15 @@ sub read_cmd_line
 		     "enable=s" => \$option_enable,
 		     "help!" => \$option_help,
 		     "help-all!" => \$option_help_all,
+		     "help-operations!" => \$option_help_operations,
+		     "help-packages!" => \$option_help_packages,
 		     "install!" => \$option_install,
 		     "installed-versions!" => \$option_installed_versions,
-		     "packages" => \$option_packages,
 		     "regex-selector=s" => \$option_regex_selector,
+		     "repo-co!" => \$option_repo_co,
 		     "repo-pull=s" => \$option_repo_pull,
 		     "repo-sync=s" => \$option_repo_sync,
-		     "repo-co!" => \$option_repo_co,
+		     "repo-status!" => \$option_repo_status,
 		     "tag=s" => \$option_tag,
 		     "uninstall!" => \$option_uninstall,
 		     "upload-server=s" => \$option_upload_server,
@@ -555,13 +585,15 @@ sub read_cmd_line
 	   "enable=s" => $option_enable,
 	   "help!" => $option_help,
 	   "help-all!" => $option_help_all,
+	   "help-operations!" => $option_help_operations,
+	   "help-packages!" => $option_help_packages,
 	   "install!" => $option_install,
 	   "installed-versions!" => $option_installed_versions,
-	   "packages" => $option_packages,
 	   "regex-selector=s" => $option_regex_selector,
+	   "repo-co!" => $option_repo_co,
 	   "repo-pull=s" => $option_repo_pull,
 	   "repo-sync=s" => $option_repo_sync,
-	   "repo-co!" => $option_repo_co,
+	   "repo-status!" => $option_repo_status,
 	   "tag=s" => $option_tag,
 	   "uninstall!" => $option_uninstall,
 	   "upload-server=s" => $option_upload_server,
@@ -1390,6 +1422,108 @@ sub read_cmd_line
 	    operation => [ 'mtn', 'cert', '\'%version\'', '--', 'build_report', '\'%report\'', ],
 	   },
 	   {
+	    condition => $option_repo_status,
+	    description => 'comparing workspace with source code repository branch head',
+	    operation =>
+	    sub
+	    {
+		my $package_information = shift;
+
+		# get specific arguments
+
+		my $description = $package_information->{description};
+
+		my $directory = $package_information->{directory};
+
+		my $operations = $package_information->{operations};
+
+		my $package_name = $package_information->{package_name};
+
+		my $repository_name
+		    = $package_information->{package}->{version_control}->{repository}
+			|| $directory . '/' . $package_name . '/' . 'mtn';
+
+		my $port_number = $package_information->{package}->{version_control}->{port_number};
+
+		# print header
+
+		my $text = "$0: *** package $package_name";
+
+		print "\n\n" . ("-" x length $text) . "\n$text\n";
+
+# 		# if not enough information for comparing
+
+# 		if (not -f $repository_name)
+# 		{
+# 		    die "$0: *** Error: cannot compare with repository, repository_name not set";
+# 		}
+
+# 		if (not $port_number)
+# 		{
+# 		    die "$0: *** Error: cannot compare with repository, port_number not set";
+# 		}
+
+		# change the directory
+
+		chdir $directory;
+
+		# construct a default set with information commands
+
+		my $information_sets
+		    = {
+		       missing => [ "mtn", "ls", "missing", ],
+		       status => [ 'mtn', 'status', ],
+		       unknown => [ "mtn", "ls", "unknown", ],
+		      };
+
+		# go through all informational operations
+
+		foreach my $information_set (
+					     qw(
+						missing
+						unknown
+						status
+					       )
+					    )
+		{
+		    # and overwrite with specific commands for this package if applicable
+
+		    if ($package_information->{version_control}->{commands}->{$information_set})
+		    {
+			$information_sets->{$information_set}
+			    = $package_information->{version_control}->{commands}->{$information_set};
+		    }
+		}
+
+		# go through all informational operations
+
+		foreach my $information_set (
+					     qw(
+						missing
+						unknown
+						status
+					       )
+					    )
+		{
+		    # execute the information command
+
+		    operation_execute
+			(
+			 $operations,
+			 {
+			  description => "information_set $information_set",
+
+			  #t always zero here, but I guess this simply depends on working in client mode ?
+
+			  keywords => 0,
+			  package_name => $package_name,
+			 },
+			 $information_sets->{$information_set},
+			);
+		}
+	    },
+	   },
+	   {
 	    condition => $option_repo_sync,
 	    description => 'syncing repository',
 	    operation =>
@@ -1519,7 +1653,7 @@ $program_name creates a matrix of packages (rows) and build operations
 performs one build operation after the other for the selected package.
 The options select or deselect cells in the matrix.
 
-To find out what packages are in the database, use the '--packages'
+To find out what packages are in the database, use the '--help-packages'
 option.  Disabled packages are not put in the matrix, enabled packages
 are.  To disable packages, use the '--disable' option with a regex
 argument.  To enable packages, use the '--enable' option with a regex
@@ -1549,12 +1683,13 @@ options related to operation execution profile:
     enable                 explicitly enable these regex of packages in the configuration.
     help                   print usage information.
     help-all               print usage, all packages and all operations.
+    help-packages          print known packages, in order of build.
     install                install packages.
-    packages               print known packages, in order of build.
     regex-selector         defines a regex to select specific packages.
+    repo-co                checkout or update the code from the repository.
     repo-pull              pull the repositories from this server (e.g. virtual2.cbi.utsa.edu).
     repo-sync              sync the repositories with this server (e.g. virtual2.cbi.utsa.edu).
-    repo-co                checkout or update the code from the repository.
+    repo-status            compare workspace with source code repository branch head.
     tag                    set this tag on all packages.
     uninstall              uninstall packages, cannot be combined with installation options.
     upload-server          enable uploading packages to this server (e.g. https://frs.sourceforge.net/uploads).
@@ -1593,13 +1728,35 @@ options related to behavior of external applications:
 	exit 1;
     }
 
-    if ($option_packages)
+    if ($option_help_operations)
     {
 	print
-	    "$0: packages in order of build are ("
+	    "$0:\n  operations in order of build:\n    - "
 		. (
 		   join
-		   ' ',
+		   "\n    - ",
+		   grep
+		   {
+		       $_ =~ /$option_regex_selector/i
+		   }
+		   map
+		   {
+		       $_->{description} || join ' ', @{$_->{operation} || []},
+		   }
+		   @$all_operations,
+		  )
+		    . "\n";
+
+	exit 1;
+    }
+
+    if ($option_help_packages)
+    {
+	print
+	    "$0:\n  packages in order of build:\n    - "
+		. (
+		   join
+		   "\n    - ",
 		   sort
 		   {
 		       $all_packages->{$a}->{order} <=> $all_packages->{$b}->{order}
@@ -1610,7 +1767,7 @@ options related to behavior of external applications:
 		   }
 		   keys %$all_packages
 		  )
-		    . ")\n";
+		    . "\n";
 
 	exit 1;
     }
