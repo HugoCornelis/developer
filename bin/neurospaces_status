@@ -6,172 +6,37 @@
 use strict;
 
 
-my $packages
-    = {
-       neurospaces_prcs => {
-			    directory => "$ENV{HOME}/neurospaces_project/model-container/source/snapshots/prcs.0",
-			    # 			    disabled => 1,
-			    priority => 1,
-			    commands => {
-					 missing => undef,
-					 status => 'prcs diff neurospaces.prj `prcs 2>/dev/null execute --not ".*\(directory\|symlink\)" neurospaces.prj | grep -v "neurospaces\.prj" | grep -v "purkinjespine" ` -- --unified ',
-					 unknown => undef,
-					},
-			   },
-       'model-container' => {
-			     directory => "$ENV{HOME}/neurospaces_project/model-container/source/snapshots/0",
-			     priority => 1,
-			     commands => {
-					  missing => "mtn ls missing",
-					  status => "mtn status",
-					  unknown => "mtn ls unknown",
-					 },
-			    },
-       heccer => {
-		  directory => "$ENV{HOME}/neurospaces_project/heccer/source/snapshots/0",
-		  priority => 2,
-		  commands => {
-			       missing => "mtn ls missing",
-			       status => 'mtn status',
-			       unknown => "mtn ls unknown",
-			      },
-		 },
-       gshell => {
-		  directory => "$ENV{HOME}/neurospaces_project/gshell/source/snapshots/0",
-		  priority => 13,
-		  commands => {
-			       missing => "mtn ls missing",
-			       status => 'mtn status',
-			       unknown => "mtn ls unknown",
-			      },
-		 },
-       ssp => {
-	       directory => "$ENV{HOME}/neurospaces_project/ssp/source/snapshots/0",
-	       priority => 3,
-	       commands => {
-			    missing => "mtn ls missing",
-			    status => 'mtn status',
-			    unknown => "mtn ls unknown",
-			   },
-	      },
-       studio => {
-		  directory => "$ENV{HOME}/neurospaces_project/studio/source/snapshots/0",
-		  priority => 4,
-		  commands => {
-			       missing => "mtn ls missing",
-			       status => 'mtn status',
-			       unknown => "mtn ls unknown",
-			      },
-		 },
-       'ns-genesis-SLI' => {
-			    directory => "$ENV{HOME}/neurospaces_project/ns-genesis-SLI/source/snapshots/0",
-			    priority => 6,
-			    commands => {
-					 missing => "mtn ls missing",
-					 status => 'mtn status',
-					 unknown => "mtn ls unknown",
-					},
-			   },
-       'project-browser' => {
-			     directory => "$ENV{HOME}/neurospaces_project/project-browser/source/snapshots/0",
-			     priority => 7,
-			     commands => {
-					  missing => "mtn ls missing",
-					  status => 'mtn status',
-					  unknown => "mtn ls unknown",
-					 },
-			    },
-       geometry => {
-		    directory => "$ENV{HOME}/neurospaces_project/geometry/source/snapshots/0",
-		    priority => 6,
-		    commands => {
-				 missing => "mtn ls missing",
-				 status => 'mtn status',
-				 unknown => "mtn ls unknown",
-				},
-		   },
-       configuration => {
-			 directory => "$ENV{HOME}/neurospaces_project/configuration",
-			 priority => 7,
-			 commands => {
-				      missing => "mtn ls missing",
-				      status => 'mtn status',
-				      unknown => "mtn ls unknown",
-				     },
-			},
-       installer => {
-		     directory => "$ENV{HOME}/neurospaces_project/installer/source/snapshots/0",
-		     priority => 8,
-		     commands => {
-				  missing => "mtn ls missing",
-				  status => 'mtn status',
-				  unknown => "mtn ls unknown",
-				 },
-		    },
-       system => {
-		  directory => "$ENV{HOME}/neurospaces_project/.",
-		  priority => 9,
-		  commands => {
-			       missing => "mtn ls missing",
-			       status => 'mtn status',
-			       unknown => "mtn ls unknown",
-			      },
-		 },
-      };
+use Getopt::Long;
+
+use YAML;
 
 
-foreach my $package_name (
-			  sort
-			  {
-			      $packages->{$a}->{priority} <=> $packages->{$b}->{priority}
-			  }
-			  keys
-			  %$packages)
+my $option_developer = 1;
+my $option_enable;
+my $option_regex_selector;
+my $option_verbose;
+
 {
-    my $package = $packages->{$package_name};
+    my $result
+	= GetOptions
+	    (
+	     "developer!" => \$option_developer,
+	     "enable=s" => \$option_enable,
+	     "regex-selector=s" => \$option_regex_selector,
+	     "v|verbose+" => \$option_verbose,
+	    );
 
-    if ($package->{disabled})
+    if (!$result)
     {
-# 	if ($option_verbose)
-# 	{
-# 	    print "$0: $package_name skipped, disabled is $package->{disabled}\n";
-# 	}
-
-	next;
-    }
-
-    my $directory = $package->{directory};
-
-    my $text = "$0: *** package $package_name";
-
-    print "\n\n" . ("-" x length $text) . "\n$text\n";
-
-#     use Cwd;
-
-#     my $current_directory = getcwd();
-
-    use File::chdir;
-
-    {
-	local $CWD = $package->{directory};
-
-	if ($!)
-	{
-	    die "$0: cannot change to directory ($directory)";
-	}
-
-	foreach my $command (qw(missing unknown status))
-	{
-	    my $command = $package->{commands}->{$command};
-
-	    if (defined $command)
-	    {
-		print "$0: $command\n";
-
-		system $command;
-	    }
-	}
+	die "$0: *** Error: Error in option processing";
     }
 }
+
+my $verbose_options = defined $option_verbose ? "--verbose " x $option_verbose : '';
+my $developer_options = defined $option_developer ? "--developer " x $option_developer : '';
+my $regex_options = defined $option_regex_selector ? "--regex '$option_regex_selector' " : '';
+my $enable_options = defined $option_enable ? "--enable $option_enable " : '';
+
+system "neurospaces_build --repo-status --no-installed-versions --no-configure --no-install --no-compile $verbose_options $developer_options $regex_options $enable_options";
 
 
