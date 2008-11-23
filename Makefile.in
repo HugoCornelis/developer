@@ -150,6 +150,7 @@ dist_bin_SCRIPTS = \
 	bin/mcad2doxy \
 	bin/neurospaces_build \
 	bin/neurospaces_check \
+	bin/neurospaces_install \
 	bin/neurospaces_status \
 	bin/neurospaces_sync \
 	bin/neurospaces_versions \
