@@ -1753,13 +1753,17 @@ options related to behavior of external applications:
     if ($option_help_packages)
     {
 	print
-	    "$0:\n  packages in order of build:\n    - "
+	    "$0:\n  enabled packages in order of build:\n    - "
 		. (
 		   join
 		   "\n    - ",
 		   sort
 		   {
 		       $all_packages->{$a}->{order} <=> $all_packages->{$b}->{order}
+		   }
+		   grep
+		   {
+		       not $all_packages->{$_}->{disabled}
 		   }
 		   grep
 		   {
