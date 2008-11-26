@@ -136,7 +136,6 @@ my $all_packages
 			   },
        'ns-genesis-SLI' => {
 			    directory => "$ENV{HOME}/neurospaces_project/ns-genesis-SLI/source/snapshots/0",
-			    disabled => 1,
 			    order => 6,
 			    version_control => {
 						port_number => 4692,
