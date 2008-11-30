@@ -95,12 +95,9 @@ my $all_packages
 				      repository => "$ENV{HOME}/neurospaces_project/MTN/heccer.mtn",
 				     },
 		 },
-
-       # the installer package is always disabled, unless overriden by the --enable option.
-
        installer => {
 		     directory => "$ENV{HOME}/neurospaces_project/installer/source/snapshots/0",
-		     disabled => 1,
+		     disabled => 0, # disabled => 1,
 		     order => 0,
 		     version_control => {
 					 port_number => 4696,
