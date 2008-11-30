@@ -42,7 +42,7 @@ $content =~ s(/// DESCR:([^\n]*))(///\n/// \\details )g;
 
 # process notes docs
 
-$content =~ s(///\s*NOTE\.:)(/// \\note )g;
+$content =~ s(///\s*NOTE(\.)?:)(/// \\note )g;
 
 # process todo docs
 
