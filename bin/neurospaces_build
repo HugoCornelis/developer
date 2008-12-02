@@ -41,6 +41,8 @@ my $option_tag = 0;
 my $option_uninstall = 0;
 my $option_upload_server;
 my $option_verbose = 0;
+my $option_website_prepare;
+my $option_website_upload;
 
 # options related to installation on a client machine
 
@@ -518,6 +520,8 @@ sub read_cmd_line
 		     "upload-server=s" => \$option_upload_server,
 		     "verbose+" => \$option_verbose,
 		     "version" => \$option_version,
+		     "website-prepare!" => \$option_website_prepare,
+		     "website-upload!" => \$option_website_upload,
 
 		     # options related to installation on a client machine
 
@@ -598,6 +602,8 @@ sub read_cmd_line
 	   "upload-server=s" => $option_upload_server,
 	   "verbose+" => $option_verbose,
 	   "version" => $option_version,
+	   "website-prepare!" => $option_website_prepare,
+	   "website-upload!" => $option_website_upload,
 
 	   # options related to installation on a client machine
 
@@ -1151,6 +1157,14 @@ sub read_cmd_line
 	    operation => [ 'make', '&&', 'sudo', 'make', 'install', ],
 	   },
 	   {
+	    condition => $option_website_prepare,
+	    operation => [ 'make', 'html-upload-prepare', ],
+	   },
+	   {
+	    condition => $option_website_upload,
+	    operation => [ 'make', 'html-upload', ],
+	   },
+	   {
 	    condition => $option_installed_versions,
 	    description => 'installed versions',
 	    operation =>
@@ -1671,9 +1685,9 @@ options related to operation execution profile:
     certification-report   annotate the (monotone) repository with the build_report.
     check                  check packages.
     clean                  clean before compiling.
-    configure              configure before compiling.
     compile                compile packages.
-    directories            create package directory structure.
+    configure              configure before compiling.
+    directories-create     create package directory structure.
     disable                explicitly disable this regex of packages in the configuration.
     dist                   build distribution tarballs.
     distcheck              check created tarballs.
@@ -1689,14 +1703,15 @@ options related to operation execution profile:
     regex-selector         defines a regex to select specific packages.
     repo-co                checkout or update the code from the repository.
     repo-pull              pull the repositories from this server (e.g. virtual2.cbi.utsa.edu).
-    repo-sync              sync the repositories with this server (e.g. virtual2.cbi.utsa.edu).
     repo-status            compare workspace with source code repository branch head.
+    repo-sync              sync the repositories with this server (e.g. virtual2.cbi.utsa.edu).
     tag                    set this tag on all packages.
     uninstall              uninstall packages, cannot be combined with installation options.
     upload-server          enable uploading packages to this server (e.g. https://frs.sourceforge.net/uploads).
-    v|verbose              tell what is being done, specify multiple times to get
-                           more feedback.
     version                give version information.
+    v|verbose              tell what is being done, specify multiple times to get more feedback.
+    website-prepare        prepare the website on your developer machine.
+    website-upload         upload the website to the webserver.
 
 options related to installation on a client machine:
     download-server        enable downloading packages from this server (e.g. downloads.sourceforge.net).
@@ -1710,7 +1725,7 @@ usual.
 
 options related to behavior of external applications:
     environment            fills in the environment, can be given multiple times.
-                           e.g. environment NEUROSPACES_HARNESS_OPTION_EMAIL=1 generates emails for checks that fail.
+                           e.g. environment NEUROSPACES_HARNESS_OPTION_EMAIL=1 generates emails for tests that fail.
 
 ";
 
