@@ -475,6 +475,7 @@ sub read_cmd_line
     my $option_help_all = 0;
     my $option_help_operations = 0;
     my $option_help_packages = 0;
+    my $option_help_repositories;
     my $option_version;
 
     my $result
@@ -504,6 +505,7 @@ sub read_cmd_line
 		     "help-all!" => \$option_help_all,
 		     "help-operations!" => \$option_help_operations,
 		     "help-packages!" => \$option_help_packages,
+		     "help-repositories!" => \$option_help_repositories,
 		     "install!" => \$option_install,
 		     "installed-versions!" => \$option_installed_versions,
 		     "regex-selector=s" => \$option_regex_selector,
@@ -583,6 +585,7 @@ sub read_cmd_line
 	   "help-all!" => $option_help_all,
 	   "help-operations!" => $option_help_operations,
 	   "help-packages!" => $option_help_packages,
+	   "help-repositories!" => $option_help_repositories,
 	   "install!" => $option_install,
 	   "installed-versions!" => $option_installed_versions,
 	   "regex-selector=s" => $option_regex_selector,
@@ -1679,7 +1682,9 @@ options related to operation execution profile:
     enable                 explicitly enable these regex of packages in the configuration.
     help                   print usage information.
     help-all               print usage, all packages and all operations.
+    help-operations        print known operations.
     help-packages          print known packages, in order of build.
+    help-repositories      print known source code repositories.
     install                install packages.
     regex-selector         defines a regex to select specific packages.
     repo-co                checkout or update the code from the repository.
@@ -1769,6 +1774,45 @@ options related to behavior of external applications:
 		  )
 		    . "\n";
 
+	exit 1;
+    }
+
+    if ($option_help_repositories)
+    {
+	my $repositories
+	    = [
+	       map
+	       {
+		   my $package_information = $all_packages->{$_};
+
+		   my $repository_name
+		       = $package_information->{version_control}->{repository}
+			   || $package_information->{directory} . '/' . 'mtn';
+
+		   {
+		       package => $_,
+		       repository_name => $repository_name,
+		   };
+	       }
+	       sort
+	       {
+		   $all_packages->{$a}->{order} <=> $all_packages->{$b}->{order}
+	       }
+	       grep
+	       {
+		   not $all_packages->{$_}->{disabled}
+	       }
+	       grep
+	       {
+		   $_ =~ /$option_regex_selector/i
+	       }
+	       keys %$all_packages
+	      ];
+
+	use YAML;
+
+	print Dump( { $0 => { repositories => $repositories, }, }, );
+	
 	exit 1;
     }
 
