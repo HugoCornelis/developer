@@ -155,6 +155,7 @@ dist_bin_SCRIPTS = \
 	bin/neurospaces_status \
 	bin/neurospaces_sync \
 	bin/neurospaces_versions \
+	bin/neurospaces_website_prepare \
 	bin/release-expand \
 	bin/release-extract
 
