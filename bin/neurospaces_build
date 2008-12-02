@@ -1235,14 +1235,14 @@ sub read_cmd_line
 
 		my $upload_directory = $4;
 
-		my $package_names
+		my $module_names
 		    = {
 		       ftp => 'Net::FTP',
 		       https => 'HTTP::DAV',
 		       sftp => 'Net::SFTP',
 		      };
 
-		my $package_name = $package_names->{$upload_protocol};
+		my $module_name = $module_names->{$upload_protocol};
 
 		my $login_info = YAML::LoadFile("$ENV{HOME}/.sourceforge_login");
 
@@ -1254,7 +1254,7 @@ sub read_cmd_line
 
 		if ($try_something_very_sophisticated_with_broken_libraries eq 'yes')
 		{
-		    my $loaded_protocol_module = eval "require $package_name";
+		    my $loaded_protocol_module = eval "require $module_name";
 
 		    if ($@)
 		    {
@@ -1262,7 +1262,7 @@ sub read_cmd_line
 
 			if (exists ${"::"}{verbose} && $::option_verbose)
 			{
-			    print STDERR "$0: cannot load protocol module Net::$package_name because of: $@\n";
+			    print STDERR "$0: cannot load protocol module $module_name because of: $@\n";
 			    print STDERR "$0: continuing.\n";
 			}
 		    }
@@ -1272,7 +1272,7 @@ sub read_cmd_line
 		    if ($upload_protocol =~ /^s?ftp$/)
 		    {
 			$ftp
-			    = eval "$package_name->new('$upload_host', Debug => 0, user => '$user', password => '$password', )"
+			    = eval "$module_name->new('$upload_host', Debug => 0, user => '$user', password => '$password', )"
 				or die "$0: *** Error: for $filename: cannot connect to $upload_host: $@";
 		    }
 		    else
