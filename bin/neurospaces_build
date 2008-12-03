@@ -127,7 +127,14 @@ my $all_packages
 			    version_control => {
 						commands => {
 							     missing => undef,
-							     status => 'prcs diff neurospaces.prj `prcs 2>/dev/null execute --not ".*\(directory\|symlink\)" neurospaces.prj | grep -v "neurospaces\.prj" | grep -v "purkinjespine" ` -- --unified ',
+							     status => [
+									'prcs',
+									'diff',
+									'neurospaces.prj',
+									'`prcs 2>/dev/null execute --not ".*\(directory\|symlink\)" neurospaces.prj | grep -v "neurospaces\.prj" | grep -v "purkinjespine" `',
+									'--',
+									'--unified',
+								       ],
 							     unknown => undef,
 							    },
 					       },
@@ -1501,10 +1508,12 @@ sub read_cmd_line
 		{
 		    # and overwrite with specific commands for this package if applicable
 
-		    if ($package_information->{version_control}->{commands}->{$information_set})
+		    #! exists such that a '0' or undef can erase the default information_set command
+
+		    if (exists $package_information->{package}->{version_control}->{commands}->{$information_set})
 		    {
 			$information_sets->{$information_set}
-			    = $package_information->{version_control}->{commands}->{$information_set};
+			    = $package_information->{package}->{version_control}->{commands}->{$information_set};
 		    }
 		}
 
@@ -1518,21 +1527,26 @@ sub read_cmd_line
 					       )
 					    )
 		{
-		    # execute the information command
+		    # if the information_set command is defined
 
-		    operation_execute
-			(
-			 $operations,
-			 {
-			  description => "information_set $information_set",
+		    if ($information_sets->{$information_set})
+		    {
+			# execute the information_set command
 
-			  #t always zero here, but I guess this simply depends on working in client mode ?
+			operation_execute
+			    (
+			     $operations,
+			     {
+			      description => "information_set $information_set",
 
-			  keywords => 0,
-			  package_name => $package_name,
-			 },
-			 $information_sets->{$information_set},
-			);
+			      #t always zero here, but I guess this simply depends on working in client mode ?
+
+			      keywords => 0,
+			      package_name => $package_name,
+			     },
+			     $information_sets->{$information_set},
+			    );
+		    }
 		}
 	    },
 	   },
