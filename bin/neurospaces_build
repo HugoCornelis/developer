@@ -29,6 +29,7 @@ my $option_dist_dir = [];
 my $option_distcheck = 0;
 my $option_distclean = 0;
 my $option_distkeywords = 0;
+my $option_docs = 0;
 my $option_dry_run = 0;
 my $option_install = 1;
 my $option_installed_versions = 1;
@@ -508,6 +509,7 @@ sub read_cmd_line
 		     "distclean!" => \$option_distclean,
 		     "dist-dir=s" => $option_dist_dir,
 		     "distkeywords!" => \$option_distkeywords,
+		     "docs!" => \$option_docs,
 		     "dry-run!" => \$option_dry_run,
 		     "enable=s" => \$option_enable,
 		     "help!" => \$option_help,
@@ -590,6 +592,7 @@ sub read_cmd_line
 	   "distclean!" => $option_distclean,
 	   "dist-dir=s" => $option_dist_dir,
 	   "distkeywords!" => $option_distkeywords,
+	   "docs!" => $option_docs,
 	   "dry-run!" => $option_dry_run,
 	   "enable=s" => $option_enable,
 	   "help!" => $option_help,
@@ -1164,6 +1167,10 @@ sub read_cmd_line
 	    operation => [ 'make', '&&', 'sudo', 'make', 'install', ],
 	   },
 	   {
+	    condition => $option_docs,
+	    operation => [ 'make', 'doxygen', ],
+	   },
+	   {
 	    condition => $option_website_prepare,
 	    operation => [ 'make', 'html-upload-prepare', ],
 	   },
@@ -1706,6 +1713,8 @@ options related to operation execution profile:
     dist                   build distribution tarballs.
     distcheck              check created tarballs.
     distclean              distclean before compiling.
+    distkeywords           do keyword expansion (be careful with this one).
+    docs                   generate docs during compilation.
     dry-run                do not execute any command, just report what would be done.
     enable                 explicitly enable these regex of packages in the configuration.
     help                   print usage information.
