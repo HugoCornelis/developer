@@ -1168,7 +1168,7 @@ sub read_cmd_line
 	   },
 	   {
 	    condition => $option_docs,
-	    operation => [ 'make', 'doxygen', ],
+	    operation => [ 'make', 'docs', ],
 	   },
 	   {
 	    condition => $option_website_prepare,
