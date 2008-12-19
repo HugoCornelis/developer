@@ -402,6 +402,9 @@ sub all_operations_execute
 			}
 		    }
 		}
+
+		# if the operation is not perl code
+
 		else
 		{
 		    # if package directory exists
@@ -426,9 +429,15 @@ sub all_operations_execute
 			    die "$0: *** Error: package $package_name cannot change from directory ($current_directory) to directory ($target_directory): $!";
 			}
 
-			# perform the operation on the package
+			# add options specific to this operation and package
+
+			#! so here the model container gets configured with --delete-operation
+
+			#t also need separation between debug and release overhere
 
 			my $package_options = $package->{$operation->[0]};
+
+			# perform the operation on the package
 
 			operation_execute
 			    (
