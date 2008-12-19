@@ -649,6 +649,8 @@ html-upload: html-upload-prepare
 test: check
 
 #TESTS = $(srcdir)/tests/neurospaces_harness
+
+docs: html-upload-prepare
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:
