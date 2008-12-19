@@ -1724,7 +1724,7 @@ options related to operation execution profile:
     help-repositories      print known source code repositories.
     install                install packages.
     regex-selector         defines a regex to select specific packages.
-    repo-co                checkout or update the code from the repository.
+    repo-co                checkout or update the workspace source code.
     repo-pull              pull the repositories from this server (e.g. virtual2.cbi.utsa.edu).
     repo-status            compare workspace with source code repository branch head.
     repo-sync              sync the repositories with this server (e.g. virtual2.cbi.utsa.edu).
