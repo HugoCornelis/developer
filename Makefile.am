@@ -74,3 +74,5 @@ test: check
 
 #TESTS = $(srcdir)/tests/neurospaces_harness
 
+docs: html-upload-prepare
+
