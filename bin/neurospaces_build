@@ -887,8 +887,9 @@ sub read_cmd_line
 		      package_name => $package_name,
 		     },
 		     [
-		      'test', '-d', '_MTN',
-		      '||', 'mtn', '--db', $repository_name, '--branch', '0', 'merge',
+# 		      'test', '-d', '_MTN',
+# 		      '||',
+		      'mtn', '--db', $repository_name, '--branch', '0', 'merge',
 		     ],
 		    );
 
