@@ -23,6 +23,7 @@ my $option_check = 0;
 my $option_clean = 0;
 my $option_compile = 1;
 my $option_configure = 1;
+my $option_configure_type = 'release';
 my $option_directories_create = 0;
 my $option_dist = 0;
 my $option_dist_dir = [];
@@ -90,6 +91,16 @@ my $all_packages
 		  version_script => 'genesis-g3 --version',
 		 },
        heccer => {
+		  operations => {
+				 './configure' => {
+						   debug => [
+							     '"CFLAGS=-g -O0"',
+							    ],
+						   release => [
+							       '"CFLAGS=-g -O9"',
+							      ],
+						  },
+				},
 		  directory => "$ENV{HOME}/neurospaces_project/heccer/source/snapshots/0",
 		  disabled => 0,
 		  order => 2,
@@ -109,6 +120,8 @@ my $all_packages
 		     version_script => 'neurospaces_build --version',
 		    },
        'model-container' => {
+			     #t make distinction between debug and release
+
 			     './configure' => [
 					       '--with-delete-operation',
 					      ],
@@ -435,7 +448,42 @@ sub all_operations_execute
 
 			#t also need separation between debug and release overhere
 
-			my $package_options = $package->{$operation->[0]};
+			my $package_options = [];
+
+			push
+			    @$package_options,
+				@{$package->{$operation->[0]} || []};
+
+			# make difference between options specific for release and debug builds
+
+			if ($package->{operations}->{$operation->[0]})
+			{
+			    # construct variable name for type of build: remove things like './' from configure lines
+
+			    my $text = $operation->[0];
+
+			    $text =~ s(\.)()g;
+			    $text =~ s(/)()g;
+
+			    $text = "\$option_" . $text . "_type";
+
+			    # get the build type from the options
+
+			    my $type = eval $text;
+
+			    if ($@)
+			    {
+				die $@;
+			    }
+
+			    # construct options for this operation
+
+			    my $build_type_options = $package->{operations}->{$operation->[0]}->{$type};
+
+			    push
+				@$package_options,
+				    @$build_type_options;
+			}
 
 			# perform the operation on the package
 
@@ -449,7 +497,7 @@ sub all_operations_execute
 			     },
 			     [
 			      @$operation,
-			      @{$package_options || []},
+			      @$package_options,
 			     ],
 			    );
 
@@ -511,6 +559,7 @@ sub read_cmd_line
 		     "clean!" => \$option_clean,
 		     "compile!" => \$option_compile,
 		     "configure!" => \$option_configure,
+		     "configure-type=s" => \$option_configure_type,
 		     "directories-create!" => \$option_directories_create,
 		     "disable=s" => \$option_disable,
 		     "dist!" => \$option_dist,
@@ -594,6 +643,7 @@ sub read_cmd_line
 	   "clean!" => $option_clean,
 	   "compile!" => $option_compile,
 	   "configure!" => $option_configure,
+	   "configure-type=s" => $option_configure_type,
 	   "directories-create!" => $option_directories_create,
 	   "disable=s" => $option_disable,
 	   "dist!" => $option_dist,
@@ -1679,6 +1729,8 @@ sub read_cmd_line
 
 	my $program_name = $1;
 
+	print Dump($build_report->{options});
+
 	print
 	    "
 
@@ -1718,6 +1770,7 @@ options related to operation execution profile:
     clean                  clean before compiling.
     compile                compile packages.
     configure              configure before compiling.
+    configure-type         type of configuration (default is 'release').
     directories-create     create package directory structure.
     disable                explicitly disable this regex of packages in the configuration.
     dist                   build distribution tarballs.
@@ -1761,8 +1814,6 @@ options related to behavior of external applications:
                            e.g. environment NEUROSPACES_HARNESS_OPTION_EMAIL=1 generates emails for tests that fail.
 
 ";
-
-	print Dump($build_report->{options});
 
 	if ($option_help_all)
 	{
