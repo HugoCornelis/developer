@@ -81,7 +81,7 @@ options:
 sub version
 {
     # $Format: "    my $version=\"${package}-${label}\";"$
-    my $version="installer-python-2";
+    my $version="installer-python-3";
 
     return $version;
 }
