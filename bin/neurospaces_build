@@ -1026,6 +1026,8 @@ sub read_cmd_line
 	    condition => $option_tag,
 	    operation => [
 			  #! in a separate operation such that we have the correct %version
+			  #! gets replaced by `mtn automate get_base_revision_id`
+			  #! during build variable substitution in sub operation_execute()
 
 			  ( 'mtn', 'tag', '\'%version\'', "'$option_tag'", ),
 			 ],
