@@ -2135,7 +2135,7 @@ sub operation_execute
 sub version
 {
     # $Format: "    my $version=\"${package}-${label}\";"$
-    my $version="installer-python-3";
+    my $version="installer-python-5";
 
     return $version;
 }
