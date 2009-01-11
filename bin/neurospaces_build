@@ -1142,15 +1142,57 @@ sub read_cmd_line
 		    print "$0: package $package_name [$description from $url to $filename] executing\n";
 		}
 
-		# download the package
-
-		use LWP::Simple;
-
-		my $http_response = getstore($url, $directory . '/' . $filename);
-
-		if (!is_success($http_response))
+		if ($option_download_server =~ m(^file://))
 		{
-		    warn "$0: *** Warning: $description from $option_download_server: $http_response";
+		    # create the directory
+
+		    operation_execute
+			(
+			 $operations,
+			 {
+			  description => $description,
+
+			  #t always zero here, but I guess this simply depends on working in client mode ?
+
+			  keywords => 0,
+			  package_name => $package_name,
+			 },
+			 [
+			  'mkdir', '--parents', $directory,
+			 ],
+			);
+
+		    # copy the tarball
+
+		    operation_execute
+			(
+			 $operations,
+			 {
+			  description => $description,
+
+			  #t always zero here, but I guess this simply depends on working in client mode ?
+
+			  keywords => 0,
+			  package_name => $package_name,
+			 },
+			 [
+			  'cp', $filename, $directory . $filename,
+			 ],
+			);
+
+		}
+		else
+		{
+		    # download the package
+
+		    use LWP::Simple;
+
+		    my $http_response = getstore($url, $directory . '/' . $filename);
+
+		    if (!is_success($http_response))
+		    {
+			warn "$0: *** Warning: $description from $option_download_server: $http_response";
+		    }
 		}
 	    },
 	   },
