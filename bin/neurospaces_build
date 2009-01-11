@@ -1283,6 +1283,8 @@ sub read_cmd_line
 
 		my $filename = $package_information->{filename};
 
+		my $operations = $package_information->{operations};
+
 		my $package_name = $package_information->{package_name};
 
 		my $url = $package_information->{url};
@@ -1313,6 +1315,7 @@ sub read_cmd_line
 
 		my $module_names
 		    = {
+		       file => '-1',
 		       ftp => 'Net::FTP',
 		       https => 'HTTP::DAV',
 		       sftp => 'Net::SFTP',
@@ -1400,56 +1403,113 @@ sub read_cmd_line
 
 		else
 		{
-		    use Expect;
+		    if ($upload_protocol eq 'sftp')
+		    {
+			use Expect;
 
-		    my $expector = Expect->new();
+			my $expector = Expect->new();
 
-# 		    #! see the expect manual for this one
+			#! see the expect manual for this one
 
-# 		    $expector->raw_pty(1);
+			$expector->raw_pty(1);
 
-		    $expector->spawn('sftp', "$user\@$upload_host",)
-			or die "$0: cannot spawn 'sftp': $!\n";
+			$expector->spawn('sftp', "$user\@$upload_host",)
+			    or die "$0: cannot spawn 'sftp': $!\n";
 
-		    my ($matched_pattern_position,
-			$error,
-			$successfully_matching_string,
-			$before_match,
-			$after_match)
-			= $expector->expect(15, "word:", );
+			my ($matched_pattern_position,
+			    $error,
+			    $successfully_matching_string,
+			    $before_match,
+			    $after_match)
+			    = $expector->expect(15, "word:", );
 
-		    $expector->send("$password\n");
+			$expector->send("$password\n");
 
-		    my $prompt = "sftp>";
+			my $prompt = "sftp>";
 
-		    ($matched_pattern_position,
-		     $error,
-		     $successfully_matching_string,
-		     $before_match,
-		     $after_match)
-			= $expector->expect(5, $prompt, );
+			($matched_pattern_position,
+			 $error,
+			 $successfully_matching_string,
+			 $before_match,
+			 $after_match)
+			    = $expector->expect(5, $prompt, );
 
-		    $upload_directory =~ s|^/||;
+			$upload_directory =~ s|^/||;
 
-		    $expector->send("cd $upload_directory\n");
+			$expector->send("cd $upload_directory\n");
 
-		    ($matched_pattern_position,
-		     $error,
-		     $successfully_matching_string,
-		     $before_match,
-		     $after_match)
-			= $expector->expect(5, $prompt, );
+			($matched_pattern_position,
+			 $error,
+			 $successfully_matching_string,
+			 $before_match,
+			 $after_match)
+			    = $expector->expect(5, $prompt, );
 
-		    $expector->send("put '$filename'\n");
+			$expector->send("put '$filename'\n");
 
-		    ($matched_pattern_position,
-		     $error,
-		     $successfully_matching_string,
-		     $before_match,
-		     $after_match)
-			= $expector->expect(600, $prompt, );
+			($matched_pattern_position,
+			 $error,
+			 $successfully_matching_string,
+			 $before_match,
+			 $after_match)
+			    = $expector->expect(600, $prompt, );
 
-		    $expector->send("quit\n");
+			$expector->send("quit\n");
+		    }
+		    elsif ($upload_protocol eq 'file')
+		    {
+			# construct the target directory
+
+			my $target_directory = $upload_host . $upload_directory;
+
+			# make sure the target directory is rooted
+
+			if ($target_directory !~ /^\//)
+			{
+			    $target_directory = "/$target_directory";
+			}
+
+			# create the directory
+
+			operation_execute
+			    (
+			     $operations,
+			     {
+			      description => $description,
+
+			      #t always zero here, but I guess this simply depends on working in client mode ?
+
+			      keywords => 0,
+			      package_name => $package_name,
+			     },
+			     [
+			      'mkdir', '--parents', $target_directory,
+			     ],
+			    );
+
+			# copy the tarball
+
+			operation_execute
+			    (
+			     $operations,
+			     {
+			      description => $description,
+
+			      #t always zero here, but I guess this simply depends on working in client mode ?
+
+			      keywords => 0,
+			      package_name => $package_name,
+			     },
+			     [
+			      'cp', $filename, $target_directory,
+			     ],
+			    );
+
+		    }
+		    else
+		    {
+			die "$0: *** Error: unknown upload protocol $upload_protocol";
+		    }
 		}
 	    },
 	   },
