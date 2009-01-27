@@ -27,6 +27,7 @@ dist_bin_SCRIPTS = \
 	bin/neurospaces_pull \
 	bin/neurospaces_status \
 	bin/neurospaces_sync \
+	bin/neurospaces_update \
 	bin/neurospaces_versions \
 	bin/neurospaces_website_prepare \
 	bin/release-expand \
