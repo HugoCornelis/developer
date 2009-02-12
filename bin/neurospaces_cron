@@ -16,8 +16,54 @@ my $installer_directory = "$ENV{HOME}/neurospaces_project/installer/source/snaps
 my $output_filename = "/tmp/neurospaces_cron.stdout";
 
 
+sub check_user_id
+{
+    # get effective user id
+
+    my $num_id = $>;
+
+    # conver to ascii representation
+
+    my $passwd_database = [ `cat /etc/passwd`, ];
+
+    my $record = [ grep { /:$num_id:/ } @$passwd_database, ];
+
+    $record = $record->[0];
+
+    # convert to fields
+
+    my $fields = [ split ':', $record, ];
+
+    # get name of this user
+
+    my $label_id = $fields->[0];
+
+    # if matches with neurospaces
+
+    if ($label_id =~ /neurospaces/)
+    {
+	# ok, continue
+    }
+
+    # else
+
+    else
+    {
+	report_error("check_user_id()", "$0 must not be executed by a regular user (now running as unpriviliged user $label_id)");
+
+	# just to make sure that this script stops we die
+
+	die "check_user_id()" . "$0 must not be executed by a regular user";
+    }
+}
+
+
 sub main
 {
+    # this script can only be run by a user whose name matches 'neurospaces'
+
+    check_user_id();
+
     # unlink the output file
 
     unlink($output_filename);
@@ -68,7 +114,14 @@ sub main
 
 	install_installer();
 
+	#t now download from sourceforge, configurator defines what release to download
+
+	#t install, uninstall, check, uninstall
     }
+
+    #t remove the entire neurospaces_project directory ?
+
+#     try_to("rm -fr $ENV{HOME}/neurospaces_project");
 }
 
 
