@@ -204,7 +204,7 @@ my $all_packages
 		    order => 30,
 		    version_control => {
 					port_number => 4700,
-					repository => "$ENV{HOME}/neurospaces_project/MTN/studio.mtn",
+					repository => "$ENV{HOME}/neurospaces_project/MTN/userdocs.mtn",
 				       },
 		    version_script => 0,
 		   },
