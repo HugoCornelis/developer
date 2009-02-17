@@ -198,6 +198,16 @@ my $all_packages
 		  order => 29,
 		  version_script => 0,
 		 },
+       userdocs => {
+		    directory => "$ENV{HOME}/neurospaces_project/userdocs/source/snapshots/0",
+		    disabled => 1,
+		    order => 30,
+		    version_control => {
+					port_number => 4700,
+					repository => "$ENV{HOME}/neurospaces_project/MTN/studio.mtn",
+				       },
+		    version_script => 0,
+		   },
       };
 
 
