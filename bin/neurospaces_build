@@ -799,7 +799,7 @@ sub read_cmd_line
 		      package_name => $package_name,
 		     },
 		     [
-		      'mkdir', '--parents', $directory,
+		      'mkdir', '-p', $directory,
 		     ],
 		    );
 	    },
@@ -846,7 +846,7 @@ sub read_cmd_line
 		      package_name => $package_name,
 		     },
 		     [
-		      'mkdir', '--parents', $repository_directory,
+		      'mkdir', '-p', $repository_directory,
 		     ],
 		    );
 
@@ -1143,7 +1143,7 @@ sub read_cmd_line
 		      package_name => $package_name,
 		     },
 		     [
-		      'mkdir', '--parents', $directory,
+		      'mkdir', '-p', $directory,
 		     ],
 		    );
 
@@ -1168,7 +1168,7 @@ sub read_cmd_line
 			  package_name => $package_name,
 			 },
 			 [
-			  'mkdir', '--parents', $directory,
+			  'mkdir', '-p', $directory,
 			 ],
 			);
 
@@ -1535,7 +1535,7 @@ sub read_cmd_line
 			      package_name => $package_name,
 			     },
 			     [
-			      'mkdir', '--parents', $target_directory,
+			      'mkdir', '-p', $target_directory,
 			     ],
 			    );
 
