@@ -1875,48 +1875,48 @@ disable a build operation, prefix the corresponding option with
 '--no-', eg. to disable configure, use '--no-configure'.
 
 options related to operation mode selection:
-    client                 execute in client mode (for regular users, default).
-    developer              execute in developer mode.
+    --client                 execute in client mode (for regular users, default).
+    --developer              execute in developer mode.
 
 options related to operation execution profile:
-    certification-report   annotate the (monotone) repository with the build_report.
-    check                  check packages.
-    clean                  clean before compiling.
-    compile                compile packages.
-    configure              configure before compiling.
-    configure-type         type of configuration (default is 'release').
-    directories-create     create package directory structure.
-    disable                explicitly disable this regex of packages in the configuration.
-    dist                   build distribution tarballs.
-    distcheck              check created tarballs.
-    distclean              distclean before compiling.
-    distkeywords           do keyword expansion (be careful with this one).
-    docs                   generate docs during compilation.
-    dry-run                do not execute any command, just report what would be done.
-    enable                 explicitly enable these regex of packages in the configuration.
-    help                   print usage information.
-    help-all               print usage, all packages and all operations.
-    help-operations        print known operations.
-    help-packages          print known packages, in order of build.
-    help-repositories      print known source code repositories.
-    install                install packages.
-    regex-selector         defines a regex to select specific packages.
-    repo-co                checkout or update the workspace source code.
-    repo-pull              pull the repositories from this server (e.g. virtual2.cbi.utsa.edu).
-    repo-status            compare workspace with source code repository branch head.
-    repo-sync              sync the repositories with this server (e.g. virtual2.cbi.utsa.edu).
-    tag                    set this tag on all packages.
-    uninstall              uninstall packages, cannot be combined with installation options.
-    upload-server          enable uploading packages to this server (e.g. https://frs.sourceforge.net/uploads).
-    version                give version information.
-    v|verbose              tell what is being done, specify multiple times to get more feedback.
-    website-prepare        prepare the website on your developer machine.
-    website-upload         upload the website to the webserver.
+    --certification-report   annotate the (monotone) repository with the build_report.
+    --check                  check packages.
+    --clean                  clean before compiling.
+    --compile                compile packages.
+    --configure              configure before compiling.
+    --configure-type         type of configuration (default is 'release').
+    --directories-create     create package directory structure.
+    --disable                explicitly disable this regex of packages in the configuration.
+    --dist                   build distribution tarballs.
+    --distcheck              check created tarballs.
+    --distclean              distclean before compiling.
+    --distkeywords           do keyword expansion (be careful with this one).
+    --docs                   generate docs during compilation.
+    --dry-run                do not execute any command, just report what would be done.
+    --enable                 explicitly enable these regex of packages in the configuration.
+    --help                   print usage information.
+    --help-all               print usage, all packages and all operations.
+    --help-operations        print known operations.
+    --help-packages          print known packages, in order of build.
+    --help-repositories      print known source code repositories.
+    --install                install packages.
+    --regex-selector         defines a regex to select specific packages.
+    --repo-co                checkout or update the workspace source code.
+    --repo-pull              pull the repositories from this server (e.g. virtual2.cbi.utsa.edu).
+    --repo-status            compare workspace with source code repository branch head.
+    --repo-sync              sync the repositories with this server (e.g. virtual2.cbi.utsa.edu).
+    --tag                    set this tag on all packages.
+    --uninstall              uninstall packages, cannot be combined with installation options.
+    --upload-server          enable uploading packages to this server (e.g. https://frs.sourceforge.net/uploads).
+    --version                give version information.
+    --v|verbose              tell what is being done, specify multiple times to get more feedback.
+    --website-prepare        prepare the website on your developer machine.
+    --website-upload         upload the website to the webserver.
 
 options related to installation on a client machine:
-    download-server        enable downloading packages from this server (e.g. downloads.sourceforge.net).
-    src-tag                use this tag for finding src directories on a client machine.
-    src-dir                use this dir as the base for directories on a client machine.
+    --download-server        enable downloading packages from this server (e.g. downloads.sourceforge.net).
+    --src-tag                use this tag for finding src directories on a client machine.
+    --src-dir                use this dir as the base for directories on a client machine.
 
 So on a client machine, for package xxx, the src are found in the
 directory <src-dir>/xxx-<src-tag>.  From there the build starts as
