@@ -1,5 +1,27 @@
 -*- outline -*-
 
+* documentation publication
+** current situation
+*** neurospaces_docs
+builds with --docs
+*** neurospaces_website_prepare
+builds with --website-upload or --website-prepare
+
+** operations
+*** --docs
+makes docs: includes doxygen, html-upload-prepare (generates html of
+automated use cases).
+
+*** --website*
+	   {
+	    condition => $option_website_prepare,
+	    operation => [ 'make', 'html-upload-prepare', ],
+	   },
+	   {
+	    condition => $option_website_upload,
+	    operation => [ 'make', 'html-upload', ],
+	   },
+
 * bin/neurospaces_*
 globalize $packages variable.
 ** should have the possibility to come from the config in /etc/neurospaces.
