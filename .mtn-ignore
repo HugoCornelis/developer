@@ -3,3 +3,6 @@ Makefile$
 config.log
 config.status
 installed
+.*Makefile\.in$
+^configure$
+^aclocal\.m4$

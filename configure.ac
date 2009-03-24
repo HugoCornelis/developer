@@ -41,7 +41,7 @@ AM_INIT_AUTOMAKE(installer, python-5)
 
 # determine the test library to install
 
-TEST_SPECIFICATION_FILES=`echo -n "tests/introduction.html " && find tests/specifications -name "*.t" -printf "%p " && find tests/specifications/strings -name "*.txt" -printf "%p " && find tests/data -name "*.yml" -printf "%p "`
+TEST_SPECIFICATION_FILES=`/bin/echo -n "tests/introduction.html " && find tests/specifications -name "*.t" | perl -pe 's/\n/ /g' && find tests/specifications/strings -name "*.txt" | perl -pe 's/\n/ /g' && find tests/data -name "*.yml" | perl -pe 's/\n/ /g'`
 AC_SUBST(TEST_SPECIFICATION_FILES)
 
 
