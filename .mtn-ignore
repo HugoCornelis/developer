@@ -1,8 +1,9 @@
 Makefile$
-^installer-.*.tar.gz$
-config.log
-config.status
-installed
-.*Makefile\.in$
-^configure$
+Makefile\.in$
 ^aclocal\.m4$
+^config.log$
+^config.status$
+^configure$
+^installed
+^installer-.*.tar.gz$
+^missing$
