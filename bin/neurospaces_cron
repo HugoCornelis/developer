@@ -94,6 +94,10 @@ sub main
     {
 	#t insert configuration options in the configurator package
 
+	# configure all packages
+
+	try_to("neurospaces_configure");
+
 	# install without check
 
 	try_to("neurospaces_install");
