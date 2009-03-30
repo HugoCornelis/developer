@@ -146,7 +146,7 @@ sub install_installer
 {
     chdir($installer_directory);
 
-    try_to("make && sudo make install");
+    try_to("./autogen.sh && ./configure && make && sudo make install");
 }
 
 
