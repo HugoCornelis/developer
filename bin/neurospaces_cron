@@ -26,15 +26,28 @@ sub check_user_id
 
     my $passwd_database = [ `cat /etc/passwd`, ];
 
-    my $record = [ grep { /:$num_id:/ } @$passwd_database, ];
+    # split into fields
 
-    $record = $record->[0];
+    my $records = [ map { [ split ":", $_ ], } @$passwd_database, ];
 
-    # convert to fields
+    # only those records with the numerical id under which this script runs
 
-    my $fields = [ split ':', $record, ];
+    $records = [ grep { $_->[2] == $num_id } @$records, ];
+
+    # if not exactly one record left
+
+    if (scalar @$records ne 1)
+    {
+	report_error("check_user_id()", "$0 cannot determine username under which we are running");
+
+	# just to make sure that this script stops we die
+
+	die "check_user_id()" . "$0 cannot determine username under which we are running";
+    }
 
     # get name of this user
+
+    my $fields = $records->[0];
 
     my $label_id = $fields->[0];
 
