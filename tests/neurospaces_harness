@@ -180,29 +180,11 @@ foreach my $environment_setting_name (keys %$environment_settings)
     {
 	die "$0: illegal environment_settings, was processing $environment_setting";
     }
-
-#     # copy the model library
-
-#     `rm -fr "$config->{model_library}"`;
-#     `mkdir -p "$config->{model_library}"`;
-
-#     `cp -R ${core_directory}library/* "$config->{model_library}"`;
-
-#     # automake distcheck makes the model library readonly (as so its copy), make it writable again
-
-#     `chmod -R +w "$config->{model_library}"`;
-
-#     # tell neurospaces where to find the model library of test models
-
-#     $ENV{NEUROSPACES_MODELS} = $config->{model_library};
-#     $ENV{NEUROSPACES_USER_MODELS} = '';
-#     $ENV{NEUROSPACES_PROJECT_MODELS} = '';
-#     $ENV{NEUROSPACES_SYSTEM_MODELS} = '';
 }
 
 if (defined ($config->{environment}))
 {
-    print "Your models will be searched for in the directory $ENV{NEUROSPACES_MODELS}\n\n";
+    print "Your models will be searched for in the directory $ENV{NEUROSPACES_NMC_MODELS}\n\n";
 }
 
 
@@ -377,13 +359,13 @@ Total of $test_report->{global}->{test_count} tests (encountered $error_count er
 	my $module_preparation_result;
 
 	if ($preparation)
-	  {
+	{
 	    print "*** Preparing Module $module_name ($preparation->{description})\n";
 
 	    my $preparer = $preparation->{preparer};
 
 	    $module_preparation_result = &$preparer();
-	  }
+	}
 
 	# loop over commands for this module
 
@@ -563,6 +545,8 @@ Total of $test_report->{global}->{test_count} tests (encountered $error_count er
 		    $before_match,
 		    $after_match);
 
+		my $expected;
+
 		my $time_elapsed;
 
 		if (ref $command eq 'CODE')
@@ -628,6 +612,8 @@ Total of $test_report->{global}->{test_count} tests (encountered $error_count er
 
 			$read = substitute_variables($read);
 
+			# if literal text expected
+
 			if (!ref $read)
 			{
 			    ($matched_pattern_position,
@@ -637,12 +623,12 @@ Total of $test_report->{global}->{test_count} tests (encountered $error_count er
 			     $after_match)
 				= $exp->expect($timeout, $read, );
 
-			    $time_elapsed = tv_interval($time_start);
+			    $expected = $read;
 			}
 
-			#! only array supported for now.
+			# if array, means regex match
 
-			else
+			elsif (ref $read eq 'ARRAY')
 			{
 			    ($matched_pattern_position,
 			     $error,
@@ -651,8 +637,109 @@ Total of $test_report->{global}->{test_count} tests (encountered $error_count er
 			     $after_match)
 				= $exp->expect($timeout, @$read, );
 
-			    $time_elapsed = tv_interval($time_start);
+			    #! skip the expect '-re' flag
+
+			    $expected = $read->[1];
 			}
+
+			# else, hash, one of several alternatives expected
+
+			else
+			{
+			    # compose the alternatives regex
+
+			    if ($read->{alternatives})
+			    {
+				my $alternatives = $read->{alternatives};
+
+				$expected = '(' . (join '|', map { quotemeta } @$alternatives) . ')';
+
+				# read from the application
+
+				($matched_pattern_position,
+				 $error,
+				 $successfully_matching_string,
+				 $before_match,
+				 $after_match)
+				    = $exp->expect($timeout, "-re", $expected, );
+			    }
+			    elsif ($read->{application_output_file})
+			    {
+				my $application_output_file
+				    = $read->{application_output_file};
+
+ 				print "*** Application output file: $application_output_file\n";
+
+				my $expected_output_file
+				    = $read->{expected_output_file};
+
+				local $/;
+
+				my $application_output = `cat "$application_output_file"`;
+
+				my $expected_output;
+
+				if ($expected_output_file)
+				{
+				    print "*** Expected output file: $expected_output_file\n";
+
+				    $expected_output = `cat "$expected_output_file"`;
+				}
+				elsif (defined $read->{expected_output})
+				{
+				    $expected_output = $read->{expected_output};
+				}
+
+				$expected = $expected_output;
+
+				if ($expected_output eq $application_output)
+				{
+				    $before_match = $application_output;
+				}
+				else
+				{
+				    $before_match = $application_output;
+
+				    $read = $expected_output;
+
+				    $error = 'expected_output does not match application_output';
+				}
+
+				#t mando, why is this needed?? if the
+				#t application generates a file that we
+				#t use for testing, we remove it here,
+				#t but may be that the application still
+				#t needs it.
+
+				#
+				# clean up the generated files
+				#
+
+# 				print `pwd`;
+
+				`rm -f $application_output_file`;
+			    }
+			    elsif ($read->{shell})
+			    {
+				my $shell = $read->{shell};
+
+				my $expected = `$shell`;
+
+				($matched_pattern_position,
+				 $error,
+				 $successfully_matching_string,
+				 $before_match,
+				 $after_match)
+				    = $exp->expect($timeout, $expected, );
+
+			    }
+			    else
+			    {
+				die "test not understood by $0, aborting";
+			    }
+			}
+
+			$time_elapsed = tv_interval($time_start);
 
 			# fill in the elapsed time in the report
 
@@ -667,8 +754,14 @@ Total of $test_report->{global}->{test_count} tests (encountered $error_count er
 			{
 			    # if allowed to compare numerically
 
-			    if (!$command_test->{string_only}
-			        && $option_numerical_compare)
+			    if ((!$command_test->{string_only}
+				 && $option_numerical_compare)
+
+				# or forced to compare numerically
+
+				|| $command_test->{numerical_compare}
+				|| $command_definition->{numerical_compare}
+				|| $module_definition->{numerical_compare})
 			    {
 				# compare numerically
 
@@ -698,7 +791,7 @@ Total of $test_report->{global}->{test_count} tests (encountered $error_count er
 			 {
 			  description => $description,
 			  error => $error,
-			  expected => (ref $command_test->{read} eq 'ARRAY' ? $command_test->{read}->[1] : $command_test->{read}),
+			  expected => $expected,
 			  message => $message,
 			  module_name => $module_name,
 			  seen => $before_match,
@@ -763,7 +856,7 @@ Total of $test_report->{global}->{test_count} tests (encountered $error_count er
 	my $reparation = $module_definition->{reparation};
 
 	if ($reparation)
-	  {
+	{
 	    print "*** Reparing Module $module_name ($reparation->{description})\n";
 
 	    my $reparer = $reparation->{reparer};
@@ -773,22 +866,22 @@ Total of $test_report->{global}->{test_count} tests (encountered $error_count er
 	    # process errors
 
 	    if ($reparation_error)
-	      {
+	    {
 		my $description = $reparation_error;
 
 		my $module_definition_description = $module_definition->{description};
 
 		report_error_add
-		  (
-		   {
-		    description => $description,
-		    error => $reparation_error,
-		    module_name => $module_name,
-		    subdescription => $module_definition_description,
-		   },
-		  );
-	      }
-	  }
+		    (
+		     {
+		      description => $description,
+		      error => $reparation_error,
+		      module_name => $module_name,
+		      subdescription => $module_definition_description,
+		     },
+		    );
+	    }
+	}
 
 	# if library checksum mismatch
 
@@ -884,19 +977,19 @@ sub read_cmd_line
 	    "
 $0: test definition executor
 
-options :
-    email              allow to send emails, the default is taken from \$ENV{NEUROSPACES_HARNESS_OPTION_EMAIL}.
-    flattenout         flattenout the test definitions before testing,
-                       this experimental feature might increase test performance,
-                       by recycling test definitions.
-    help               print usage information.
-    numerical-compare  attempt to compare numbers numerically when string differences are found (default enabled).
-    randomize-order    randomize the order of the tests before executing them (require List::Util to be installed).
-    regex-selector     defines a regex to run specific tests.
-    report-disabled    include information of disabled tests in the test report.
-    timeout-multiplier multiply all timeout values with this constant.
-    timings            add timing information about the tests to the report.
-    verbose            set verbosity level.
+options:
+    --email              allow to send emails, the default is taken from \$ENV{NEUROSPACES_HARNESS_OPTION_EMAIL}.
+    --flattenout         flattenout the test definitions before testing,
+                         this experimental feature might increase test performance,
+                         by recycling test definitions.
+    --help               print usage information.
+    --numerical-compare  attempt to compare numbers numerically when string differences are found (default enabled).
+    --randomize-order    randomize the order of the tests before executing them (require List::Util to be installed).
+    --regex-selector     defines a regex to run specific tests.
+    --report-disabled    include information of disabled tests in the test report.
+    --timeout-multiplier multiply all timeout values with this constant.
+    --timings            add timing information about the tests to the report.
+    --verbose            set verbosity level.
 ";
 
 	exit 1;
@@ -961,6 +1054,23 @@ sub report_error_add
 
 	print STDERR $processed_seen;
 
+	use IO::File;
+
+	my $expected_filename = "/tmp/text_$config->{package}_$error_count.expected";
+
+	my $expected_file = new IO::File ">$expected_filename";
+
+	print $expected_file $expected;
+
+	$expected_file->close();
+
+	my $seen_filename = "/tmp/text_$config->{package}_$error_count.seen";
+
+	my $seen_file = new IO::File ">$seen_filename";
+
+	print $seen_file $seen;
+
+	$seen_file->close();
     }
 
 }
@@ -1181,7 +1291,7 @@ sub numerical_compare
 
     my $result = $current_diffs;
 
-    print "*** Comparing numerical differences ($command_test->{description})\n";
+    print "*** Checking numerical values ($command_test->{description})\n";
 
     push @{$test_report->{numerical_compare}}, $command_test->{description};
 
@@ -1221,9 +1331,15 @@ sub numerical_compare
 
     # line up the numbers expected
 
+    # but the number of numbers must not differ by more than say 5
+
+    my $number_shifts = 5;
+
     while (scalar @$numbers1 > scalar @$numbers2)
     {
 	shift @$numbers1;
+
+	$number_shifts++;
 
 # 	return 'numerical_compare(): different number count, aborting with error';
     }
@@ -1232,14 +1348,20 @@ sub numerical_compare
     {
 	shift @$numbers2;
 
+	$number_shifts++;
+
 # 	return 'numerical_compare(): different number count, aborting with error';
     }
 
     # we also line up the texts expected
 
+    my $text_shifts = 5;
+
     while (scalar @$texts1 > scalar @$texts2)
     {
 	shift @$texts1;
+
+	$text_shifts++;
 
 # 	return 'numerical_compare(): different text count, aborting with error';
     }
@@ -1248,7 +1370,19 @@ sub numerical_compare
     {
 	shift @$texts2;
 
+	$text_shifts++;
+
 # 	return 'numerical_compare(): different text count, aborting with error';
+    }
+
+    # when we had to do to many textual corrections
+
+    if ($number_shifts < 0
+	or $text_shifts < 0)
+    {
+	# flag this as an error
+
+	return 'numerical_compare(): amount of data expected is to different from amount of seen data (number_shifts is $number_shifts, text_shifts is $text_shifts), aborting with an error';
     }
 
     # compare the texts between the numbers
@@ -1257,7 +1391,7 @@ sub numerical_compare
     {
 	if ($texts1->[$index] ne $texts2->[$index])
 	{
-	    return 'numerical_compare(): texts differ ($texts1->[$index] ne $texts2->[$index]), aborting with error';
+	    return 'numerical_compare(): texts differ ($texts1->[$index] ne $texts2->[$index]), aborting with an error';
 	}
     }
 
@@ -1273,10 +1407,14 @@ sub numerical_compare
 
 	    if (abs($diff) > abs($numbers1->[$index] / 1000))
 	    {
-		return 'numerical_compare(): numbers differ above accuracy ($numbers1->[$index] != $numbers2->[$index]), aborting with error';
+		return 'numerical_compare(): numbers differ above accuracy ($numbers1->[$index] != $numbers2->[$index]), aborting with an error';
 	    }
 	}
     }
+
+    # return result
+
+    #! if we get here, it means no error
 
     return $result;
 }
@@ -1512,7 +1650,7 @@ sub model_library_sha
 
     use File::Find::Rule;
 
-    my $files = [ File::Find::Rule->file()->in( $ENV{NEUROSPACES_MODELS} ), ];
+    my $files = [ File::Find::Rule->file()->in( $ENV{NEUROSPACES_NMC_MODELS} ), ];
 
     my $shas
 	= [
