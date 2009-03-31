@@ -1285,14 +1285,14 @@ sub read_cmd_line
 	   # everything that is compilation related needs a configure script, so create it.
 
 	   {
-	    condition => $option_configure || $option_compile || $option_check,
+	    condition => $option_configure || $option_compile || $option_check || $option_install,
 	    operation => [ 'test', '-f', './configure', '||', './autogen.sh', ],
 	   },
 
 	   # everything that is compilation related needs makefiles, so create them.
 
 	   {
-	    condition => $option_configure || $option_compile || $option_check,
+	    condition => $option_configure || $option_compile || $option_check || $option_install,
 	    operation => [ './configure', ],
 	   },
 	   {
