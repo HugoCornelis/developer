@@ -22,7 +22,7 @@ sub check_user_id
 
     my $num_id = $>;
 
-    # conver to ascii representation
+    # convert to ascii representation
 
     my $passwd_database = [ `cat /etc/passwd`, ];
 
@@ -64,7 +64,7 @@ sub check_user_id
 
     else
     {
-	report_error("check_user_id()", "$0 must not be executed by a regular user (now running as unpriviliged user $label_id)");
+	report_error("check_user_id()", "$0 must not be executed by a regular user (now running as unprivileged user $label_id)");
 
 	# just to make sure that this script stops we die
 
