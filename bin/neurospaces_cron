@@ -16,6 +16,27 @@ my $installer_directory = "$ENV{HOME}/neurospaces_project/installer/source/snaps
 my $output_filename = "/tmp/neurospaces_cron.stdout";
 
 
+sub check_and_prepare
+{
+    # check if the installer is ok
+
+    system "mkdir -p $installer_directory";
+
+    chdir($installer_directory);
+
+    # we assume that there is already an installer repository
+
+    #t wrong assumption
+
+    system "mtn co --db ~/neurospaces_project/MTN/neurospaces-developer.mtn --branch 0 .";
+
+    # install the installer
+
+    install_installer();
+
+}
+
+
 sub check_user_id
 {
     # get effective user id
@@ -84,6 +105,10 @@ sub main
     unlink($output_filename);
 
     chdir("/tmp");
+
+    # preparatory startup procedure to check this system
+
+    check_and_prepare();
 
     # prepare an initial directory layout
 
