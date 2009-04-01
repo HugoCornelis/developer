@@ -53,7 +53,9 @@ sub check_user_id
 
     # if matches with neurospaces
 
-    if ($label_id =~ /neurospaces/)
+    #t switched off for convenience, although should make it to the real thing again.
+
+    if (1 || $label_id =~ /neurospaces/)
     {
 	# ok, continue
     }

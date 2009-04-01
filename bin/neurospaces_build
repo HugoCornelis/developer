@@ -1288,12 +1288,16 @@ sub read_cmd_line
 	    condition => $option_configure || $option_compile || $option_check || $option_install,
 	    operation => [ 'test', '-f', './configure', '||', './autogen.sh', ],
 	   },
+	   {
+	    condition => $option_configure,
+	    operation => [ './configure', ],
+	   },
 
 	   # everything that is compilation related needs makefiles, so create them.
 
 	   {
-	    condition => $option_configure || $option_compile || $option_check || $option_install,
-	    operation => [ './configure', ],
+	    condition => $option_compile || $option_check || $option_install,
+	    operation => [ 'test', '-f', './Makefile', '||', './configure', ],
 	   },
 	   {
 	    condition => $option_clean,
