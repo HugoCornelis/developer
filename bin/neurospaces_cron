@@ -20,7 +20,7 @@ sub check_and_prepare
 {
     # check if the installer is ok
 
-    system "mkdir -p $installer_directory";
+    system "mkdir >>$output_filename 2>&1 -p $installer_directory";
 
     chdir($installer_directory);
 
@@ -28,7 +28,7 @@ sub check_and_prepare
 
     #t wrong assumption
 
-    system "mtn co --db ~/neurospaces_project/MTN/neurospaces-developer.mtn --branch 0 .";
+    system "mtn >>$output_filename 2>&1 co --db ~/neurospaces_project/MTN/neurospaces-developer.mtn --branch 0 .";
 
     # install the installer
 
