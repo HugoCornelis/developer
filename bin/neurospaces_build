@@ -255,7 +255,7 @@ my $version_control_servers
        },
        {
 	name => 'default3',
-	address => 'genesis3.cbi.utsa.edu',
+	address => 'repo-genesis3.cbi.utsa.edu',
        },
        {
 	name => 'backup_server',
