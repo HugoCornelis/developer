@@ -243,6 +243,27 @@ my $all_packages
       };
 
 
+my $version_control_servers
+    = [
+       {
+	name => 'default',
+	address => 'virtual2.cbi.utsa.edu',
+       },
+       {
+	name => 'default2',
+	address => 'repo.cbi.utsa.edu',
+       },
+       {
+	name => 'default3',
+	address => 'genesis3.cbi.utsa.edu',
+       },
+       {
+	name => 'backup_server',
+	address => '129.115.117.50',
+       },
+      ];
+
+
 my $build_report
     = {
        description => {
@@ -912,6 +933,10 @@ sub read_cmd_line
 		    die "$0: *** Error: cannot pull repository, port_number not set";
 		}
 
+		# translate well known names to a routable address
+
+		my $repo_server = version_control_translate_server($option_repo_pull);
+
 		# pull the repository
 
 		operation_execute
@@ -926,7 +951,7 @@ sub read_cmd_line
 		      package_name => $package_name,
 		     },
 		     [
-		      'mtn', '--db', $repository_name, 'pull', "$option_repo_pull:$port_number", '"*"',
+		      'mtn', '--db', $repository_name, 'pull', "$repo_server:$port_number", '"*"',
 		     ],
 		    );
 	    },
@@ -1808,10 +1833,16 @@ sub read_cmd_line
 		    die "$0: *** Error: cannot sync repository, repository_name not set";
 		}
 
+
+
 		if (not $port_number)
 		{
 		    die "$0: *** Error: cannot sync repository, port_number not set";
 		}
+
+		# translate well known names to a routable address
+
+		my $repo_server = version_control_translate_server($option_repo_pull);
 
 		# initialize the repository if necessary
 
@@ -1845,7 +1876,7 @@ sub read_cmd_line
 		      package_name => $package_name,
 		     },
 		     [
-		      'mtn', '--db', $repository_name, 'sync', "$option_repo_sync:$port_number",
+		      'mtn', '--db', $repository_name, 'sync', "$repo_server:$port_number",
 		     ],
 		    );
 	    },
@@ -2296,6 +2327,38 @@ sub version
     my $version="installer-python-5";
 
     return $version;
+}
+
+
+sub version_control_translate_server
+{
+    my $server_name = shift;
+
+    # by default, the result is the given name
+
+    my $result = $server_name;
+
+    # loop over all known servers
+
+    foreach my $version_control_server (@$version_control_servers)
+    {
+	# if the server name matches
+
+	if ($server_name eq $version_control_server->{name})
+	{
+	    # translate
+
+	    $result = $version_control_server->{address};
+
+	    # break loop
+
+	    last;
+	}
+    }
+
+    # return result
+
+    return $result;
 }
 
 
