@@ -24,6 +24,7 @@ my $option_verbose;
 	     "developer!" => \$option_developer,
 	     "enable=s" => \$option_enable,
 	     "regex-selector=s" => \$option_regex_selector,
+	     "repo-pull=s" => \$option_repo_pull,
 	     "v|verbose+" => \$option_verbose,
 	    );
 
