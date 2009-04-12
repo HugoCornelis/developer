@@ -1842,7 +1842,7 @@ sub read_cmd_line
 
 		# translate well known names to a routable address
 
-		my $repo_server = version_control_translate_server($option_repo_pull);
+		my $repo_server = version_control_translate_server($option_repo_sync);
 
 		# initialize the repository if necessary
 
