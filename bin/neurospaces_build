@@ -37,8 +37,9 @@ my $option_installed_versions = 1;
 my $option_regex_selector = ".*";
 my $option_repo_co = 0;
 my $option_repo_pull = 0;
-my $option_repo_sync = 0;
+my $option_repo_serve = 0;
 my $option_repo_status = 0;
+my $option_repo_sync = 0;
 my $option_tag = 0;
 my $option_uninstall = 0;
 my $option_upload_server;
@@ -303,6 +304,118 @@ $SIG{'INT'}
 
 	  report_exit(2);
       };
+
+
+#
+# daemonize()
+#
+# Daemonize the running process by setting a session id, optionally close
+# shared resources between child and parent (files), and print a diagnostic
+# message on STDOUT.  '$pid' is replaced with the child process id in the
+# diagnostic message.
+#
+# returns the created process id if $options->{return} is set, otherwise
+# exits.
+#
+
+sub daemonize
+{
+    my $close_files = shift;
+
+    my $options = shift;
+
+    my $message = $options->{message} || '';
+
+    my $pid;
+
+#     mlog("daemonize ($$)", "forking");
+
+    if ($pid = fork())
+    {
+# 	mlog("daemonize ($$)", "forked");
+
+        # parent : print optional message and exit or return
+
+	if ($message)
+	{
+	    $message =~ s/\$pid/$pid/g;
+
+	    print($message);
+	}
+
+	if ($options->{return})
+	{
+# 	    mlog("daemonize ($$)", "forked : return");
+
+	    return $pid;
+	}
+	else
+	{
+# 	    mlog("daemonize ($$)", "forked : exit");
+
+	    exit(0);
+	}
+    }
+
+    # child : create session, optionally close shared resources.
+
+    # set default result
+
+    my $result = 1;
+
+#     mlog("daemonize ($$)", "forked : cd");
+
+    use POSIX;
+
+    POSIX::setsid();
+    chdir('/');
+
+    if ($close_files)
+    {
+# 	mlog("daemonize ($$)", "closing files");
+
+	# unlock shared resources : close all file descriptors.
+
+	use FileHandle;
+
+	my $closed = FileHandle->new(">/tmp/closed.txt");
+
+	my $files = POSIX::sysconf(POSIX::_SC_OPEN_MAX);
+
+	if ($closed)
+	{
+	    print $closed "Closing $files file handles.\n";
+	}
+
+	if ($close_files > 0)
+	{
+	    $files = $close_files;
+	}
+
+	while ($files > -1)
+	{
+	    my $result = "not done";
+
+	    if (!defined $closed || $closed->fileno() != $files)
+	    {
+		$result = POSIX::close($files) || -1;
+	    }
+
+	    if (defined $closed)
+	    {
+		print $closed "Closed file handle $files : $result\n";
+	    }
+
+	    $files--;
+	}
+
+	$closed->close();
+    }
+
+#     mlog("daemonize ($$)", "done");
+
+    return $result;
+}
 
 
 sub main
@@ -643,8 +756,9 @@ sub read_cmd_line
 		     "regex-selector=s" => \$option_regex_selector,
 		     "repo-co!" => \$option_repo_co,
 		     "repo-pull=s" => \$option_repo_pull,
-		     "repo-sync=s" => \$option_repo_sync,
+		     "repo-serve!" => \$option_repo_serve,
 		     "repo-status!" => \$option_repo_status,
+		     "repo-sync=s" => \$option_repo_sync,
 		     "tag=s" => \$option_tag,
 		     "uninstall!" => \$option_uninstall,
 		     "upload-server=s" => \$option_upload_server,
@@ -727,8 +841,9 @@ sub read_cmd_line
 	   "regex-selector=s" => $option_regex_selector,
 	   "repo-co!" => $option_repo_co,
 	   "repo-pull=s" => $option_repo_pull,
-	   "repo-sync=s" => $option_repo_sync,
+	   "repo-serve!" => $option_repo_serve,
 	   "repo-status!" => $option_repo_status,
+	   "repo-sync=s" => $option_repo_sync,
 	   "tag=s" => $option_tag,
 	   "uninstall!" => $option_uninstall,
 	   "upload-server=s" => $option_upload_server,
@@ -820,6 +935,102 @@ sub read_cmd_line
 
     $all_operations
 	= [
+	   {
+	    condition => $option_repo_serve,
+	    description => 'serving source code repositories',
+	    operation =>
+	    sub
+	    {
+		my $package_information = shift;
+
+		# get specific arguments
+
+		my $description = $package_information->{description};
+
+		my $directory = $package_information->{directory};
+
+		my $operations = $package_information->{operations};
+
+		my $package_name = $package_information->{package_name};
+
+		my $repository_name
+		    = $package_information->{package}->{version_control}->{repository}
+			|| $directory . '/' . $package_name . '/' . 'mtn';
+
+		my $port_number = $package_information->{package}->{version_control}->{port_number};
+
+		# if not enough information for serving
+
+		if (not -f $repository_name)
+		{
+		    die "$0: *** Error: cannot serve repository, repository_name not set";
+		}
+
+		if (not $port_number)
+		{
+		    die "$0: *** Error: cannot serve repository, port_number not set";
+		}
+
+# 		# translate well known names to a routable address
+
+# 		my $repo_server = version_control_translate_server($option_repo_serve);
+
+		# initialize the repository if necessary
+
+		operation_execute
+		    (
+		     $operations,
+		     {
+		      description => $description,
+
+		      #t always zero here, but I guess this simply depends on working in client mode ?
+
+		      keywords => 0,
+		      package_name => $package_name,
+		     },
+		     [
+		      'test', '-f', $repository_name, '||', 'mtn', '--db', $repository_name, 'db', 'init',
+		     ],
+		    );
+
+		# detach
+
+		my $pid
+		    = daemonize
+			(1,
+			 {
+			  message => "$0: daemonizing for $description, $package_name\n",
+			  return => 1,
+			 },
+			);
+
+		if ($pid ne 1)
+		{
+		    # serve the repository
+
+		    operation_execute
+			(
+			 $operations,
+			 {
+			  description => $description,
+
+			  #t always zero here, but I guess this simply depends on working in client mode ?
+
+			  keywords => 0,
+			  package_name => $package_name,
+			 },
+			 [
+			  # 		      'mtn', '--db', $repository_name, 'serve', "$repo_server:$port_number",
+			  'mtn', '--db', $repository_name, 'serve', "--bind=:$port_number",
+			 ],
+			);
+
+		    # never return
+
+		    exit 1;
+		}
+	    },
+	   },
 	   {
 	    condition => $option_directories_create,
 	    description => "creating directory",
@@ -1833,8 +2044,6 @@ sub read_cmd_line
 		    die "$0: *** Error: cannot sync repository, repository_name not set";
 		}
 
-
-
 		if (not $port_number)
 		{
 		    die "$0: *** Error: cannot sync repository, port_number not set";
@@ -1980,6 +2189,8 @@ options related to operation execution profile:
     --regex-selector         defines a regex to select specific packages.
     --repo-co                checkout or update the workspace source code.
     --repo-pull              pull the repositories from this server (e.g. virtual2.cbi.utsa.edu).
+    --repo-serve             start the version control program in server mode to give others access to your code.
+                             this will automatically fork processes as needed and return control to the terminal.
     --repo-status            compare workspace with source code repository branch head.
     --repo-sync              sync the repositories with this server (e.g. virtual2.cbi.utsa.edu).
     --tag                    set this tag on all packages.

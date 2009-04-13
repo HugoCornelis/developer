@@ -28,6 +28,7 @@ dist_bin_SCRIPTS = \
 	bin/neurospaces_install \
 	bin/neurospaces_packages \
 	bin/neurospaces_pull \
+	bin/neurospaces_serve \
 	bin/neurospaces_status \
 	bin/neurospaces_sync \
 	bin/neurospaces_uninstall \
