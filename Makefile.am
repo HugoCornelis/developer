@@ -26,6 +26,7 @@ dist_bin_SCRIPTS = \
 	bin/neurospaces_cron \
 	bin/neurospaces_docs \
 	bin/neurospaces_install \
+	bin/neurospaces_kill_servers \
 	bin/neurospaces_packages \
 	bin/neurospaces_pull \
 	bin/neurospaces_serve \
