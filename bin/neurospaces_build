@@ -248,15 +248,11 @@ my $version_control_servers
     = [
        {
 	name => 'default',
-	address => 'virtual2.cbi.utsa.edu',
+	address => 'repo-genesis3.cbi.utsa.edu',
        },
        {
 	name => 'default2',
 	address => 'repo.cbi.utsa.edu',
-       },
-       {
-	name => 'default3',
-	address => 'repo-genesis3.cbi.utsa.edu',
        },
        {
 	name => 'backup_server',
@@ -2188,11 +2184,11 @@ options related to operation execution profile:
     --install                install packages.
     --regex-selector         defines a regex to select specific packages.
     --repo-co                checkout or update the workspace source code.
-    --repo-pull              pull the repositories from this server (e.g. virtual2.cbi.utsa.edu).
+    --repo-pull              pull the repositories from this server (e.g. repo-genesis3.cbi.utsa.edu).
     --repo-serve             start the version control program in server mode to give others access to your code.
                              this will automatically fork processes as needed and return control to the terminal.
     --repo-status            compare workspace with source code repository branch head.
-    --repo-sync              sync the repositories with this server (e.g. virtual2.cbi.utsa.edu).
+    --repo-sync              sync the repositories with this server (e.g. repo-genesis3.cbi.utsa.edu).
     --tag                    set this tag on all packages.
     --uninstall              uninstall packages, cannot be combined with installation options.
     --upload-server          enable uploading packages to this server (e.g. https://frs.sourceforge.net/uploads).
