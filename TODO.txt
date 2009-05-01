@@ -28,13 +28,14 @@ automated use cases).
 * bin/neurospaces_*
 globalize $packages variable.
 ** should have the possibility to come from the config in /etc/neurospaces.
-** neurospaces_status should be a frontend to neurospaces_build.
 
 * should come in the project management subproject
 ** release management utilities
 test-dist, etc.
 
 ** test framework
+although it would be handy to have the test utilities in each package
+too.
 *** tests/neurospaces_harness
 *** tests/tests_2_html
 *** tests/command_extractor
