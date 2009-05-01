@@ -1,5 +1,8 @@
 -*- outline -*-
 
+* add --keep-going
+is enabled by default for neurospaces_check.
+
 * documentation publication
 ** current situation
 *** neurospaces_docs
