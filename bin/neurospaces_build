@@ -34,6 +34,7 @@ my $option_docs = 0;
 my $option_dry_run = 0;
 my $option_install = 1;
 my $option_installed_versions = 1;
+my $option_keep_going;
 my $option_regex_selector = ".*";
 my $option_repo_co = 0;
 my $option_repo_pull = 0;
@@ -749,6 +750,7 @@ sub read_cmd_line
 		     "help-repositories!" => \$option_help_repositories,
 		     "install!" => \$option_install,
 		     "installed-versions!" => \$option_installed_versions,
+		     "keep-going!" => \$option_keep_going,
 		     "regex-selector=s" => \$option_regex_selector,
 		     "repo-co!" => \$option_repo_co,
 		     "repo-pull=s" => \$option_repo_pull,
@@ -834,6 +836,7 @@ sub read_cmd_line
 	   "help-repositories!" => $option_help_repositories,
 	   "install!" => $option_install,
 	   "installed-versions!" => $option_installed_versions,
+	   "keep-going!" => $option_keep_going,
 	   "regex-selector=s" => $option_regex_selector,
 	   "repo-co!" => $option_repo_co,
 	   "repo-pull=s" => $option_repo_pull,
@@ -2182,6 +2185,8 @@ options related to operation execution profile:
     --help-packages          print known packages, in order of build.
     --help-repositories      print known source code repositories.
     --install                install packages.
+    --installed-versions     print the installed version of each software package.
+    --keep-going             keep going in case of non-fatal errors (ala make -k).
     --regex-selector         defines a regex to select specific packages.
     --repo-co                checkout or update the workspace source code.
     --repo-pull              pull the repositories from this server (e.g. repo-genesis3.cbi.utsa.edu).
@@ -2508,9 +2513,19 @@ sub operation_execute
 
 	if ($?)
 	{
-	    #! assume system has given a good error message
+	    if ($option_keep_going)
+	    {
+		#! assume system has given a good error message
 
-	    die "$0: *** Error: package $package_name: $?";
+		print "$0: *** Error: package $package_name: $?";
+		print "$0: option_keep_going is set to $option_keep_going, continuing.";
+	    }
+	    else
+	    {
+		#! assume system has given a good error message
+
+		die "$0: *** Error: package $package_name: $?";
+	    }
 	}
 
 	if ($option_verbose)
