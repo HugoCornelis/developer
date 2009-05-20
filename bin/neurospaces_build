@@ -2517,8 +2517,8 @@ sub operation_execute
 	    {
 		#! assume system has given a good error message
 
-		print "$0: *** Error: package $package_name: $?";
-		print "$0: option_keep_going is set to $option_keep_going, continuing.";
+		print "$0: *** Error: package $package_name: $?\n";
+		print "$0: option_keep_going is set to $option_keep_going, continuing.\n";
 	    }
 	    else
 	    {
