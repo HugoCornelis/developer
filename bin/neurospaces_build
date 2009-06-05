@@ -38,6 +38,7 @@ my $option_keep_going;
 my $option_regex_selector = ".*";
 my $option_repo_co = 0;
 my $option_repo_pull = 0;
+my $option_repo_push = 0;
 my $option_repo_serve = 0;
 my $option_repo_status = 0;
 my $option_repo_sync = 0;
@@ -754,6 +755,7 @@ sub read_cmd_line
 		     "regex-selector=s" => \$option_regex_selector,
 		     "repo-co!" => \$option_repo_co,
 		     "repo-pull=s" => \$option_repo_pull,
+		     "repo-push=s" => \$option_repo_push,
 		     "repo-serve!" => \$option_repo_serve,
 		     "repo-status!" => \$option_repo_status,
 		     "repo-sync=s" => \$option_repo_sync,
@@ -840,6 +842,7 @@ sub read_cmd_line
 	   "regex-selector=s" => $option_regex_selector,
 	   "repo-co!" => $option_repo_co,
 	   "repo-pull=s" => $option_repo_pull,
+	   "repo-push=s" => $option_repo_push,
 	   "repo-serve!" => $option_repo_serve,
 	   "repo-status!" => $option_repo_status,
 	   "repo-sync=s" => $option_repo_sync,
@@ -1162,6 +1165,105 @@ sub read_cmd_line
 		     },
 		     [
 		      'mtn', '--db', $repository_name, 'pull', "$repo_server:$port_number", '"*"',
+		     ],
+		    );
+	    },
+	   },
+	   {
+	    condition => $option_repo_push,
+	    description => "pushing repository",
+	    operation =>
+	    sub
+	    {
+		my $package_information = shift;
+
+		# get specific arguments
+
+		my $description = $package_information->{description};
+
+		my $directory = $package_information->{directory};
+
+		my $operations = $package_information->{operations};
+
+		my $package_name = $package_information->{package_name};
+
+		my $repository_name
+		    = $package_information->{package}->{version_control}->{repository}
+			|| $directory . '/' . $package_name . '/' . 'mtn';
+
+		my $port_number = $package_information->{package}->{version_control}->{port_number};
+
+		# create repository directory
+
+		my $repository_directory = $repository_name;
+
+		$repository_directory =~ s((.*)/.*)($1);
+
+		operation_execute
+		    (
+		     $operations,
+		     {
+		      description => "$description (creating repository directory)",
+
+		      #t always zero here, but I guess this simply depends on working in client mode ?
+
+		      keywords => 0,
+		      package_name => $package_name,
+		     },
+		     [
+		      'mkdir', '-p', $repository_directory,
+		     ],
+		    );
+
+		# initialize the repository if necessary
+
+		operation_execute
+		    (
+		     $operations,
+		     {
+		      description => "$description: (initializing the repository)",
+
+		      #t always zero here, but I guess this simply depends on working in client mode ?
+
+		      keywords => 0,
+		      package_name => $package_name,
+		     },
+		     [
+		      'test', '-f', $repository_name, '||', 'mtn', '--db', $repository_name, 'db', 'init',
+		     ],
+		    );
+
+		# if not enough information for pushing
+
+		if (not -f $repository_name)
+		{
+		    die "$0: *** Error: cannot push repository, repository_name not set";
+		}
+
+		if (not $port_number)
+		{
+		    die "$0: *** Error: cannot push repository, port_number not set";
+		}
+
+		# translate well known names to a routable address
+
+		my $repo_server = version_control_translate_server($option_repo_push);
+
+		# push the repository
+
+		operation_execute
+		    (
+		     $operations,
+		     {
+		      description => $description,
+
+		      #t always zero here, but I guess this simply depends on working in client mode ?
+
+		      keywords => 0,
+		      package_name => $package_name,
+		     },
+		     [
+		      'mtn', '--db', $repository_name, 'push', "$repo_server:$port_number", '"*"',
 		     ],
 		    );
 	    },
@@ -2190,6 +2292,7 @@ options related to operation execution profile:
     --regex-selector         defines a regex to select specific packages.
     --repo-co                checkout or update the workspace source code.
     --repo-pull              pull the repositories from this server (e.g. repo-genesis3.cbi.utsa.edu).
+    --repo-push              push the repositories to this server (e.g. repo-genesis3.cbi.utsa.edu).
     --repo-serve             start the version control program in server mode to give others access to your code.
                              this will automatically fork processes as needed and return control to the terminal.
     --repo-status            compare workspace with source code repository branch head.
