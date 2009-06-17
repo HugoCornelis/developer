@@ -1,5 +1,5 @@
-#!/usr/bin/perl -w
-#!/usr/bin/perl -d:ptkdb -w
+#!/usr/bin/perl -w 
+#!/usr/bin/perl -w -d:ptkdb
 #
 
 
@@ -10,17 +10,29 @@ use Getopt::Long;
 
 use YAML;
 
+my $sendto_email = "mandorodriguez\@gmail.com";
+my $sendfrom_email = "g3tester\@repo-genesis3.cbi.utsa.edu";
+
 
 my $installer_directory = "$ENV{HOME}/neurospaces_project/installer/source/snapshots/0";
 
-my $output_filename = "/tmp/neurospaces_cron.stdout";
+my $output_directory = "/tmp";
+
+my $output_filename = "neurospaces_cron.stdout";
+
+
+
+
+
 
 
 sub check_and_prepare
 {
     # check if the installer is ok
 
-    system "mkdir >>$output_filename 2>&1 -p $installer_directory";
+  my $output_path = $output_directory . "/" . $output_filename;
+
+    system "mkdir >> $output_path 2>&1 -p $installer_directory";
 
     chdir($installer_directory);
 
@@ -28,7 +40,7 @@ sub check_and_prepare
 
     #t wrong assumption
 
-    system "mtn >>$output_filename 2>&1 co --db ~/neurospaces_project/MTN/neurospaces-developer.mtn --branch 0 .";
+    system "mtn >> $output_path 2>&1 co --db ~/neurospaces_project/MTN/neurospaces-developer.mtn --branch 0 .";
 
     # install the installer
 
@@ -63,6 +75,10 @@ sub check_user_id
     {
 	report_error("check_user_id()", "$0 cannot determine username under which we are running");
 
+
+	mail_status("neurospaces_cron error: check_user_id()",
+		   "$0 cannot determine username under which we are running");
+
 	# just to make sure that this script stops we die
 
 	die "check_user_id()" . "$0 cannot determine username under which we are running";
@@ -89,6 +105,11 @@ sub check_user_id
     {
 	report_error("check_user_id()", "$0 must not be executed by a regular user (now running as unprivileged user $label_id)");
 
+
+
+	mail_status("neurospaces_cron error: check_user_id()",
+		    "$0 must not be executed by a regular user (now running as unprivileged user $label_id)");
+
 	# just to make sure that this script stops we die
 
 	die "check_user_id()" . "$0 must not be executed by a regular user";
@@ -98,6 +119,19 @@ sub check_user_id
 
 sub main
 {
+
+  {
+    my $result
+      = GetOptions
+	(
+	 "outputdir=s" => \$output_directory,
+	);
+
+  }
+
+
+
+
     # this script can only be run by a user whose name matches 'neurospaces'
 
     check_user_id();
@@ -106,7 +140,7 @@ sub main
 
     unlink($output_filename);
 
-    chdir("/tmp");
+    chdir($output_directory);
 
     # preparatory startup procedure to check this system
 
@@ -165,6 +199,13 @@ sub main
 	#t install, uninstall, check, uninstall
     }
 
+    copy_tests(); #copy our individual test output files to the output directory
+
+    cleanup(); #clean up after the tests.
+
+    mail_status("neurospaces_cron finished",
+		"Check for your output on the host machine here " . $output_directory . "/" . $output_filename);
+
     #t remove the entire neurospaces_project directory ?
 
 #     try_to("rm -fr $ENV{HOME}/neurospaces_project");
@@ -179,33 +220,107 @@ sub install_installer
 }
 
 
-sub report_error
-{
-    my $command = shift;
-
-    my $error_code = shift;
-
-    #t send emails
-
-    die "$0: $command returned $error_code";
-}
 
 
-
+#
+# This will actually send mail.
+#
+# args ($subject,$message)
+#
 sub mail_status
 {
     my $subject;
     my $message;
-    ($subject,$message,$to,$from) = @_;
+
+    ($subject,$message) = @_;
+
+    #todo figure out why I can't put the output of
+    # `which sendmail` into a variable and put it in 
+    # place of the /usr/sbin/sendmail. A user may have 
+    # a different sendmail path.
 
     open(MAIL, "|/usr/sbin/sendmail -oi -t");
-    print MAIL "From: $from\n";
-    print MAIL "To: $to\n";
+    print MAIL "From: $sendfrom_email\n";
+    print MAIL "To: $sendto_email\n";
     print MAIL "Subject: $subject\n\n";
     print MAIL "$message\n";
     close(MAIL);
 
 }
+
+
+#
+#
+#
+sub copy_tests
+{
+
+  if($output_directory eq "/tmp")
+  {
+    # if deault no need to do anything.
+    return;
+  }
+
+  if(-e "$output_directory/text_*")
+  {
+
+    # clean out the old tests
+    system "rm -f $output_directory/text_*";
+
+  }
+
+
+  if(-e "/tmp/text_*")
+  {
+
+    # copy over the new ones.
+    system "mv -f /tmp/text_* $output_directory";
+
+  }
+
+}
+
+
+#
+# try to clean up some files out of the /tmp directory
+#
+sub cleanup
+{
+
+  print "Cleaning generate files out of /tmp\n";
+
+  #t maybe make @trash a list that read in from 
+  #t a trash configuration file. 
+  my @trash = ("output",
+	    "OutputGenerator",
+	    "output_spike",
+	    "output_spike_source",
+	    "output_vm",
+	    "output_vm_source",
+	    "purk_test_soma",
+	    "purk_test_soma_aggregators",
+	    "state",
+	    "neurospaces",
+	    "a2",
+	    "*.ndf",
+	    "current_schedule",
+	    "state",
+	    );
+
+
+  my $item;
+  foreach $item (@trash)
+  {
+    my $trashfile = "/tmp/" . $item;
+    system "rm -rf $trashfile";
+
+  }
+
+  print "Done with cleanup.\n";
+
+}
+
+
 
 
 sub try_to
@@ -215,7 +330,8 @@ sub try_to
     print "---\n";
     print "$0: trying to $command\n";
 
-    my $output = `$command >>$output_filename 2>&1`;
+    my $output_path = $output_directory . "/" . $output_filename;
+    my $output = `$command >>$output_path 2>&1`;
 
     if ($?)
     {
