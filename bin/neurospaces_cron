@@ -261,22 +261,17 @@ sub copy_tests
     return;
   }
 
-  if(-e "$output_directory/text_*")
-  {
 
-    # clean out the old tests
-    system "rm -f $output_directory/text_*";
-
-  }
+  # clean out the old tests
+  system "rm -f $output_directory/text_*";
 
 
-  if(-e "/tmp/text_*")
-  {
 
-    # copy over the new ones.
-    system "mv -f /tmp/text_* $output_directory";
 
-  }
+  # copy over the new ones.
+  system "mv -f /tmp/text_* $output_directory";
+
+
 
 }
 
