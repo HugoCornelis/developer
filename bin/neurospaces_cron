@@ -328,7 +328,7 @@ sub try_to
     print "$0: trying to $command\n";
 
     my $output_path = $output_directory . "/" . $output_filename;
-    my $output = `$command >>$output_path 2>&1`;
+    system "$command >>$output_path 2>&1";
 
     if ($?)
     {
