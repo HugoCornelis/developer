@@ -300,6 +300,8 @@ sub cleanup
 	    "*.ndf",
 	    "current_schedule",
 	    "state",
+	    "heccer",
+	    "morphology2ndf.yml",
 	    );
 
 
