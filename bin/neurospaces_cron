@@ -73,12 +73,9 @@ sub check_user_id
 
     if (scalar @$records ne 1)
     {
-	#report_error("check_user_id()", "$0 cannot determine username under which we are running");
+	report_error("check_user_id()", "$0 cannot determine username under which we are running");
 
-
-	mail_status("neurospaces_cron error: check_user_id()",
-		   "$0 cannot determine username under which we are running");
-
+	
 	# just to make sure that this script stops we die
 
 	die "check_user_id()" . "$0 cannot determine username under which we are running";
@@ -103,12 +100,9 @@ sub check_user_id
 
     else
     {
-	#report_error("check_user_id()", "$0 must not be executed by a regular user (now running as unprivileged user $label_id)");
+	report_error("check_user_id()", 
+		     "$0 must not be executed by a regular user (now running as unprivileged user $label_id)");
 
-
-
-	mail_status("neurospaces_cron error: check_user_id()",
-		    "$0 must not be executed by a regular user (now running as unprivileged user $label_id)");
 
 	# just to make sure that this script stops we die
 
@@ -219,6 +213,17 @@ sub install_installer
     try_to("./autogen.sh && ./configure && make && sudo make install");
 }
 
+
+sub report_error
+{
+    my $command = shift;
+
+    my $error_code = shift;
+
+    mail_status("neurospaces_cron error", "$0: $command returned $error_code");
+
+    die "$0: $command returned $error_code";
+}
 
 
 
@@ -332,9 +337,8 @@ sub try_to
 
     if ($?)
     {
-	#report_error($command, $?);
-	mail_status("neurospaces_cron had an error",
-		    $command . " " . $?);
+	report_error($command, $?);
+	
     }
 }
 
