@@ -73,7 +73,7 @@ sub check_user_id
 
     if (scalar @$records ne 1)
     {
-	report_error("check_user_id()", "$0 cannot determine username under which we are running");
+	#report_error("check_user_id()", "$0 cannot determine username under which we are running");
 
 
 	mail_status("neurospaces_cron error: check_user_id()",
@@ -103,7 +103,7 @@ sub check_user_id
 
     else
     {
-	report_error("check_user_id()", "$0 must not be executed by a regular user (now running as unprivileged user $label_id)");
+	#report_error("check_user_id()", "$0 must not be executed by a regular user (now running as unprivileged user $label_id)");
 
 
 
@@ -332,7 +332,9 @@ sub try_to
 
     if ($?)
     {
-	report_error($command, $?);
+	#report_error($command, $?);
+	mail_status("neurospaces_cron had an error",
+		    $command . " " . $?);
     }
 }
 
