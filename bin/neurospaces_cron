@@ -125,12 +125,11 @@ sub main
 
 
   #
-  # for some reason when perl executes it uses a different PATH variable
-  # during a cronjob.
+  # For security reasons cronjobs use a restricted $PATH
   # which leaves out /usr/local/bin and prevents it from executing some
-  # commands. This is a hacky way around that. 
+  # commands.
   #
-  # note: didn't have the desired effect, however may be needed for users with
+  # note: May be needed for users with
   # a different cron path since '/usr/local/bin' is usually not included by default.
   #
   $ENV{PATH} .= ':/bin:/usr/bin:/usr/local/bin';
@@ -207,7 +206,7 @@ sub main
 
     cleanup(); #clean up after the tests.
 
-    mail_status("neurospaces_cron finished",
+    try_to_mail_status("neurospaces_cron finished",
 		"Check for your output on the host machine here " . $output_directory . "/" . $output_filename);
 
     #t remove the entire neurospaces_project directory ?
@@ -230,7 +229,7 @@ sub report_error
 
     my $error_code = shift;
 
-    mail_status("neurospaces_cron error", "$0: $command returned $error_code");
+    try_to_mail_status("neurospaces_cron error", "$0: $command returned $error_code");
 
     die "$0: $command returned $error_code";
 }
@@ -242,10 +241,16 @@ sub report_error
 #
 # args ($subject,$message)
 #
-sub mail_status
+sub try_to_mail_status
 {
     my $subject;
     my $message;
+
+
+    if($sendto_email == "")
+    {
+      return;
+    }
 
     ($subject,$message) = @_;
 
@@ -295,6 +300,10 @@ sub copy_tests
 #
 # try to clean up some files out of the /tmp directory
 #
+#t This should be done in a preparation/repairation phase
+#t within neurospaces_harness.
+#t
+#t cleanup of output files should always be optional.
 sub cleanup
 {
 
