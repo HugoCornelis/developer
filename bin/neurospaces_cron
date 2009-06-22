@@ -124,6 +124,16 @@ sub main
   }
 
 
+  #
+  # for some reason when perl executes it uses a different PATH variable
+  # during a cronjob.
+  # which leaves out /usr/local/bin and prevents it from executing some
+  # commands. This is a hacky way around that. 
+  #
+  # note: didn't have the desired effect, however may be needed for users with
+  # a different cron path since '/usr/local/bin' is usually not included by default.
+  #
+  $ENV{PATH} .= ':/bin:/usr/bin:/usr/local/bin';
 
 
     # this script can only be run by a user whose name matches 'neurospaces'
@@ -277,6 +287,7 @@ sub copy_tests
   system "mv -f /tmp/text_* $output_directory";
 
 
+  system "rm -f /tmp/neurospaces_cron.stdout";
 
 }
 
