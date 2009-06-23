@@ -31,9 +31,14 @@ sub check_and_prepare
 {
     # check if the installer is ok
 
-  my $output_path = $output_directory . "/" . $output_filename;
+    my $output_path = $output_directory . "/" . $output_filename;
 
-    system "mkdir >> $output_path 2>&1 -p $installer_directory";
+    #if(-e $output_path)
+    #{
+    #  system "rm -f $output_path";
+    #} 
+
+    system "mkdir > $output_path 2>&1 -p $installer_directory";
 
     chdir($installer_directory);
 
