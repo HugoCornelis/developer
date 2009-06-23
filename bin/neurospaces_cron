@@ -10,8 +10,8 @@ use Getopt::Long;
 
 use YAML;
 
-my $sendto_email = "mandorodriguez\@gmail.com";
-my $sendfrom_email = "g3tester\@repo-genesis3.cbi.utsa.edu";
+my $sendto_email;
+my $sendfrom_email;
 
 
 my $installer_directory = "$ENV{HOME}/neurospaces_project/installer/source/snapshots/0";
@@ -20,6 +20,7 @@ my $output_directory = "/tmp";
 
 my $output_filename = "neurospaces_cron.stdout";
 
+my $option_config_file = "";
 
 
 
@@ -119,10 +120,18 @@ sub main
       = GetOptions
 	(
 	 "outputdir=s" => \$output_directory,
+	 "config=s" => \$option_config_file,
 	);
 
   }
 
+
+  if($option_config_file ne "")
+  {
+
+    parse_config_file($option_config_file);
+
+  }
 
   #
   # For security reasons cronjobs use a restricted $PATH
@@ -339,6 +348,60 @@ sub cleanup
   }
 
   print "Done with cleanup.\n";
+
+}
+
+
+#
+# ($config_file) a file with a configuration in it.
+#
+sub parse_config_file
+{
+  my $config__file = shift;
+
+  if(! -e $config__file)
+  {
+
+    print "\n$config__file is an invalid filename\n";
+    return;
+
+  }
+
+
+  print "\nParsing configuration in $config__file\n\n";
+
+  my @lines = `cat $config__file`;
+
+  foreach (@lines)
+  {
+
+    if($_ =~ m/^\#/g || $_ eq "")
+    {
+      # a commented line
+      next;
+    }
+
+    my @option = split(/\t/,$_);
+
+    if($option[0] eq "MAILTO")
+    {
+      $sendto_email = $option[1];
+    }
+    elsif($option[0] eq "MAILFROM")
+    {
+      $sendfrom_email = $option[1];
+    }
+    elsif($option[0] eq "OUTPUTDIR")
+    {
+      $output_directory = $option[1];
+    }
+
+  }
+
+  print "Done Parsing $config__file:\n";
+  print "\tSend to email: $sendto_email\n";
+  print "\tSend from email: $sendfrom_email\n";
+  print "\tOutput directory is $output_directory\n\n";
 
 }
 
