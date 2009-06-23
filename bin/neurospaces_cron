@@ -33,12 +33,12 @@ sub check_and_prepare
 
     my $output_path = $output_directory . "/" . $output_filename;
 
-    #if(-e $output_path)
-    #{
-    #  system "rm -f $output_path";
-    #} 
+    if(-e $output_path)
+    {
+      system "rm -f $output_path";
+    }
 
-    system "mkdir > $output_path 2>&1 -p $installer_directory";
+    system "mkdir >> $output_path 2>&1 -p $installer_directory";
 
     chdir($installer_directory);
 
