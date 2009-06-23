@@ -367,7 +367,6 @@ sub parse_config_file
 
   }
 
-
   print "\nParsing configuration in $config__file\n\n";
 
   my @lines = `cat $config__file`;
