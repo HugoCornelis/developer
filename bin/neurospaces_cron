@@ -382,6 +382,8 @@ sub parse_config_file
 
     my @option = split(/\t/,$_);
 
+    chomp($option[1]);
+
     if($option[0] eq "MAILTO")
     {
       $sendto_email = $option[1];
