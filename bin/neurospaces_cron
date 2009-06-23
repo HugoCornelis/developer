@@ -357,49 +357,69 @@ sub cleanup
 #
 sub parse_config_file
 {
-  my $config__file = shift;
+  my $config_file = shift;
 
-  if(! -e $config__file)
+  if(! -e $config_file)
   {
 
-    print "\n$config__file is an invalid filename\n";
+    print "\n$config_file is an invalid filename\n";
     return;
 
   }
 
-  print "\nParsing configuration in $config__file\n\n";
+  print "\nParsing configuration in $config_file\n\n";
 
-  my @lines = `cat $config__file`;
+  my $configuration = YAML::LoadFile($config_file);
 
-  foreach (@lines)
+
+  if(!defined $configuration)
   {
 
-    if($_ =~ m/^\#/g || $_ eq "")
-    {
-      # a commented line
-      next;
-    }
-
-    my @option = split(/\t/,$_);
-
-    chomp($option[1]);
-
-    if($option[0] eq "MAILTO")
-    {
-      $sendto_email = $option[1];
-    }
-    elsif($option[0] eq "MAILFROM")
-    {
-      $sendfrom_email = $option[1];
-    }
-    elsif($option[0] eq "OUTPUTDIR")
-    {
-      $output_directory = $option[1];
-    }
+    print "This YAML file is invalid\n";
+    return;
 
   }
 
-  print "Done Parsing $config__file:\n";
+  $sendto_email = $configuration->{MAILTO};
+  chomp($sendto_email);
+
+  $sendfrom_email = $configuration->{MAILFROM};
+  chomp($sendfrom_email);
+
+  $output_directory = $configuration->{OUTPUTDIR};
+  chomp($output_directory);
+
+#  my @lines = `cat $config__file`;
+
+#   foreach (@lines)
+#   {
+
+#     if($_ =~ m/^\#/g || $_ eq "")
+#     {
+#       # a commented line
+#       next;
+#     }
+
+#     my @option = split(/\t/,$_);
+
+#     chomp($option[1]);
+
+#     if($option[0] eq "MAILTO")
+#     {
+#       $sendto_email = $option[1];
+#     }
+#     elsif($option[0] eq "MAILFROM")
+#     {
+#       $sendfrom_email = $option[1];
+#     }
+#     elsif($option[0] eq "OUTPUTDIR")
+#     {
+#       $output_directory = $option[1];
+#     }
+
+#   }
+
+  print "Done Parsing $config_file:\n";
   print "\tSend to email: $sendto_email\n";
   print "\tSend from email: $sendfrom_email\n";
   print "\tOutput directory is $output_directory\n\n";
