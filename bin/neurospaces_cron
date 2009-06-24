@@ -442,7 +442,11 @@ sub try_to
     print "$0: trying to $command\n";
 
     my $output_path = $output_directory . "/" . $output_filename;
-    system "$command >>$output_path 2>&1";
+
+    #! $command executed in a subshell such that redirection applies
+    #! to all commands.
+
+    system "( $command ) >>$output_path 2>&1";
 
     if ($?)
     {
