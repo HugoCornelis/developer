@@ -341,6 +341,7 @@ sub cleanup
 	    "state",
 	    "heccer",
 	    "morphology2ndf.yml",
+	    "sh-thd-*",
 	    );
 
 
