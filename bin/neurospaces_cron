@@ -335,8 +335,11 @@ sub cleanup
 	    "purk_test_soma_aggregators",
 	    "state",
 	    "neurospaces",
+	    "a1",
 	    "a2",
+	    "1.xml",
 	    "*.ndf",
+	    "readcell_reset.txt",
 	    "current_schedule",
 	    "state",
 	    "heccer",
@@ -386,14 +389,23 @@ sub parse_config_file
 
   }
 
-  $sendto_email = $configuration->{MAILTO};
-  chomp($sendto_email);
+  if(defined $configuration->{MAILTO})
+  {
+    $sendto_email = $configuration->{MAILTO};
+    chomp($sendto_email);
+  }
 
-  $sendfrom_email = $configuration->{MAILFROM};
-  chomp($sendfrom_email);
+  if(defined $configuration->{MAILFROM})
+  {
+    $sendfrom_email = $configuration->{MAILFROM};
+    chomp($sendfrom_email);
+  }
 
-  $output_directory = $configuration->{OUTPUTDIR};
-  chomp($output_directory);
+  if(defined $configuration->{OUTPUTDIR})
+  {
+    $output_directory = $configuration->{OUTPUTDIR};
+    chomp($output_directory);
+  }
 
 #  my @lines = `cat $config__file`;
 

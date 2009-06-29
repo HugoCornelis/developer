@@ -2616,7 +2616,7 @@ sub operation_execute
 
 	if ($?)
 	{
-	    if ($option_keep_going)
+	    if ($option_keep_going and ((join " ", @$arguments) =~ /check/))
 	    {
 		#! assume system has given a good error message
 
