@@ -104,6 +104,15 @@ my $all_packages
 				     },
 		  version_script => 'genesis-g3 --version',
 		 },
+      'g-tube' => {
+		    directory => "$ENV{HOME}/neurospaces_project/g-tube/source/snapshots/0",
+		   disabled => 'Mercurial isn\'t implemented yet',
+		    order => 31,
+		    version_control => {
+					repository => "$ENV{HOME}/neurospaces_project/g-tube/source/snapshots/0/.hg",
+				       },
+		    version_script => 0,
+		   },
        heccer => {
 		  dependencies => {
 				   'model-container' => 'for storing the model in computer memory',
@@ -259,6 +268,10 @@ my $version_control_servers
        {
 	name => 'backup_server',
 	address => '129.115.117.50',
+       },
+       {
+	name => 'mercurial_server',
+	address => 'http://repo-genesis3.cbi.utsa.edu/hg/',
        },
       ];
 
@@ -973,7 +986,7 @@ sub read_cmd_line
 		    die "$0: *** Error: cannot serve repository, port_number not set";
 		}
 
-# 		# translate well known names to a routable address
+# 		# translate well krnown names to a routable address
 
 # 		my $repo_server = version_control_translate_server($option_repo_serve);
 
@@ -1011,6 +1024,13 @@ sub read_cmd_line
 		if ($pid ne 1)
 		{
 		    # serve the repository
+
+		    # MERCURIAL serve
+		    # command: hg serve
+		    # Very different from monotone, uses a simple http gateway to serve the repository
+		    # and provides a web interface for browsing the code. You can still designate a port
+		    # like in monotone. The mercurial repository uses a different method for serving
+		    # the repos.
 
 		    #t MONOTONE
 
@@ -1096,22 +1116,38 @@ sub read_cmd_line
 		    = $package_information->{package}->{version_control}->{repository}
 			|| $directory . '/' . $package_name . '/' . 'mtn';
 
-		my $port_number = $package_information->{package}->{version_control}->{port_number};
 
-		# create repository directory
+		my $repo_server = version_control_translate_server($option_repo_pull);
 
-		my $repository_directory = $repository_name;
 
-		$repository_directory =~ s((.*)/.*)($1);
+		#
+		# Check to see if the repository name ends with .mtn, if not we assume it ends
+		# in .hg, in which case we don't need the port number since mercurial serves over http.
+		#
+		if($repository_name =~ m/^.*\.mtn$/)
+		{
 
-		operation_execute
+		  # initialize the repository if necessary
+
+		  #t MONOTONE
+
+
+		  my $port_number = $package_information->{package}->{version_control}->{port_number};
+
+		  # create repository directory
+
+		  my $repository_directory = $repository_name;
+
+		  $repository_directory =~ s((.*)/.*)($1);
+
+		  operation_execute
 		    (
 		     $operations,
 		     {
 		      description => "$description (creating repository directory)",
-
+		      
 		      #t always zero here, but I guess this simply depends on working in client mode ?
-
+		      
 		      keywords => 0,
 		      package_name => $package_name,
 		     },
@@ -1120,18 +1156,14 @@ sub read_cmd_line
 		     ],
 		    );
 
-		# initialize the repository if necessary
-
-		#t MONOTONE
-
-		operation_execute
+		  operation_execute
 		    (
 		     $operations,
 		     {
 		      description => "$description: (initializing the repository)",
-
+		      
 		      #t always zero here, but I guess this simply depends on working in client mode ?
-
+		      
 		      keywords => 0,
 		      package_name => $package_name,
 		     },
@@ -1140,27 +1172,26 @@ sub read_cmd_line
 		     ],
 		    );
 
-		# if not enough information for pulling
+		  # if not enough information for pulling
 
-		if (not -f $repository_name)
-		{
+		  if (not -f $repository_name)
+		  {
 		    die "$0: *** Error: cannot pull repository, repository_name not set";
-		}
+		  }
 
-		if (not $port_number)
-		{
+		  if (not $port_number)
+		  {
 		    die "$0: *** Error: cannot pull repository, port_number not set";
-		}
+		  }
 
-		# translate well known names to a routable address
+		  # translate well known names to a routable address
 
-		my $repo_server = version_control_translate_server($option_repo_pull);
+	
+		  # pull the repository
 
-		# pull the repository
+		  #t MONOTONE
 
-		#t MONOTONE
-
-		operation_execute
+		  operation_execute
 		    (
 		     $operations,
 		     {
@@ -1175,6 +1206,34 @@ sub read_cmd_line
 		      'mtn', '--db', $repository_name, 'pull', "$repo_server:$port_number", '"*"',
 		     ],
 		    );
+
+	      }
+	      else
+	      {
+
+		# MERCURIAL PULL
+
+		# hg pull http://repo-genesis3.cbi.utsa.edu/hg/g-tube
+		# hg pull http://$repo_server/hg/$package_name
+# 		my $mercurial_server = $repo_server . '/' . $package_name;
+
+# 		operation_execute
+# 		  (
+# 		   $operations,
+# 		   {
+# 		    description => $description,
+# 		    keywords => 0,
+# 		    package_name => $package_name,
+# 		   },
+# 		   [
+# 		    'hg', 'pull', $mercurial_server,
+# 		   ],
+# 		  );
+		
+
+	      }
+
+
 	    },
 	   },
 	   {
@@ -1327,6 +1386,9 @@ sub read_cmd_line
 
 		#t MONOTONE
 
+		# MERCURIAL merge
+		# command: hg merge
+
 		operation_execute
 		    (
 		     $operations,
@@ -1369,6 +1431,11 @@ sub read_cmd_line
 		# update code
 
 		#t MONOTONE
+		
+		# MERCURIAL update checkout
+		# these two are actually aliased to each other because of how it pulls a workspace. 
+		# You simply update to a particular revision number.
+		# hg update [-r revision]
 
 		operation_execute
 		    (
@@ -2027,8 +2094,12 @@ sub read_cmd_line
 	    condition => $option_certification_report,
 
 	    #t MONOTONE
-
+	    
 	    operation => [ 'mtn', 'cert', '\'%version\'', '--', 'build_report', '\'%report\'', ],
+
+	    # MERCURIAL cert
+	    # mercurial doesn't yet have it's own cert functionality. 
+	    # It's on a TODO, more info here: http://mercurial.selenic.com/wiki/ArbitraryMetadata
 	   },
 	   {
 	    condition => $option_repo_status,
@@ -2086,6 +2157,9 @@ sub read_cmd_line
 		       status => [ 'mtn', 'status', ],
 		       unknown => [ "mtn", "ls", "unknown", ],
 		      };
+
+		# MERCURIAL status 
+		# command: hg status
 
 		# go through all informational operations
 
@@ -2163,29 +2237,37 @@ sub read_cmd_line
 		    = $package_information->{package}->{version_control}->{repository}
 			|| $directory . '/' . $package_name . '/' . 'mtn';
 
-		my $port_number = $package_information->{package}->{version_control}->{port_number};
 
-		# if not enough information for syncing
-
-		if (not -f $repository_name)
-		{
-		    die "$0: *** Error: cannot sync repository, repository_name not set";
-		}
-
-		if (not $port_number)
-		{
-		    die "$0: *** Error: cannot sync repository, port_number not set";
-		}
 
 		# translate well known names to a routable address
 
 		my $repo_server = version_control_translate_server($option_repo_sync);
 
-		# initialize the repository if necessary
+		#
+		# Check to see if the repository name ends with .mtn, if not we assume it ends
+		# in .hg, in which case we don't need the port number since mercurial serves over http.
+		#
+		if($repository_name =~ m/^.*\.mtn$/)
+		{
+		  #t MONOTONE
 
-		#t MONOTONE
+		  my $port_number = $package_information->{package}->{version_control}->{port_number};
 
-		operation_execute
+		  # if not enough information for syncing for monotone
+
+		  if (not -f $repository_name)
+		  {
+		    die "$0: *** Error: cannot sync repository, repository_name not set";
+		  }
+
+		  if (not $port_number)
+		  {
+		    die "$0: *** Error: cannot sync repository, port_number not set";
+		  }
+
+		  # initialize the repository if necessary
+
+		  operation_execute
 		    (
 		     $operations,
 		     {
@@ -2201,16 +2283,16 @@ sub read_cmd_line
 		     ],
 		    );
 
-		# sync the repository
+		  # sync the repository
 
-		#t MONOTONE
+		  #t MONOTONE
 
-		operation_execute
+		  operation_execute
 		    (
 		     $operations,
 		     {
 		      description => $description,
-
+		      
 		      #t always zero here, but I guess this simply depends on working in client mode ?
 
 		      keywords => 0,
@@ -2220,9 +2302,81 @@ sub read_cmd_line
 		      'mtn', '--db', $repository_name, 'sync', "$repo_server:$port_number",
 		     ],
 		    );
-	    },
-	   },
-	  ];
+
+		}
+		else
+		{
+
+		  # MERCURIAL sync
+
+		  # operations:
+		  #   initialize the repo: 
+		  #      hg clone http://repo-genesis3.cbi.utsa.edu/hg/g-tube ${HOME}/neurospaces_project/g-tube/source/snapshots/0/
+		  #   cd ${HOME}/neurospaces_project/g-tube/source/snapshots/0
+		  #   hg pull
+		  #   (hg merge)? since you can't push if you have multiple heads.
+		  #   hg push
+
+		  # performs a clone of a repository if the project workspace isn't present.
+# 		  my $mercurial_server = $repo_server . '/' . $package_name;
+
+# 		  operation_execute
+# 		    (
+# 		     $operations,
+# 		     {
+# 		      description => $description,
+
+# 		      #t always zero here, but I guess this simply depends on working in client mode ?
+
+# 		      keywords => 0,
+# 		      package_name => $package_name,
+# 		     },
+# 		     [
+# 		      'test', '-f', $repository_name, '||', 'hg', 'clone', $mercurial_server, $directory,
+# 		     ],
+# 		    );
+
+
+		  # first perform a pull -u to pull and update.
+# 		  operation_execute
+# 		    (
+# 		     $operations,
+# 		     {
+# 		      description => $description,
+
+# 		      keywords => 0,
+# 		      package_name => $package_name,
+# 		     },
+# 		     [
+# 		      'hg', 'pull', '-u', $mercurial_server,
+# 		     ],
+# 		    );
+
+
+		  # then perform a push, a sync must be done in two operations.
+		  # note: this push operation should always fail since the ssh key
+		  # setup hasn't been properly installed on repo-genesis3. The final implementation
+		  # should use something like ssh://repo-genesis3.cbi.utsa.edu for the $mercurial_server call.
+# 		  operation_execute
+# 		    (
+# 		     $operations,
+# 		     {
+# 		      description => $description,
+
+# 		      keywords => 0,
+# 		      package_name => $package_name,
+# 		     },
+# 		     [
+# 		      'hg', 'push', $mercurial_server,
+# 		     ],
+# 		    );
+
+
+		}
+
+		},
+	      },
+	   ];
 
     # process environment options
 
