@@ -261,7 +261,7 @@ sub try_to_mail_status
     my $message;
 
 
-    if($sendto_email eq "")
+    if (!$sendto_email)
     {
       return;
     }
