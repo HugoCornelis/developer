@@ -1337,6 +1337,10 @@ sub read_cmd_line
 		      'mtn', '--db', $repository_name, 'push', "$repo_server:$port_number", '"*"',
 		     ],
 		    );
+
+		# MERCURIAL 
+		# hg push http://repo-genesis3.cbi.utsa.edu/hg/gui
+
 	    },
 	   },
 	   {
@@ -1410,7 +1414,9 @@ sub read_cmd_line
 		# checkout code
 
 		#t MONOTONE
-
+		
+		# MERCURAL checkout
+		# hg checkout -r branch/tagname
 		operation_execute
 		    (
 		     $operations,
@@ -1475,6 +1481,11 @@ sub read_cmd_line
 	    operation => [
 			  #t MONOTONE
 
+			  # MERCURIAL 
+			  # hg status
+			  # this shows all changed or missing files in the repository. 
+			  # doesn't have any exact equivalen to monotones missing or unknown commands.
+			  # status essentially does all of it.
 			  ( "test", "!", '"`mtn ls unknown && mtn ls missing && mtn ls changed`"', ),
 			  ( '&&', 'release-expand', "'%package'", "'%release_major'", "'%release_minor'", "'%release_micro'", "'%release_major-%release_minor'", 'hugo.cornelis@gmail.com', '--verbose', ),
 
@@ -1487,6 +1498,7 @@ sub read_cmd_line
 			  ( "&&", 'mtn', 'ci', "-m", "'1. Keywords only: $option_tag\n'", ),
 			  ( "&&", "test", "!", '"`mtn ls unknown && mtn ls missing && mtn ls changed`"', ),
 			 ],
+
 	   },
 	   {
 	    condition => $option_tag,
@@ -1499,6 +1511,14 @@ sub read_cmd_line
 
 			  ( 'mtn', 'tag', '\'%version\'', "'$option_tag'", ),
 			 ],
+
+                         # MERCURIAL
+                         # hg tag -m '\'%version\'' $option_tag
+                         # needs to be noted that in mercurial a tag is just an alias for
+                         # branch so this may not be what we need here. The arbitrary metadata
+                         # system described earlier is probably more in line with what monotone
+                         # uses as tags.
+
 	   },
 	   {
 	    condition => $option_tag,
@@ -2153,6 +2173,8 @@ sub read_cmd_line
 		    = {
 		       #t MONOTONE
 
+		       # MERCURIAL status
+		       # hg status
 		       missing => [ "mtn", "ls", "missing", ],
 		       status => [ 'mtn', 'status', ],
 		       unknown => [ "mtn", "ls", "unknown", ],
