@@ -53,7 +53,7 @@ my $option_website_upload;
 
 my $option_src_tag;
 my $option_src_dir;
-my $option_download_server;
+my $option_download_server = 0;
 my $option_unpack;
 
 # options related to behavior of external applications
@@ -180,19 +180,19 @@ my $all_packages
 					       },
 			    version_script => 'prcsentry Project-Version',
 			   },
-       'ns-genesis-SLI' => {
-			    dependencies => {
-					     'model-container' => 'for storing the model in computer memory',
-					     heccer => 'for solving single neurons',
-					    },
-			    directory => "$ENV{HOME}/neurospaces_project/ns-genesis-SLI/source/snapshots/0",
-			    order => 6,
-			    version_control => {
-						port_number => 4692,
-						repository => "$ENV{HOME}/neurospaces_project/MTN/ns-gen.mtn",
-					       },
-			    version_script => 0,
-			   },
+       'ns-sli' => {
+		    dependencies => {
+				     'model-container' => 'for storing the model in computer memory',
+				     heccer => 'for solving single neurons',
+				    },
+		    directory => "$ENV{HOME}/neurospaces_project/ns-sli/source/snapshots/0",
+		    order => 6,
+		    version_control => {
+					port_number => 4692,
+					repository => "$ENV{HOME}/neurospaces_project/MTN/ns-sli.mtn",
+				       },
+		    version_script => 0,
+		   },
        'project-browser' => {
 			     dependencies => {
 					      'model-container' => 'for storing the model in computer memory',
@@ -566,7 +566,7 @@ sub all_operations_execute
 
 			my $filename_base = $package->{target_name} || $package_name;
 
-			my $filename = $filename_base . "-" . $option_src_tag . ".tar.gz";
+			my $filename = $filename_base . "-" . (defined $option_src_tag ? $option_src_tag : '') . ".tar.gz";
 
 			my $prefix = $option_download_server =~ m|://| ? '' : 'http://';
 
@@ -1145,9 +1145,9 @@ sub read_cmd_line
 		     $operations,
 		     {
 		      description => "$description (creating repository directory)",
-		      
+
 		      #t always zero here, but I guess this simply depends on working in client mode ?
-		      
+
 		      keywords => 0,
 		      package_name => $package_name,
 		     },
@@ -1161,9 +1161,9 @@ sub read_cmd_line
 		     $operations,
 		     {
 		      description => "$description: (initializing the repository)",
-		      
+
 		      #t always zero here, but I guess this simply depends on working in client mode ?
-		      
+
 		      keywords => 0,
 		      package_name => $package_name,
 		     },
@@ -2114,7 +2114,7 @@ sub read_cmd_line
 	    condition => $option_certification_report,
 
 	    #t MONOTONE
-	    
+
 	    operation => [ 'mtn', 'cert', '\'%version\'', '--', 'build_report', '\'%report\'', ],
 
 	    # MERCURIAL cert
@@ -2165,7 +2165,12 @@ sub read_cmd_line
 
 		# change the directory
 
-		chdir $directory;
+		my $success = chdir $directory;
+
+		if (!$success)
+		{
+		    die "$0: *** Error: package $package_name cannot change from directory to directory ($directory): $!";
+		}
 
 		# construct a default set with information commands
 
@@ -2314,7 +2319,7 @@ sub read_cmd_line
 		     $operations,
 		     {
 		      description => $description,
-		      
+
 		      #t always zero here, but I guess this simply depends on working in client mode ?
 
 		      keywords => 0,
