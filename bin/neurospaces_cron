@@ -22,7 +22,7 @@ my $output_filename = "neurospaces_cron.stdout";
 
 my $option_config_file = "";
 
-
+my $output_url = "";
 
 
 
@@ -220,8 +220,12 @@ sub main
 
     cleanup(); #clean up after the tests.
 
-    try_to_mail_status("neurospaces_cron finished",
-		"Check for your output on the host machine here " . $output_directory . "/" . $output_filename);
+
+
+
+  my $status_message = get_status_message();
+
+    try_to_mail_status("neurospaces_cron finished",$status_message);
 
     #t remove the entire neurospaces_project directory ?
 
@@ -249,6 +253,33 @@ sub report_error
 }
 
 
+#
+# Forms the status message to be sent
+# in the cronjob email.
+#
+sub get_status_message
+{
+
+  my $status_message = "";
+  my $outputfile = $output_directory . "/" . $output_filename;
+  my $errorcounts = `cat $outputfile | grep error_count`;
+  my $die_messages = `grep die $outputfile`;
+
+  $status_message .= "Check for your output on the host machine here " .
+    $output_directory . "/" . $output_filename . "\n";
+
+  if($output_url ne "")
+  {
+    $status_message .= "Check the test output over the web via this link " . $output_url . "\n";
+  }
+
+  $status_message .= "\nError Counts:\n" . $errorcounts . "\n";
+  $status_message .= "\nDie Messages:\n" . $die_messages . "\n";
+	
+
+  return $status_message;
+
+}
 
 #
 # This will actually send mail.
@@ -393,54 +424,35 @@ sub parse_config_file
   {
     $sendto_email = $configuration->{MAILTO};
     chomp($sendto_email);
+    print "\tSend to email: $sendto_email\n";
   }
 
   if(defined $configuration->{MAILFROM})
   {
     $sendfrom_email = $configuration->{MAILFROM};
     chomp($sendfrom_email);
+    print "\tSend from email: $sendfrom_email\n";
   }
 
   if(defined $configuration->{OUTPUTDIR})
   {
     $output_directory = $configuration->{OUTPUTDIR};
     chomp($output_directory);
+    print "\tOutput directory is $output_directory\n";
   }
 
-#  my @lines = `cat $config__file`;
 
-#   foreach (@lines)
-#   {
+  if(defined $configuration->{URL})
+  {
+    $output_url = $configuration->{URL};
+    chomp($output_url);
+    print "\tURL for serving the test output is $output_url\n";
+  }
 
-#     if($_ =~ m/^\#/g || $_ eq "")
-#     {
-#       # a commented line
-#       next;
-#     }
-
-#     my @option = split(/\t/,$_);
-
-#     chomp($option[1]);
-
-#     if($option[0] eq "MAILTO")
-#     {
-#       $sendto_email = $option[1];
-#     }
-#     elsif($option[0] eq "MAILFROM")
-#     {
-#       $sendfrom_email = $option[1];
-#     }
-#     elsif($option[0] eq "OUTPUTDIR")
-#     {
-#       $output_directory = $option[1];
-#     }
-
-#   }
 
   print "Done Parsing $config_file:\n";
-  print "\tSend to email: $sendto_email\n";
-  print "\tSend from email: $sendfrom_email\n";
-  print "\tOutput directory is $output_directory\n\n";
+
+
 
 }
 
