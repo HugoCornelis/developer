@@ -1,7 +1,12 @@
 -*- outline -*-
 
-* add --keep-going
-is enabled by default for neurospaces_check.
+* in neurospaces_cron
+  #t maybe make @trash a list that read in from 
+  #t a trash configuration file. 
+
+  #t then the test specifications can add to the thrash file when the
+  #t harness runs, and such that the html output can produce a list
+  #t of generated output files.
 
 * documentation publication
 ** current situation
