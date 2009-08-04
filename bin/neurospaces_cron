@@ -10,20 +10,20 @@ use Getopt::Long;
 
 use YAML;
 
-my $sendto_email;
-my $sendfrom_email;
 
+my $option_output_directory = "/tmp";
+my $option_config = "";
+
+
+my $configuration
+    = {
+      };
+
+#! note the following are currently a constants
 
 my $installer_directory = "$ENV{HOME}/neurospaces_project/installer/source/snapshots/0";
 
-my $output_directory = "/tmp";
-
 my $output_filename = "neurospaces_cron.stdout";
-
-my $option_config_file = "";
-
-my $output_url = "";
-
 
 
 
@@ -31,14 +31,16 @@ sub check_and_prepare
 {
     # check if the installer is ok
 
-    my $output_path = $output_directory . "/" . $output_filename;
+    my $output_path = $option_output_directory . "/" . $output_filename;
 
-    if(-e $output_path)
+    if (-e $output_path)
     {
-      system "rm -f $output_path";
+	system "rm -f $output_path";
     }
 
-    system "mkdir >> $output_path 2>&1 -p $installer_directory";
+    try_to("date", 1);
+
+    try_to("mkdir -p $installer_directory", 1);
 
     chdir($installer_directory);
 
@@ -46,7 +48,7 @@ sub check_and_prepare
 
     #t wrong assumption
 
-    system "mtn >> $output_path 2>&1 co --db ~/neurospaces_project/MTN/neurospaces-developer.mtn --branch 0 .";
+    try_to("mtn co --db ~/neurospaces_project/MTN/neurospaces-developer.mtn --branch 0 .", 1, 1);
 
     # install the installer
 
@@ -120,33 +122,32 @@ sub check_user_id
 sub main
 {
 
-  {
-    my $result
-      = GetOptions
-	(
-	 "outputdir=s" => \$output_directory,
-	 "config=s" => \$option_config_file,
-	);
+    {
+	my $result
+	    = GetOptions
+		(
+		 "outputdir=s" => \$option_output_directory,
+		 "config=s" => \$option_config,
+		);
 
-  }
+    }
 
 
-  if($option_config_file ne "")
-  {
+    if ($option_config)
+    {
+	parse_config_file($option_config);
+    }
 
-    parse_config_file($option_config_file);
+    #
+    # For security reasons cronjobs use a restricted $PATH
+    # which leaves out /usr/local/bin and prevents it from executing some
+    # commands.
+    #
+    # note: May be needed for users with
+    # a different cron path since '/usr/local/bin' is usually not included by default.
+    #
 
-  }
-
-  #
-  # For security reasons cronjobs use a restricted $PATH
-  # which leaves out /usr/local/bin and prevents it from executing some
-  # commands.
-  #
-  # note: May be needed for users with
-  # a different cron path since '/usr/local/bin' is usually not included by default.
-  #
-  $ENV{PATH} .= ':/bin:/usr/bin:/usr/local/bin';
+    $ENV{PATH} .= ':/bin:/usr/bin:/usr/local/bin';
 
 
     # this script can only be run by a user whose name matches 'neurospaces'
@@ -157,7 +158,7 @@ sub main
 
     unlink($output_filename);
 
-    chdir($output_directory);
+    chdir($option_output_directory);
 
     # preparatory startup procedure to check this system
 
@@ -177,13 +178,15 @@ sub main
 
     install_installer();
 
-    # update the source code in the worspaces
+    # update the source code in the workspaces, remove previous build
 
     try_to("neurospaces_update");
 
+    try_to("neurospaces_clean");
+
     # loop over all the configurations we want to test
 
-    foreach my $configuration (1)
+    foreach my $package_configuration (1)
     {
 	#t insert configuration options in the configurator package
 
@@ -211,6 +214,10 @@ sub main
 
 	install_installer();
 
+	# clean out previous build
+
+	try_to("neurospaces_clean");
+
 	#t now download from sourceforge, configurator defines what release to download
 
 	#t install, uninstall, check, uninstall
@@ -218,14 +225,14 @@ sub main
 
     copy_tests(); #copy our individual test output files to the output directory
 
-    cleanup(); #clean up after the tests.
+    cleanup_and_finalize(); #clean up after the tests.
 
 
 
 
-  my $status_message = get_status_message();
+    my $status_message = produce_email_text();
 
-    try_to_mail_status("neurospaces_cron finished",$status_message);
+    try_to_mail("neurospaces_cron finished", $status_message);
 
     #t remove the entire neurospaces_project directory ?
 
@@ -247,7 +254,7 @@ sub report_error
 
     my $error_code = shift;
 
-    try_to_mail_status("neurospaces_cron error", "$0: $command returned $error_code");
+    try_to_mail("neurospaces_cron error", "$0: $command returned $error_code");
 
     die "$0: $command returned $error_code";
 }
@@ -257,20 +264,25 @@ sub report_error
 # Forms the status message to be sent
 # in the cronjob email.
 #
-sub get_status_message
+sub produce_email_text
 {
 
   my $status_message = "";
-  my $outputfile = $output_directory . "/" . $output_filename;
+  my $outputfile = $option_output_directory . "/" . $output_filename;
   my $errorcounts = `cat $outputfile | grep error_count`;
   my $die_messages = `grep die $outputfile`;
 
-  $status_message .= "Check for your output on the host machine here " .
-    $output_directory . "/" . $output_filename . "\n";
+  $status_message
+      .= (
+	  "Check for your output on the host machine here "
+	  . $option_output_directory
+	  . "/"
+	  . $output_filename . "\n"
+	 );
 
-  if($output_url ne "")
+  if ($configuration->{URL})
   {
-    $status_message .= "Check the test output over the web via this link " . $output_url . "\n";
+      $status_message .= "Check the test output over the web via this link " . $configuration->{URL} . "\n";
   }
 
   $status_message .= "\nError Counts:\n" . $errorcounts . "\n";
@@ -286,27 +298,27 @@ sub get_status_message
 #
 # args ($subject,$message)
 #
-sub try_to_mail_status
+sub try_to_mail
 {
-    my $subject;
-    my $message;
+    my $subject = shift;
+    my $message = shift;
 
-
-    if (!$sendto_email)
+    if (!$configuration->{MAILTO})
     {
-      return;
+	return;
     }
-
-    ($subject,$message) = @_;
 
     #todo figure out why I can't put the output of
     # `which sendmail` into a variable and put it in 
     # place of the /usr/sbin/sendmail. A user may have 
     # a different sendmail path.
 
+    #t Mando: perhaps /sbin/ is not in the PATH, such that which does
+    #t not find sendmail when things run over cron?
+
     open(MAIL, "|/usr/sbin/sendmail -oi -t");
-    print MAIL "From: $sendfrom_email\n";
-    print MAIL "To: $sendto_email\n";
+    print MAIL "From: $configuration->{MAILFROM}\n";
+    print MAIL "To: $configuration->{MAILTO}\n";
     print MAIL "Subject: $subject\n\n";
     print MAIL "$message\n";
     close(MAIL);
@@ -320,21 +332,22 @@ sub try_to_mail_status
 sub copy_tests
 {
 
-  if($output_directory eq "/tmp")
+  if ($option_output_directory eq "/tmp")
   {
-    # if deault no need to do anything.
-    return;
+      # if default no need to do anything.
+
+      return;
   }
 
 
   # clean out the old tests
-  system "rm -f $output_directory/text_*";
+  system "rm -f $option_output_directory/text_*";
 
 
 
 
   # copy over the new ones.
-  system "mv -f /tmp/text_* $output_directory";
+  system "mv -f /tmp/text_* $option_output_directory";
 
 
   system "rm -f /tmp/neurospaces_cron.stdout";
@@ -345,49 +358,65 @@ sub copy_tests
 #
 # try to clean up some files out of the /tmp directory
 #
-#t This should be done in a preparation/repairation phase
-#t within neurospaces_harness.
-#t
-#t cleanup of output files should always be optional.
-sub cleanup
+#t cleanup of output files should perhaps be optional?
+sub cleanup_and_finalize
 {
 
   print "Cleaning generate files out of /tmp\n";
 
-  #t maybe make @trash a list that read in from 
-  #t a trash configuration file. 
-  my @trash = ("output",
-	    "OutputGenerator",
-	    "output_spike",
-	    "output_spike_source",
-	    "output_vm",
-	    "output_vm_source",
-	    "purk_test_soma",
-	    "purk_test_soma_aggregators",
-	    "state",
-	    "neurospaces",
-	    "a1",
-	    "a2",
-	    "1.xml",
-	    "*.ndf",
-	    "readcell_reset.txt",
-	    "current_schedule",
-	    "state",
-	    "heccer",
-	    "morphology2ndf.yml",
-	    "sh-thd-*",
-	    );
+  #t maybe make @trash a list that read in from
+  #t a trash configuration file.
+
+  #t then the test specifications can add to the thrash file when the
+  #t harness runs, and such that the html output can produce a list
+  #t of generated output files.
+
+  my @trash
+      = (
+	 "output",
+	 "OutputGenerator",
+	 "output_spike",
+	 "output_spike_source",
+	 "output_vm",
+	 "output_vm_source",
+	 "purk_test_soma",
+	 "purk_test_soma_aggregators",
+	 "state",
+	 "neurospaces",
+	 "a1",
+	 "a2",
+	 "1.xml",
+	 "*.ndf",
+	 "readcell_reset.txt",
+	 "current_schedule",
+	 "state",
+	 "heccer",
+	 "morphology2ndf.yml",
+	 "sh-thd-*",
+	);
 
 
   my $item;
+
   foreach $item (@trash)
   {
-    my $trashfile = "/tmp/" . $item;
-    system "rm -rf $trashfile";
+      if (-e $item)
+      {
+	  my $trashfile = "/tmp/" . $item;
 
+	  try_to("echo $0: Removing $item\n", 1);
+
+	  try_to("rm -rf $trashfile", 1);
+      }
+      else
+      {
+	  try_to("echo $0: $item not found, please remove it from the trash list\n", 1);
+      }
   }
 
-  print "Done with cleanup.\n";
+  try_to("echo $0: done with cleanup.\n", 1);
+
+  try_to("date", 1);
 
 }
 
@@ -399,12 +428,11 @@ sub parse_config_file
 {
   my $config_file = shift;
 
-  if(! -e $config_file)
+  if (! -e $config_file)
   {
+      print "\n$config_file is an invalid filename\n";
 
-    print "\n$config_file is an invalid filename\n";
-    return;
-
+      return;
   }
 
   print "\nParsing configuration in $config_file\n\n";
@@ -422,31 +450,30 @@ sub parse_config_file
 
   if(defined $configuration->{MAILTO})
   {
-    $sendto_email = $configuration->{MAILTO};
-    chomp($sendto_email);
-    print "\tSend to email: $sendto_email\n";
+    chomp($configuration->{MAILTO});
+    print "\tSend to email: $configuration->{MAILTO}\n";
   }
 
   if(defined $configuration->{MAILFROM})
   {
-    $sendfrom_email = $configuration->{MAILFROM};
-    chomp($sendfrom_email);
-    print "\tSend from email: $sendfrom_email\n";
+    chomp($configuration->{MAILFROM});
+    print "\tSend from email: $configuration->{MAILFROM}\n";
   }
 
   if(defined $configuration->{OUTPUTDIR})
   {
-    $output_directory = $configuration->{OUTPUTDIR};
-    chomp($output_directory);
-    print "\tOutput directory is $output_directory\n";
+      #! note that this overrides an option from set by the command line
+
+      $option_output_directory = $configuration->{OUTPUTDIR};
+      chomp($option_output_directory);
+      print "\tOutput directory is $option_output_directory\n";
   }
 
 
   if(defined $configuration->{URL})
   {
-    $output_url = $configuration->{URL};
-    chomp($output_url);
-    print "\tURL for serving the test output is $output_url\n";
+      chomp($configuration->{URL});
+      print "\tURL for serving the test output is $configuration->{URL}\n";
   }
 
 
@@ -463,10 +490,17 @@ sub try_to
 {
     my $command = shift;
 
-    print "---\n";
-    print "$0: trying to $command\n";
+    my $no_verbose = shift;
 
-    my $output_path = $output_directory . "/" . $output_filename;
+    my $allow_fail = shift;
+
+    if (!$no_verbose)
+    {
+	print "---\n";
+	print "$0: trying to $command\n";
+    }
+
+    my $output_path = $option_output_directory . "/" . $output_filename;
 
     #! $command executed in a subshell such that redirection applies
     #! to all commands.
@@ -475,8 +509,14 @@ sub try_to
 
     if ($?)
     {
-	report_error($command, $?);
-	
+	if ($allow_fail)
+	{
+	    system "echo >>$output_path 2>&1 failed with $?: $command\n";
+	}
+	else
+	{
+	    report_error($command, $?);
+	}
     }
 }
 
