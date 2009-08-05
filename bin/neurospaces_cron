@@ -164,17 +164,17 @@ sub cleanup_and_finalize
 
   foreach $item (@trash)
   {
-      if (-e $item)
-      {
-	  my $trashfile = "/tmp/" . $item;
+      my $trashfile = "/tmp/" . $item;
 
-	  try_to("echo $0: Removing $item\n", 1);
+      if (-e $trashfile)
+      {
+	  try_to("echo $0: Removing $trashfile\n", 1);
 
 	  try_to("rm -rf $trashfile", 1);
       }
       else
       {
-	  try_to("echo $0: $item not found, please remove it from the trash list\n", 1);
+	  try_to("echo $0: $trashfile not found, please remove it from the trash list\n", 1);
       }
   }
 
