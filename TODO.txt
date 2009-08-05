@@ -1,5 +1,30 @@
 -*- outline -*-
 
+* neurospaces_cron
+produces output like:
+/localhome/g3tester/neurospaces_project/installer/source/snapshots/0/bin/neurospaces_cron: output not found, please remove it from the trash list
+/localhome/g3tester/neurospaces_project/installer/source/snapshots/0/bin/neurospaces_cron: OutputGenerator not found, please remove it from the trash list
+/localhome/g3tester/neurospaces_project/installer/source/snapshots/0/bin/neurospaces_cron: output_spike not found, please remove it from the trash list
+/localhome/g3tester/neurospaces_project/installer/source/snapshots/0/bin/neurospaces_cron: output_spike_source not found, please remove it from the trash list
+/localhome/g3tester/neurospaces_project/installer/source/snapshots/0/bin/neurospaces_cron: output_vm not found, please remove it from the trash list
+/localhome/g3tester/neurospaces_project/installer/source/snapshots/0/bin/neurospaces_cron: output_vm_source not found, please remove it from the trash list
+/localhome/g3tester/neurospaces_project/installer/source/snapshots/0/bin/neurospaces_cron: purk_test_soma not found, please remove it from the trash list
+/localhome/g3tester/neurospaces_project/installer/source/snapshots/0/bin/neurospaces_cron: purk_test_soma_aggregators not found, please remove it from the trash list
+/localhome/g3tester/neurospaces_project/installer/source/snapshots/0/bin/neurospaces_cron: state not found, please remove it from the trash list
+/localhome/g3tester/neurospaces_project/installer/source/snapshots/0/bin/neurospaces_cron: neurospaces not found, please remove it from the trash list
+/localhome/g3tester/neurospaces_project/installer/source/snapshots/0/bin/neurospaces_cron: a1 not found, please remove it from the trash list
+/localhome/g3tester/neurospaces_project/installer/source/snapshots/0/bin/neurospaces_cron: a2 not found, please remove it from the trash list
+/localhome/g3tester/neurospaces_project/installer/source/snapshots/0/bin/neurospaces_cron: 1.xml not found, please remove it from the trash list
+/localhome/g3tester/neurospaces_project/installer/source/snapshots/0/bin/neurospaces_cron: *.ndf not found, please remove it from the trash list
+/localhome/g3tester/neurospaces_project/installer/source/snapshots/0/bin/neurospaces_cron: readcell_reset.txt not found, please remove it from the trash list
+/localhome/g3tester/neurospaces_project/installer/source/snapshots/0/bin/neurospaces_cron: current_schedule not found, please remove it from the trash list
+/localhome/g3tester/neurospaces_project/installer/source/snapshots/0/bin/neurospaces_cron: state not found, please remove it from the trash list
+/localhome/g3tester/neurospaces_project/installer/source/snapshots/0/bin/neurospaces_cron: heccer not found, please remove it from the trash list
+/localhome/g3tester/neurospaces_project/installer/source/snapshots/0/bin/neurospaces_cron: morphology2ndf.yml not found, please remove it from the trash list
+/localhome/g3tester/neurospaces_project/installer/source/snapshots/0/bin/neurospaces_cron: sh-thd-* not found, please remove it from the trash list
+/localhome/g3tester/neurospaces_project/installer/source/snapshots/0/bin/neurospaces_cron: done with cleanup.
+
+
 * in neurospaces_cron
   #t maybe make @trash a list that read in from 
   #t a trash configuration file. 
