@@ -119,6 +119,109 @@ sub check_user_id
 }
 
 
+#
+# try to clean up some files out of the /tmp directory
+#
+#t cleanup of output files should perhaps be optional?
+sub cleanup_and_finalize
+{
+
+  print "Cleaning generate files out of /tmp\n";
+
+  #t maybe make @trash a list that read in from
+  #t a trash configuration file.
+
+  #t then the test specifications can add to the thrash file when the
+  #t harness runs, and such that the html output can produce a list
+  #t of generated output files.
+
+  my @trash
+      = (
+	 "output",
+	 "OutputGenerator",
+	 "output_spike",
+	 "output_spike_source",
+	 "output_vm",
+	 "output_vm_source",
+	 "purk_test_soma",
+	 "purk_test_soma_aggregators",
+	 "state",
+	 "neurospaces",
+	 "a1",
+	 "a2",
+	 "1.xml",
+	 "*.ndf",
+	 "readcell_reset.txt",
+	 "current_schedule",
+	 "state",
+	 "heccer",
+	 "morphology2ndf.yml",
+	 "sh-thd-*",
+	);
+
+
+  my $item;
+
+  foreach $item (@trash)
+  {
+      if (-e $item)
+      {
+	  my $trashfile = "/tmp/" . $item;
+
+	  try_to("echo $0: Removing $item\n", 1);
+
+	  try_to("rm -rf $trashfile", 1);
+      }
+      else
+      {
+	  try_to("echo $0: $item not found, please remove it from the trash list\n", 1);
+      }
+  }
+
+  try_to("echo $0: done with cleanup.\n", 1);
+
+  try_to("date", 1);
+
+}
+
+
+#
+#
+#
+sub copy_tests
+{
+
+  if ($option_output_directory eq "/tmp")
+  {
+      # if default no need to do anything.
+
+      return;
+  }
+
+
+  # clean out the old tests
+  system "rm -f $option_output_directory/text_*";
+
+
+
+
+  # copy over the new ones.
+  system "mv -f /tmp/text_* $option_output_directory";
+
+
+  system "rm -f /tmp/neurospaces_cron.stdout";
+
+}
+
+
+sub install_installer
+{
+    chdir($installer_directory);
+
+    try_to("./autogen.sh && ./configure && make && sudo make install");
+}
+
+
 sub main
 {
 
@@ -240,187 +343,6 @@ sub main
 }
 
 
-sub install_installer
-{
-    chdir($installer_directory);
-
-    try_to("./autogen.sh && ./configure && make && sudo make install");
-}
-
-
-sub report_error
-{
-    my $command = shift;
-
-    my $error_code = shift;
-
-    try_to_mail("neurospaces_cron error", "$0: $command returned $error_code");
-
-    die "$0: $command returned $error_code";
-}
-
-
-#
-# Forms the status message to be sent
-# in the cronjob email.
-#
-sub produce_email_text
-{
-
-  my $status_message = "";
-  my $outputfile = $option_output_directory . "/" . $output_filename;
-  my $errorcounts = `cat $outputfile | grep error_count`;
-  my $die_messages = `grep die $outputfile`;
-
-  $status_message
-      .= (
-	  "Check for your output on the host machine here "
-	  . $option_output_directory
-	  . "/"
-	  . $output_filename . "\n"
-	 );
-
-  if ($configuration->{URL})
-  {
-      $status_message .= "Check the test output over the web via this link " . $configuration->{URL} . "\n";
-  }
-
-  $status_message .= "\nError Counts:\n" . $errorcounts . "\n";
-  $status_message .= "\nDie Messages:\n" . $die_messages . "\n";
-	
-
-  return $status_message;
-
-}
-
-#
-# This will actually send mail.
-#
-# args ($subject,$message)
-#
-sub try_to_mail
-{
-    my $subject = shift;
-    my $message = shift;
-
-    if (!$configuration->{MAILTO})
-    {
-	return;
-    }
-
-    #todo figure out why I can't put the output of
-    # `which sendmail` into a variable and put it in 
-    # place of the /usr/sbin/sendmail. A user may have 
-    # a different sendmail path.
-
-    #t Mando: perhaps /sbin/ is not in the PATH, such that which does
-    #t not find sendmail when things run over cron?
-
-    open(MAIL, "|/usr/sbin/sendmail -oi -t");
-    print MAIL "From: $configuration->{MAILFROM}\n";
-    print MAIL "To: $configuration->{MAILTO}\n";
-    print MAIL "Subject: $subject\n\n";
-    print MAIL "$message\n";
-    close(MAIL);
-
-}
-
-
-#
-#
-#
-sub copy_tests
-{
-
-  if ($option_output_directory eq "/tmp")
-  {
-      # if default no need to do anything.
-
-      return;
-  }
-
-
-  # clean out the old tests
-  system "rm -f $option_output_directory/text_*";
-
-
-
-
-  # copy over the new ones.
-  system "mv -f /tmp/text_* $option_output_directory";
-
-
-  system "rm -f /tmp/neurospaces_cron.stdout";
-
-}
-
-
-#
-# try to clean up some files out of the /tmp directory
-#
-#t cleanup of output files should perhaps be optional?
-sub cleanup_and_finalize
-{
-
-  print "Cleaning generate files out of /tmp\n";
-
-  #t maybe make @trash a list that read in from
-  #t a trash configuration file.
-
-  #t then the test specifications can add to the thrash file when the
-  #t harness runs, and such that the html output can produce a list
-  #t of generated output files.
-
-  my @trash
-      = (
-	 "output",
-	 "OutputGenerator",
-	 "output_spike",
-	 "output_spike_source",
-	 "output_vm",
-	 "output_vm_source",
-	 "purk_test_soma",
-	 "purk_test_soma_aggregators",
-	 "state",
-	 "neurospaces",
-	 "a1",
-	 "a2",
-	 "1.xml",
-	 "*.ndf",
-	 "readcell_reset.txt",
-	 "current_schedule",
-	 "state",
-	 "heccer",
-	 "morphology2ndf.yml",
-	 "sh-thd-*",
-	);
-
-
-  my $item;
-
-  foreach $item (@trash)
-  {
-      if (-e $item)
-      {
-	  my $trashfile = "/tmp/" . $item;
-
-	  try_to("echo $0: Removing $item\n", 1);
-
-	  try_to("rm -rf $trashfile", 1);
-      }
-      else
-      {
-	  try_to("echo $0: $item not found, please remove it from the trash list\n", 1);
-      }
-  }
-
-  try_to("echo $0: done with cleanup.\n", 1);
-
-  try_to("date", 1);
-
-}
-
-
 #
 # ($config_file) a file with a configuration in it.
 #
@@ -484,6 +406,50 @@ sub parse_config_file
 }
 
 
+#
+# Forms the status message to be sent
+# in the cronjob email.
+#
+sub produce_email_text
+{
+
+  my $status_message = "";
+  my $outputfile = $option_output_directory . "/" . $output_filename;
+  my $errorcounts = `cat $outputfile | grep error_count`;
+  my $die_messages = `grep die $outputfile`;
+
+  $status_message
+      .= (
+	  "Check for your output on the host machine here "
+	  . $option_output_directory
+	  . "/"
+	  . $output_filename . "\n"
+	 );
+
+  if ($configuration->{URL})
+  {
+      $status_message .= "Check the test output over the web via this link " . $configuration->{URL} . "\n";
+  }
+
+  $status_message .= "\nError Counts:\n" . $errorcounts . "\n";
+  $status_message .= "\nDie Messages:\n" . $die_messages . "\n";
+	
+
+  return $status_message;
+
+}
+
+
+sub report_error
+{
+    my $command = shift;
+
+    my $error_code = shift;
+
+    try_to_mail("neurospaces_cron error", "$0: $command returned $error_code");
+
+    die "$0: $command returned $error_code";
+}
 
 
 sub try_to
@@ -518,6 +484,39 @@ sub try_to
 	    report_error($command, $?);
 	}
     }
+}
+
+
+#
+# This will actually send mail.
+#
+# args ($subject,$message)
+#
+sub try_to_mail
+{
+    my $subject = shift;
+    my $message = shift;
+
+    if (!$configuration->{MAILTO})
+    {
+	return;
+    }
+
+    #todo figure out why I can't put the output of
+    # `which sendmail` into a variable and put it in 
+    # place of the /usr/sbin/sendmail. A user may have 
+    # a different sendmail path.
+
+    #t Mando: perhaps /sbin/ is not in the PATH, such that which does
+    #t not find sendmail when things run over cron?
+
+    open(MAIL, "|/usr/sbin/sendmail -oi -t");
+    print MAIL "From: $configuration->{MAILFROM}\n";
+    print MAIL "To: $configuration->{MAILTO}\n";
+    print MAIL "Subject: $subject\n\n";
+    print MAIL "$message\n";
+    close(MAIL);
+
 }
 
 
