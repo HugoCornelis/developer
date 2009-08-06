@@ -38,6 +38,8 @@ sub check_and_prepare
 	system "rm -f $output_path";
     }
 
+    try_to("echo '$0' started at", 1);
+
     try_to("date", 1);
 
     try_to("mkdir -p $installer_directory", 1);
