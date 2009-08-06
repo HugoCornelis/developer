@@ -359,7 +359,7 @@ sub parse_config_file
 
   print "\nParsing configuration in $config_file\n\n";
 
-  my $configuration = YAML::LoadFile($config_file);
+  $configuration = YAML::LoadFile($config_file);
 
 
   if(!defined $configuration)
