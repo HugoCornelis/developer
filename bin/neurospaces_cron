@@ -504,6 +504,9 @@ sub try_to_mail
 	return;
     }
 
+    my $sendto = $configuration->{MAILTO};
+    my $replyto = $configuration->{MAILFROM};
+
     #todo figure out why I can't put the output of
     # `which sendmail` into a variable and put it in 
     # place of the /usr/sbin/sendmail. A user may have 
@@ -513,13 +516,14 @@ sub try_to_mail
     #t not find sendmail when things run over cron?
 
     open(MAIL, "|/usr/sbin/sendmail -oi -t");
-    print MAIL "From: $configuration->{MAILFROM}\n";
-    print MAIL "To: $configuration->{MAILTO}\n";
+    print MAIL "From: $replyto\n";
+    print MAIL "To: $sendto\n";
     print MAIL "Subject: $subject\n\n";
     print MAIL "$message\n";
     close(MAIL);
 
 }
+
 
 
 main();
