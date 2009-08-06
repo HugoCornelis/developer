@@ -1203,7 +1203,7 @@ sub read_cmd_line
 		      package_name => $package_name,
 		     },
 		     [
-		      'mtn', '--db', $repository_name, 'pull', "$repo_server:$port_number", '"*"',
+		      'mtn', '--db', $repository_name, 'pull', '--ticker=count', "$repo_server:$port_number", '"*"',
 		     ],
 		    );
 
@@ -1334,7 +1334,7 @@ sub read_cmd_line
 		      package_name => $package_name,
 		     },
 		     [
-		      'mtn', '--db', $repository_name, 'push', "$repo_server:$port_number", '"*"',
+		      'mtn', '--db', $repository_name, 'push', '--ticker=count', "$repo_server:$port_number", '"*"',
 		     ],
 		    );
 
@@ -2326,7 +2326,7 @@ sub read_cmd_line
 		      package_name => $package_name,
 		     },
 		     [
-		      'mtn', '--db', $repository_name, 'sync', "$repo_server:$port_number",
+		      'mtn', '--db', $repository_name, 'sync', '--ticker=count', "$repo_server:$port_number",
 		     ],
 		    );
 
