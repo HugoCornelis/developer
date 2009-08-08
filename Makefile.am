@@ -37,6 +37,7 @@ dist_bin_SCRIPTS = \
 	bin/neurospaces_update \
 	bin/neurospaces_versions \
 	bin/neurospaces_website_prepare \
+	bin/nstest_query \
 	bin/release-expand \
 	bin/release-extract
 
