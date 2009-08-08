@@ -422,7 +422,7 @@ sub produce_email_text
 
   $status_message
       .= (
-	  "Check for your output on the host machine here "
+	  "$0:\nCheck for your output on the host machine here "
 	  . $option_output_directory
 	  . "/"
 	  . $output_filename . "\n"
