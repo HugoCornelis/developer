@@ -85,3 +85,58 @@ test: check
 
 docs: html-upload-prepare
 
+APP_NAME=neurospacesdeveloper
+
+# the pkg-src target must create pkg/$(APP_NAME)-$(VERSION).tar.gz
+pkg-src: dist
+	mkdir -p pkg
+	cp $(PACKAGE)-$(VERSION).tar.gz pkg/$(PACKAGE)-$(VERSION).tar.gz
+
+#pkg-deb: dist
+#	- rm -rf  $(TMP_DIR)
+#	mkdir -p $(TMP_DIR)
+#	mv $(PACKAGE)-$(VERSION).tar.gz $(TMP_DIR)/
+#	tar --directory $(TMP_DIR)/ \
+#         -xf $(TMP_DIR)/$(PACKAGE)-$(VERSION).tar.gz
+#	cd $(TMP_DIR)/$(PACKAGE)-$(VERSION)/ \
+#                ./configure \
+#                dpkg-buildpackage -us -uc -rfakeroot \
+#                mv ../*.deb $(PWD)/pkg/
+#	rm -rf $(TMP_DIR)
+#EXTRA_DIST = debian
+TMP_DIR = tmp
+
+# Create a deb package
+pkg-deb: pkg-src
+	- rm -r $(TMP_DIR)
+	mkdir -p $(TMP_DIR)
+	cp pkg/$(PACKAGE)-$(VERSION).tar.gz $(TMP_DIR)/
+	tar --directory $(TMP_DIR)/ \
+		-xzf $(TMP_DIR)/$(PACKAGE)-$(VERSION).tar.gz
+	cd $(TMP_DIR)/$(PACKAGE)-$(VERSION)/; \
+		echo | dh_make --single --copyright gpl -e 'hugo.cornelis@gmail.com' -f \
+			../$(PACKAGE)-$(VERSION).tar.gz
+	cp install/deb/changelog install/deb/control \
+		install/deb/copyright $(TMP_DIR)/$(PACKAGE)-$(VERSION)/debian/
+	cd $(TMP_DIR)/$(PACKAGE)-$(VERSION)/; \
+		rm debian/README.Debian debian/*.ex debian/*.EX; \
+		./configure; \
+		dpkg-buildpackage -rfakeroot; \
+		mv ../*.deb $(PWD)/pkg/
+	rm -r $(TMP_DIR);
+
+# Create an RPM package
+pkg-rpm: pkg-src
+	mkdir -p $(HOME)/.rpm/RPMS/i386
+	mkdir -p $(HOME)/.rpm/SRPMS
+	mkdir -p $(HOME)/.rpm/BUILD
+	mkdir -p $(HOME)/.rpm/SOURCES
+	mkdir -p $(HOME)/.rpm/tmp
+	- rm -r $(HOME)/.rpm/BUILD/$(PACKAGE)-root
+	- rm -r $(HOME)/.rpm/RPMS/$(PACKAGE)-*
+	- rm -r $(HOME)/.rpm/SRPMS/$(PACKAGE)-*
+	- rm -r $(HOME)/.rpm/SOURCES/$(PACKAGE)-*
+	cp pkg/$(PACKAGE)-$(VERSION).tar.gz $(HOME)/.rpm/SOURCES/
+	rpmbuild --quiet --nodeps --define="_topdir $(HOME)/.rpm" \
+	    -ba install/rpm/neurospacesdeveloper.spec
+	mv $(HOME)/.rpm/RPMS/i386/$(PACKAGE)-$(VERSION)-*.i386.rpm pkg/
