@@ -263,6 +263,7 @@ options :
                       this experimental feature might increase test performance,
                       by recycling test definitions.
     --help            print usage information.
+    --key             regex to select hash keys at any depth.
     --regex-selector  defines a regex to run specific tests.
     --verbose         set verbosity level.
 ";
