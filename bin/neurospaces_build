@@ -1344,7 +1344,7 @@ sub read_cmd_line
 	    },
 	   },
 	   {
-	    condition => $option_repo_clone,
+	    condition => (0 and $option_repo_clone),
 	    description => "checkout or update the workspace source code from a remote repository",
 	    operation =>
 	    sub
