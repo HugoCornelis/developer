@@ -767,7 +767,7 @@ sub read_cmd_line
 		     "installed-versions!" => \$option_installed_versions,
 		     "keep-going!" => \$option_keep_going,
 		     "regex-selector=s" => \$option_regex_selector,
-		     "repo-clone!" => \$option_repo_clone,
+		     "repo-clone=s" => \$option_repo_clone,
 		     "repo-co!" => \$option_repo_co,
 		     "repo-pull=s" => \$option_repo_pull,
 		     "repo-push=s" => \$option_repo_push,
@@ -855,7 +855,7 @@ sub read_cmd_line
 	   "installed-versions!" => $option_installed_versions,
 	   "keep-going!" => $option_keep_going,
 	   "regex-selector=s" => $option_regex_selector,
-	   "repo-clone!" => $option_repo_clone,
+	   "repo-clone=s" => $option_repo_clone,
 	   "repo-co!" => $option_repo_co,
 	   "repo-pull=s" => $option_repo_pull,
 	   "repo-push=s" => $option_repo_push,
@@ -1407,7 +1407,7 @@ sub read_cmd_line
 
 		    # translate well known names to a routable address
 
-		    my $repo_server = version_control_translate_server($option_repo_push);
+		    my $repo_server = version_control_translate_server($option_repo_clone);
 
 		    # clone the source code in the remote repository
 
