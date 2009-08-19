@@ -21,6 +21,7 @@ dist_bin_SCRIPTS = \
 	bin/neurospaces_build \
 	bin/neurospaces_check \
 	bin/neurospaces_clean \
+	bin/neurospaces_clone \
 	bin/neurospaces_configure \
 	bin/neurospaces_create_directories \
 	bin/neurospaces_cron \
