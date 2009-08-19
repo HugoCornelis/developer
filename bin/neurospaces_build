@@ -36,6 +36,7 @@ my $option_install = 1;
 my $option_installed_versions = 1;
 my $option_keep_going;
 my $option_regex_selector = ".*";
+my $option_repo_clone = 0;
 my $option_repo_co = 0;
 my $option_repo_pull = 0;
 my $option_repo_push = 0;
@@ -766,6 +767,7 @@ sub read_cmd_line
 		     "installed-versions!" => \$option_installed_versions,
 		     "keep-going!" => \$option_keep_going,
 		     "regex-selector=s" => \$option_regex_selector,
+		     "repo-clone!" => \$option_repo_clone,
 		     "repo-co!" => \$option_repo_co,
 		     "repo-pull=s" => \$option_repo_pull,
 		     "repo-push=s" => \$option_repo_push,
@@ -853,6 +855,7 @@ sub read_cmd_line
 	   "installed-versions!" => $option_installed_versions,
 	   "keep-going!" => $option_keep_going,
 	   "regex-selector=s" => $option_regex_selector,
+	   "repo-clone!" => $option_repo_clone,
 	   "repo-co!" => $option_repo_co,
 	   "repo-pull=s" => $option_repo_pull,
 	   "repo-push=s" => $option_repo_push,
@@ -1116,21 +1119,18 @@ sub read_cmd_line
 		    = $package_information->{package}->{version_control}->{repository}
 			|| $directory . '/' . $package_name . '/' . 'mtn';
 
-
 		my $repo_server = version_control_translate_server($option_repo_pull);
-
 
 		#
 		# Check to see if the repository name ends with .mtn, if not we assume it ends
 		# in .hg, in which case we don't need the port number since mercurial serves over http.
 		#
-		if($repository_name =~ m/^.*\.mtn$/)
-		{
 
+		if ($repository_name =~ m/^.*\.mtn$/)
+		{
 		  # initialize the repository if necessary
 
 		  #t MONOTONE
-
 
 		  my $port_number = $package_information->{package}->{version_control}->{port_number};
 
@@ -1344,8 +1344,104 @@ sub read_cmd_line
 	    },
 	   },
 	   {
+	    condition => $option_repo_clone,
+	    description => "checkout or update the workspace source code from a remote repository",
+	    operation =>
+	    sub
+	    {
+		my $package_information = shift;
+
+		# get specific arguments
+
+		my $description = $package_information->{description};
+
+		my $directory = $package_information->{directory};
+
+		my $operations = $package_information->{operations};
+
+		my $package_name = $package_information->{package_name};
+
+		my $repository_name
+		    = $package_information->{package}->{version_control}->{repository}
+			|| $directory . '/' . $package_name . '/' . 'mtn';
+
+		my $port_number = $package_information->{package}->{version_control}->{port_number};
+
+		# if not enough information for clone
+
+		if (not -f $repository_name)
+		{
+		    die "$0: *** Error: cannot clone from repository, repository_name not set";
+		}
+
+		if (not $port_number)
+		{
+		    die "$0: *** Error: cannot clone from repository, port_number not set";
+		}
+
+		# change the directory
+
+		if (not chdir $directory)
+		{
+		    die "$0: *** Error: cannot change to directory $directory";
+		}
+
+		#
+		# Check to see if the repository name ends with .mtn, if not we assume it ends
+		# in .hg, in which case we don't need the port number since mercurial serves over http.
+		#
+
+		if ($repository_name =~ m/^.*\.mtn$/)
+		{
+		    # initialize the repository if necessary
+
+		    #t MONOTONE
+
+		    my $port_number = $package_information->{package}->{version_control}->{port_number};
+
+		    # create repository directory
+
+		    my $repository_directory = $repository_name;
+
+		    $repository_directory =~ s((.*)/.*)($1);
+
+		    # translate well known names to a routable address
+
+		    my $repo_server = version_control_translate_server($option_repo_push);
+
+		    # clone the source code in the remote repository
+
+		    #t MONOTONE
+
+		    operation_execute
+			(
+			 $operations,
+			 {
+			  description => $description,
+
+			  #t always zero here, but I guess this simply depends on working in client mode ?
+
+			  keywords => 0,
+			  package_name => $package_name,
+			 },
+			 [
+			  'mtn', '--db', $repository_name, 'clone', "$repo_server:$port_number", '--branch', '0',
+			 ],
+			);
+
+		}
+		else
+		{
+
+		    # MERCURIAL REMOTE CHECKOUT
+
+		    #t Mando?
+		}
+	    },
+	   },
+	   {
 	    condition => $option_repo_co,
-	    description => "checkout or update from repository",
+	    description => "checkout or update the workspace source code from a local repository",
 	    operation =>
 	    sub
 	    {
@@ -2502,7 +2598,8 @@ options related to operation execution profile:
     --installed-versions     print the installed version of each software package.
     --keep-going             keep going in case of non-fatal errors (ala make -k).
     --regex-selector         defines a regex to select specific packages.
-    --repo-co                checkout or update the workspace source code.
+    --repo-clone             checkout or update the workspace source code from a remote repository.
+    --repo-co                checkout or update the workspace source code from a local repository.
     --repo-pull              pull the repositories from this server (e.g. repo-genesis3.cbi.utsa.edu).
     --repo-push              push the repositories to this server (e.g. repo-genesis3.cbi.utsa.edu).
     --repo-serve             start the version control program in server mode to give others access to your code.
