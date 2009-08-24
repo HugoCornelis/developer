@@ -133,7 +133,7 @@ sub cleanup_and_finalize
   #t maybe make @trash a list that read in from
   #t a trash configuration file.
 
-  #t then the test specifications can add to the thrash file when the
+  #t then the test specifications can add to the trash file when the
   #t harness runs, and such that the html output can produce a list
   #t of generated output files.
 
@@ -323,6 +323,12 @@ sub main
 
 	try_to("neurospaces_clean");
 
+	# build docs if present in configuration
+	# do this AFTER the clean so that the swig stuff doesn't get doxygenized
+	#
+	generate_docs();
+
+
 	#t now download from sourceforge, configurator defines what release to download
 
 	#t install, uninstall, check, uninstall
@@ -397,15 +403,44 @@ sub parse_config_file
   if(defined $configuration->{URL})
   {
       chomp($configuration->{URL});
-      print "\tURL for serving the test output is $configuration->{URL}\n";
+      print "\tOutput directory for doxygen is $configuration->{URL}\n";
   }
+
+
+
+  if(defined $configuration->{DOXYGENOUTPUT})
+  {
+      chomp($configuration->{DOXYGENOUTPUT});
+      print "\tURL for serving the doxygen output is $configuration->{DOXYGENOUTPUT}\n";
+  }
+
+
+    if(defined $configuration->{DOXYGENURL})
+  {
+      chomp($configuration->{DOXYGENURL});
+      print "\tOutput directory for doxygen is $configuration->{URL}\n";
+  }
+
+
+  if(defined $configuration->{REGTESTURL})
+  {
+      chomp($configuration->{REGTESTURL});
+      print "\tURL for serving the regression tests is $configuration->{REGTESTURL}\n";
+  }
+
+
+  if(defined $configuration->{REGTESTOUTPUT})
+  {
+      chomp($configuration->{REGTESTOUTPUT});
+      print "\tOutput directory for regression tests is $configuration->{DOXYGENOUTPUT}\n";
+  }
+
 
 
   print "Done Parsing $config_file:\n";
 
-
-
 }
+
 
 
 #
@@ -428,9 +463,31 @@ sub produce_email_text
 	  . $output_filename . "\n"
 	 );
 
-  if ($configuration->{URL})
+  if (defined $configuration->{URL})
   {
       $status_message .= "Check the test output over the web via this link " . $configuration->{URL} . "\n";
+  }
+
+
+  if(defined $configuration->{DOXYGENOUTPUT})
+  {
+    $status_message .= "\nCheck for the Doxygen output locally in this directory " . $configuration->{DOXYGENOUTPUT} . "\n";
+  }
+
+  if(defined $configuration->{DOXYGENURL})
+  {
+    $status_message .= "\nCheck the Doxygen output over the web via this link " . $configuration->{DOXYGENURL} . "\n";
+  }
+
+
+  if(defined $configuration->{REGTESTOUTPUT})
+  {
+    $status_message .= "\nCheck for the regression test output locally in this directory " . $configuration->{REGTESTOUTPUT} . "\n";
+  }
+
+  if(defined $configuration->{REGTESTURL})
+  {
+    $status_message .= "\nCheck the regression test output over the web via this link " . $configuration->{REGTESTURL} . "\n";
   }
 
   $status_message .= "\nError Counts:\n" . $errorcounts . "\n";
@@ -440,6 +497,43 @@ sub produce_email_text
   return $status_message;
 
 }
+
+
+
+
+
+
+##
+# Performs the build of doxygen docs, as well as the regression tests.
+# 
+# This is probably a dirty implementation.
+#
+sub generate_docs
+{
+
+  if(defined $configuration->{DOXYGENOUTPUT} || defined $configuration->{REGTESTOUTPUT})
+  {
+    try_to("neurospaces_docs")
+  }
+
+  if(defined $configuration->{DOXYGENOUTPUT})
+  {
+    system "rm -rf $configuration->{DOXYGENOUTPUT}/*";
+    system "mv -f $ENV{HOME}/neurospaces_project/model-container/source/snapshots/0/docs/html $configuration->{DOXYGENOUTPUT}/model-container";
+    system "mv -f $ENV{HOME}/neurospaces_project/heccer/source/snapshots/0/docs/html $configuration->{DOXYGENOUTPUT}/heccer";
+    system "mv -f $ENV{HOME}/neurospaces_project/ns-sli/source/snapshots/0/docs/html $configuration->{DOXYGENOUTPUT}/ns-sli";
+  }
+
+  if(defined $configuration->{REGTESTOUTPUT})
+  {
+    system "rm -rf $configuration->{REGTESTOUTPUT}/*";
+    system "mv -f $ENV{HOME}/neurospaces_project/model-container/source/snapshots/0/docs/html $configuration->{REGTESTOUTPUT}/model-container";
+    system "mv -f $ENV{HOME}/neurospaces_project/heccer/source/snapshots/0/docs/html $configuration->{REGTESTOUTPUT}/heccer";
+    system "mv -f $ENV{HOME}/neurospaces_project/ns-sli/source/snapshots/0/docs/html $configuration->{REGTESTOUTPUT}/ns-sli";
+  }
+
+}
+
 
 
 sub report_error
