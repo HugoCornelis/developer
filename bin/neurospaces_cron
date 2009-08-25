@@ -158,6 +158,7 @@ sub cleanup_and_finalize
 	 "state",
 	 "heccer",
 	 "morphology2ndf.yml",
+	 "morphology*.ndf",
 	 "sh-thd-*",
 	);
 
@@ -513,7 +514,7 @@ sub generate_docs
 
   if(defined $configuration->{DOXYGENOUTPUT} || defined $configuration->{REGTESTOUTPUT})
   {
-    try_to("neurospaces_docs")
+    try_to("neurospaces_docs");
   }
 
   if(defined $configuration->{DOXYGENOUTPUT})
@@ -527,9 +528,11 @@ sub generate_docs
   if(defined $configuration->{REGTESTOUTPUT})
   {
     system "rm -rf $configuration->{REGTESTOUTPUT}/*";
-    system "mv -f $ENV{HOME}/neurospaces_project/model-container/source/snapshots/0/docs/html $configuration->{REGTESTOUTPUT}/model-container";
-    system "mv -f $ENV{HOME}/neurospaces_project/heccer/source/snapshots/0/docs/html $configuration->{REGTESTOUTPUT}/heccer";
-    system "mv -f $ENV{HOME}/neurospaces_project/ns-sli/source/snapshots/0/docs/html $configuration->{REGTESTOUTPUT}/ns-sli";
+    system "mv -f $ENV{HOME}/neurospaces_project/model-container/source/snapshots/0/tests/html $configuration->{REGTESTOUTPUT}/model-container";
+    system "mv -f $ENV{HOME}/neurospaces_project/heccer/source/snapshots/0/tests/html $configuration->{REGTESTOUTPUT}/heccer";
+    system "mv -f $ENV{HOME}/neurospaces_project/ns-sli/source/snapshots/0/tests/html $configuration->{REGTESTOUTPUT}/ns-sli";
+    system "mv -f $ENV{HOME}/neurospaces_project/ssp/source/snapshots/0/tests/html $configuration->{REGTESTOUTPUT}/ssp";
+    system "mv -f $ENV{HOME}/neurospaces_project/gshell/source/snapshots/0/tests/html $configuration->{REGTESTOUTPUT}/gshell";
   }
 
 }
