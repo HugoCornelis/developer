@@ -324,23 +324,23 @@ sub main
 
 	try_to("neurospaces_clean");
 
-	# build docs if present in configuration
-	# do this AFTER the clean so that the swig stuff doesn't get doxygenized
-	#
-	generate_docs();
-
-
 	#t now download from sourceforge, configurator defines what release to download
 
-	#t install, uninstall, check, uninstall
+	#t compile, install, uninstall, check, uninstall, clean
     }
 
-    copy_tests(); #copy our individual test output files to the output directory
+    # build docs if present in configuration
+    # do this AFTER the clean so that the swig stuff doesn't get doxygenized
 
-    cleanup_and_finalize(); #clean up after the tests.
+    generate_docs();
 
+    # copy our individual test output files to the output directory
 
+    copy_tests();
 
+    # clean up after the tests.
+
+    cleanup_and_finalize();
 
     my $status_message = produce_email_text();
 
