@@ -1,0 +1,21 @@
+#!/usr/bin/perl -w
+#!/usr/bin/perl -w -d:ptkdb
+#
+
+use strict;
+
+
+use Monotone::AutomateStdio;
+
+
+my $mtn = Monotone::AutomateStdio->new_from_db($ARGV[0]);
+
+my $ancestors = [];
+
+$mtn->ancestors($ancestors, $ARGV[1]);
+
+use YAML;
+
+print Dump($ancestors);
+
+

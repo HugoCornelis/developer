@@ -18,6 +18,7 @@ SUBDIRS =
 
 dist_bin_SCRIPTS = \
 	bin/mcad2doxy \
+	bin/mtn-ancestors \
 	bin/neurospaces_build \
 	bin/neurospaces_check \
 	bin/neurospaces_clean \
