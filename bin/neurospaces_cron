@@ -159,7 +159,6 @@ sub cleanup_and_finalize
 	 "heccer",
 	 "morphology2ndf.yml",
 	 "morphology*.ndf",
-	 "sh-thd-*",
 	);
 
 
