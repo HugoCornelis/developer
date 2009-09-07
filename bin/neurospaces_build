@@ -2183,6 +2183,27 @@ sub read_cmd_line
 
 		foreach my $dist_dir (@$option_dist_dir)
 		{
+		    # create directory
+
+		    if (!-d $dist_dir)
+		    {
+			operation_execute
+			    (
+			     $operations,
+			     {
+			      description => $description,
+
+			      #t always zero here, but I guess this simply depends on working in client mode ?
+
+			      keywords => 0,
+			      package_name => $package_name,
+			     },
+			     [
+			      'mkdir', '-p', $dist_dir,
+			     ],
+			    );
+		    }
+
 		    # copy the package
 
 		    operation_execute

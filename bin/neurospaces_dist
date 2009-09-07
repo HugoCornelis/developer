@@ -15,7 +15,7 @@ my $option_clean;
 my $option_configure;
 my $option_developer = 1;
 my $option_distclean;
-my $option_dist_dir = [ '/tmp/neurospaces/downloads/packages', ];
+my $option_dist_dir = [ '/tmp/neurospaces/dist/tarballs', ];
 my $option_enable;
 my $option_regex_selector;
 my $option_tag = 0;
