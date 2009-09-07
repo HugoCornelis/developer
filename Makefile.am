@@ -41,6 +41,8 @@ dist_bin_SCRIPTS = \
 	bin/neurospaces_versions \
 	bin/neurospaces_website_prepare \
 	bin/nstest_query \
+	bin/td-labels \
+	bin/td-majors \
 	bin/release-expand \
 	bin/release-extract
 
