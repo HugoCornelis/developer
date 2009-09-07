@@ -15,6 +15,7 @@ my $option_clean;
 my $option_configure;
 my $option_developer = 1;
 my $option_distclean;
+my $option_dist_dir = [ '/tmp/neurospaces/downloads/packages', ];
 my $option_enable;
 my $option_regex_selector;
 my $option_tag = 0;
@@ -28,6 +29,7 @@ my $option_verbose;
 	     "configure!" => \$option_configure,
 	     "developer!" => \$option_developer,
 	     "distclean!" => \$option_distclean,
+# 	     "dist-dir=s" => $option_dist_dir,
 	     "enable=s" => \$option_enable,
 	     "regex-selector=s" => \$option_regex_selector,
 	     "tag=s" => \$option_tag,
@@ -43,14 +45,14 @@ my $option_verbose;
 {
     if (!$option_tag)
     {
-	die "$0: *** Error: No release label found on the command line (must have the format [major-minor-micro], -micro is optional)";
+	die "$0: *** Error: No release label found on the command line (must have the format [--tag major-minor-micro], -micro is optional)";
     }
 
     my $release_label = $option_tag;
 
     if ($release_label !~ m/([^-]+)-([^-]+)?(?:-([^-]+))?/)
     {
-	die "$0: *** Error: Release label does not have the correct format (must have the format [major-minor-micro], -micro is optional)";
+	die "$0: *** Error: Release label does not have the correct format (must have the format [--tag major-minor-micro], -micro is optional)";
     }
 
     my $release_major = $1;
@@ -63,6 +65,7 @@ my $option_verbose;
 
 my $clean_options = defined $option_clean ? "--clean " x $option_clean : '';
 my $distclean_options = defined $option_distclean ? "--distclean " x $option_distclean : '';
+my $dist_dir_options = defined $option_dist_dir ? "--dist-dir " x @$option_dist_dir : '';
 my $configure_options = defined $option_configure ? "--configure " x $option_configure : '--no-configure';
 my $tag_options = defined $option_tag ? "--tag $option_tag" : '';
 my $verbose_options = defined $option_verbose ? "--verbose " x $option_verbose : '';
@@ -70,6 +73,6 @@ my $developer_options = defined $option_developer ? "--developer " x $option_dev
 my $regex_options = defined $option_regex_selector ? "--regex '$option_regex_selector' " : '';
 my $enable_options = defined $option_enable ? "--enable $option_enable " : '';
 
-system "neurospaces_build $tag_options $clean_options $distclean_options $configure_options --no-installed-versions $verbose_options $developer_options $regex_options $enable_options";
+system "neurospaces_build $tag_options $clean_options $dist_dir_options $distclean_options $configure_options --no-installed-versions $verbose_options $developer_options $regex_options $enable_options";
 
 
