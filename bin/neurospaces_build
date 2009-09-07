@@ -2957,7 +2957,7 @@ sub operation_execute
 sub version
 {
     # $Format: "    my $version=\"${package}-${label}\";"$
-    my $version="installer-userdocs-2";
+    my $version="installer-userdocs-3";
 
     return $version;
 }
