@@ -1,0 +1,50 @@
+#!/usr/bin/perl
+#!/usr/bin/perl -w -d:ptkdb
+#
+
+
+use strict;
+
+
+use Getopt::Long;
+
+use YAML;
+
+
+my $option_verbose = 0;
+
+
+sub main
+{
+    my $tag_database_filename = '/etc/neurospaces/tag_database.yml';
+
+    my $tag_database = YAML::LoadFile($tag_database_filename);
+
+    if (!$tag_database)
+    {
+	die "$0: *** Error: cannot read $tag_database_filename";
+    }
+
+    if ($option_verbose > 1)
+    {
+	print "$0: extracting release labels from $tag_database_filename\n";
+    }
+
+    my $tags = $tag_database->{tags};
+
+    my $labels
+	= [
+	   map
+	   {
+	       $_->{label}
+	   }
+	   @$tags,
+	  ];
+
+    print Dump($labels);
+}
+
+
+main();
+
+

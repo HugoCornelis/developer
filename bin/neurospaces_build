@@ -1665,7 +1665,7 @@ sub read_cmd_line
 		    {
 		     'date' => `date`,
 		     'regex-selector' => $option_regex_selector,
-		     'tag' => $option_tag,
+		     'label' => $option_tag,
 		    };
 
 		YAML::DumpFile($tag_database_filename, $tag_database);
