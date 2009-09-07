@@ -65,7 +65,7 @@ my $option_verbose;
 
 my $clean_options = defined $option_clean ? "--clean " x $option_clean : '';
 my $distclean_options = defined $option_distclean ? "--distclean " x $option_distclean : '';
-my $dist_dir_options = defined $option_dist_dir ? "--dist-dir " x @$option_dist_dir : '';
+my $dist_dir_options = "--dist-dir $option_dist_dir->[0] ";
 my $configure_options = defined $option_configure ? "--configure " x $option_configure : '--no-configure';
 my $tag_options = defined $option_tag ? "--tag $option_tag" : '';
 my $verbose_options = defined $option_verbose ? "--verbose " x $option_verbose : '';
@@ -73,6 +73,6 @@ my $developer_options = defined $option_developer ? "--developer " x $option_dev
 my $regex_options = defined $option_regex_selector ? "--regex '$option_regex_selector' " : '';
 my $enable_options = defined $option_enable ? "--enable $option_enable " : '';
 
-system "neurospaces_build $tag_options $clean_options $dist_dir_options $distclean_options $configure_options --no-installed-versions $verbose_options $developer_options $regex_options $enable_options";
+system "neurospaces_build --dist $tag_options --src-tag $option_tag $clean_options $dist_dir_options $distclean_options $configure_options --no-installed-versions $verbose_options $developer_options $regex_options $enable_options";
 
 
