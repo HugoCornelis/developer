@@ -155,7 +155,6 @@ my $all_packages
 			     directory => "$ENV{HOME}/neurospaces_project/model-container/source/snapshots/0",
 			     disabled => 0,
 			     order => 1,
-			     target_name => 'model-container',
 			     version_control => {
 						 port_number => 4693,
 						 repository => "$ENV{HOME}/neurospaces_project/MTN/model-container.mtn",
@@ -565,9 +564,7 @@ sub all_operations_execute
 		    {
 			my $directory = $option_src_dir ? $option_src_dir : $target_directory;
 
-			my $filename_base = $package->{target_name} || $package_name;
-
-			my $filename = $filename_base . "-" . (defined $option_src_tag ? $option_src_tag : '') . ".tar.gz";
+			my $filename = $package_name . "-" . (defined $option_src_tag ? $option_src_tag : '') . ".tar.gz";
 
 			my $prefix = $option_download_server =~ m|://| ? '' : 'http://';
 
