@@ -81,7 +81,7 @@ options:
 sub version
 {
     # $Format: "    my $version=\"${package}-${label}\";"$
-    my $version="installer-userdocs-5";
+    my $version="installer-userdocs-6";
 
     return $version;
 }
