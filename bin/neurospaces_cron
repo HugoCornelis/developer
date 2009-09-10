@@ -353,7 +353,9 @@ sub main
 
     # now build tarballs
 
-    try_to("neurospaces_dist");
+    my $release_label = time();
+
+    try_to("neurospaces_dist --tag $release_label-0");
 
     # copy our individual test output files to the output directory
 
