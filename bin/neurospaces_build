@@ -1548,7 +1548,8 @@ sub read_cmd_line
 		      package_name => $package_name,
 		     },
 		     [
-		      'mtn', '--db', $repository_name, '--branch', '0', 'update',
+		      'mtn', 'automate', 'get_base_revision_id',
+		      '&&', 'mtn', '--db', $repository_name, '--branch', '0', 'update',
 		     ],
 		    );
 	    },
