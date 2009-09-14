@@ -1,5 +1,5 @@
-#!/usr/bin/perl -w -d:ptkdb
 #!/usr/bin/perl -w 
+#!/usr/bin/perl -w -d:ptkdb
 #
 
 
@@ -27,7 +27,7 @@ my $output_filename = "neurospaces_cron.stdout";
 
 
 
-sub check_and_prepare
+<sub check_and_prepare
 {
     # check if the installer is ok
 
