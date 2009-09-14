@@ -426,7 +426,7 @@ sub parse_config_file
   if(defined $configuration->{URL})
   {
       chomp($configuration->{URL});
-      print "\tOutput directory for doxygen is $configuration->{URL}\n";
+      print "\tOutput directory for test harness output is $configuration->{URL}\n";
   }
 
 
