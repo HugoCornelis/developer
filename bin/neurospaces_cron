@@ -1,5 +1,5 @@
-#!/usr/bin/perl -w 
 #!/usr/bin/perl -w -d:ptkdb
+#!/usr/bin/perl -w 
 #
 
 
@@ -33,10 +33,9 @@ sub check_and_prepare
 
     my $output_path = $option_output_directory . "/" . $output_filename;
 
-    if (-e $output_path)
-    {
-	system "rm -f $output_path";
-    }
+    # here we rotate the logs
+
+    rotate_logs($output_path);
 
     try_to("echo '$0' started at", 1);
 
@@ -211,7 +210,6 @@ sub copy_tests
   system "mv -f /tmp/text_* $option_output_directory";
 
 
-  system "rm -f /tmp/neurospaces_cron.stdout";
 
 }
 
@@ -361,6 +359,7 @@ sub main
 
     copy_tests();
 
+
     # clean up after the tests.
 
     cleanup_and_finalize();
@@ -459,6 +458,14 @@ sub parse_config_file
       print "\tOutput directory for regression tests is $configuration->{DOXYGENOUTPUT}\n";
   }
 
+
+  if(defined $configuration->{LOGROTATE})
+  {
+
+    chomp($configuration->{LOGROTATE});
+    print "\tNumber of logs to rotate $configuration->{LOGROTATE}\n";
+
+  }
 
 
   print "Done Parsing $config_file:\n";
@@ -568,6 +575,68 @@ sub try_to
 	}
     }
 }
+
+
+
+# Rotates logs with the name '$logname'
+# 
+# args ($logname)
+#
+sub rotate_logs
+{
+
+  my $logname = shift;
+  my $numlogs  = -1;
+
+  if(not defined $configuration->{LOGROTATE})
+  {
+    #i If we aren't rotating logs when we just delete 
+    #i the log from the last run.
+    #i
+    if (-e $logname)
+    {
+	system "rm -f $logname";
+    }
+    return;
+  }
+  else
+  {
+    $numlogs = $configuration->{LOGROTATE};
+  }
+
+
+  # we shift all of our logs if present. 
+  # Whatever log happens to be the last one should
+  # get overwritten with a previous log.
+  my $i;
+  for($i = $numlogs-1; $i < 0; $i--)
+  {
+
+    my $log = $logname .'.' . $i;
+
+    if( -e $log )
+    {
+
+      # mv should preserve permissions.
+
+      my $nextlog = $logname . '.' . $i+1;
+
+      system "mv -f $log $nextlog";
+
+    }
+
+  }
+
+  # after the shift, we should be able to move the 
+  # first log to slot 0. Now the original slot is open
+  # for a log run.
+  my $nextlog = $logname . '.' . 0;
+  system "mv -f $logname $nextlog";
+
+  return;
+
+}
+
 
 
 #
