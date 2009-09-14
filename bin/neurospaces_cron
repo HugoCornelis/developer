@@ -1,5 +1,5 @@
-#!/usr/bin/perl -w 
 #!/usr/bin/perl -w -d:ptkdb
+#!/usr/bin/perl -w 
 #
 
 
@@ -609,7 +609,7 @@ sub rotate_logs
   # Whatever log happens to be the last one should
   # get overwritten with a previous log.
   my $i;
-  for($i = $numlogs-1; $i < 0; $i--)
+  for($i = $numlogs-1; $i > 0; $i--)
   {
 
     my $log = $logname .'.' . $i;
@@ -623,6 +623,10 @@ sub rotate_logs
 
       system "mv -f $log $nextlog";
 
+    }
+    else
+    {
+      next;
     }
 
   }
