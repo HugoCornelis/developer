@@ -329,7 +329,11 @@ sub main
     # build docs if present in configuration
     # do this AFTER the clean so that the swig stuff doesn't get doxygenized
 
-    try_to("neurospaces_docs");
+    if( (defined $configuration->{DOXYGENOUTPUT}) || (defined $configuration->{REGTESTOUTPUT}) )
+    {
+      try_to("neurospaces_docs");
+    }
+
 
     if (defined $configuration->{DOXYGENOUTPUT})
     {
