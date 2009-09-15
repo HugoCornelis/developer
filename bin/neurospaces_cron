@@ -609,7 +609,7 @@ sub rotate_logs
   # Whatever log happens to be the last one should
   # get overwritten with a previous log.
   my $i;
-  for($i = $numlogs-1; $i > 0; $i--)
+  for($i = $numlogs-1; $i > -1; $i--)
   {
 
     my $log = $logname .'.' . $i;
@@ -619,7 +619,7 @@ sub rotate_logs
 
       # mv should preserve permissions.
 
-      my $nextlog = $logname . '.' . $i+1;
+      my $nextlog = $logname . '.' . ($i+1);
 
       system "mv -f $log $nextlog";
 
