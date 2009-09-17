@@ -66,6 +66,10 @@ dist-keywords:
 
 am__tar = ${AMTAR} chf - --format=posix "$$tardir"
 
+
+clean-local:
+	rm -rf $(TMP_DIR)
+
 dist-hook: dist-keywords
 #	cd $(srcdir) && if test -n "`mtn ls changed `" ; then false ; else true ; fi
 	find $(distdir) -name _Inline -exec chmod u+w -R \{\} \;
@@ -113,9 +117,12 @@ pkg-src: dist
 	cp $(PACKAGE)-$(VERSION).tar.gz pkg/$(PACKAGE)-$(VERSION).tar.gz
 
 #pkg-deb: dist
+#	./builddeb.sh $(TMP_DIR) $(PACKAGE) $(VERSION)
+
 #	- rm -rf  $(TMP_DIR)
 #	mkdir -p $(TMP_DIR)
 #	mv $(PACKAGE)-$(VERSION).tar.gz $(TMP_DIR)/
+
 #	tar --directory $(TMP_DIR)/ \
 #         -xf $(TMP_DIR)/$(PACKAGE)-$(VERSION).tar.gz
 #	cd $(TMP_DIR)/$(PACKAGE)-$(VERSION)/ \
@@ -128,22 +135,8 @@ TMP_DIR = tmp
 
 # Create a deb package
 pkg-deb: pkg-src
-	- rm -r $(TMP_DIR)
-	mkdir -p $(TMP_DIR)
-	cp pkg/$(PACKAGE)-$(VERSION).tar.gz $(TMP_DIR)/
-	tar --directory $(TMP_DIR)/ \
-		-xzf $(TMP_DIR)/$(PACKAGE)-$(VERSION).tar.gz
-	cd $(TMP_DIR)/$(PACKAGE)-$(VERSION)/; \
-		echo | dh_make --single --copyright gpl -e 'hugo.cornelis@gmail.com' -f \
-			../$(PACKAGE)-$(VERSION).tar.gz
-	cp install/deb/changelog install/deb/control \
-		install/deb/copyright $(TMP_DIR)/$(PACKAGE)-$(VERSION)/debian/
-	cd $(TMP_DIR)/$(PACKAGE)-$(VERSION)/; \
-		rm debian/README.Debian debian/*.ex debian/*.EX; \
-		./configure; \
-		dpkg-buildpackage -rfakeroot; \
-		mv ../*.deb $(PWD)/pkg/
-	rm -r $(TMP_DIR);
+	./builddeb.sh $(TMP_DIR) $(PACKAGE) $(VERSION)
+
 
 # Create an RPM package
 pkg-rpm: pkg-src

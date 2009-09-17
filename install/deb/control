@@ -1,12 +1,14 @@
-Package: neurospaces-developer
-Version: alpha.1
+Source: neurospaces-developer
 Section: Science 
 Priority: optional
+Maintainer: Hugo Cornelis [hugo.cornelis@gmail.com]
+Build-Depends: python2.5(>=2.5),libc6(>=2.3.6),libgcc1 (>=4.1.1)
+Homepage: http://neurospaces.sourceforge.net/
+
+Package: neurospaces-developer
 Architecture: any
 Depends: python2.5(>=2.5),libc6(>=2.3.6),libgcc1 (>=4.1.1)
-Recommends: gnuplot
-Installed-Size: 33000
-Maintainer: Hugo Cornelis [hugo.cornelis@gmail.com]
+Suggests: gnuplot
 Description: The Neurospaces developer package contains essential tools for Neurospaces development. 
  The Neurospaces project develops software components of neuronal
  simulator that integrate in a just-in-time manner for the
