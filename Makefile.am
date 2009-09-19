@@ -136,7 +136,7 @@ TMP_DIR = tmp
 
 # Create a deb package
 pkg-deb: pkg-src
-	bin/neurospaces_build_debian $(TMP_DIR) $(PACKAGE) $(VERSION)
+	neurospaces_build_debian $(TMP_DIR) $(PACKAGE) $(VERSION)
 
 
 # Create an RPM package
