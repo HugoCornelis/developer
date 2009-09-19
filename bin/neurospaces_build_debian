@@ -1,0 +1,197 @@
+#!/usr/bin/perl -w 
+#!/usr/bin/perl -w -d:ptkdb
+#
+
+#
+#requires package dh-make, dpkg-dev and dpkg package.
+#
+
+my $build_log = "build_debian.log";
+
+
+if($#ARGV != 2)
+{
+  usage()
+}
+
+
+my $tmp_dir = $ARGV[0];
+my $package_name = $ARGV[1];
+my $version = $ARGV[2];
+my $top_dir = `pwd`;
+
+
+my $dist_dir = $package_name . "-" . $version;
+my $dist_src = $dist_dir . ".tar.gz";
+
+
+#
+# Check for the data files we need first.
+#
+
+my $tmp1 = `which dpkg-buildpackage`;
+
+if($tmp1 eq "")
+{
+  die "Error: dpkg-buildpackage is not found in your path.\n";
+}
+
+my $tmp2 = `which fakeroot`;
+if($tmp2 eq "")
+{
+  die "Error: fakeroot is not found in your path.\n";
+}
+
+unless(-d "install")
+{
+  die "No ''install\' directory present.\n";
+}
+
+unless(-d "install/deb")
+{
+  die "No \'install/deb\' directory present.\n";
+}
+
+unless(-e "install/deb/rules")
+{
+  die "No rules file present in install/deb/\n";
+}
+
+unless(-e "install/deb/control")
+{
+  die "No control file present in install/deb.\n";
+}
+
+unless(-e "install/deb/changelog")
+{
+  die "No changelog file present in install/deb/changelog.\n";
+}
+
+unless(-e "install/deb/copyright")
+{
+  print "warning: No copyright file is present in install/deb/.\n";
+}
+#
+# end of essential data file checks.
+#
+
+
+#
+#remove last log
+#
+if(-e $build_log)
+{
+  try_to("rm $build_log",1);
+}
+
+print "Building Debian package\n";
+print "tmp dir is $tmp_dir\n";
+
+print "Creating temp directory $tmp_dir\n";
+
+try_to("rm -rf $tmp_dir",1);
+try_to("mkdir -p $tmp_dir",1);
+
+unless(-e $dist_src)
+{
+  print "Source tarball $dist_src is not found.\n";
+  print "Can't build debian pakage.\n";
+  exit;
+}
+else
+{
+  try_to("cp $dist_src $tmp_dir",1);
+}
+
+print "Unzipping distribtion code in $tmp_dir\n\n";
+
+try_to("tar -C $tmp_dir -zxvf $dist_src",1);
+try_to("rm $dist_src",1);
+
+try_to("mkdir -p $tmp_dir/$dist_dir/debian",1);
+
+try_to("cp install/deb/changelog $tmp_dir/$dist_dir/debian",1);
+try_to("cp install/deb/copyright $tmp_dir/$dist_dir/debian",1);
+try_to("cp install/deb/control $tmp_dir/$dist_dir/debian",1);
+try_to("cp install/deb/rules $tmp_dir/$dist_dir/debian",1);
+
+print "Changing directory to $tmp_dir/$dist_dir.\n\n";
+try_to("cd $tmp_dir/$dist_dir",1);
+
+# run configuration to generate a makefile
+try_to("./configure",1);
+
+# use the -s flag to generate the single binary
+#dh_make -s -e hugo.cornelis@gmail.com -f ../${PACKAGE}-${VERSION}.tar.gz
+try_to("dpkg-buildpackage -us -uc -rfakeroot",1);
+
+try_to("cd ..",1);
+print `pwd`;
+
+my $deb_file = $dist_dir . ".deb";
+
+unless(-e $deb_file)
+{
+  die "Debian package build failed.\n";
+}
+
+print "Moving output to $top_dir.\n";
+
+try_to("mv *.deb $top_dir",1);
+try_to("mv *.dsc $top_dir",1);
+try_to("mv *.changes $top_dir",1);
+
+chdir($top_dir);
+
+print "Removing $tmp_dir\n";
+
+try_to("rm -rf $tmp_dir",1);
+
+print "Done.\n";
+
+#
+# print usage info.
+#
+sub usage
+{
+
+  print "Usage $0: <tmp directory> <package name> <version>\n\n";
+  exit;
+
+}
+
+#
+# ($command)
+#
+sub try_to
+{
+    my $command = shift;
+
+    my $no_verbose = shift;
+
+    my $allow_fail = shift;
+
+    if (!$no_verbose)
+    {
+	print "---\n";
+	print "$0: trying to $command\n";
+    }
+
+    my $output_path = $build_log;
+
+    #! $command executed in a subshell such that redirection applies
+    #! to all commands.
+
+    system "( $command ) >>$output_path 2>&1";
+
+    if ($?)
+    {
+	if ($allow_fail)
+	{
+	    system "echo >>$output_path 2>&1 failed with $?: $command\n";
+	}
+
+
+    }
+}
+
