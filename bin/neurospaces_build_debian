@@ -6,7 +6,7 @@
 #requires package dh-make, dpkg-dev and dpkg package.
 #
 
-my $build_log = "build_debian.log";
+my $build_log = `pwd` . "/build_debian.log";
 
 
 if($#ARGV != 2)
@@ -108,7 +108,7 @@ print "Unzipping distribtion code in $tmp_dir\n\n";
 try_to("tar -C $tmp_dir -zxvf $dist_src",1);
 try_to("rm $dist_src",1);
 
-try_to("mkdir -p $tmp_dir/$dist_dir/debian",1);
+try_to("mkdir -p $tmp_dir/$dist_dir/debian/installer",1);
 
 try_to("cp install/deb/changelog $tmp_dir/$dist_dir/debian",1);
 try_to("cp install/deb/copyright $tmp_dir/$dist_dir/debian",1);
@@ -116,24 +116,28 @@ try_to("cp install/deb/control $tmp_dir/$dist_dir/debian",1);
 try_to("cp install/deb/rules $tmp_dir/$dist_dir/debian",1);
 
 print "Changing directory to $tmp_dir/$dist_dir.\n\n";
-try_to("cd $tmp_dir/$dist_dir",1);
+
+chdir "$tmp_dir/$dist_dir";
+
+print "Performing configure\n";
 
 # run configuration to generate a makefile
 try_to("./configure",1);
+
+
+print "Building Debian package\n";
 
 # use the -s flag to generate the single binary
 #dh_make -s -e hugo.cornelis@gmail.com -f ../${PACKAGE}-${VERSION}.tar.gz
 try_to("dpkg-buildpackage -us -uc -rfakeroot",1);
 
-try_to("cd ..",1);
+chdir "..";
 print `pwd`;
 
-my $deb_file = $dist_dir . ".deb";
-
-unless(-e $deb_file)
-{
-  die "Debian package build failed.\n";
-}
+# unless(-e *.deb)
+# {
+#   die "Debian package build failed.\n";
+# }
 
 print "Moving output to $top_dir.\n";
 
@@ -141,7 +145,7 @@ try_to("mv *.deb $top_dir",1);
 try_to("mv *.dsc $top_dir",1);
 try_to("mv *.changes $top_dir",1);
 
-chdir($top_dir);
+chdir $top_dir;
 
 print "Removing $tmp_dir\n";
 

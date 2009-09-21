@@ -18,7 +18,7 @@ dnl ##########################################################################
 AC_PREREQ(2.59)
 
 # $Format: "AC_INIT(${package}, ${label}, ${email})"$
-AC_INIT(installer, a599718d1a785a98621afb049aa70b206151590c-0, hugo.cornelis@gmail.com)
+AC_INIT(installer, 17c342a758a2e998bef011379630ad9fe8481d08-0, hugo.cornelis@gmail.com)
 
 AC_CONFIG_SRCDIR([Makefile.am])
 
@@ -27,7 +27,7 @@ dnl dnl all subdirs
 dnl AC_CONFIG_SUBDIRS()
 
 # $Format: "AM_INIT_AUTOMAKE(${package}, ${label})"$
-AM_INIT_AUTOMAKE(installer, a599718d1a785a98621afb049aa70b206151590c-0)
+AM_INIT_AUTOMAKE(installer, 17c342a758a2e998bef011379630ad9fe8481d08-0)
 
 # Checks for programs.
 
