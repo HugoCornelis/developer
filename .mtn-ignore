@@ -10,6 +10,6 @@ Makefile\.in$
 ^tmp$
 ^pkg$
 ^gui-
-.deb$
+\.deb$
 .changes$
 .dsc$
