@@ -42,7 +42,7 @@ install: build
 
 # Add here commands to install the package into debian/gentoo.
 	echo $(CURDIR)
-	$(MAKE) install DESTDIR=$(CURDIR)/debian/neurospaces-developer-package
+	$(MAKE) install DESTDIR=$(CURDIR)/debian/developer
 
 # Build architecture-independent files here.
 binary-indep: build install

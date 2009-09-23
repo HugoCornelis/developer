@@ -81,7 +81,7 @@ options:
 sub version
 {
     # $Format: "    my $version=\"${package}-${label}\";"$
-    my $version="installer-9159ef98741f0c54d488d13fb69a6dbb18a63bf5-0";
+    my $version="installer-2f0240e31bcec6a5bae02c91d03bd8332110d212-0";
 
     return $version;
 }
