@@ -42,6 +42,7 @@ dist_bin_SCRIPTS = \
 	bin/neurospaces_build_debian \
 	bin/neurospaces_website_prepare \
 	bin/nstest_query \
+	bin/nspkg-deb \
 	bin/td-labels \
 	bin/td-majors \
 	bin/release-expand \
@@ -136,7 +137,7 @@ TMP_DIR = tmp
 
 # Create a deb package
 pkg-deb: pkg-src
-	bin/neurospaces_build_debian $(TMP_DIR) $(PACKAGE) $(VERSION)
+	nspkg-deb $(TMP_DIR) $(PACKAGE) $(VERSION)
 
 
 # Create an RPM package

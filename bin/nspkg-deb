@@ -2,8 +2,6 @@
 #!/usr/bin/perl -w -d:ptkdb
 #
 
-use Cwd;
-my $build_log = getcwd() . "/build_debian.log";
 
 
 if($#ARGV != 2)
@@ -12,10 +10,13 @@ if($#ARGV != 2)
 }
 
 
+use Cwd;
+my $top_dir = cwd;
+my $build_log = $top_dir . "/build_debian.log";
 my $tmp_dir = $ARGV[0];
 my $package_name = $ARGV[1];
 my $version = $ARGV[2];
-my $top_dir = `pwd`;
+
 
 
 my $dist_dir = $package_name . "-" . $version;
