@@ -106,7 +106,7 @@ print "Unzipping distribtion code in $tmp_dir\n\n";
 try_to("tar -C $tmp_dir -zxvf $dist_src",1);
 try_to("rm $dist_src",1);
 
-try_to("mkdir -p $tmp_dir/$dist_dir/debian/installer",1);
+try_to("mkdir -p $tmp_dir/$dist_dir/debian/$package_name",1);
 
 try_to("cp install/deb/changelog $tmp_dir/$dist_dir/debian",1);
 try_to("cp install/deb/copyright $tmp_dir/$dist_dir/debian",1);

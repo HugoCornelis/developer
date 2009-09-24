@@ -6,6 +6,7 @@ Makefile\.in$
 ^configure$
 ^installed
 ^installer-.*.tar.gz$
+^developer-.*tar.gz$
 ^missing$
 ^tmp$
 ^pkg$

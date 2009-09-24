@@ -39,7 +39,6 @@ dist_bin_SCRIPTS = \
 	bin/neurospaces_uninstall \
 	bin/neurospaces_update \
 	bin/neurospaces_versions \
-	bin/neurospaces_build_debian \
 	bin/neurospaces_website_prepare \
 	bin/nstest_query \
 	bin/nspkg-deb \
@@ -48,7 +47,7 @@ dist_bin_SCRIPTS = \
 	bin/release-expand \
 	bin/release-extract
 
-developertestdir=$(prefix)/neurospaces/installer
+developertestdir=$(prefix)/neurospaces/developer
 nobase_dist_developertest_DATA=@TEST_SPECIFICATION_FILES@
 
 RELEASE_MAJOR=`release-extract --major`
@@ -59,8 +58,8 @@ show-release-labels:
 	echo "Release information (major-minor-micro): $(RELEASE_MAJOR)-$(RELEASE_MINOR)-$(RELEASE_MICRO)"
 
 dist-keywords:
-	release-expand installer $(RELEASE_MAJOR) $(RELEASE_MINOR) $(RELEASE_MICRO) $(RELEASE_MAJOR)-$(RELEASE_MINOR) hugo.cornelis@gmail.com --verbose
-#	release-expand installer des 10 0 des-10 hugo.cornelis@gmail.com --verbose
+	release-expand developer $(RELEASE_MAJOR) $(RELEASE_MINOR) $(RELEASE_MICRO) $(RELEASE_MAJOR)-$(RELEASE_MINOR) hugo.cornelis@gmail.com --verbose
+#	release-expand developer des 10 0 des-10 hugo.cornelis@gmail.com --verbose
 
 # the tests are copied overhere.
 #

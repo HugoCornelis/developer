@@ -21,7 +21,7 @@ my $configuration
 
 #! note the following are currently a constants
 
-my $installer_directory = "$ENV{HOME}/neurospaces_project/installer/source/snapshots/0";
+my $developer_directory = "$ENV{HOME}/neurospaces_project/developer/source/snapshots/0";
 
 my $output_filename = "neurospaces_cron.stdout";
 
@@ -29,7 +29,7 @@ my $output_filename = "neurospaces_cron.stdout";
 
 sub check_and_prepare
 {
-    # check if the installer is ok
+    # check if the developer is ok
 
     my $output_path = $option_output_directory . "/" . $output_filename;
 
@@ -41,19 +41,19 @@ sub check_and_prepare
 
     try_to("date", 1);
 
-    try_to("mkdir -p $installer_directory", 1);
+    try_to("mkdir -p $developer_directory", 1);
 
-    chdir($installer_directory);
+    chdir($developer_directory);
 
-    # we assume that there is already an installer repository
+    # we assume that there is already an developer repository
 
     #t wrong assumption
 
-    try_to("mtn co --db ~/neurospaces_project/MTN/neurospaces-developer.mtn --branch 0 .", 1, 1);
+    try_to("mtn co --db ~/neurospaces_project/MTN/developer.mtn --branch 0 .", 1, 1);
 
-    # install the installer
+    # install the developer
 
-    install_installer();
+    install_developer();
 
 }
 
@@ -214,9 +214,9 @@ sub copy_tests
 }
 
 
-sub install_installer
+sub install_developer
 {
-    chdir($installer_directory);
+    chdir($developer_directory);
 
     try_to("./autogen.sh && ./configure && make && sudo make install");
 }
@@ -279,7 +279,7 @@ sub main
 
     try_to("neurospaces_uninstall");
 
-    install_installer();
+    install_developer();
 
     # update the source code in the workspaces, remove previous build
 
@@ -305,7 +305,7 @@ sub main
 
 	try_to("neurospaces_uninstall");
 
-	install_installer();
+	install_developer();
 
 	# check with install
 
@@ -315,7 +315,7 @@ sub main
 
 	try_to("neurospaces_uninstall");
 
-	install_installer();
+	install_developer();
 
 	# clean out previous build
 
