@@ -3052,7 +3052,7 @@ sub operation_execute
 sub version
 {
     # $Format: "    my $version=\"${package}-${label}\";"$
-    my $version="developer-2f0240e31bcec6a5bae02c91d03bd8332110d212-0";
+    my $version="developer-userdocs-7";
 
     return $version;
 }
