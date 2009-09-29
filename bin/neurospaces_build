@@ -38,6 +38,7 @@ my $option_keep_going;
 my $option_regex_selector = ".*";
 my $option_repo_clone = 0;
 my $option_repo_co = 0;
+my $option_repo_init = 0;
 my $option_repo_pull = 0;
 my $option_repo_push = 0;
 my $option_repo_serve = 0;
@@ -136,13 +137,13 @@ my $all_packages
 				      repository => "$ENV{HOME}/neurospaces_project/MTN/heccer.mtn",
 				     },
 		 },
-       installer => {
-		     directory => "$ENV{HOME}/neurospaces_project/installer/source/snapshots/0",
+       developer => {
+		     directory => "$ENV{HOME}/neurospaces_project/developer/source/snapshots/0",
 		     disabled => 0, # disabled => 1,
 		     order => 0,
 		     version_control => {
 					 port_number => 4696,
-					 repository => "$ENV{HOME}/neurospaces_project/MTN/neurospaces-developer.mtn",
+					 repository => "$ENV{HOME}/neurospaces_project/MTN/developer.mtn",
 					},
 		     version_script => 'neurospaces_build --version',
 		    },
@@ -766,6 +767,7 @@ sub read_cmd_line
 		     "regex-selector=s" => \$option_regex_selector,
 		     "repo-clone=s" => \$option_repo_clone,
 		     "repo-co!" => \$option_repo_co,
+		     "repo-init!" => \$option_repo_init,
 		     "repo-pull=s" => \$option_repo_pull,
 		     "repo-push=s" => \$option_repo_push,
 		     "repo-serve!" => \$option_repo_serve,
@@ -854,6 +856,7 @@ sub read_cmd_line
 	   "regex-selector=s" => $option_regex_selector,
 	   "repo-clone=s" => $option_repo_clone,
 	   "repo-co!" => $option_repo_co,
+	   "repo-init!" => $option_repo_init,
 	   "repo-pull=s" => $option_repo_pull,
 	   "repo-push=s" => $option_repo_push,
 	   "repo-serve!" => $option_repo_serve,
@@ -950,6 +953,74 @@ sub read_cmd_line
 
     $all_operations
 	= [
+	   {
+	    condition => $option_repo_init,
+	    description => 'initializing repository',
+	    operation =>
+	    sub
+	    {
+		my $package_information = shift;
+
+		# get specific arguments
+
+		my $description = $package_information->{description};
+
+		my $directory = $package_information->{directory};
+
+		my $operations = $package_information->{operations};
+
+		my $package_name = $package_information->{package_name};
+
+		my $repository_name
+		    = $package_information->{package}->{version_control}->{repository}
+			|| $directory . '/' . $package_name . '/' . 'mtn';
+
+		#
+		# Check to see if the repository name ends with .mtn, if not we assume it ends
+		# in .hg, in which case we don't need the port number since mercurial serves over http.
+		#
+
+		if ($repository_name =~ m/^.*\.mtn$/)
+		{
+		  #t MONOTONE
+
+		  # if not enough information for init for monotone
+
+		  if (not -f $repository_name)
+		  {
+		      die "$0: *** Error: cannot init repository, repository_name not set";
+		  }
+
+		  # initialize the repository if necessary
+
+		  operation_execute
+		    (
+		     $operations,
+		     {
+		      description => $description,
+
+		      #t always zero here, but I guess this simply depends on working in client mode ?
+
+		      keywords => 0,
+		      package_name => $package_name,
+		     },
+		     [
+		      'test', '-f', $repository_name, '||', 'mtn', '--db', $repository_name, 'db', 'init',
+		     ],
+		    );
+		}
+		else
+		{
+
+		  # MERCURIAL sync
+
+		  # operations:
+		  #   initialize the repo:
+		  #      hg init http://repo-genesis3.cbi.utsa.edu/hg/g-tube ${HOME}/neurospaces_project/g-tube/source/snapshots/0/
+		  # performs a clone of a repository if the project workspace isn't present.
+		}
+	    },
+	   },
 	   {
 	    condition => $option_repo_serve,
 	    description => 'serving source code repositories',
@@ -2389,7 +2460,8 @@ sub read_cmd_line
 		# Check to see if the repository name ends with .mtn, if not we assume it ends
 		# in .hg, in which case we don't need the port number since mercurial serves over http.
 		#
-		if($repository_name =~ m/^.*\.mtn$/)
+
+		if ($repository_name =~ m/^.*\.mtn$/)
 		{
 		  #t MONOTONE
 
@@ -2619,6 +2691,7 @@ options related to operation execution profile:
     --regex-selector         defines a regex to select specific packages.
     --repo-clone             checkout or update the workspace source code from a remote repository.
     --repo-co                checkout or update the workspace source code from a local repository.
+    --repo-init              initialize those local repositories that do not exist yet.
     --repo-pull              pull the repositories from this server (e.g. repo-genesis3.cbi.utsa.edu).
     --repo-push              push the repositories to this server (e.g. repo-genesis3.cbi.utsa.edu).
     --repo-serve             start the version control program in server mode to give others access to your code.
@@ -2979,7 +3052,7 @@ sub operation_execute
 sub version
 {
     # $Format: "    my $version=\"${package}-${label}\";"$
-    my $version="installer-17c342a758a2e998bef011379630ad9fe8481d08-0";
+    my $version="developer-2f0240e31bcec6a5bae02c91d03bd8332110d212-0";
 
     return $version;
 }

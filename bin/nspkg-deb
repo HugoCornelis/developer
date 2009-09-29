@@ -2,11 +2,6 @@
 #!/usr/bin/perl -w -d:ptkdb
 #
 
-#
-#requires package dh-make, dpkg-dev and dpkg package.
-#
-
-my $build_log = `pwd` . "/build_debian.log";
 
 
 if($#ARGV != 2)
@@ -15,10 +10,13 @@ if($#ARGV != 2)
 }
 
 
+use Cwd;
+my $top_dir = cwd;
+my $build_log = $top_dir . "/build_debian.log";
 my $tmp_dir = $ARGV[0];
 my $package_name = $ARGV[1];
 my $version = $ARGV[2];
-my $top_dir = `pwd`;
+
 
 
 my $dist_dir = $package_name . "-" . $version;
@@ -108,7 +106,7 @@ print "Unzipping distribtion code in $tmp_dir\n\n";
 try_to("tar -C $tmp_dir -zxvf $dist_src",1);
 try_to("rm $dist_src",1);
 
-try_to("mkdir -p $tmp_dir/$dist_dir/debian/installer",1);
+try_to("mkdir -p $tmp_dir/$dist_dir/debian/$package_name",1);
 
 try_to("cp install/deb/changelog $tmp_dir/$dist_dir/debian",1);
 try_to("cp install/deb/copyright $tmp_dir/$dist_dir/debian",1);
@@ -147,7 +145,7 @@ try_to("mv *.changes $top_dir",1);
 
 chdir $top_dir;
 
-print "Removing $tmp_dir\n";
+print "Removing temp directory \'$tmp_dir\'\n";
 
 try_to("rm -rf $tmp_dir",1);
 
