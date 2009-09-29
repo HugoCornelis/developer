@@ -139,7 +139,6 @@ TMP_DIR = tmp
 pkg-deb: pkg-src
 	nspkg-deb $(TMP_DIR) $(PACKAGE) $(VERSION)
 
-
 # Create an RPM package
 pkg-rpm: pkg-src
 	mkdir -p $(HOME)/.rpm/RPMS/i386
