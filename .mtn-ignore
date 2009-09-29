@@ -6,10 +6,11 @@ Makefile\.in$
 ^configure$
 ^installed
 ^installer-.*.tar.gz$
+^developer-.*tar.gz$
 ^missing$
 ^tmp$
 ^pkg$
 ^gui-
-.deb$
+\.deb$
 .changes$
 .dsc$
