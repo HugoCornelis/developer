@@ -340,19 +340,19 @@ sub main
     if (defined $configuration->{DOXYGENOUTPUT})
     {
 	system "rm -rf $configuration->{DOXYGENOUTPUT}/*";
-	system "mv -f $ENV{HOME}/neurospaces_project/model-container/source/snapshots/0/docs/html $configuration->{DOXYGENOUTPUT}/model-container";
-	system "mv -f $ENV{HOME}/neurospaces_project/heccer/source/snapshots/0/docs/html $configuration->{DOXYGENOUTPUT}/heccer";
-	system "mv -f $ENV{HOME}/neurospaces_project/ns-sli/source/snapshots/0/docs/html $configuration->{DOXYGENOUTPUT}/ns-sli";
+	system "cp -rf $ENV{HOME}/neurospaces_project/model-container/source/snapshots/0/docs/html $configuration->{DOXYGENOUTPUT}/model-container";
+	system "cp -rf $ENV{HOME}/neurospaces_project/heccer/source/snapshots/0/docs/html $configuration->{DOXYGENOUTPUT}/heccer";
+	system "cp -rf $ENV{HOME}/neurospaces_project/ns-sli/source/snapshots/0/docs/html $configuration->{DOXYGENOUTPUT}/ns-sli";
     }
 
     if (defined $configuration->{REGTESTOUTPUT})
     {
 	system "rm -rf $configuration->{REGTESTOUTPUT}/*";
-	system "mv -f $ENV{HOME}/neurospaces_project/model-container/source/snapshots/0/tests/html $configuration->{REGTESTOUTPUT}/model-container";
-	system "mv -f $ENV{HOME}/neurospaces_project/heccer/source/snapshots/0/tests/html $configuration->{REGTESTOUTPUT}/heccer";
-	system "mv -f $ENV{HOME}/neurospaces_project/ns-sli/source/snapshots/0/tests/html $configuration->{REGTESTOUTPUT}/ns-sli";
-	system "mv -f $ENV{HOME}/neurospaces_project/ssp/source/snapshots/0/tests/html $configuration->{REGTESTOUTPUT}/ssp";
-	system "mv -f $ENV{HOME}/neurospaces_project/gshell/source/snapshots/0/tests/html $configuration->{REGTESTOUTPUT}/gshell";
+	system "cp -rf $ENV{HOME}/neurospaces_project/model-container/source/snapshots/0/tests/html $configuration->{REGTESTOUTPUT}/model-container";
+	system "cp -rf $ENV{HOME}/neurospaces_project/heccer/source/snapshots/0/tests/html $configuration->{REGTESTOUTPUT}/heccer";
+	system "cp -rf $ENV{HOME}/neurospaces_project/ns-sli/source/snapshots/0/tests/html $configuration->{REGTESTOUTPUT}/ns-sli";
+	system "cp -rf $ENV{HOME}/neurospaces_project/ssp/source/snapshots/0/tests/html $configuration->{REGTESTOUTPUT}/ssp";
+	system "cp -rf $ENV{HOME}/neurospaces_project/gshell/source/snapshots/0/tests/html $configuration->{REGTESTOUTPUT}/gshell";
     }
 
 #     # now build tarballs
