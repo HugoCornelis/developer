@@ -24,6 +24,7 @@ my $option_clean = 0;
 my $option_compile = 1;
 my $option_configure = 1;
 my $option_configure_type = 'release';
+my $option_countcode;
 my $option_directories_create = 0;
 my $option_dist = 0;
 my $option_dist_dir = [];
@@ -746,6 +747,7 @@ sub read_cmd_line
 		     "compile!" => \$option_compile,
 		     "configure!" => \$option_configure,
 		     "configure-type=s" => \$option_configure_type,
+		     "countcode=s" => \$option_countcode,
 		     "directories-create!" => \$option_directories_create,
 		     "disable=s" => \$option_disable,
 		     "dist!" => \$option_dist,
@@ -835,6 +837,7 @@ sub read_cmd_line
 	   "compile!" => $option_compile,
 	   "configure!" => $option_configure,
 	   "configure-type=s" => $option_configure_type,
+	   "countcode=s" => $option_countcode,
 	   "directories-create!" => $option_directories_create,
 	   "disable=s" => $option_disable,
 	   "dist!" => $option_dist,
@@ -1915,6 +1918,103 @@ sub read_cmd_line
 	    operation => [ 'make', 'clean', ],
 	   },
 	   {
+	    condition => $option_countcode,
+	    description => "count lines, words, characters in the implementation files",
+	    operation =>
+	    sub
+	    {
+		my $package_information = shift;
+
+		# get specific arguments
+
+		my $description = $package_information->{description};
+
+		my $directory = $package_information->{directory};
+
+		my $filename = $package_information->{filename};
+
+		my $operations = $package_information->{operations};
+
+		my $package_name = $package_information->{package_name};
+
+		# change the directory
+
+		chdir $directory;
+
+		# countcode on C implementation files
+
+		operation_execute
+		    (
+		     $operations,
+		     {
+		      description => $description,
+
+		      #t always zero here, but I guess this simply depends on working in client mode ?
+
+		      keywords => 0,
+		      package_name => $package_name,
+		     },
+		     [
+		      'wc', '</dev/null', '2>/dev/null', '`', 'find', '.', '-type', 'f', '-name', '"*.c"', '-o', '-name', '"*.h"', '`', '||', 'true',
+		     ],
+		    );
+
+		# countcode on perl implementation files
+
+		operation_execute
+		    (
+		     $operations,
+		     {
+		      description => $description,
+
+		      #t always zero here, but I guess this simply depends on working in client mode ?
+
+		      keywords => 0,
+		      package_name => $package_name,
+		     },
+		     [
+		      'wc', '</dev/null', '2>/dev/null', '`', '(', 'find', '.', '-type', 'f', '-name', '"*.pm"', '&&', 'find', '2>/dev/null', 'perl', '-type', 'f', ')', '|', 'sort', '|', 'uniq', '|', 'grep', '-v', '"~$"', '`', '||', 'true',
+		     ],
+		    );
+
+		# countcode on python implementation files
+
+		operation_execute
+		    (
+		     $operations,
+		     {
+		      description => $description,
+
+		      #t always zero here, but I guess this simply depends on working in client mode ?
+
+		      keywords => 0,
+		      package_name => $package_name,
+		     },
+		     [
+		      'wc', '</dev/null', '2>/dev/null', '`', '(', 'find', '.', '-type', 'f', '-name', '"*.py"', '&&', 'find', '2>/dev/null', 'python', '-type', 'f', ')', '|', 'sort', '|', 'uniq', '|', 'grep', '-v', '"~$"', '`', '||', 'true',
+		     ],
+		    );
+
+		# countcode on script files
+
+		operation_execute
+		    (
+		     $operations,
+		     {
+		      description => $description,
+
+		      #t always zero here, but I guess this simply depends on working in client mode ?
+
+		      keywords => 0,
+		      package_name => $package_name,
+		     },
+		     [
+		      'wc', '</dev/null', '2>/dev/null', '2>/dev/null', '`', '(', 'find', '2>/dev/null', 'bin', '-type', 'f', ')', '|', 'sort', '|', 'uniq', '|', 'grep', '-v', '"~$"', '`', '||', 'true',
+		     ],
+		    );
+	    },
+	   },
+	   {
 	    condition => $option_compile,
 	    operation => [ 'make', ],
 	   },
@@ -2671,6 +2771,7 @@ options related to operation execution profile:
     --compile                compile packages.
     --configure              configure before compiling.
     --configure-type         type of configuration (default is 'release').
+    --countcode              countcode at different times during the build.
     --directories-create     create package directory structure.
     --disable                explicitly disable this regex of packages in the configuration.
     --dist                   build distribution tarballs.
