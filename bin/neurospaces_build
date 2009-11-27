@@ -1955,7 +1955,7 @@ sub read_cmd_line
 		      package_name => $package_name,
 		     },
 		     [
-		      'wc', '</dev/null', '2>/dev/null', '`', 'find', '.', '-type', 'f', '-name', '"*.c"', '-o', '-name', '"*.h"', '`', '||', 'true',
+		      'wc', '</dev/null', '2>/dev/null', '`', 'find', '.', '-type', 'f', '-iname', '"*.c"', '-o', '-iname', '"*.h"', '`', '||', 'true',
 		     ],
 		    );
 
@@ -1973,7 +1973,7 @@ sub read_cmd_line
 		      package_name => $package_name,
 		     },
 		     [
-		      'wc', '</dev/null', '2>/dev/null', '`', '(', 'find', '.', '-type', 'f', '-name', '"*.pm"', '&&', 'find', '2>/dev/null', 'perl', '-type', 'f', ')', '|', 'sort', '|', 'uniq', '|', 'grep', '-v', '"~$"', '`', '||', 'true',
+		      'wc', '</dev/null', '2>/dev/null', '`', '(', 'find', '.', '-type', 'f', '-iname', '"*.pm"', '&&', 'find', '2>/dev/null', 'perl', '-type', 'f', ')', '|', 'sort', '|', 'uniq', '|', 'grep', '-v', '"~$"', '`', '||', 'true',
 		     ],
 		    );
 
@@ -1991,7 +1991,7 @@ sub read_cmd_line
 		      package_name => $package_name,
 		     },
 		     [
-		      'wc', '</dev/null', '2>/dev/null', '`', '(', 'find', '.', '-type', 'f', '-name', '"*.py"', '&&', 'find', '2>/dev/null', 'python', '-type', 'f', ')', '|', 'sort', '|', 'uniq', '|', 'grep', '-v', '"~$"', '`', '||', 'true',
+		      'wc', '</dev/null', '2>/dev/null', '`', '(', 'find', '.', '-type', 'f', '-iname', '"*.py"', '&&', 'find', '2>/dev/null', 'python', '-type', 'f', ')', '|', 'sort', '|', 'uniq', '|', 'grep', '-v', '"~$"', '`', '||', 'true',
 		     ],
 		    );
 
@@ -2012,6 +2012,25 @@ sub read_cmd_line
 		      'wc', '</dev/null', '2>/dev/null', '2>/dev/null', '`', '(', 'find', '2>/dev/null', 'bin', '-type', 'f', ')', '|', 'sort', '|', 'uniq', '|', 'grep', '-v', '"~$"', '`', '||', 'true',
 		     ],
 		    );
+
+		# countcode on ndf implementation files
+
+		operation_execute
+		    (
+		     $operations,
+		     {
+		      description => $description,
+
+		      #t always zero here, but I guess this simply depends on working in client mode ?
+
+		      keywords => 0,
+		      package_name => $package_name,
+		     },
+		     [
+		      'wc', '</dev/null', '2>/dev/null', '`', '(', 'find', '.', '-type', 'f', '-iname', '"*.ndf"', ')', '|', 'sort', '|', 'uniq', '|', 'grep', '-v', '"~$"', '`', '||', 'true',
+		     ],
+		    );
+
 	    },
 	   },
 	   {
