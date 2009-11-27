@@ -1,9 +1,5 @@
 -*- outline -*-
 
-* neurospaces_build
-add functions to count manual code, generated code, perl code, python
-code, ndf code.  For table generation.
-
 * neurospaces_cron
 collects the output of all tested packages, summarizes, emails the
 summary, computes a SHA on the summary, puts a file with filename the
