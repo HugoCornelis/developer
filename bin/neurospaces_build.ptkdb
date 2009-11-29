@@ -7,16 +7,16 @@ $files = {
 ',
                                             'fname' => 'bin/neurospaces_build',
                                             'type' => 'user',
-                                            'line' => 59
+                                            'line' => 71
                                           },
                                           {
                                             'expr' => undef,
                                             'value' => '1',
-                                            'text' => '	    if ($option_uninstall)
+                                            'text' => '		operation_execute
 ',
                                             'fname' => 'bin/neurospaces_build',
                                             'type' => 'user',
-                                            'line' => 263
+                                            'line' => '2172'
                                           }
                                         ]
          };
@@ -35,4 +35,4 @@ $expr_list = [
                }
              ];
 $eval_saved_text = undef;
-$main_win_geometry = '1280x951+0+0';
+$main_win_geometry = '1280x951+140+61';

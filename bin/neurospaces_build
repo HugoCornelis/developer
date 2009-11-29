@@ -3252,13 +3252,13 @@ sub operation_execute
 
     if (!$option_dry_run)
     {
-	print "$0: package $package_name [" . (join ' ', @$arguments) . "] executing\n";
+	print "$0: package $package_name [" . (join ' ', map { /\s/ ? "\"$_\"" : $_ } @$arguments) . "] executing\n";
 
-	system join " ", @$arguments;
+	system join " ", map { /\s/ ? "\"$_\"" : $_ } @$arguments;
 
 	if ($?)
 	{
-	    if ($option_keep_going and ((join " ", @$arguments) =~ /check/))
+	    if ($option_keep_going and ((join " ", map { /\s/ ? "\"$_\"" : $_ } @$arguments) =~ /check/))
 	    {
 		#! assume system has given a good error message
 
@@ -3275,14 +3275,14 @@ sub operation_execute
 
 	if ($option_verbose)
 	{
-	    print "$0: package $package_name [" . (join ' ', @$arguments ) . "] executed \n";
+	    print "$0: package $package_name [" . (join ' ', map { /\s/ ? "\"$_\"" : $_ } @$arguments ) . "] executed \n";
 	}
     }
     else
     {
 	if ($option_verbose)
 	{
-	    print "$0: package $package_name [" . (join ' ', @$arguments ) . "] not executed, dry_run is $option_dry_run\n";
+	    print "$0: package $package_name [" . (join ' ', map { /\s/ ? "\"$_\"" : $_ } @$arguments ) . "] not executed, dry_run is $option_dry_run\n";
 	}
     }
 }
