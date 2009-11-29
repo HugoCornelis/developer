@@ -37,6 +37,7 @@ my $option_install = 1;
 my $option_installed_versions = 1;
 my $option_keep_going;
 my $option_regex_selector = ".*";
+my $option_repo_ci = 0;
 my $option_repo_clone = 0;
 my $option_repo_co = 0;
 my $option_repo_init = 0;
@@ -767,6 +768,7 @@ sub read_cmd_line
 		     "installed-versions!" => \$option_installed_versions,
 		     "keep-going!" => \$option_keep_going,
 		     "regex-selector=s" => \$option_regex_selector,
+		     "repo-ci=s" => \$option_repo_ci,
 		     "repo-clone=s" => \$option_repo_clone,
 		     "repo-co!" => \$option_repo_co,
 		     "repo-init!" => \$option_repo_init,
@@ -857,6 +859,7 @@ sub read_cmd_line
 	   "installed-versions!" => $option_installed_versions,
 	   "keep-going!" => $option_keep_going,
 	   "regex-selector=s" => $option_regex_selector,
+	   "repo-ci=s" => $option_repo_ci,
 	   "repo-clone=s" => $option_repo_clone,
 	   "repo-co!" => $option_repo_co,
 	   "repo-init!" => $option_repo_init,
@@ -2096,6 +2099,121 @@ sub read_cmd_line
 	    operation => [ 'make', 'clean', '&&', 'sudo', 'make', 'uninstall', ],
 	   },
 	   {
+	    condition => $option_repo_ci,
+	    description => "checkin to a local repository",
+	    operation =>
+	    sub
+	    {
+		my $package_information = shift;
+
+		# get specific arguments
+
+		my $description = $package_information->{description};
+
+		my $directory = $package_information->{directory};
+
+		my $operations = $package_information->{operations};
+
+		my $package_name = $package_information->{package_name};
+
+		my $repository_name
+		    = $package_information->{package}->{version_control}->{repository}
+			|| $directory . '/' . $package_name . '/' . 'mtn';
+
+		my $port_number = $package_information->{package}->{version_control}->{port_number};
+
+		# if not enough information for checkout
+
+		if (not -f $repository_name)
+		{
+		    die "$0: *** Error: cannot checkout from repository, repository_name not set";
+		}
+
+		if (not $port_number)
+		{
+		    die "$0: *** Error: cannot checkout from repository, port_number not set";
+		}
+
+		# change the directory
+
+		if (not chdir $directory)
+		{
+		    die "$0: *** Error: cannot change to directory $directory";
+		}
+
+		# merge code
+
+		#t MERCURIAL merge
+		# command: hg merge
+
+		operation_execute
+		    (
+		     $operations,
+		     {
+		      description => $description,
+
+		      #t always zero here, but I guess this simply depends on working in client mode ?
+
+		      keywords => 0,
+		      package_name => $package_name,
+		     },
+		     [
+# 		      'test', '-d', '_MTN',
+# 		      '||',
+		      'mtn', '--db', $repository_name, '--branch', '0', 'merge',
+		     ],
+		    );
+
+		# checkin code
+
+		#t MERCURAL commit
+		# hg commit
+
+		operation_execute
+		    (
+		     $operations,
+		     {
+		      description => $description,
+
+		      #t always zero here, but I guess this simply depends on working in client mode ?
+
+		      keywords => 0,
+		      package_name => $package_name,
+		     },
+		     [
+		      'test', '-d', '_MTN',
+		      '||', 'mtn', '--db', $repository_name, '--branch', '0', 'ci', '.', '--message', $option_repo_ci,
+		     ],
+		    );
+
+		# update code
+
+		#t MONOTONE
+		
+		# MERCURIAL update checkout
+		# these two are actually aliased to each other because of how it pulls a workspace. 
+		# You simply update to a particular revision number.
+		# hg update [-r revision]
+
+		operation_execute
+		    (
+		     $operations,
+		     {
+		      description => $description,
+
+		      #t always zero here, but I guess this simply depends on working in client mode ?
+
+		      keywords => 0,
+		      package_name => $package_name,
+		     },
+		     [
+		      'mtn', 'automate', 'get_base_revision_id',
+		      '&&', 'mtn', '--db', $repository_name, '--branch', '0', 'update',
+		     ],
+		    );
+	    },
+	   },
+	   {
 	    condition => $option_upload_server,
 	    description => "uploading",
 	    operation =>
@@ -2809,6 +2927,7 @@ options related to operation execution profile:
     --installed-versions     print the installed version of each software package.
     --keep-going             keep going in case of non-fatal errors (ala make -k).
     --regex-selector         defines a regex to select specific packages.
+    --repo-ci                commit all modifications with the given changelog description.
     --repo-clone             checkout or update the workspace source code from a remote repository.
     --repo-co                checkout or update the workspace source code from a local repository.
     --repo-init              initialize those local repositories that do not exist yet.
