@@ -2181,8 +2181,9 @@ sub read_cmd_line
 		      package_name => $package_name,
 		     },
 		     [
-		      'test', '-d', '_MTN',
-		      '||', 'mtn', '--db', $repository_name, '--branch', '0', 'ci', '.', '--message', $option_repo_ci,
+# 		      'test', '-d', '_MTN',
+# 		      '||',
+		      'mtn', '--db', $repository_name, '--branch', '0', 'ci', '.', '--message', $option_repo_ci,
 		     ],
 		    );
 
