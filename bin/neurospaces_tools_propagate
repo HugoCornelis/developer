@@ -1,0 +1,100 @@
+#!/usr/bin/perl -w
+#!/usr/bin/perl -d:ptkdb -w
+#
+
+
+use strict;
+
+
+use Getopt::Long;
+
+use YAML;
+
+
+my $all_packages;
+
+{
+    local $/;
+
+    $all_packages = Load(`neurospaces_packages`);
+
+    # remove key, extract value
+
+    $all_packages = [ %$all_packages, ];
+
+    $all_packages = $all_packages->[1];
+
+    # remove key, extract value
+
+    $all_packages = [ %$all_packages, ];
+
+    $all_packages = $all_packages->[1];
+
+    # convert to hash for ease of use
+
+    $all_packages
+	= {
+	   map
+	   {
+	       $_ => 1,
+	   }
+	   @$all_packages,
+	  };
+
+    print Dump($all_packages);
+}
+
+
+sub main
+{
+    propagate_harness();
+}
+
+
+sub propagate_harness
+{
+    # define the tool
+
+    my $tool = "tests/neurospaces_harness";
+
+    # define the source
+
+    my $source_package = 'model-container';
+
+    # loop over all targets
+
+    my $target_packages = target_packages($all_packages, $source_package);
+
+    foreach my $target_package (sort keys %$target_packages)
+    {
+	if (!$target_packages->{$target_package})
+	{
+	    next;
+	}
+
+	# copy the tool from source to target
+
+	print "$0: copying $tool from $source_package to $target_package\n";
+
+	`cp ~/neurospaces_project/$source_package/source/snapshots/0/$tool ~/neurospaces_project/$target_package/source/snapshots/0/$tool`;
+    }
+}
+
+
+sub target_packages
+{
+    my $packages = shift;
+
+    my $source = shift;
+
+    my $result = { %$packages, };
+
+    delete $result->{$source};
+
+    return $result;
+}
+
+
+main();
+
+
