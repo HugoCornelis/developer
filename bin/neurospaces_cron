@@ -1,5 +1,5 @@
-#!/usr/bin/perl -w 
 #!/usr/bin/perl -w -d:ptkdb
+#!/usr/bin/perl -w 
 #
 
 
@@ -688,7 +688,7 @@ sub try_to_mail
     }
 
 
-    my $bcc = $configuration->{MAILBCC};
+    my $bcc = "";
     if(defined $configuration->{MAILBCC})
     {
 
