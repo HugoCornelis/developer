@@ -419,6 +419,14 @@ sub parse_config_file
     print "\tSend from email: $configuration->{MAILFROM}\n";
   }
 
+
+  if(defined $configuration->{MAILBCC})
+  {
+    chomp($configuration->{MAILBCC});
+    print "\tCourtesy copies of email are being sent to: $configuration->{MAILBCC}\n";
+  }
+
+
   if(defined $configuration->{OUTPUTDIR})
   {
       #! note that this overrides an option from set by the command line
@@ -659,25 +667,49 @@ sub try_to_mail
     my $subject = shift;
     my $message = shift;
 
-    if (!$configuration->{MAILTO})
+    my $sendto = "";
+    if (!defined $configuration->{MAILTO})
     {
 	return;
     }
+    else
+    {
 
-    my $sendto = $configuration->{MAILTO};
-    my $replyto = $configuration->{MAILFROM};
+      $sendto = $configuration->{MAILTO};
 
-    #todo figure out why I can't put the output of
-    # `which sendmail` into a variable and put it in 
-    # place of the /usr/sbin/sendmail. A user may have 
-    # a different sendmail path.
+    }
 
-    #t Mando: perhaps /sbin/ is not in the PATH, such that which does
-    #t not find sendmail when things run over cron?
+    my replyto = "";
+    if(defined $configuration->{MAILFROM})
+    {
+
+      $replyto = $configuration->{MAILFROM};
+
+    }
+
+
+    my $bcc = $configuration->{MAILBCC};
+    if(defined $configuration->{MAILBCC})
+    {
+
+      $bcc = $configuration->{MAILBCC};
+
+    }
+
 
     open(MAIL, "|/usr/sbin/sendmail -oi -t");
-    print MAIL "From: $replyto\n";
     print MAIL "To: $sendto\n";
+
+    if($replyto ne "")
+    {
+      print MAIL "From: $replyto\n";
+    }
+
+    if($bcc ne "")
+    {
+      print MAIL "Bcc: $bcc\n";
+    }
+
     print MAIL "Subject: $subject\n\n";
     print MAIL "$message\n";
     close(MAIL);
