@@ -24,6 +24,7 @@ dist_bin_SCRIPTS = \
 	bin/neurospaces_clean \
 	bin/neurospaces_clone \
 	bin/neurospaces_configure \
+	bin/neurospaces_countcode \
 	bin/neurospaces_create_directories \
 	bin/neurospaces_cron \
 	bin/neurospaces_dist \
@@ -34,6 +35,7 @@ dist_bin_SCRIPTS = \
 	bin/neurospaces_packages \
 	bin/neurospaces_pull \
 	bin/neurospaces_push \
+	bin/neurospaces_tools_propagate \
 	bin/neurospaces_serve \
 	bin/neurospaces_status \
 	bin/neurospaces_sync \

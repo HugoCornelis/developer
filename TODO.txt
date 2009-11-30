@@ -1,6 +1,12 @@
 -*- outline -*-
 
 * neurospaces_cron
+collects the output of all tested packages, summarizes, emails the
+summary, computes a SHA on the summary, puts a file with filename the
+SHA and with content the summary in the filesystem.
+
+
+* neurospaces_cron
 produces output like:
 /localhome/g3tester/neurospaces_project/installer/source/snapshots/0/bin/neurospaces_cron: output not found, please remove it from the trash list
 /localhome/g3tester/neurospaces_project/installer/source/snapshots/0/bin/neurospaces_cron: OutputGenerator not found, please remove it from the trash list
