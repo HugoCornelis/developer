@@ -679,7 +679,7 @@ sub try_to_mail
 
     }
 
-    my replyto = "";
+    my $replyto = "";
     if(defined $configuration->{MAILFROM})
     {
 
