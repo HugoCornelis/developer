@@ -495,12 +495,12 @@ sub parse_config_file
 sub produce_email_text
 {
 
+  try_to("echo testing command line grep -B 10 die $outputfile", 1);
+
   my $status_message = "";
   my $outputfile = $option_output_directory . "/" . $output_filename;
   my $errorcounts = `cat $outputfile | grep error_count`;
   my $die_messages = `grep -B 10 die $outputfile`;
-
-  try_to("echo testing command line grep -B 10 die $outputfile", 1);
 
   $status_message
       .= (
