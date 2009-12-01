@@ -1958,7 +1958,7 @@ sub read_cmd_line
 		      package_name => $package_name,
 		     },
 		     [
-		      'wc', '</dev/null', '2>/dev/null', '`', 'find', '.', '-type', 'f', '-iname', '"*.c"', '-o', '-iname', '"*.h"', '`', '||', 'true',
+		      'wc', '</dev/null', '2>/dev/null', '`', 'find', '.', '-type', 'f', '-iname', '"*.c"', '-o', '-iname', '"*.h"', '|', 'grep', '-v', '"_Inline"', '`', '||', 'true',
 		     ],
 		    );
 
@@ -1976,7 +1976,7 @@ sub read_cmd_line
 		      package_name => $package_name,
 		     },
 		     [
-		      'wc', '</dev/null', '2>/dev/null', '`', '(', 'find', '.', '-type', 'f', '-iname', '"*.pm"', '&&', 'find', '2>/dev/null', 'perl', '-type', 'f', ')', '|', 'sort', '|', 'uniq', '|', 'grep', '-v', '"~$"', '`', '||', 'true',
+		      'wc', '</dev/null', '2>/dev/null', '`', '(', 'find', '.', '-type', 'f', '-iname', '"*.pm"', '&&', 'find', '2>/dev/null', 'perl', '-type', 'f', ')', '|', 'sort', '|', 'uniq', '|', 'grep', '-v', '"~$"', '|', 'grep', '-v', '"_Inline"', '`', '||', 'true',
 		     ],
 		    );
 
@@ -1994,7 +1994,7 @@ sub read_cmd_line
 		      package_name => $package_name,
 		     },
 		     [
-		      'wc', '</dev/null', '2>/dev/null', '`', '(', 'find', '.', '-type', 'f', '-iname', '"*.py"', '&&', 'find', '2>/dev/null', 'python', '-type', 'f', ')', '|', 'sort', '|', 'uniq', '|', 'grep', '-v', '"~$"', '`', '||', 'true',
+		      'wc', '</dev/null', '2>/dev/null', '`', '(', 'find', '.', '-type', 'f', '-iname', '"*.py"', '&&', 'find', '2>/dev/null', 'python', '-type', 'f', ')', '|', 'sort', '|', 'uniq', '|', 'grep', '-v', '"~$"', '|', 'grep', '-v', '"_Inline"', '`', '||', 'true',
 		     ],
 		    );
 
@@ -2012,7 +2012,7 @@ sub read_cmd_line
 		      package_name => $package_name,
 		     },
 		     [
-		      'wc', '</dev/null', '2>/dev/null', '2>/dev/null', '`', '(', 'find', '2>/dev/null', 'bin', '-type', 'f', ')', '|', 'sort', '|', 'uniq', '|', 'grep', '-v', '"~$"', '`', '||', 'true',
+		      'wc', '</dev/null', '2>/dev/null', '2>/dev/null', '`', '(', 'find', '2>/dev/null', 'bin', '-type', 'f', ')', '|', 'sort', '|', 'uniq', '|', 'grep', '-v', '"~$"', '|', 'grep', '-v', '"_Inline"', '`', '||', 'true',
 		     ],
 		    );
 
@@ -2030,7 +2030,7 @@ sub read_cmd_line
 		      package_name => $package_name,
 		     },
 		     [
-		      'wc', '</dev/null', '2>/dev/null', '`', '(', 'find', '.', '-type', 'f', '-iname', '"*.ndf"', ')', '|', 'sort', '|', 'uniq', '|', 'grep', '-v', '"~$"', '`', '||', 'true',
+		      'wc', '</dev/null', '2>/dev/null', '`', '(', 'find', '.', '-type', 'f', '-iname', '"*.ndf"', ')', '|', 'sort', '|', 'uniq', '|', 'grep', '-v', '"~$"', '|', 'grep', '-v', '"_Inline"', '`', '||', 'true',
 		     ],
 		    );
 
