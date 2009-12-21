@@ -8,10 +8,9 @@ use Getopt::Long;
 use strict;
 use YAML;
 
-
-my $option_output_directory = "/tmp";
 my $option_config = "";
-
+my $option_output_directory = "/tmp";
+my $option_no_check = 0;
 
 my $configuration
     = {
@@ -428,7 +427,10 @@ sub main
 
 	# check with install
 
-	try_to("neurospaces_check");
+	unless($option_no_check)
+	{
+	  try_to("neurospaces_check");
+	}
 
 	# uninstall again
 
@@ -463,15 +465,20 @@ sub main
 #     my $release_label = time();
 
 #     try_to("neurospaces_dist --tag $release_label-0");
+    
+    unless($option_no_check)
+    {
 
-    # copy our individual test output files to the output directory
+      # copy our individual test output files to the output directory
 
-    copy_tests();
+      copy_tests();
 
 
-    # clean up after the tests.
+      # clean up after the tests.
 
-    cleanup_and_finalize();
+      cleanup_and_finalize();
+
+    }
 
     my $status_message = produce_email_text();
 
@@ -590,6 +597,19 @@ sub parse_config_file
 
     chomp($configuration->{LOGDIR});
     print "\tDirectory to store past logs is $configuration->{LOGDIR}\n";
+
+  }
+
+
+  if(defined $configuration->{NOCHECK})
+  {
+    chomp($configuration->{NOCHECK});
+
+    if( uc($configuration->{NOCHECK}) eq "TRUE")
+    {
+      print "Option \'no check\' is set, tests will not be run.\n";
+      $option_no_check = 1;
+    }
 
   }
 
