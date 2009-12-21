@@ -129,55 +129,23 @@ sub cleanup_and_finalize
 
   print "Cleaning generate files out of /tmp\n";
 
-  #t maybe make @trash a list that read in from
-  #t a trash configuration file.
+  my $user = `whoami`;
 
-  #t then the test specifications can add to the trash file when the
-  #t harness runs, and such that the html output can produce a list
-  #t of generated output files.
-
-  my @trash
-      = (
-	 "output",
-	 "OutputGenerator",
-	 "output_spike",
-	 "output_spike_source",
-	 "output_vm",
-	 "output_vm_source",
-	 "purk_test_soma",
-	 "purk_test_soma_aggregators",
-	 "state",
-	 "neurospaces",
-	 "a1",
-	 "a2",
-	 "1.xml",
-	 "*.ndf",
-	 "readcell_reset.txt",
-	 "current_schedule",
-	 "state",
-	 "heccer",
-	 "morphology2ndf.yml",
-	 "morphology*.ndf",
-	);
-
-
-  my $item;
-
-  foreach $item (@trash)
+  if($user eq "root")
   {
-      my $trashfile = "/tmp/" . $item;
-
-      if (-e $trashfile)
-      {
-	  try_to("echo $0: Removing $trashfile\n", 1);
-
-	  try_to("rm -rf $trashfile", 1);
-      }
-      else
-      {
-	  try_to("echo $0: $trashfile not found, please remove it from the trash list\n", 1);
-      }
+    print "Cron job is running as root, not safe to clean /tmp";
+    #
+    # send mail here or check if root at the start and send mail?
+    #
+    return;
   }
+
+
+  #
+  # The g3tester user should be configurable. Will test this out first
+  # before proceeding with adding that option. 
+  #
+  system "find /tmp -user g3tester -exec rm -rf {} \;";
 
   try_to("echo $0: done with cleanup.\n", 1);
 
