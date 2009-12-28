@@ -468,7 +468,7 @@ sub produce_email_text
 #   try_to("echo testing command line grep -B 10 die $outputfile", 1);
 
   my $status_message = "";
-  my $errorcounts = `cat $outputfile | grep error_count`;
+  my $errorcounts = `cat $outputfile | grep '_count'`;
   my $revisions = `cat $outputfile | grep "Changes against parent"`;
   my $die_messages = `grep -B 10 die $outputfile`;
 
