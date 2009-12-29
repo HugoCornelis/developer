@@ -273,7 +273,7 @@ sub main
 
 	# uninstall again
 
-	try_to("neurospaces_uninstall");
+	#try_to("neurospaces_uninstall");
 
 	install_developer();
 
