@@ -1626,7 +1626,7 @@ sub read_cmd_line
 		     },
 		     [
 		      'mtn', 'automate', 'get_base_revision_id',
-		      '&&', 'mtn', '--db', $repository_name, '--branch', '0', 'update',
+		      '&&', 'mtn', '--db', $repository_name, '--branch', '0', 'update', '--move-conflicting-paths',
 		     ],
 		    );
 	    },
@@ -2209,7 +2209,7 @@ sub read_cmd_line
 		     },
 		     [
 		      'mtn', 'automate', 'get_base_revision_id',
-		      '&&', 'mtn', '--db', $repository_name, '--branch', '0', 'update',
+		      '&&', 'mtn', '--db', $repository_name, '--branch', '0', 'update', '--move-conflicting-paths',
 		     ],
 		    );
 	    },

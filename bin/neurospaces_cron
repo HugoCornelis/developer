@@ -35,7 +35,7 @@ sub check_and_prepare
 
     # here we rotate the logs
 
-    rotate_logs($output_path);
+    rotate_logs();
 
     try_to("echo '$0' started at", 1);
 
@@ -450,6 +450,16 @@ sub parse_config_file
   }
 
 
+  if(defined $configuration->{LOGDIR})
+  {
+
+    chomp($configuration->{LOGDIR});
+    print "\tDirectory to store past logs is $configuration->{LOGDIR}\n";
+
+  }
+
+
+
   print "Done Parsing $config_file:\n";
 
 }
@@ -566,13 +576,12 @@ sub try_to
 
 
 # Rotates logs with the name '$logname'
-# 
-# args ($logname)
 #
 sub rotate_logs
 {
 
-  my $logname = shift;
+  my $output_dir = $configuration->{OUTPUTDIR};
+  my $logname = $output_filename;
   my $numlogs  = -1;
 
   if(not defined $configuration->{LOGROTATE})
@@ -592,6 +601,23 @@ sub rotate_logs
   }
 
 
+  my $logdir = $output_dir;
+
+
+  if(defined $configuration->{LOGDIR})
+  {
+
+    $logdir = $configuration->{LOGDIR};
+
+    if(! -d $logdir)
+    {
+      mkdir $logdir
+    }
+
+    $logdir .= "/";
+  }
+
+
   # we shift all of our logs if present. 
   # Whatever log happens to be the last one should
   # get overwritten with a previous log.
@@ -599,14 +625,14 @@ sub rotate_logs
   for($i = $numlogs-1; $i > -1; $i--)
   {
 
-    my $log = $logname .'.' . $i;
+    my $log = $logdir . $logname .'.' . $i;
 
     if( -e $log )
     {
 
       # mv should preserve permissions.
 
-      my $nextlog = $logname . '.' . ($i+1);
+      my $nextlog = $logdir . $logname . '.' . ($i+1);
 
       system "mv -f $log $nextlog";
 
@@ -621,7 +647,7 @@ sub rotate_logs
   # after the shift, we should be able to move the 
   # first log to slot 0. Now the original slot is open
   # for a log run.
-  my $nextlog = $logname . '.' . 0;
+  my $nextlog = $logdir . $logname . '.' . 0;
   system "mv -f $logname $nextlog";
 
   return;
