@@ -954,6 +954,8 @@ sub read_cmd_line
 
     my $tag_set_in_tag_database = 0;
 
+    my $monotone_version = monotone_version();
+
     # merge operations with options that affect the execution of the
     # operations
 
@@ -1613,6 +1615,15 @@ sub read_cmd_line
 		# You simply update to a particular revision number.
 		# hg update [-r revision]
 
+		my @update_args = [
+		      'mtn', 'automate', 'get_base_revision_id',
+		      '&&', 'mtn', '--db', $repository_name, '--branch', '0', 'update', ];
+
+		if($monotone_version >= 0.45)
+		{
+		  push(@update_args,'--move-conflicting-paths');
+		}
+
 		operation_execute
 		    (
 		     $operations,
@@ -1624,10 +1635,7 @@ sub read_cmd_line
 		      keywords => 0,
 		      package_name => $package_name,
 		     },
-		     [
-		      'mtn', 'automate', 'get_base_revision_id',
-		      '&&', 'mtn', '--db', $repository_name, '--branch', '0', 'update', '--move-conflicting-paths',
-		     ],
+		     @update_args,
 		    );
 	    },
 	   },
@@ -2196,6 +2204,15 @@ sub read_cmd_line
 		# You simply update to a particular revision number.
 		# hg update [-r revision]
 
+		my @update_args = [
+		      'mtn', 'automate', 'get_base_revision_id',
+		      '&&', 'mtn', '--db', $repository_name, '--branch', '0', 'update', ];
+
+		if($monotone_version >= 0.45)
+		{
+		  push(@update_args,'--move-conflicting-paths');
+		}
+
 		operation_execute
 		    (
 		     $operations,
@@ -2207,10 +2224,7 @@ sub read_cmd_line
 		      keywords => 0,
 		      package_name => $package_name,
 		     },
-		     [
-		      'mtn', 'automate', 'get_base_revision_id',
-		      '&&', 'mtn', '--db', $repository_name, '--branch', '0', 'update', '--move-conflicting-paths',
-		     ],
+		     @update_args,
 		    );
 	    },
 	   },
@@ -3297,6 +3311,20 @@ sub version
     return $version;
 }
 
+
+#
+# Returns the monotone version. 
+#
+sub monotone_version
+{
+
+  my $tmp = `mtn --version`;
+
+  my @tmp = split(/ /,$tmp);
+
+  return $tmp[1];
+
+}
 
 sub version_control_translate_server
 {
