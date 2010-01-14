@@ -1615,13 +1615,17 @@ sub read_cmd_line
 		# You simply update to a particular revision number.
 		# hg update [-r revision]
 
-		my @update_args = [
-		      'mtn', 'automate', 'get_base_revision_id',
-		      '&&', 'mtn', '--db', $repository_name, '--branch', '0', 'update', ];
+		my @update_args;
 
 		if($monotone_version >= 0.45)
 		{
-		  push(@update_args,'--move-conflicting-paths');
+		  @update_args = ['mtn', 'automate', 'get_base_revision_id',
+		    '&&', 'mtn', '--db', $repository_name, '--branch', '0', 'update','--move-conflicting-paths', ];
+	        }
+	        else
+	        {
+		  @update_args = ['mtn', 'automate', 'get_base_revision_id',
+		    '&&', 'mtn', '--db', $repository_name, '--branch', '0', 'update', ];
 		}
 
 		operation_execute
@@ -2204,14 +2208,20 @@ sub read_cmd_line
 		# You simply update to a particular revision number.
 		# hg update [-r revision]
 
-		my @update_args = [
-		      'mtn', 'automate', 'get_base_revision_id',
-		      '&&', 'mtn', '--db', $repository_name, '--branch', '0', 'update', ];
+		my @update_args;
 
 		if($monotone_version >= 0.45)
 		{
-		  push(@update_args,'--move-conflicting-paths');
+		  @update_args = ['mtn', 'automate', 'get_base_revision_id',
+		    '&&', 'mtn', '--db', $repository_name, '--branch', '0', 'update','--move-conflicting-paths', ];
+	        }
+	        else
+	        {
+		  @update_args = ['mtn', 'automate', 'get_base_revision_id',
+		    '&&', 'mtn', '--db', $repository_name, '--branch', '0', 'update', ];
 		}
+
+
 
 		operation_execute
 		    (
