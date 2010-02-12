@@ -109,14 +109,14 @@ my $all_packages
 		  version_script => 'genesis-g3 --version',
 		 },
       'g-tube' => {
-		    directory => "$ENV{HOME}/neurospaces_project/g-tube/source/snapshots/0",
+		   directory => "$ENV{HOME}/neurospaces_project/g-tube/source/snapshots/0",
 		   disabled => 'Mercurial isn\'t implemented yet',
-		    order => 31,
-		    version_control => {
-					repository => "$ENV{HOME}/neurospaces_project/g-tube/source/snapshots/0/.hg",
-				       },
-		    version_script => 0,
-		   },
+		   order => 31,
+		   version_control => {
+				       repository => "$ENV{HOME}/neurospaces_project/g-tube/source/snapshots/0/.hg",
+				      },
+		   version_script => 0,
+		  },
        heccer => {
 		  dependencies => {
 				   'model-container' => 'for storing the model in computer memory',
@@ -1055,12 +1055,12 @@ sub read_cmd_line
 
 		# if not enough information for serving
 
-		if (not -f $repository_name)
+		if (not -f $repository_name and not -d $repository_name)
 		{
 		    die "$0: *** Error: cannot serve repository, repository_name not set";
 		}
 
-		if (not $port_number)
+		if (not $port_number and $repository_name =~ m/^.*\.mtn$/)
 		{
 		    die "$0: *** Error: cannot serve repository, port_number not set";
 		}
@@ -1204,112 +1204,108 @@ sub read_cmd_line
 
 		if ($repository_name =~ m/^.*\.mtn$/)
 		{
-		  # initialize the repository if necessary
+		    # initialize the repository if necessary
 
-		  #t MONOTONE
+		    my $port_number = $package_information->{package}->{version_control}->{port_number};
 
-		  my $port_number = $package_information->{package}->{version_control}->{port_number};
+		    # create repository directory
 
-		  # create repository directory
+		    my $repository_directory = $repository_name;
 
-		  my $repository_directory = $repository_name;
+		    $repository_directory =~ s((.*)/.*)($1);
 
-		  $repository_directory =~ s((.*)/.*)($1);
+		    operation_execute
+			(
+			 $operations,
+			 {
+			  description => "$description (creating repository directory)",
 
-		  operation_execute
-		    (
-		     $operations,
-		     {
-		      description => "$description (creating repository directory)",
+			  #t always zero here, but I guess this simply depends on working in client mode ?
 
-		      #t always zero here, but I guess this simply depends on working in client mode ?
+			  keywords => 0,
+			  package_name => $package_name,
+			 },
+			 [
+			  'mkdir', '-p', $repository_directory,
+			 ],
+			);
 
-		      keywords => 0,
-		      package_name => $package_name,
-		     },
-		     [
-		      'mkdir', '-p', $repository_directory,
-		     ],
-		    );
+		    operation_execute
+			(
+			 $operations,
+			 {
+			  description => "$description: (initializing the repository)",
 
-		  operation_execute
-		    (
-		     $operations,
-		     {
-		      description => "$description: (initializing the repository)",
+			  #t always zero here, but I guess this simply depends on working in client mode ?
 
-		      #t always zero here, but I guess this simply depends on working in client mode ?
+			  keywords => 0,
+			  package_name => $package_name,
+			 },
+			 [
+			  'test', '-f', $repository_name, '||', 'mtn', '--db', $repository_name, 'db', 'init',
+			 ],
+			);
 
-		      keywords => 0,
-		      package_name => $package_name,
-		     },
-		     [
-		      'test', '-f', $repository_name, '||', 'mtn', '--db', $repository_name, 'db', 'init',
-		     ],
-		    );
+		    # if not enough information for pulling
 
-		  # if not enough information for pulling
+		    if (not -f $repository_name)
+		    {
+			die "$0: *** Error: cannot pull repository, repository_name not set";
+		    }
 
-		  if (not -f $repository_name)
-		  {
-		    die "$0: *** Error: cannot pull repository, repository_name not set";
-		  }
+		    if (not $port_number and $repository_name =~ m/^.*\.mtn$/)
+		    {
+			die "$0: *** Error: cannot pull repository, port_number not set";
+		    }
 
-		  if (not $port_number)
-		  {
-		    die "$0: *** Error: cannot pull repository, port_number not set";
-		  }
+		    # translate well known names to a routable address
 
-		  # translate well known names to a routable address
+		    # pull the repository
 
-	
-		  # pull the repository
+		    operation_execute
+			(
+			 $operations,
+			 {
+			  description => $description,
 
-		  #t MONOTONE
+			  #t always zero here, but I guess this simply depends on working in client mode ?
 
-		  operation_execute
-		    (
-		     $operations,
-		     {
-		      description => $description,
-
-		      #t always zero here, but I guess this simply depends on working in client mode ?
-
-		      keywords => 0,
-		      package_name => $package_name,
-		     },
-		     [
-		      'mtn', '--db', $repository_name, 'pull', '--ticker=count', "$repo_server:$port_number", '"*"',
-		     ],
-		    );
+			  keywords => 0,
+			  package_name => $package_name,
+			 },
+			 [
+			  'mtn', '--db', $repository_name, 'pull', '--ticker=count', "$repo_server:$port_number", '"*"',
+			 ],
+			);
 
 	      }
 	      else
 	      {
+		  # MERCURIAL PULL
 
-		# MERCURIAL PULL
+		  # hg pull http://repo-genesis3.cbi.utsa.edu/hg/g-tube
+		  # hg pull http://$repo_server/hg/$package_name
 
-		# hg pull http://repo-genesis3.cbi.utsa.edu/hg/g-tube
-		# hg pull http://$repo_server/hg/$package_name
-# 		my $mercurial_server = $repo_server . '/' . $package_name;
+		  # change the directory
 
-# 		operation_execute
-# 		  (
-# 		   $operations,
-# 		   {
-# 		    description => $description,
-# 		    keywords => 0,
-# 		    package_name => $package_name,
-# 		   },
-# 		   [
-# 		    'hg', 'pull', $mercurial_server,
-# 		   ],
-# 		  );
-		
+		  if (not chdir $directory)
+		  {
+		      die "$0: *** Error: cannot change to directory $directory";
+		  }
 
+		  operation_execute
+		      (
+		       $operations,
+		       {
+			description => $description,
+			keywords => 0,
+			package_name => $package_name,
+		       },
+		       [
+			'hg', 'pull',
+		       ],
+		      );
 	      }
-
-
 	    },
 	   },
 	   {
@@ -1380,12 +1376,12 @@ sub read_cmd_line
 
 		# if not enough information for pushing
 
-		if (not -f $repository_name)
+		if (not -f $repository_name and not -d $repository_name)
 		{
 		    die "$0: *** Error: cannot push repository, repository_name not set";
 		}
 
-		if (not $port_number)
+		if (not $port_number and $repository_name =~ m/^.*\.mtn$/)
 		{
 		    die "$0: *** Error: cannot push repository, port_number not set";
 		}
@@ -1445,12 +1441,12 @@ sub read_cmd_line
 
 		# if not enough information for clone
 
-		if (not -f $repository_name)
+		if (not -f $repository_name and not -d $repository_name)
 		{
 		    die "$0: *** Error: cannot clone from repository, repository_name not set";
 		}
 
-		if (not $port_number)
+		if (not $port_number and $repository_name =~ m/^.*\.mtn$/)
 		{
 		    die "$0: *** Error: cannot clone from repository, port_number not set";
 		}
@@ -1541,12 +1537,12 @@ sub read_cmd_line
 
 		# if not enough information for checkout
 
-		if (not -f $repository_name)
+		if (not -f $repository_name and not -d $repository_name)
 		{
 		    die "$0: *** Error: cannot checkout from repository, repository_name not set";
 		}
 
-		if (not $port_number)
+		if (not $port_number and $repository_name =~ m/^.*\.mtn$/)
 		{
 		    die "$0: *** Error: cannot checkout from repository, port_number not set";
 		}
@@ -1560,87 +1556,149 @@ sub read_cmd_line
 
 		# merge code
 
-		#t MONOTONE
-
-		# MERCURIAL merge
-		# command: hg merge
-
-		operation_execute
-		    (
-		     $operations,
-		     {
-		      description => $description,
-
-		      #t always zero here, but I guess this simply depends on working in client mode ?
-
-		      keywords => 0,
-		      package_name => $package_name,
-		     },
-		     [
-# 		      'test', '-d', '_MTN',
-# 		      '||',
-		      'mtn', '--db', $repository_name, '--branch', '0', 'merge',
-		     ],
-		    );
-
-		# checkout code
-
-		#t MONOTONE
-		
-		# MERCURAL checkout
-		# hg checkout -r branch/tagname
-		operation_execute
-		    (
-		     $operations,
-		     {
-		      description => $description,
-
-		      #t always zero here, but I guess this simply depends on working in client mode ?
-
-		      keywords => 0,
-		      package_name => $package_name,
-		     },
-		     [
-		      'test', '-d', '_MTN',
-		      '||', 'mtn', '--db', $repository_name, '--branch', '0', 'co', '.',
-		     ],
-		    );
-
-		# update code
-
-		#t MONOTONE
-		
-		# MERCURIAL update checkout
-		# these two are actually aliased to each other because of how it pulls a workspace. 
-		# You simply update to a particular revision number.
-		# hg update [-r revision]
-
-		my @update_args;
-
-		if($monotone_version >= 0.45)
+		if ($repository_name =~ m/^.*\.mtn$/)
 		{
-		  @update_args = ['mtn', 'automate', 'get_base_revision_id',
-		    '&&', 'mtn', '--db', $repository_name, '--branch', '0', 'update','--move-conflicting-paths', ];
-	        }
-	        else
-	        {
-		  @update_args = ['mtn', 'automate', 'get_base_revision_id',
-		    '&&', 'mtn', '--db', $repository_name, '--branch', '0', 'update', ];
+		    # MONOTONE
+
+		    operation_execute
+			(
+			 $operations,
+			 {
+			  description => $description,
+
+			  #t always zero here, but I guess this simply depends on working in client mode ?
+
+			  keywords => 0,
+			  package_name => $package_name,
+			 },
+			 [
+			  'mtn', '--db', $repository_name, '--branch', '0', 'merge',
+			 ],
+			);
+
+		    # checkout code
+
+		    operation_execute
+			(
+			 $operations,
+			 {
+			  description => $description,
+
+			  #t always zero here, but I guess this simply depends on working in client mode ?
+
+			  keywords => 0,
+			  package_name => $package_name,
+			 },
+			 [
+			  'test', '-d', '_MTN',
+			  '||', 'mtn', '--db', $repository_name, '--branch', '0', 'co', '.',
+			 ],
+			);
+
+		    my @update_args;
+
+		    if ($monotone_version >= 0.45)
+		    {
+			@update_args = ['mtn', 'automate', 'get_base_revision_id',
+					'&&', 'mtn', '--db', $repository_name, '--branch', '0', 'update','--move-conflicting-paths', ];
+		    }
+		    else
+		    {
+			@update_args = ['mtn', 'automate', 'get_base_revision_id',
+					'&&', 'mtn', '--db', $repository_name, '--branch', '0', 'update', ];
+		    }
+
+		    operation_execute
+			(
+			 $operations,
+			 {
+			  description => $description,
+
+			  #t always zero here, but I guess this simply depends on working in client mode ?
+
+			  keywords => 0,
+			  package_name => $package_name,
+			 },
+			 @update_args,
+			);
+
+		    # update code
+
+		}
+		else
+		{
+		    # MERCURIAL merge
+		    # command: hg merge
+
+		    # change the directory
+
+		    if (not chdir $directory)
+		    {
+			die "$0: *** Error: cannot change to directory $directory";
+		    }
+
+		    # note: mercurial aborts if there is nothing to merge
+
+		    operation_execute
+			(
+			 $operations,
+			 {
+			  description => $description,
+
+			  #t always zero here, but I guess this simply depends on working in client mode ?
+
+			  keywords => 0,
+			  package_name => $package_name,
+			 },
+			 [
+			  'hg', 'merge', '||', 'true',
+			 ],
+			);
+
+		    # checkout code
+
+		    operation_execute
+			(
+			 $operations,
+			 {
+			  description => $description,
+
+			  #t always zero here, but I guess this simply depends on working in client mode ?
+
+			  keywords => 0,
+			  package_name => $package_name,
+			 },
+			 [
+			  'test', '-d', '.hg',
+			  '||', 'hg', 'checkout', '-r', '0',
+			 ],
+			);
+
+		    # update code
+
+		    # MERCURIAL update checkout
+		    # these two are actually aliased to each other because of how it pulls a workspace.
+		    # You simply update to a particular revision number.
+		    # hg update [-r revision]
+
+		    operation_execute
+			(
+			 $operations,
+			 {
+			  description => $description,
+
+			  #t always zero here, but I guess this simply depends on working in client mode ?
+
+			  keywords => 0,
+			  package_name => $package_name,
+			 },
+			 [
+			  'hg', 'update',
+			 ],
+			);
+
 		}
 
-		operation_execute
-		    (
-		     $operations,
-		     {
-		      description => $description,
-
-		      #t always zero here, but I guess this simply depends on working in client mode ?
-
-		      keywords => 0,
-		      package_name => $package_name,
-		     },
-		     @update_args,
-		    );
 	    },
 	   },
 	   {
@@ -2136,12 +2194,12 @@ sub read_cmd_line
 
 		# if not enough information for checkout
 
-		if (not -f $repository_name)
+		if (not -f $repository_name and not -d $repository_name)
 		{
 		    die "$0: *** Error: cannot checkout from repository, repository_name not set";
 		}
 
-		if (not $port_number)
+		if (not $port_number and $repository_name =~ m/^.*\.mtn$/)
 		{
 		    die "$0: *** Error: cannot checkout from repository, port_number not set";
 		}
@@ -2210,18 +2268,16 @@ sub read_cmd_line
 
 		my @update_args;
 
-		if($monotone_version >= 0.45)
+		if ($monotone_version >= 0.45)
 		{
-		  @update_args = ['mtn', 'automate', 'get_base_revision_id',
-		    '&&', 'mtn', '--db', $repository_name, '--branch', '0', 'update','--move-conflicting-paths', ];
+		    @update_args = [ 'mtn', 'automate', 'get_base_revision_id',
+				     '&&', 'mtn', '--db', $repository_name, '--branch', '0', 'update','--move-conflicting-paths', ];
 	        }
 	        else
 	        {
-		  @update_args = ['mtn', 'automate', 'get_base_revision_id',
-		    '&&', 'mtn', '--db', $repository_name, '--branch', '0', 'update', ];
+		    @update_args = [ 'mtn', 'automate', 'get_base_revision_id',
+				     '&&', 'mtn', '--db', $repository_name, '--branch', '0', 'update', ];
 		}
-
-
 
 		operation_execute
 		    (
@@ -2601,12 +2657,12 @@ sub read_cmd_line
 
 # 		# if not enough information for comparing
 
-# 		if (not -f $repository_name)
+# 		if (not -f $repository_name and not -d $repository_name)
 # 		{
 # 		    die "$0: *** Error: cannot compare with repository, repository_name not set";
 # 		}
 
-# 		if (not $port_number)
+# 		if (not $port_number and $repository_name =~ m/^.*\.mtn$/)
 # 		{
 # 		    die "$0: *** Error: cannot compare with repository, port_number not set";
 # 		}
@@ -2736,7 +2792,7 @@ sub read_cmd_line
 		    die "$0: *** Error: cannot sync repository, repository_name not set";
 		  }
 
-		  if (not $port_number)
+		  if (not $port_number and $repository_name =~ m/^.*\.mtn$/)
 		  {
 		    die "$0: *** Error: cannot sync repository, port_number not set";
 		  }
@@ -3335,6 +3391,7 @@ sub monotone_version
   return $tmp[1];
 
 }
+
 
 sub version_control_translate_server
 {
