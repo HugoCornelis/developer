@@ -41,25 +41,38 @@ my $all_packages;
 	   @$all_packages,
 	  };
 
-    print Dump($all_packages);
+#     print Dump($all_packages);
 }
 
+
+my $all_tools
+    = {
+       "tests/neurospaces_harness" => {
+				       description => "Searches test specifications and executes them",
+				       source_package => 'model-container',
+				      },
+      };
 
 sub main
 {
-    propagate_harness();
+    # loop over all known tools
+
+    foreach my $tool_name (keys %$all_tools)
+    {
+	# propagate the tool
+
+	propagate($tool_name);
+    }
 }
 
 
-sub propagate_harness
+sub propagate
 {
-    # define the tool
-
-    my $tool = "tests/neurospaces_harness";
+    my $tool_name = shift;
 
     # define the source
 
-    my $source_package = 'model-container';
+    my $source_package = $all_tools->{$tool_name}->{source_package};
 
     # loop over all targets
 
@@ -67,16 +80,16 @@ sub propagate_harness
 
     foreach my $target_package (sort keys %$target_packages)
     {
-	if (!$target_packages->{$target_package})
+	if (not $target_packages->{$target_package})
 	{
 	    next;
 	}
 
 	# copy the tool from source to target
 
-	print "$0: copying $tool from $source_package to $target_package\n";
+	print "$0: copying $tool_name from $source_package to $target_package\n";
 
-	`cp ~/neurospaces_project/$source_package/source/snapshots/0/$tool ~/neurospaces_project/$target_package/source/snapshots/0/$tool`;
+	`cp ~/neurospaces_project/$source_package/source/snapshots/0/$tool_name ~/neurospaces_project/$target_package/source/snapshots/0/$tool_name`;
     }
 }
 
