@@ -163,6 +163,12 @@ my $all_packages
 						 repository => "$ENV{HOME}/neurospaces_project/MTN/model-container.mtn",
 						},
 			    },
+       neuroml => {
+		   directory => "$ENV{HOME}/neurospaces_project/neuroml/source/snapshots/0",
+		   disabled => 'incomplete',
+		   order => 1.5,
+		   version_script => 'neurospaces_neuroml --version',
+		  },
        neurospaces_prcs => {
 			    directory => "$ENV{HOME}/neurospaces_project/model-container/source/snapshots/prcs.0",
 			    disabled => 'obsoleted by the model-container under mtn control rather than prcs',
@@ -270,7 +276,7 @@ my $version_control_servers
        },
        {
 	name => 'backup_server',
-	address => '129.115.117.50',
+	address => '94.224.145.248',
        },
        {
 	name => 'mercurial_server',
@@ -979,6 +985,8 @@ sub read_cmd_line
 
 		my $package_name = $package_information->{package_name};
 
+		#t where does this default value come from?  Cannot work correctly?
+
 		my $repository_name
 		    = $package_information->{package}->{version_control}->{repository}
 			|| $directory . '/' . $package_name . '/' . 'mtn';
@@ -1046,6 +1054,8 @@ sub read_cmd_line
 		my $operations = $package_information->{operations};
 
 		my $package_name = $package_information->{package_name};
+
+		#t where does this default value come from?  Cannot work correctly?
 
 		my $repository_name
 		    = $package_information->{package}->{version_control}->{repository}
@@ -1191,6 +1201,8 @@ sub read_cmd_line
 
 		my $package_name = $package_information->{package_name};
 
+		#t where does this default value come from?  Cannot work correctly?
+
 		my $repository_name
 		    = $package_information->{package}->{version_control}->{repository}
 			|| $directory . '/' . $package_name . '/' . 'mtn';
@@ -1326,6 +1338,8 @@ sub read_cmd_line
 
 		my $package_name = $package_information->{package_name};
 
+		#t where does this default value come from?  Cannot work correctly?
+
 		my $repository_name
 		    = $package_information->{package}->{version_control}->{repository}
 			|| $directory . '/' . $package_name . '/' . 'mtn';
@@ -1433,6 +1447,8 @@ sub read_cmd_line
 
 		my $package_name = $package_information->{package_name};
 
+		#t where does this default value come from?  Cannot work correctly?
+
 		my $repository_name
 		    = $package_information->{package}->{version_control}->{repository}
 			|| $directory . '/' . $package_name . '/' . 'mtn';
@@ -1528,6 +1544,8 @@ sub read_cmd_line
 		my $operations = $package_information->{operations};
 
 		my $package_name = $package_information->{package_name};
+
+		#t where does this default value come from?  Cannot work correctly?
 
 		my $repository_name
 		    = $package_information->{package}->{version_control}->{repository}
@@ -2186,6 +2204,8 @@ sub read_cmd_line
 
 		my $package_name = $package_information->{package_name};
 
+		#t where does this default value come from?  Cannot work correctly?
+
 		my $repository_name
 		    = $package_information->{package}->{version_control}->{repository}
 			|| $directory . '/' . $package_name . '/' . 'mtn';
@@ -2643,6 +2663,8 @@ sub read_cmd_line
 
 		my $package_name = $package_information->{package_name};
 
+		#t where does this default value come from?  Cannot work correctly?
+
 		my $repository_name
 		    = $package_information->{package}->{version_control}->{repository}
 			|| $directory . '/' . $package_name . '/' . 'mtn';
@@ -2763,6 +2785,8 @@ sub read_cmd_line
 		my $operations = $package_information->{operations};
 
 		my $package_name = $package_information->{package_name};
+
+		#t where does this default value come from?  Cannot work correctly?
 
 		my $repository_name
 		    = $package_information->{package}->{version_control}->{repository}
