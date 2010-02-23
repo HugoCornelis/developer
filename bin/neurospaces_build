@@ -1566,10 +1566,13 @@ sub read_cmd_line
 		    die "$0: *** Error: cannot checkout from repository, repository_name not set";
 		}
 
-		if (not $port_number and $repository_name =~ m/^.*\.mtn$/)
-		{
-		    die "$0: *** Error: cannot checkout from repository, port_number not set";
-		}
+		#t port number commented out, impedes the automated
+		#t addition of new software components
+
+# 		if (not $port_number and $repository_name =~ m/^.*\.mtn$/)
+# 		{
+# 		    die "$0: *** Error: cannot checkout from repository, port_number not set";
+# 		}
 
 		# change the directory
 
