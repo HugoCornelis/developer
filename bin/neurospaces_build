@@ -164,9 +164,15 @@ my $all_packages
 						},
 			    },
        neuroml => {
+		   dependencies => {
+				    'model-container' => 'for storing the model in computer memory',
+				   },
 		   directory => "$ENV{HOME}/neurospaces_project/neuroml/source/snapshots/0",
 		   disabled => 'incomplete',
 		   order => 1.5,
+		   version_control => {
+				       repository => "$ENV{HOME}/neurospaces_project/MTN/neuroml.mtn",
+				      },
 		   version_script => 'neurospaces_neuroml --version',
 		  },
        neurospaces_prcs => {
