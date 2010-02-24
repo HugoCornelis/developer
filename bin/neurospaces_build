@@ -163,18 +163,18 @@ my $all_packages
 						 repository => "$ENV{HOME}/neurospaces_project/MTN/model-container.mtn",
 						},
 			    },
-       neuroml => {
-		   dependencies => {
-				    'model-container' => 'for storing the model in computer memory',
-				   },
-		   directory => "$ENV{HOME}/neurospaces_project/neuroml/source/snapshots/0",
-		   disabled => 'incomplete',
-		   order => 1.5,
-		   version_control => {
-				       repository => "$ENV{HOME}/neurospaces_project/MTN/neuroml.mtn",
-				      },
-		   version_script => 'neurospaces_neuroml --version',
-		  },
+       exchange => {
+		    dependencies => {
+				     'model-container' => 'for storing the model in computer memory',
+				    },
+		    directory => "$ENV{HOME}/neurospaces_project/exchange/source/snapshots/0",
+		    disabled => 'incomplete',
+		    order => 1.5,
+		    version_control => {
+					repository => "$ENV{HOME}/neurospaces_project/MTN/exchange.mtn",
+				       },
+		    version_script => 'neurospaces_exchange --version',
+		   },
        neurospaces_prcs => {
 			    directory => "$ENV{HOME}/neurospaces_project/model-container/source/snapshots/prcs.0",
 			    disabled => 'obsoleted by the model-container under mtn control rather than prcs',
@@ -282,7 +282,7 @@ my $version_control_servers
        },
        {
 	name => 'backup_server',
-	address => '94.224.145.248',
+	address => '84.193.227.151',
        },
        {
 	name => 'mercurial_server',
