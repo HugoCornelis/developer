@@ -40,7 +40,7 @@ sub main
     my $regex_options = defined $option_regex_selector ? "--regex '$option_regex_selector' " : '';
     my $enable_options = defined $option_enable ? "--enable $option_enable " : '';
 
-    system "neurospaces_build $verbose_options $developer_options $regex_options $enable_options --no-configure --no-compile --no-install --enable developer";
+    system "neurospaces_build $verbose_options $developer_options $regex_options $enable_options --no-configure --no-compile --no-install";
 }
 
 
