@@ -21,7 +21,10 @@ $SIG{__DIE__}
     };
 
 
-our $option_verbose;
+my $option_developer = 1;
+my $option_enable;
+my $option_regex_selector;
+my $option_verbose;
 
 my $exit_code = 0;
 
@@ -32,7 +35,12 @@ sub main
 
     # print out version information
 
-    system "neurospaces_build --developer --no-configure --no-compile --no-install --enable developer";
+    my $verbose_options = defined $option_verbose ? "--verbose " x $option_verbose : '';
+    my $developer_options = defined $option_developer ? "--developer " x $option_developer : '';
+    my $regex_options = defined $option_regex_selector ? "--regex '$option_regex_selector' " : '';
+    my $enable_options = defined $option_enable ? "--enable $option_enable " : '';
+
+    system "neurospaces_build $verbose_options $developer_options $regex_options $enable_options --no-configure --no-compile --no-install --enable developer";
 }
 
 
@@ -44,9 +52,12 @@ sub read_cmd_line
     my $result
 	= GetOptions
 	    (
+	     "developer!" => \$option_developer,
+	     "enable=s" => \$option_enable,
 	     "help!" => \$option_help,
-	     "v|verbose+" => \$option_verbose,
+	     "regex-selector=s" => \$option_regex_selector,
 	     "version" => \$option_version,
+	     "v|verbose+" => \$option_verbose,
 	    );
 
     if ($option_version)
