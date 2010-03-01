@@ -171,6 +171,7 @@ my $all_packages
 		    disabled => 'incomplete',
 		    order => 1.5,
 		    version_control => {
+					port_number => 4701,
 					repository => "$ENV{HOME}/neurospaces_project/MTN/exchange.mtn",
 				       },
 		    version_script => 'neurospaces_exchange --version',
