@@ -168,7 +168,6 @@ my $all_packages
 				     'model-container' => 'for storing the model in computer memory',
 				    },
 		    directory => "$ENV{HOME}/neurospaces_project/exchange/source/snapshots/0",
-		    disabled => 'incomplete',
 		    order => 1.5,
 		    version_control => {
 					port_number => 4701,
