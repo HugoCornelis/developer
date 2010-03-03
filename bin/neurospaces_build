@@ -2974,7 +2974,7 @@ sub read_cmd_line
 
     use YAML;
 
-    eval
+    if (-f '/etc/neurospaces/developer/build.yml')
     {
 	my $all_packages_local = YAML::LoadFile('/etc/neurospaces/developer/build.yml');
 
@@ -2986,7 +2986,7 @@ sub read_cmd_line
 
 	    my $merged_packages = Data::Merger::merger($all_packages, $all_packages_local->{all_packages});
 	}
-    };
+    }
 
     # reporting options
 
