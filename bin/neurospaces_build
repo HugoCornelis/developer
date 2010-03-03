@@ -2970,6 +2970,24 @@ sub read_cmd_line
 	print Dump(\%ENV);
     }
 
+    # if there is a local package configuration
+
+    use YAML;
+
+    eval
+    {
+	my $all_packages_local = YAML::LoadFile('/etc/neurospaces/developer/build.yml');
+
+	if ($all_packages_local)
+	{
+	    # merge
+
+	    require Data::Utilities;
+
+	    my $merged_packages = Data::Merger::merger($all_packages, $all_packages_local->{all_packages});
+	}
+    };
+
     # reporting options
 
     if ($option_help
