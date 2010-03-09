@@ -1,24 +1,15 @@
 $files = {
-           '_<bin/neurospaces_build' => [
-                                          {
-                                            'expr' => undef,
-                                            'value' => '1',
-                                            'text' => 'my $all_packages
+           '_<./neurospaces_build' => [
+                                        {
+                                          'expr' => undef,
+                                          'value' => '1',
+                                          'text' => '    foreach my $first_package_name (keys %$all_packages)
 ',
-                                            'fname' => 'bin/neurospaces_build',
-                                            'type' => 'user',
-                                            'line' => 71
-                                          },
-                                          {
-                                            'expr' => undef,
-                                            'value' => '1',
-                                            'text' => '		operation_execute
-',
-                                            'fname' => 'bin/neurospaces_build',
-                                            'type' => 'user',
-                                            'line' => '2172'
-                                          }
-                                        ]
+                                          'fname' => './neurospaces_build',
+                                          'type' => 'user',
+                                          'line' => '2994'
+                                        }
+                                      ]
          };
 $expr_list = [
                {

@@ -2988,6 +2988,34 @@ sub read_cmd_line
 	}
     }
 
+    # check validity of the package configuration
+
+    foreach my $first_package_name (keys %$all_packages)
+    {
+	my $first_package = $all_packages->{$first_package_name};
+
+	foreach my $second_package_name (keys %$all_packages)
+	{
+	    next if $first_package_name eq $second_package_name;
+
+	    my $second_package = $all_packages->{$second_package_name};
+
+	    # if the version control port numbers are the same
+
+	    if ($first_package->{version_control}
+		and $first_package->{version_control}->{port_number}
+		and $second_package->{version_control}
+		and $second_package->{version_control}->{port_number})
+	    {
+		if ($first_package->{version_control}->{port_number}
+		    eq $second_package->{version_control}->{port_number})
+		{
+		    die "$0: *** Error: package $first_package_name and $second_package_name have the same version control port number";
+		}
+	    }
+	}
+    }
+
     # reporting options
 
     if ($option_help
