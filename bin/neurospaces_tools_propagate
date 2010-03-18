@@ -11,6 +11,10 @@ use Getopt::Long;
 use YAML;
 
 
+my $option_regex = '.*';
+my $option_verbose;
+
+
 my $all_packages;
 
 {
@@ -57,12 +61,38 @@ my $all_tools
 			       },
       };
 
+
 sub main
 {
+    # parse options
+
+    read_cmd_line();
+
     # loop over all known tools
 
-    foreach my $tool_name (keys %$all_tools)
+    print "---\n";
+
+    my $all_these_tools
+	= {
+	   (scalar @ARGV
+	    ? (map { $_ => 1 } @ARGV)
+	    : %$all_tools)
+	  };
+
+    foreach my $tool_name (keys %$all_these_tools)
     {
+	if ($tool_name !~ $option_regex)
+	{
+	    next;
+	}
+
+	if (!$all_tools->{$tool_name})
+	{
+	    die "$0: unknown tool $tool_name";
+	}
+
+	print "$tool_name:\n";
+
 	# propagate the tool
 
 	propagate($tool_name);
@@ -91,9 +121,82 @@ sub propagate
 
 	# copy the tool from source to target
 
-	print "$0: copying $tool_name from $source_package to $target_package\n";
+	print "  - $0 copying $tool_name from $source_package to $target_package\n";
 
 	`cp ~/neurospaces_project/$source_package/source/snapshots/0/$tool_name ~/neurospaces_project/$target_package/source/snapshots/0/$tool_name`;
+    }
+}
+
+
+sub read_cmd_line
+{
+    my $option_help = 0;
+    my $option_help_all = 0;
+    my $option_version;
+
+    my $result
+	= GetOptions(
+		     "help!" => \$option_help,
+		     "help-all!" => \$option_help_all,
+		     "regex=s" => \$option_regex,
+		     "verbose+" => \$option_verbose,
+		     "version" => \$option_version,
+		    );
+
+    if (!$result)
+    {
+	die "$0: *** Error: Error in option processing";
+    }
+
+    if ($option_version)
+    {
+    }
+
+    # reporting options
+
+    if ($option_help
+	|| $option_help_all)
+    {
+	$0 =~ m(.*/(.*));
+
+	my $program_name = $1;
+
+	print
+	    "
+
+$program_name: propagate a tool from its source package to other
+configured packages.  When no tools are given on the command line, all
+known tools are propagated.
+
+synopsis:
+    $0 <tool name1> <tool name2> ...
+
+options:
+    --help            print usage information.
+    --regex           selects tools by name (default is all).
+    --version         give version information.
+    --v|verbose       tell what is being done, specify multiple times to get more feedback.
+
+example usage:
+    $0 tests/tests_2_html
+
+";
+
+	if ($option_help)
+	{
+	    exit 1;
+	}
+    }
+
+    if ($option_help_all)
+    {
+	print Dump(
+		   {
+		    all_packages => $all_packages,
+		    all_tools => $all_tools,
+		   },
+		  );
+	exit 1;
     }
 }
 
