@@ -1,0 +1,21 @@
+$files = {
+           '_</local_home/hugo/neurospaces_project/developer/source/snapshots/0/bin/neurospaces_tools_propagate' => [
+                                                                                                                      {
+                                                                                                                        'expr' => undef,
+                                                                                                                        'value' => '1',
+                                                                                                                        'text' => '    foreach my $tool_name (keys %$all_tools)
+',
+                                                                                                                        'fname' => '/local_home/hugo/neurospaces_project/developer/source/snapshots/0/bin/neurospaces_tools_propagate',
+                                                                                                                        'type' => 'user',
+                                                                                                                        'line' => '73'
+                                                                                                                      }
+                                                                                                                    ]
+         };
+$expr_list = [
+               {
+                 'expr' => '$tool_name',
+                 'depth' => -1
+               }
+             ];
+$eval_saved_text = undef;
+$main_win_geometry = '1592x1115+0+0';
