@@ -321,6 +321,7 @@ sub main
 	system "cp -rf $ENV{HOME}/neurospaces_project/ns-sli/source/snapshots/0/tests/html $configuration->{REGTESTOUTPUT}/ns-sli";
 	system "cp -rf $ENV{HOME}/neurospaces_project/ssp/source/snapshots/0/tests/html $configuration->{REGTESTOUTPUT}/ssp";
 	system "cp -rf $ENV{HOME}/neurospaces_project/gshell/source/snapshots/0/tests/html $configuration->{REGTESTOUTPUT}/gshell";
+	system "cp -rf $ENV{HOME}/neurospaces_project/exchange/source/snapshots/0/tests/html $configuration->{REGTESTOUTPUT}/exchange";
     }
 
 #     # now build tarballs
