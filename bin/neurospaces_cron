@@ -55,6 +55,8 @@ sub check_and_prepare
 
     install_developer();
 
+    copy_docs();
+
 }
 
 
@@ -155,7 +157,76 @@ sub cleanup_and_finalize
 
 
 #
+# Function copies doxygen and regression test docs to the output directory
+# specified. May need to break this up into several "copy" functions if
+# builds for deb,tar.gz and rpm are added.
 #
+sub copy_docs
+{
+
+  # not sure if this should end up being a global variable yet.
+  # so far this is the only legit use for it. If we make a dist,deb,rpm build
+  # part of the cronjob then we'd have to put it as a global.
+  my @enabled_packages = get_enabled_packages();
+
+
+  if (defined $configuration->{DOXYGENOUTPUT})
+  {
+
+    my $packagelist = join(',',@enabled_packages);
+
+    print "\nCopying Doxygen output for $packagelist to $configuration->{DOXYGENOUTPUT}.\n\n";
+
+    system "rm -rf $configuration->{DOXYGENOUTPUT}/*";
+
+    foreach (@enabled_packages)
+    {
+
+      my $package = chomp($_);
+      my $htmldir = "$ENV{HOME}/neurospaces_project/" . $package . "/source/snapshots/0/docs/html";
+      my $dstdir =  "$configuration->{DOXYGENOUTPUT}/" .$package;
+
+      if( -d $htmldir )
+      {
+	system "cp -rf $htmldir $dstdir";
+      }
+
+
+    }
+
+  }
+
+  if (defined $configuration->{REGTESTOUTPUT})
+  {
+    my $packagelist = join(',',@enabled_packages);
+    print "Copying regression test output for $packagelist to $configuration->{DOXYGENOUTPUT}.\n\n";
+
+    system "rm -rf $configuration->{REGTESTOUTPUT}/*";
+
+    foreach (@enabled_packages)
+    {
+
+      my $package = chomp($_);
+      my $htmldir = "$ENV{HOME}/neurospaces_project/" . $package . "/source/snapshots/0/tests/html";
+      my $dstdir =  "$configuration->{REGTESTOUTPUT}/" .$package;
+
+      if( -d $htmldir )
+      {
+	system "cp -rf $htmldir $dstdir";
+      }
+
+
+    }
+
+  }
+
+  
+}
+
+
+#
+# Copies the test output to a dorectory specified in the 
+# configuration file. 
 #
 sub copy_tests
 {
@@ -187,6 +258,21 @@ sub install_developer
     chdir($developer_directory);
 
     try_to("./autogen.sh && ./configure && make && sudo make install");
+}
+
+
+##
+#
+# Function simply gets the list of enabled packages from the developer
+# package and loads them up into an array. 
+sub get_enabled_packages
+{
+
+  my $package_text = `neurospaces_build --help-packages`;
+
+  my $tmp =  YAML::Load($package_text);
+
+  return $tmp->{'enabled packages in order of build'}
 }
 
 
@@ -296,32 +382,17 @@ sub main
 	#t compile, install, uninstall, check, uninstall, clean
     }
 
+
     # build docs if present in configuration
     # do this AFTER the clean so that the swig stuff doesn't get doxygenized
 
     if( (defined $configuration->{DOXYGENOUTPUT}) || (defined $configuration->{REGTESTOUTPUT}) )
     {
       try_to("neurospaces_docs");
-    }
 
 
-    if (defined $configuration->{DOXYGENOUTPUT})
-    {
-	system "rm -rf $configuration->{DOXYGENOUTPUT}/*";
-	system "cp -rf $ENV{HOME}/neurospaces_project/model-container/source/snapshots/0/docs/html $configuration->{DOXYGENOUTPUT}/model-container";
-	system "cp -rf $ENV{HOME}/neurospaces_project/heccer/source/snapshots/0/docs/html $configuration->{DOXYGENOUTPUT}/heccer";
-	system "cp -rf $ENV{HOME}/neurospaces_project/ns-sli/source/snapshots/0/docs/html $configuration->{DOXYGENOUTPUT}/ns-sli";
-    }
+      copy_docs();
 
-    if (defined $configuration->{REGTESTOUTPUT})
-    {
-	system "rm -rf $configuration->{REGTESTOUTPUT}/*";
-	system "cp -rf $ENV{HOME}/neurospaces_project/model-container/source/snapshots/0/tests/html $configuration->{REGTESTOUTPUT}/model-container";
-	system "cp -rf $ENV{HOME}/neurospaces_project/heccer/source/snapshots/0/tests/html $configuration->{REGTESTOUTPUT}/heccer";
-	system "cp -rf $ENV{HOME}/neurospaces_project/ns-sli/source/snapshots/0/tests/html $configuration->{REGTESTOUTPUT}/ns-sli";
-	system "cp -rf $ENV{HOME}/neurospaces_project/ssp/source/snapshots/0/tests/html $configuration->{REGTESTOUTPUT}/ssp";
-	system "cp -rf $ENV{HOME}/neurospaces_project/gshell/source/snapshots/0/tests/html $configuration->{REGTESTOUTPUT}/gshell";
-	system "cp -rf $ENV{HOME}/neurospaces_project/exchange/source/snapshots/0/tests/html $configuration->{REGTESTOUTPUT}/exchange";
     }
 
 #     # now build tarballs

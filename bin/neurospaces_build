@@ -3159,7 +3159,7 @@ options related to behavior of external applications:
     if ($option_help_packages)
     {
 	print
-	    "$0:\n  enabled packages in order of build:\n    - "
+	    "---\nenabled packages in order of build:\n    - "
 		. (
 		   join
 		   "\n    - ",
