@@ -143,13 +143,14 @@ sub cleanup_and_finalize
   }
 
 
+  # note: the following line won't execute the command.
+  #system "find /tmp -user g3tester -exec rm -rf {} \;";
+
+
   #
   # The g3tester user should be configurable. Will test this out first
   # before proceeding with adding that option. 
   #
-  # note: the following line wont' execute the command.
-  #system "find /tmp -user g3tester -exec rm -rf {} \;";
-
   my $trash_list = `find /tmp -user g3tester`;
 
   my @trash = split('\n',$trash_list);
