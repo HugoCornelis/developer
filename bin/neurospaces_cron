@@ -147,7 +147,19 @@ sub cleanup_and_finalize
   # The g3tester user should be configurable. Will test this out first
   # before proceeding with adding that option. 
   #
-  system "find /tmp -user g3tester -exec rm -rf {} \;";
+  # note: the following line wont' execute the command.
+  #system "find /tmp -user g3tester -exec rm -rf {} \;";
+
+  my $trash_list = `find /tmp -user g3tester`;
+
+  my @trash = split('\n',$trash_list);
+
+  print "Deleting trash.\n";
+
+  foreach(@trash)
+  {
+    system "rm -rf $_";
+  }
 
   try_to("echo $0: done with cleanup.\n", 1);
 
@@ -182,7 +194,8 @@ sub copy_docs
     foreach (@enabled_packages)
     {
 
-      my $package = chomp($_);
+      my $package = $_;
+      chomp($package); #just in case
       my $htmldir = "$ENV{HOME}/neurospaces_project/" . $package . "/source/snapshots/0/docs/html";
       my $dstdir =  "$configuration->{DOXYGENOUTPUT}/" .$package;
 
@@ -206,7 +219,8 @@ sub copy_docs
     foreach (@enabled_packages)
     {
 
-      my $package = chomp($_);
+      my $package = $_;
+      chomp($package);
       my $htmldir = "$ENV{HOME}/neurospaces_project/" . $package . "/source/snapshots/0/tests/html";
       my $dstdir =  "$configuration->{REGTESTOUTPUT}/" .$package;
 
@@ -271,8 +285,10 @@ sub get_enabled_packages
   my $package_text = `neurospaces_build --help-packages`;
 
   my $tmp =  YAML::Load($package_text);
+  
+  my $package_list = $tmp->{'enabled packages in order of build'};
 
-  return $tmp->{'enabled packages in order of build'}
+  return @$package_list;
 }
 
 
