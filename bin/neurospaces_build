@@ -68,6 +68,16 @@ my $option_environment = [];
 my $all_operations = [];
 
 
+my $whole_build_configuration;
+
+use YAML;
+
+if (-f '/etc/neurospaces/developer/build.yml')
+{
+    $whole_build_configuration = YAML::LoadFile('/etc/neurospaces/developer/build.yml');
+}
+
+
 my $all_packages
     = {
        configuration => {
@@ -1585,23 +1595,26 @@ sub read_cmd_line
 
 		if ($repository_name =~ m/^.*\.mtn$/)
 		{
-		    # MONOTONE
+		    # if allowed by the configuration, default is yes
 
-		    operation_execute
-			(
-			 $operations,
-			 {
-			  description => $description,
+		    if (not $whole_build_configuration->{no_automated_merges})
+		    {
+			operation_execute
+			    (
+			     $operations,
+			     {
+			      description => $description,
 
-			  #t always zero here, but I guess this simply depends on working in client mode ?
+			      #t always zero here, but I guess this simply depends on working in client mode ?
 
-			  keywords => 0,
-			  package_name => $package_name,
-			 },
-			 [
-			  'mtn', '--db', $repository_name, '--branch', '0', 'merge',
-			 ],
-			);
+			      keywords => 0,
+			      package_name => $package_name,
+			     },
+			     [
+			      'mtn', '--db', $repository_name, '--branch', '0', 'merge',
+			     ],
+			    );
+		    }
 
 		    # checkout code
 
@@ -1621,6 +1634,8 @@ sub read_cmd_line
 			  '||', 'mtn', '--db', $repository_name, '--branch', '0', 'co', '.',
 			 ],
 			);
+
+		    # update code
 
 		    my @update_args;
 
@@ -1648,8 +1663,6 @@ sub read_cmd_line
 			 },
 			 @update_args,
 			);
-
-		    # update code
 
 		}
 		else
@@ -2972,20 +2985,13 @@ sub read_cmd_line
 
     # if there is a local package configuration
 
-    use YAML;
-
-    if (-f '/etc/neurospaces/developer/build.yml')
+    if ($whole_build_configuration)
     {
-	my $all_packages_local = YAML::LoadFile('/etc/neurospaces/developer/build.yml');
+	# merge
 
-	if ($all_packages_local)
-	{
-	    # merge
+	require Data::Utilities;
 
-	    require Data::Utilities;
-
-	    my $merged_packages = Data::Merger::merger($all_packages, $all_packages_local->{all_packages});
-	}
+	my $merged_packages = Data::Merger::merger($all_packages, $whole_build_configuration->{all_packages});
     }
 
     # check validity of the package configuration
