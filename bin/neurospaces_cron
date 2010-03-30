@@ -55,7 +55,7 @@ sub check_and_prepare
 
     install_developer();
 
-    copy_docs();
+
 
 }
 
@@ -199,7 +199,7 @@ sub copy_docs
   if (defined $configuration->{REGTESTOUTPUT})
   {
     my $packagelist = join(',',@enabled_packages);
-    print "Copying regression test output for $packagelist to $configuration->{DOXYGENOUTPUT}.\n\n";
+    print "\nCopying regression test output for $packagelist to $configuration->{DOXYGENOUTPUT}.\n\n";
 
     system "rm -rf $configuration->{REGTESTOUTPUT}/*";
 
@@ -529,7 +529,6 @@ sub parse_config_file
     print "\tDirectory to store past logs is $configuration->{LOGDIR}\n";
 
   }
-
 
 
   print "Done Parsing $config_file:\n";
