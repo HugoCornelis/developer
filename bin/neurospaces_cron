@@ -60,6 +60,10 @@ sub check_and_prepare
 }
 
 
+#
+# Function checks the user of the owner calling the neurospaces_cron
+# process. 
+#
 sub check_user_id
 {
     # get effective user id
@@ -67,22 +71,29 @@ sub check_user_id
 
     my $num_id = $>;
 
+#--- commenting this out from the old implementation
+#     # convert to ascii representation
 
-    # convert to ascii representation
+#     my $passwd_database = [ `cat /etc/passwd`, ];
 
-    my $passwd_database = [ `cat /etc/passwd`, ];
+#     # split into fields
 
-    # split into fields
+#     my $records = [ map { [ split ":", $_ ], } @$passwd_database, ];
 
-    my $records = [ map { [ split ":", $_ ], } @$passwd_database, ];
+#     # only those records with the numerical id under which this script runs
 
-    # only those records with the numerical id under which this script runs
+#     $records = [ grep { $_->[2] == $num_id } @$records, ];
 
-    $records = [ grep { $_->[2] == $num_id } @$records, ];
+#     # if not exactly one record left
 
-    # if not exactly one record left
+#     if (scalar @$records ne 1)
+#--- end comment
 
-    if (scalar @$records ne 1)
+
+    # note: getlogin() will return root even when using "sudo -u"
+    my $user = getpwuid($>) || "Not Found";
+
+    if($user eq "Not Found")
     {
 	report_error("check_user_id()", "$0 cannot determine username under which we are running");
 
@@ -92,33 +103,60 @@ sub check_user_id
 	die "check_user_id()" . "$0 cannot determine username under which we are running";
     }
 
-    # get name of this user
 
-    my $fields = $records->[0];
-
-    my $label_id = $fields->[0];
-
-    # if matches with neurospaces
-
-    #t switched off for convenience, although should make it to the real thing again.
-
-    if (1 || $label_id =~ /neurospaces/)
-    {
-	# ok, continue
-    }
-
-    # else
-
-    else
+    if($user eq "root")
     {
 	report_error("check_user_id()", 
-		     "$0 must not be executed by a regular user (now running as unprivileged user $label_id)");
+		     "$0 must not be executed by root\n");
 
 
 	# just to make sure that this script stops we die
 
-	die "check_user_id()" . "$0 must not be executed by a regular user";
+	die "check_user_id()" . "$0 must not be executed by root";
     }
+    else
+    {
+
+      # Hugo: comment on this. 
+      #
+      # Should probably put additional logic in here to check if
+      # a defined user like "g3tester" is executing the cron script.
+      # The user definition should come from the configuration file.
+      #
+      try_to("echo Proceeding as user: $user\n");
+    }
+
+#--- Commenting this out while using the slimmer code
+#--- appears to be switched off anyway. 
+#     # get name of this user
+
+#     my $fields = $records->[0];
+
+#     my $label_id = $fields->[0];
+
+#     # if matches with neurospaces
+
+#     #t switched off for convenience, although should make it to the real thing again.
+
+#     if (1 || $label_id =~ /neurospaces/)
+#     {
+# 	# ok, continue
+#     }
+
+#     # else
+
+#     else
+#     {
+# 	report_error("check_user_id()", 
+# 		     "$0 must not be executed by a regular user (now running as unprivileged user $label_id)");
+
+
+# 	# just to make sure that this script stops we die
+
+# 	die "check_user_id()" . "$0 must not be executed by a regular user";
+#     }
+#--- end comment
+
 }
 
 

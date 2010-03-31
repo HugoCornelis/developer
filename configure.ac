@@ -31,6 +31,9 @@ AM_INIT_AUTOMAKE(developer, prealpha-1)
 
 # Checks for programs.
 
+# need to have this bail out when MTN = NULL
+AC_CHECK_PROGS([MTN],mtn monotone,[NULL])
+
 # Checks for libraries.
 
 # Checks for header files.
