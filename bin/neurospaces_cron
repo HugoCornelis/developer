@@ -3,11 +3,9 @@
 #
 
 
-use strict;
-
-
+use Config;
 use Getopt::Long;
-
+use strict;
 use YAML;
 
 
@@ -358,9 +356,19 @@ sub main
     # note: May be needed for users with
     # a different cron path since '/usr/local/bin' is usually not included by default.
     #
+    # note: The path for python on MAC OSX is different than that in linux. If not set
+    # correctly then the incorrect path for headers will be set as well. Option is added here
+    # to prevent the user from having to manually set a path. Must be prepended to search here
+    # first or it will pick up symbolic links in /usr/bin or /usr/local/bin
+    #
+    my $bin_path =  ":/bin:/usr/bin:/usr/local/bin";
 
-    $ENV{PATH} .= ':/bin:/usr/bin:/usr/local/bin';
+    if( $Config{osname} eq "darwin" )
+    {
+      $bin_path = ":/Library/Frameworks/Python.framework/Versions/Current/bin" . $bin_path;
+    }
 
+    $ENV{PATH} .= $bin_path;
 
     # this script can only be run by a user whose name matches 'neurospaces'
 
