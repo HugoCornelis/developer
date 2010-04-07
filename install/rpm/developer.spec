@@ -1,6 +1,6 @@
-# This is a sample spec file for wget
-
 %define _topdir	 	~/nerospaces_project/developer/source/snapshots/0
+%define _bindir		/usr/local/bin
+%define _mandir		/usr/local/share/man/man1
 %define name		developer
 %define release		1
 %define version 	alpha.1
@@ -33,24 +33,32 @@ The Neurospaces developer package contains essential tools for Neurospaces devel
  This package contains utilities requires for Neurospaces development.
 
 %prep
+echo %_target
+echo %_target_alias
+echo %_target_cpu
+echo %_target_os
+echo %_target_vendor
 %setup -q
 
 %build
-./configure --prefix=/usr/local
+./configure --prefix=$RPM_BUILD_ROOT/usr/local
 make
 
 %install
+rm -rf $RPM_BUILD_ROOT
+mkdir $RPM_BUILD_ROOT/usr/local/bin
+mkdir $RPM_BUILD_ROOT/usr/local/share/man/man1
 make install prefix=$RPM_BUILD_ROOT/usr/local
 
 %clean
 rm -rf %{buildroot}
 
+# listing a directory name under files will include all files in the directory.
 %files
-%defattr(-,root,root)
-/usr/local/bin/wget
-# need to look for a cleaner way to put files here.
+%defattr(0755,root,root) bin
 
-%doc %attr(0444,root,root) /usr/local/share/man/man1/wget.1
+%doc %attr(0444,root,root) docs
+#%doc %attr(0444,root,root) /usr/local/share/man/man1/wget.1
 # need to put whatever docs to link to here.
 
 %changelog
