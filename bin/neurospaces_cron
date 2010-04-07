@@ -607,7 +607,7 @@ sub parse_config_file
 
     if( uc($configuration->{NOCHECK}) eq "TRUE")
     {
-      print "Option \'no check\' is set, tests will not be run.\n"
+      print "Option \'no check\' is set, tests will not be run.\n";
       $option_no_check = 1;
     }
 
