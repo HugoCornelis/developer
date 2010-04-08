@@ -27,12 +27,18 @@ dnl dnl all subdirs
 dnl AC_CONFIG_SUBDIRS()
 
 # $Format: "AM_INIT_AUTOMAKE(${package}, ${label})"$
-AM_INIT_AUTOMAKE(developer, prealpha-1)
+AM_INIT_AUTOMAKE(developer, 2a37fcc31a7fb316122e6adcab09d76c71af2e6e-0)
 
 # Checks for programs.
 
-# need to have this bail out when MTN = NULL
+#   need to have this bail out when MTN = NULL
+#   since it's required. 
 AC_CHECK_PROGS([MTN],mtn monotone,[NULL])
+
+#   check for packaging programs for debian and red hat.
+#   no need to bail out if these are missing since they're optional. 
+AC_CHECK_PROGS([DPKG_BUILDPACKAGE],dpkg-buildpackage,[NULL])
+AC_CHECK_PROGS([RPMBUILD],rpmbuild,[NULL])
 
 # Checks for libraries.
 

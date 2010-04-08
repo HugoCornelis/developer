@@ -36,6 +36,7 @@ my $option_dry_run = 0;
 my $option_install = 1;
 my $option_installed_versions = 1;
 my $option_keep_going;
+my $option_pkg_deb = 0;
 my $option_regex_selector = ".*";
 my $option_repo_ci = 0;
 my $option_repo_clone = 0;
@@ -789,6 +790,7 @@ sub read_cmd_line
 		     "install!" => \$option_install,
 		     "installed-versions!" => \$option_installed_versions,
 		     "keep-going!" => \$option_keep_going,
+		     "pkg-deb" => \$option_pkg_deb,
 		     "regex-selector=s" => \$option_regex_selector,
 		     "repo-ci=s" => \$option_repo_ci,
 		     "repo-clone=s" => \$option_repo_clone,
@@ -880,6 +882,7 @@ sub read_cmd_line
 	   "install!" => $option_install,
 	   "installed-versions!" => $option_installed_versions,
 	   "keep-going!" => $option_keep_going,
+	   "pkg-deb!" => $option_pkg_deb,
 	   "regex-selector=s" => $option_regex_selector,
 	   "repo-ci=s" => $option_repo_ci,
 	   "repo-clone=s" => $option_repo_clone,
@@ -2163,6 +2166,10 @@ sub read_cmd_line
 	    operation => [ 'export', 'NEUROSPACES_RELEASE=1', '&&', 'make', 'distcheck', ],
 	   },
 	   {
+	    condition => $option_pkg_deb,
+	    operation => [ 'make', 'pkg-deb', ],
+	   },
+	   {
 	    #! always make as the regular user to avoid cluttering the
 	    #! source directory with root owned files
 
@@ -3092,6 +3099,7 @@ options related to operation execution profile:
     --install                install packages.
     --installed-versions     print the installed version of each software package.
     --keep-going             keep going in case of non-fatal errors (ala make -k).
+    --pkg-deb                build debian packages for each software component.
     --regex-selector         defines a regex to select specific packages.
     --repo-ci                commit all modifications with the given changelog description.
     --repo-clone             checkout or update the workspace source code from a remote repository.
@@ -3457,7 +3465,7 @@ sub operation_execute
 sub version
 {
     # $Format: "    my $version=\"${package}-${label}\";"$
-    my $version="developer-prealpha-1";
+    my $version="developer-2a37fcc31a7fb316122e6adcab09d76c71af2e6e-0";
 
     return $version;
 }
