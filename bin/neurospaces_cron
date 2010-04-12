@@ -186,7 +186,7 @@ sub cleanup_and_finalize
   # The g3tester user should be configurable. Will test this out first
   # before proceeding with adding that option. 
   #
-  my $trash_list = `find /tmp -user g3tester`;
+  my $trash_list = `find /tmp/ -user g3tester`;
 
   my @trash = split('\n',$trash_list);
 
