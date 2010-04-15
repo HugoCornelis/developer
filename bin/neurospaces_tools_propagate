@@ -11,6 +11,7 @@ use Getopt::Long;
 use YAML;
 
 
+my $option_dry_run;
 my $option_regex = '.*';
 my $option_verbose;
 
@@ -28,11 +29,11 @@ my $all_packages;
 
     $all_packages = $all_packages->[1];
 
-    # remove key, extract value
+#     # remove key, extract value
 
-    $all_packages = [ %$all_packages, ];
+#     $all_packages = [ %$all_packages, ];
 
-    $all_packages = $all_packages->[1];
+#     $all_packages = $all_packages->[1];
 
     # convert to hash for ease of use
 
@@ -123,7 +124,10 @@ sub propagate
 
 	print "  - $0 copying $tool_name from $source_package to $target_package\n";
 
-	`cp ~/neurospaces_project/$source_package/source/snapshots/0/$tool_name ~/neurospaces_project/$target_package/source/snapshots/0/$tool_name`;
+	if (!$option_dry_run)
+	{
+	    `cp ~/neurospaces_project/$source_package/source/snapshots/0/$tool_name ~/neurospaces_project/$target_package/source/snapshots/0/$tool_name`;
+	}
     }
 }
 
@@ -136,6 +140,7 @@ sub read_cmd_line
 
     my $result
 	= GetOptions(
+		     "dry-run!" => \$option_dry_run,
 		     "help!" => \$option_help,
 		     "help-all!" => \$option_help_all,
 		     "regex=s" => \$option_regex,
@@ -172,6 +177,7 @@ synopsis:
     $0 <tool name1> <tool name2> ...
 
 options:
+    --dry-run         only tell what would be done when running without this option.
     --help            print usage information.
     --regex           selects tools by name (default is all).
     --version         give version information.
