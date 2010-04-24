@@ -2159,7 +2159,7 @@ sub read_cmd_line
 	   },
 	   {
 	    condition => $option_dist,
-	    operation => [ 'export', 'NEUROSPACES_RELEASE=1', '&&', 'make', 'dist', ],
+	    operation => [ 'export', 'NEUROSPACES_RELEASE=1', '&&', 'make', 'dist', '&&', 'mtn', 'revert', '.'],
 	   },
 	   {
 	    condition => $option_distcheck,
