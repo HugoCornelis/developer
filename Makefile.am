@@ -33,6 +33,7 @@ dist_bin_SCRIPTS = \
 	bin/neurospaces_install \
 	bin/neurospaces_kill_servers \
 	bin/neurospaces_packages \
+	bin/neurospaces_pkgdeb \
 	bin/neurospaces_pull \
 	bin/neurospaces_push \
 	bin/neurospaces_tools_propagate \
