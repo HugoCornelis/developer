@@ -528,7 +528,7 @@ sub build_pkgdeb
 
       my $pkgdir =  "$ENV{HOME}/neurospaces_project/" . $package . "/source/snapshots/0/";
 
-      my $deb = `find $pkgdir | grep $package | grep \\.deb\$`;
+      my $deb = `find $pkgdir | grep $package | grep \\\\.deb\$`;
       chomp($deb);
       my $dsc = `find $pkgdir | grep $package | grep \\.dsc\$`;
       chomp($dsc);
