@@ -11,10 +11,15 @@ use YAML;
 my $option_config = "";
 my $option_output_directory = "/tmp";
 my $option_no_check = 0;
+my $option_pkgdeb_directory = "";
 
 my $configuration
     = {
       };
+
+
+my @enabled_packages = get_enabled_packages();
+
 
 #! note the following are currently a constants
 
@@ -211,12 +216,6 @@ sub cleanup_and_finalize
 #
 sub copy_docs
 {
-
-  # not sure if this should end up being a global variable yet.
-  # so far this is the only legit use for it. If we make a dist,deb,rpm build
-  # part of the cronjob then we'd have to put it as a global.
-  my @enabled_packages = get_enabled_packages();
-
 
   if (defined $configuration->{DOXYGENOUTPUT})
   {
@@ -460,6 +459,17 @@ sub main
 
     }
 
+
+    # If we set a valid pkgdeb directory to 
+    # hold our debian packages we invoke our package build.
+    if(-d $option_pkgdeb_directory)
+    {
+
+      build_pkgdeb();
+
+    }
+
+
 #     # now build tarballs
 
 #     my $release_label = time();
@@ -487,6 +497,52 @@ sub main
     #t remove the entire neurospaces_project directory ?
 
 #     try_to("rm -fr $ENV{HOME}/neurospaces_project");
+}
+
+
+
+#
+# Subroutine builds debian packages and places each successfully build one
+# into it's own directory in the declared deb pkg directory. 
+#
+sub build_pkgdeb
+{
+
+  try_to("neurospaces_pkgdeb");
+
+  foreach (@enabled_packages)
+  {
+
+      my $package = $_;
+      chomp($package); #just in case
+
+
+      my $pkgdir =  "$ENV{HOME}/neurospaces_project/" . $package . "/source/snapshots/0/";
+
+      my $deb = `find $pkgdir | grep \\.deb\$`;
+      my $dsc = `find $pkgdir | grep \\.dsc\$`;
+      my $changes = `find $pkgdir | grep \\.changes\$`;
+      my $build_log = $pkgdir . "/build_debian.log";
+
+
+      my $dstdir =  "$option_pkgdeb_directory/" .$package;
+
+      unless(-d $dstdir)
+      {
+	try_to("mkdir -p $dstdir",1);
+      }
+      else
+      {
+	try_to("rm -f $dstdir/*",1);
+      }
+
+      try_to("cp -f $deb $dstdir",1);
+      try_to("cp -f $dsc $dstdir",1);
+      try_to("cp -f $changes $dstdir",1);
+      try_to("cp -f $build_log $dstdir",1);
+
+  }
+
 }
 
 
@@ -562,10 +618,10 @@ sub parse_config_file
   }
 
 
-    if(defined $configuration->{DOXYGENURL})
+  if(defined $configuration->{DOXYGENURL})
   {
       chomp($configuration->{DOXYGENURL});
-      print "\tOutput directory for doxygen is $configuration->{URL}\n";
+      print "\tOutput directory for doxygen is $configuration->{DOXYGENURL}\n";
   }
 
 
@@ -612,6 +668,25 @@ sub parse_config_file
     }
 
   }
+
+
+  if(defined $configuration->{PKGDEB})
+  {
+    chomp($configuration->{PKGDEB});
+
+    $option_pkgdeb_directory = $configuration->{PKGDEB};
+    print "Directory to store debian packages is $option_pkgdeb_directory\n";
+
+
+  }
+
+
+  if(defined $configuration->{PKGDEBURL})
+  {
+      chomp($configuration->{PKGDEBURL});
+      print "\tDirectory for built debian packages is $configuration->{PKGDEBURL}\n";
+  }
+
 
 
   print "Done Parsing $config_file:\n";
@@ -669,6 +744,12 @@ sub produce_email_text
   if(defined $configuration->{REGTESTURL})
   {
     $status_message .= "\nCheck the regression test output over the web via this link " . $configuration->{REGTESTURL} . "\n";
+  }
+
+  if(defined $configuration->{PKGDEBURL})
+  {
+    $status_message .= "\nThe debian packages built on this run are available via this link " . $configuration->{PKGDEBURL} . "\n";
+
   }
 
   $status_message .= "\nRevisions:\n" . $revisions . "\n";
