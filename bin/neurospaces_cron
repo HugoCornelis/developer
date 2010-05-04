@@ -528,11 +528,11 @@ sub build_pkgdeb
 
       my $pkgdir =  "$ENV{HOME}/neurospaces_project/" . $package . "/source/snapshots/0/";
 
-      my $deb = `find $pkgdir | grep \\.deb\$`;
+      my $deb = `find $pkgdir | grep $package | grep \\.deb\$`;
       chomp($deb);
-      my $dsc = `find $pkgdir | grep \\.dsc\$`;
+      my $dsc = `find $pkgdir | grep $package | grep \\.dsc\$`;
       chomp($dsc);
-      my $changes = `find $pkgdir | grep \\.changes\$`;
+      my $changes = `find $pkgdir | grep $package | grep \\.changes\$`;
       chomp($changes);
       my $build_log = $pkgdir . "/build_debian.log";
       chomp($build_log);
