@@ -529,9 +529,13 @@ sub build_pkgdeb
       my $pkgdir =  "$ENV{HOME}/neurospaces_project/" . $package . "/source/snapshots/0/";
 
       my $deb = `find $pkgdir | grep \\.deb\$`;
+      chomp($deb);
       my $dsc = `find $pkgdir | grep \\.dsc\$`;
+      chomp($dsc);
       my $changes = `find $pkgdir | grep \\.changes\$`;
+      chomp($changes);
       my $build_log = $pkgdir . "/build_debian.log";
+      chomp($build_log);
 
 
       my $dstdir =  "$option_pkgdeb_directory/" .$package;
@@ -591,8 +595,10 @@ sub build_dist
       my $pkgdir =  "$ENV{HOME}/neurospaces_project/" . $package . "/source/snapshots/0/";
 
       my $srcdist = `find $pkgdir | grep $package | grep \\.tar\\.gz\$`;
+      chomp($srcdist);
 
       my $dstdir =  "$option_srcdist_directory/" .$package;
+      chomp($dstdir);
 
       unless(-d $dstdir)
       {
@@ -634,6 +640,7 @@ sub build_rpm
       my $pkgdir =  "$ENV{HOME}/neurospaces_project/" . $package . "/source/snapshots/0/";
 
       my $rpmfile = `find $pkgdir | grep $package | grep \\.rpm\$`;
+      chomp($rpmfile);
 
       my $dstdir =  "$option_srcdist_directory/" . $package;
 
@@ -777,7 +784,7 @@ sub parse_config_file
 
     if( uc($configuration->{NOCHECK}) eq "TRUE")
     {
-      print "Option \'no check\' is set, tests will not be run.\n";
+      print "\tOption \'no check\' is set, tests will not be run.\n";
       $option_no_check = 1;
     }
 
@@ -789,7 +796,7 @@ sub parse_config_file
     chomp($configuration->{PKGDEB});
 
     $option_pkgdeb_directory = $configuration->{PKGDEB};
-    print "Directory to store debian packages is $option_pkgdeb_directory\n";
+    print "\tDirectory to store debian packages is $option_pkgdeb_directory\n";
 
   }
 
@@ -804,7 +811,7 @@ sub parse_config_file
     chomp($configuration->{RPM});
 
     $option_rpm_directory = $configuration->{RPM};
-    print "Directory to store RPM packages is $option_rpm_directory\n";
+    print "\tDirectory to store RPM packages is $option_rpm_directory\n";
 
   }
 
@@ -819,7 +826,7 @@ sub parse_config_file
     chomp($configuration->{SRCDIST});
 
     $option_srcdist_directory = $configuration->{SRCDIST};
-    print "Directory to store source tarballs is $option_srcdist_directory\n";
+    print "\tDirectory to store source tarballs is $option_srcdist_directory\n";
   }
 
   if(defined $configuration->{SRCDISTURL})
