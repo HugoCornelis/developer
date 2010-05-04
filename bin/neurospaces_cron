@@ -12,6 +12,8 @@ my $option_config = "";
 my $option_output_directory = "/tmp";
 my $option_no_check = 0;
 my $option_pkgdeb_directory = "";
+my $option_rpm_directory = "";
+my $option_srcdist_directory = "";
 
 my $configuration
     = {
@@ -464,11 +466,18 @@ sub main
     # hold our debian packages we invoke our package build.
     if(-d $option_pkgdeb_directory)
     {
-
       build_pkgdeb();
-
     }
 
+    if(-d $option_rpm_directory)
+    {
+      build_rpm();
+    }
+
+    if(-d $option_srcdist_directory)
+    {
+      build_dist();
+    }
 
 #     # now build tarballs
 
@@ -536,12 +545,117 @@ sub build_pkgdeb
 	try_to("rm -f $dstdir/*",1);
       }
 
-      try_to("cp -f $deb $dstdir",1);
-      try_to("cp -f $dsc $dstdir",1);
-      try_to("cp -f $changes $dstdir",1);
-      try_to("cp -f $build_log $dstdir",1);
+      # here we copy over our files. 
+      if(-e $deb)
+      {
+	try_to("cp -f $deb $dstdir",1);
+      }
+      
+      if(-e $dsc)
+      {
+	try_to("cp -f $dsc $dstdir",1);
+      }
+
+      if(-e $changes)
+      {
+	try_to("cp -f $changes $dstdir",1);
+      }
+
+      if(-e $build_log)
+      {
+	try_to("cp -f $build_log $dstdir",1);
+      }
 
   }
+
+
+  # always end a dist build with a revert
+  try_to("neurospaces_revert");
+
+
+}
+
+
+sub build_dist
+{
+
+  try_to("neurospaces_dist");
+
+  foreach (@enabled_packages)
+  {
+
+      my $package = $_;
+      chomp($package); #just in case
+
+
+      my $pkgdir =  "$ENV{HOME}/neurospaces_project/" . $package . "/source/snapshots/0/";
+
+      my $srcdist = `find $pkgdir | grep $package | grep \\.tar\\.gz\$`;
+
+      my $dstdir =  "$option_srcdist_directory/" .$package;
+
+      unless(-d $dstdir)
+      {
+	try_to("mkdir -p $dstdir",1);
+      }
+      else
+      {
+	try_to("rm -f $dstdir/*",1);
+      }
+
+      # here we copy over our files. 
+      if(-e $srcdist)
+      {
+	try_to("cp -f $srcdist $dstdir",1);
+      }
+
+  }
+
+  # always end a dist build with a revert
+  try_to("neurospaces_revert");
+
+}
+
+
+
+
+sub build_rpm
+{
+
+  try_to("neurospaces_rpm");
+
+  foreach (@enabled_packages)
+  {
+
+      my $package = $_;
+      chomp($package); #just in case
+
+
+      my $pkgdir =  "$ENV{HOME}/neurospaces_project/" . $package . "/source/snapshots/0/";
+
+      my $rpmfile = `find $pkgdir | grep $package | grep \\.rpm\$`;
+
+      my $dstdir =  "$option_srcdist_directory/" . $package;
+
+      unless(-d $dstdir)
+      {
+	try_to("mkdir -p $dstdir",1);
+      }
+      else
+      {
+	try_to("rm -f $dstdir/*",1);
+      }
+
+      # here we copy over our files. 
+      if(-e $rpmfile)
+      {
+	try_to("cp -f $rpmfile $dstdir",1);
+      }
+
+  }
+
+  # always end a dist build with a revert
+  try_to("neurospaces_revert");
 
 }
 
@@ -677,9 +791,7 @@ sub parse_config_file
     $option_pkgdeb_directory = $configuration->{PKGDEB};
     print "Directory to store debian packages is $option_pkgdeb_directory\n";
 
-
   }
-
 
   if(defined $configuration->{PKGDEBURL})
   {
@@ -687,6 +799,34 @@ sub parse_config_file
       print "\tDirectory for built debian packages is $configuration->{PKGDEBURL}\n";
   }
 
+  if(defined $configuration->{RPM})
+  {
+    chomp($configuration->{RPM});
+
+    $option_rpm_directory = $configuration->{RPM};
+    print "Directory to store RPM packages is $option_rpm_directory\n";
+
+  }
+
+  if(defined $configuration->{RPMURL})
+  {
+      chomp($configuration->{RPMURL});
+      print "\tDirectory for built debian packages is $configuration->{RPMURL}\n";
+  }
+
+  if(defined $configuration->{SRCDIST})
+  {
+    chomp($configuration->{SRCDIST});
+
+    $option_srcdist_directory = $configuration->{SRCDIST};
+    print "Directory to store source tarballs is $option_srcdist_directory\n";
+  }
+
+  if(defined $configuration->{SRCDISTURL})
+  {
+      chomp($configuration->{SRCDISTURL});
+      print "\tDirectory for source tarballs is $configuration->{SRCDISTURL}\n";
+  }
 
 
   print "Done Parsing $config_file:\n";
@@ -749,6 +889,19 @@ sub produce_email_text
   if(defined $configuration->{PKGDEBURL})
   {
     $status_message .= "\nThe debian packages built on this run are available via this link " . $configuration->{PKGDEBURL} . "\n";
+
+  }
+
+
+  if(defined $configuration->{RPMURL})
+  {
+    $status_message .= "\nThe RPM packages built on this run are available via this link " . $configuration->{RPMURL} . "\n";
+
+  }
+
+  if(defined $configuration->{SRCDISTURL})
+  {
+    $status_message .= "\nThe source tarballs from this run are available via this link " . $configuration->{SRCDISTURL} . "\n";
 
   }
 

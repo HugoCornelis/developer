@@ -38,6 +38,7 @@ AC_CHECK_PROGS([MTN],mtn monotone,[NULL])
 #   check for packaging programs for debian and red hat.
 #   no need to bail out if these are missing since they're optional. 
 AC_CHECK_PROGS([DPKG_BUILDPACKAGE],dpkg-buildpackage,[NULL])
+AC_CHECK_PROGS([DH],dh,[NULL])
 AC_CHECK_PROGS([RPMBUILD],rpmbuild,[NULL])
 
 # Checks for libraries.

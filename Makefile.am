@@ -33,6 +33,7 @@ dist_bin_SCRIPTS = \
 	bin/neurospaces_init \
 	bin/neurospaces_install \
 	bin/neurospaces_kill_servers \
+	bin/neurospaces_revert \
 	bin/neurospaces_packages \
 	bin/neurospaces_pkgdeb \
 	bin/neurospaces_pull \
@@ -79,6 +80,10 @@ am__tar = ${AMTAR} chf - --format=posix "$$tardir"
 
 clean-local:
 	rm -rf $(TMP_DIR)
+	$(RM) -rf *.deb
+	$(RM) -f *.changes
+	$(RM) -f *.dsc
+	$(RM) -f build_debian.log
 
 dist-hook: dist-keywords
 #	cd $(srcdir) && if test -n "`mtn ls changed `" ; then false ; else true ; fi
