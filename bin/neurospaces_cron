@@ -433,6 +433,26 @@ sub main
 	  try_to("neurospaces_check");
 	}
 
+
+
+	# If we set a valid pkgdeb directory to 
+	# hold our debian packages we invoke our package build.
+	if(-d $option_pkgdeb_directory)
+	{
+	  build_pkgdeb();
+	}
+
+	if(-d $option_rpm_directory)
+	{
+	  build_rpm();
+	}
+
+	if(-d $option_srcdist_directory)
+	{
+	  build_dist();
+	}
+
+
 	# uninstall again
 
 	try_to("neurospaces_uninstall");
@@ -459,24 +479,6 @@ sub main
 
       copy_docs();
 
-    }
-
-
-    # If we set a valid pkgdeb directory to 
-    # hold our debian packages we invoke our package build.
-    if(-d $option_pkgdeb_directory)
-    {
-      build_pkgdeb();
-    }
-
-    if(-d $option_rpm_directory)
-    {
-      build_rpm();
-    }
-
-    if(-d $option_srcdist_directory)
-    {
-      build_dist();
     }
 
 #     # now build tarballs
