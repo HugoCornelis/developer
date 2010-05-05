@@ -641,7 +641,7 @@ sub build_rpm
 
       my $pkgdir =  "$ENV{HOME}/neurospaces_project/" . $package . "/source/snapshots/0/";
 
-      my $rpmfile = `find $pkgdir | grep $package | grep \\.rpm\$`;
+      my $rpmfile = `find $pkgdir | grep $package | grep \\\\.rpm\$`;
       chomp($rpmfile);
 
       my $dstdir =  "$option_srcdist_directory/" . $package;

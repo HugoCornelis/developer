@@ -49,6 +49,7 @@ dist_bin_SCRIPTS = \
 	bin/neurospaces_website_prepare \
 	bin/nstest_query \
 	bin/nspkg-deb \
+	bin/nspkg-rpm \
 	bin/td-labels \
 	bin/td-majors \
 	bin/release-expand \
@@ -84,6 +85,7 @@ clean-local:
 	$(RM) -f *.changes
 	$(RM) -f *.dsc
 	$(RM) -f build_debian.log
+	$(RM) -rf developer/
 
 dist-hook: dist-keywords
 #	cd $(srcdir) && if test -n "`mtn ls changed `" ; then false ; else true ; fi
@@ -158,18 +160,21 @@ TMP_DIR = tmp
 pkg-deb: pkg-src
 	nspkg-deb $(TMP_DIR) $(PACKAGE) $(VERSION)
 
-# Create an RPM package
 pkg-rpm: pkg-src
-	mkdir -p $(HOME)/.rpm/RPMS/i386
-	mkdir -p $(HOME)/.rpm/SRPMS
-	mkdir -p $(HOME)/.rpm/BUILD
-	mkdir -p $(HOME)/.rpm/SOURCES
-	mkdir -p $(HOME)/.rpm/tmp
-	- rm -r $(HOME)/.rpm/BUILD/$(PACKAGE)-root
-	- rm -r $(HOME)/.rpm/RPMS/$(PACKAGE)-*
-	- rm -r $(HOME)/.rpm/SRPMS/$(PACKAGE)-*
-	- rm -r $(HOME)/.rpm/SOURCES/$(PACKAGE)-*
-	cp pkg/$(PACKAGE)-$(VERSION).tar.gz $(HOME)/.rpm/SOURCES/
-	rpmbuild --quiet --nodeps --define="_topdir $(HOME)/.rpm" \
-	    -ba install/rpm/neurospacesdeveloper.spec
-	mv $(HOME)/.rpm/RPMS/i386/$(PACKAGE)-$(VERSION)-*.i386.rpm pkg/
+	nspkg-rpm $(PACKAGE) $(VERSION)
+
+# Create an RPM package
+#pkg-rpm: pkg-src
+#	mkdir -p $(HOME)/.rpm/RPMS/i386
+#	mkdir -p $(HOME)/.rpm/SRPMS
+#	mkdir -p $(HOME)/.rpm/BUILD
+#	mkdir -p $(HOME)/.rpm/SOURCES
+#	mkdir -p $(HOME)/.rpm/tmp
+#	- rm -r $(HOME)/.rpm/BUILD/$(PACKAGE)-root
+#	- rm -r $(HOME)/.rpm/RPMS/$(PACKAGE)-*
+#	- rm -r $(HOME)/.rpm/SRPMS/$(PACKAGE)-*
+#	- rm -r $(HOME)/.rpm/SOURCES/$(PACKAGE)-*
+#	cp pkg/$(PACKAGE)-$(VERSION).tar.gz $(HOME)/.rpm/SOURCES/
+#	rpmbuild --quiet --nodeps --define="_topdir $(HOME)/.rpm" \
+#	    -ba install/rpm/neurospacesdeveloper.spec
+#	mv $(HOME)/.rpm/RPMS/i386/$(PACKAGE)-$(VERSION)-*.i386.rpm pkg/

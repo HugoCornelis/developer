@@ -1,0 +1,152 @@
+#!/usr/bin/perl -w 
+#!/usr/bin/perl -w -d:ptkdb
+#
+
+
+
+if($#ARGV != 1)
+{
+  usage()
+}
+
+
+use Cwd;
+my $top_dir = cwd;
+my $build_log = $top_dir . "/build_rpm.log";
+my $package_name = $ARGV[0];
+my $version = $ARGV[1];
+
+
+
+my $dist_dir = $package_name . "-" . $version;
+my $dist_src = $dist_dir . ".tar.gz";
+my $rpm_build_dir = $package_name;
+my $rpm_spec_file = $package_name . ".spec";
+
+#
+# Check for the data files we need first.
+#
+
+my $tmp1 = `which rpmbuild`;
+
+if($tmp1 eq "")
+{
+  die "Error: rpmbuild is not found in your path.\n";
+}
+
+
+unless(-d "install")
+{
+  die "No ''install\' directory present.\n";
+}
+
+unless(-d "install/rpm")
+{
+  die "No \'install/rpm\' directory present.\n";
+}
+
+unless(-e "install/rpm/$rpm_spec_file")
+{
+  die "No RPM spec file present in install/rpm\n";
+}
+
+
+#
+# end of essential data file checks.
+#
+
+
+#
+#remove last log
+#
+if(-e $build_log)
+{
+  try_to("rm $build_log",1);
+}
+
+
+
+unless(-e $dist_src)
+{
+  print "Source tarball $dist_src is not found.\n";
+  print "Can't build RPM pakage.\n";
+  exit;
+}
+
+
+
+print "Creating RPM build directory structure\n";
+
+
+if(-d $rpm_build_dir)
+{
+  try_to("rm -rf $rpm_build_dir",1);
+}
+
+try_to("mkdir -p $rpm_build_dir/BUILD",1);
+try_to("mkdir -p $rpm_build_dir/RPMS",1);
+try_to("mkdir -p $rpm_build_dir/SOURCES",1);
+try_to("mkdir -p $rpm_build_dir/SPECS",1);
+try_to("mkdir -p $rpm_build_dir/SRPMS",1);
+
+print "Copying source file $dist_src to $rpm_build_dir/SOURCES\n";
+try_to ("echo Copying source file $dist_src to $rpm_build_dir/SOURCES\n");
+try_to("cp $dist_src $rpm_build_dir/SOURCES/developer-alpha.1.tar.gz",1);
+
+print "Copying spec file to $rpm_build_dir/SPECS\n";
+try_to("echo Copying spec file to $rpm_build_dir/SPECS\n");
+try_to("cp install/rpm/$rpm_spec_file $rpm_build_dir/SPECS");
+
+
+print "Perform the rpm build\n";
+try_to("rpmbuild --bs $rpm_build_dir/SPECS/$rpm_spec_file",1);
+
+
+print "Done.\n";
+
+#
+# print usage info.
+#
+sub usage
+{
+
+  print "Usage $0: <package name> <version>\n\n";
+  exit;
+
+}
+
+#
+# ($command)
+#
+sub try_to
+{
+    my $command = shift;
+
+    my $no_verbose = shift;
+
+    my $allow_fail = shift;
+
+    if (!$no_verbose)
+    {
+	print "---\n";
+	print "$0: trying to $command\n";
+    }
+
+    my $output_path = $build_log;
+
+    #! $command executed in a subshell such that redirection applies
+    #! to all commands.
+
+    system "( $command ) >>$output_path 2>&1";
+
+    if ($?)
+    {
+	if ($allow_fail)
+	{
+	    system "echo >>$output_path 2>&1 failed with $?: $command\n";
+	}
+
+
+    }
+}
+

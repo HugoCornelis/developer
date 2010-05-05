@@ -1,4 +1,4 @@
-%define _topdir	 	~/nerospaces_project/developer/source/snapshots/0
+%define _topdir	 	/home/mando/neurospaces_project/developer/source/snapshots/0/developer
 %define _bindir		/usr/local/bin
 %define _mandir		/usr/local/share/man/man1
 %define name		developer
@@ -32,30 +32,36 @@ The Neurospaces developer package contains essential tools for Neurospaces devel
  of formats.
  This package contains utilities requires for Neurospaces development.
 
+
+%package developer
+Requires: perl
+Summary: Neurospaces Developer Package
+Group: Science
+Provides: developer
+
 %prep
 echo %_target
 echo %_target_alias
 echo %_target_cpu
 echo %_target_os
 echo %_target_vendor
+echo Building %{name}-%{version}-%{release}
 %setup -q
 
 %build
-./configure --prefix=$RPM_BUILD_ROOT/usr/local
+./configure 
 make
 
 %install
-rm -rf $RPM_BUILD_ROOT
-mkdir $RPM_BUILD_ROOT/usr/local/bin
-mkdir $RPM_BUILD_ROOT/usr/local/share/man/man1
 make install prefix=$RPM_BUILD_ROOT/usr/local
 
 %clean
-rm -rf %{buildroot}
+[ ${RPM_BUILD_ROOT} != "/" ] && rm -rf ${RPM_BUILD_ROOT}
 
 # listing a directory name under files will include all files in the directory.
 %files
-%defattr(0755,root,root) bin
+%defattr(0755,root,root) 
+
 
 %doc %attr(0444,root,root) docs
 #%doc %attr(0444,root,root) /usr/local/share/man/man1/wget.1
