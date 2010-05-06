@@ -92,7 +92,7 @@ options:
 sub version
 {
     # $Format: "    my $version=\"${package}-${label}\";"$
-    my $version="developer-9c734da6d4dde7019fde86c5924215fa518a1d80-0";
+    my $version="developer-major-minor";
 
     return $version;
 }
