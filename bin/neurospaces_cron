@@ -559,7 +559,7 @@ sub build_pkgdeb
       }
       else
       {
-	$deb_messages .= "Debian package for $package was not built on this run.\n";
+	$deb_messages .= "\tDebian package for $package was not built on this run.\n";
       }
 
       if(-e $dsc)
