@@ -15,3 +15,4 @@ Makefile\.in$
 .changes$
 .dsc$
 \.log$
+^RPM_BUILD$

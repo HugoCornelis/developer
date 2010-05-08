@@ -20,7 +20,7 @@ my $version = $ARGV[1];
 
 my $dist_dir = $package_name . "-" . $version;
 my $dist_src = $dist_dir . ".tar.gz";
-my $rpm_build_dir = $package_name;
+my $rpm_build_dir = "RPM_BUILD";
 my $rpm_spec_file = $package_name . ".spec";
 
 #

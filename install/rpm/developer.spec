@@ -1,5 +1,5 @@
 # The _WORKING_DIRECTORY_ value will be replaced with the current working directory
-%define _topdir	 	_WORKING_DIRECTORY_/developer
+%define _topdir	 	_WORKING_DIRECTORY_/RPM_BUILD
 %define _bindir		/usr/local/bin
 %define _mandir		/usr/local/share/man/man1
 
@@ -9,7 +9,7 @@
 
 
 # $Format: "%define version 	${label}"$
-%define version 	c15e75769f17af6c2bfea0677837c57d5197f704.0
+%define version 	2cb6807b98d154b15c8c92b1d2efa5662523173f.0
 %define buildroot 	%{_topdir}/%{name}-%{version}-root
 
 BuildRoot:		%{buildroot}

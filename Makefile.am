@@ -87,7 +87,8 @@ clean-local:
 	$(RM) -f *.changes
 	$(RM) -f *.dsc
 	$(RM) -f build_debian.log
-	$(RM) -rf developer/
+	$(RM) -rf RPM_BUILD
+	$(RM) -f build_rpm.log
 
 dist-hook: dist-keywords
 #	cd $(srcdir) && if test -n "`mtn ls changed `" ; then false ; else true ; fi
