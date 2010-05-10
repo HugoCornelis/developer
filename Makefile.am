@@ -36,6 +36,7 @@ dist_bin_SCRIPTS = \
 	bin/neurospaces_revert \
 	bin/neurospaces_packages \
 	bin/neurospaces_pkgdeb \
+	bin/neurospaces_pkgrpm \
 	bin/neurospaces_pull \
 	bin/neurospaces_push \
 	bin/neurospaces_tools_propagate \

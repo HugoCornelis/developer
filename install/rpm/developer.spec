@@ -9,7 +9,7 @@
 
 
 # $Format: "%define version 	${label}"$
-%define version 	2cb6807b98d154b15c8c92b1d2efa5662523173f.0
+%define version 	a3fff5b1b4e51a8fad60ad01dc1523e9f76c7e52.0
 %define buildroot 	%{_topdir}/%{name}-%{version}-root
 
 BuildRoot:		%{buildroot}

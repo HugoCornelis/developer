@@ -37,6 +37,7 @@ my $option_install = 1;
 my $option_installed_versions = 1;
 my $option_keep_going;
 my $option_pkg_deb = 0;
+my $option_pkg_rpm = 0;
 my $option_regex_selector = ".*";
 my $option_repo_ci = 0;
 my $option_repo_clone = 0;
@@ -792,6 +793,7 @@ sub read_cmd_line
 		     "installed-versions!" => \$option_installed_versions,
 		     "keep-going!" => \$option_keep_going,
 		     "pkg-deb" => \$option_pkg_deb,
+		     "pkg-rpm" => \$option_pkg_rpm,
 		     "regex-selector=s" => \$option_regex_selector,
 		     "repo-ci=s" => \$option_repo_ci,
 		     "repo-clone=s" => \$option_repo_clone,
@@ -885,6 +887,7 @@ sub read_cmd_line
 	   "installed-versions!" => $option_installed_versions,
 	   "keep-going!" => $option_keep_going,
 	   "pkg-deb!" => $option_pkg_deb,
+	   "pkg-rpm!" => $option_pkg_rpm,
 	   "regex-selector=s" => $option_regex_selector,
 	   "repo-ci=s" => $option_repo_ci,
 	   "repo-clone=s" => $option_repo_clone,
@@ -2173,6 +2176,10 @@ sub read_cmd_line
 	    operation => [ 'make', 'pkg-deb'],
 	   },
 	   {
+	    condition => $option_pkg_rpm,
+	    operation => [ 'make', 'pkg-rpm'],
+	   },
+	   {
 	    #! always make as the regular user to avoid cluttering the
 	    #! source directory with root owned files
 
@@ -3107,6 +3114,7 @@ options related to operation execution profile:
     --installed-versions     print the installed version of each software package.
     --keep-going             keep going in case of non-fatal errors (ala make -k).
     --pkg-deb                build debian packages for each software component.
+    --pkg-rpm                build RPM packages for each software component.
     --regex-selector         defines a regex to select specific packages.
     --repo-ci                commit all modifications with the given changelog description.
     --repo-clone             checkout or update the workspace source code from a remote repository.
@@ -3472,7 +3480,7 @@ sub operation_execute
 sub version
 {
     # $Format: "    my $version=\"${package}-${label}\";"$
-    my $version="developer-2cb6807b98d154b15c8c92b1d2efa5662523173f.0";
+    my $version="developer-a3fff5b1b4e51a8fad60ad01dc1523e9f76c7e52.0";
 
     return $version;
 }
