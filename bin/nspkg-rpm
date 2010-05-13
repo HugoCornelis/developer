@@ -1,5 +1,6 @@
-#!/usr/bin/perl -w 
 #!/usr/bin/perl -w -d:ptkdb
+
+#!/usr/bin/perl -w 
 #
 
 
@@ -93,13 +94,49 @@ print "Copying source file $dist_src to $rpm_build_dir/SOURCES\n";
 try_to ("echo Copying source file $dist_src to $rpm_build_dir/SOURCES\n");
 try_to("cp $dist_src $rpm_build_dir/SOURCES/developer-alpha.1.tar.gz",1);
 
+
+
 print "Copying spec file to $rpm_build_dir/SPECS\n";
 try_to("echo Copying spec file to $rpm_build_dir/SPECS\n");
-try_to("cp install/rpm/$rpm_spec_file $rpm_build_dir/SPECS");
+open SPECFILE, "<install/rpm/$rpm_spec_file" or die "$!";
+
+# Due to rpmbuild refusing to allow a '-' in the version, i need
+# to perform a substitution.
+
+my @spec = <SPECFILE>;
+close SPECFILE;
+
+foreach(@spec)
+{
+  if( $_ =~ m/version/ )
+  {
+    $_ =~ s/\-/\./;
+  }
+}
+
+# my $i = 0;
+# for($i=0;$i<=$#spec;$i++)
+# {
+
+#   if( $spec[$i] =~ m/version/)
+#   {
+#     $spec[$i] = s/\-/\./;
+#   }
+
+# }
+
+open SPECFILECOPY, ">$rpm_build_dir/SPECS/$rpm_spec_file" or die $!;
+print SPECFILECOPY join('',@spec);
+close SPECFILECOPY;
+
+#try_to("cp install/rpm/$rpm_spec_file $rpm_build_dir/SPECS");
 
 
-print "Perform the rpm build\n";
-try_to("rpmbuild --bs $rpm_build_dir/SPECS/$rpm_spec_file",1);
+
+
+print "Building Source and binary RPMs\n";
+try_to("echo Building Source and Binary RPMs",1);
+try_to("rpmbuild --ba $rpm_build_dir/SPECS/$rpm_spec_file",1);
 
 
 print "Done.\n";

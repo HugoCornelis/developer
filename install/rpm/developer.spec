@@ -1,9 +1,14 @@
 %define _topdir	 	/home/mando/neurospaces_project/developer/source/snapshots/0/developer
 %define _bindir		/usr/local/bin
 %define _mandir		/usr/local/share/man/man1
-%define name		developer
+
+# $Format: "%define name	\"${package}\";"$
+%define name	"developer";
 %define release		1
-%define version 	alpha.1
+
+
+# $Format: "%define version 	\"${label}\";"$
+%define version 	"major-minor";
 %define buildroot 	%{_topdir}/%{name}-%{version}-root
 
 BuildRoot:		%{buildroot}
@@ -33,11 +38,11 @@ The Neurospaces developer package contains essential tools for Neurospaces devel
  This package contains utilities requires for Neurospaces development.
 
 
-%package developer
-Requires: perl
-Summary: Neurospaces Developer Package
-Group: Science
-Provides: developer
+# %package developer
+# Requires: perl
+# Summary: Neurospaces Developer Package
+# Group: Science
+# Provides: developer
 
 %prep
 echo %_target
