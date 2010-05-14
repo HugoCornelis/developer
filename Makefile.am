@@ -66,14 +66,16 @@ show-release-labels:
 	echo "Release information (major-minor-micro): $(RELEASE_MAJOR)-$(RELEASE_MINOR)-$(RELEASE_MICRO)"
 
 dist-keywords:
-	release-expand developer $(RELEASE_MAJOR) $(RELEASE_MINOR) $(RELEASE_MICRO) $(RELEASE_MAJOR)-$(RELEASE_MINOR) hugo.cornelis@gmail.com --verbose
+	release-expand developer $(RELEASE_MAJOR) $(RELEASE_MINOR) $(RELEASE_MICRO) $(RELEASE_MAJOR).$(RELEASE_MINOR) hugo.cornelis@gmail.com --verbose
 #	release-expand developer des 10 0 des-10 hugo.cornelis@gmail.com --verbose
 
 # the tests are copied overhere.
 #
 # The variable EXTRA_DIST could also be used here.
 
-EXTRA_DIST = tests \
+EXTRA_DIST = \
+	docs \
+	tests \
 	license.txt
 
 am__tar = ${AMTAR} chf - --format=posix "$$tardir"
@@ -161,7 +163,7 @@ pkg-deb: pkg-src
 	nspkg-deb $(TMP_DIR) $(PACKAGE) $(VERSION)
 
 pkg-rpm: pkg-src
-	nspkg-rpm $(PACKAGE) $(VERSION)
+	bin/nspkg-rpm $(PACKAGE) $(VERSION)
 
 # Create an RPM package
 #pkg-rpm: pkg-src

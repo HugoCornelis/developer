@@ -1,17 +1,22 @@
-%define _topdir	 	/home/mando/neurospaces_project/developer/source/snapshots/0/developer
+# The _WORKING_DIRECTORY_ value will be replaced with the current working directory
+%define _topdir	 	_WORKING_DIRECTORY_/developer
 %define _bindir		/usr/local/bin
 %define _mandir		/usr/local/share/man/man1
 
-# $Format: "%define name	\"${package}\";"$
-%define name	"developer";
+# $Format: "%define name	${package}"$
+%define name	developer
 %define release		1
 
 
-# $Format: "%define version 	\"${label}\";"$
-%define version 	"major-minor";
+# $Format: "%define version 	${label}"$
+%define version 	c15e75769f17af6c2bfea0677837c57d5197f704.0
 %define buildroot 	%{_topdir}/%{name}-%{version}-root
 
 BuildRoot:		%{buildroot}
+
+# Since developer is nothing but perl scripts, we use the noarch flag. 
+BuildArch:		noarch
+
 Summary: 		Neurospaces Developer Package
 License: 		GPL
 Name: 			%{name}
@@ -66,6 +71,8 @@ make install prefix=$RPM_BUILD_ROOT/usr/local
 # listing a directory name under files will include all files in the directory.
 %files
 %defattr(0755,root,root) 
+/usr/local/
+#/usr/share/
 
 
 %doc %attr(0444,root,root) docs

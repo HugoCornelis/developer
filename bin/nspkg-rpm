@@ -1,6 +1,5 @@
-#!/usr/bin/perl -w -d:ptkdb
-
 #!/usr/bin/perl -w 
+#!/usr/bin/perl -w -d:ptkdb
 #
 
 
@@ -90,27 +89,39 @@ try_to("mkdir -p $rpm_build_dir/SOURCES",1);
 try_to("mkdir -p $rpm_build_dir/SPECS",1);
 try_to("mkdir -p $rpm_build_dir/SRPMS",1);
 
+
+
+#try_to("cp $dist_src $rpm_build_dir/SOURCES/developer-alpha.1.tar.gz",1);
+
+
 print "Copying source file $dist_src to $rpm_build_dir/SOURCES\n";
-try_to ("echo Copying source file $dist_src to $rpm_build_dir/SOURCES\n");
-try_to("cp $dist_src $rpm_build_dir/SOURCES/developer-alpha.1.tar.gz",1);
+try_to("echo Copying source file $dist_src to $rpm_build_dir/SOURCES\n");
+try_to("cp $dist_src $rpm_build_dir/SOURCES/",1);
 
-
+# Due to rpmbuild refusing to allow a '-' in the version, i need
+# to perform a substitution in the spec file as well as the target 
+# source name. 
+# my $version_dot =  $version;
+# $version_dot =~ s/\-/\./;
+# my $target_src = $rpm_build_dir . "/SOURCES/" .$package_name . "-" . $version_dot . ".tar.gz";
+# try_to("cp $dist_src $target_src",1);
 
 print "Copying spec file to $rpm_build_dir/SPECS\n";
 try_to("echo Copying spec file to $rpm_build_dir/SPECS\n");
 open SPECFILE, "<install/rpm/$rpm_spec_file" or die "$!";
 
-# Due to rpmbuild refusing to allow a '-' in the version, i need
-# to perform a substitution.
+
 
 my @spec = <SPECFILE>;
 close SPECFILE;
 
 foreach(@spec)
 {
-  if( $_ =~ m/version/ )
+  if( $_ =~ m/_WORKING_DIRECTORY_/ )
   {
-    $_ =~ s/\-/\./;
+
+
+    $_ =~ s/_WORKING_DIRECTORY_/$top_dir/;
   }
 }
 
@@ -128,10 +139,6 @@ foreach(@spec)
 open SPECFILECOPY, ">$rpm_build_dir/SPECS/$rpm_spec_file" or die $!;
 print SPECFILECOPY join('',@spec);
 close SPECFILECOPY;
-
-#try_to("cp install/rpm/$rpm_spec_file $rpm_build_dir/SPECS");
-
-
 
 
 print "Building Source and binary RPMs\n";
