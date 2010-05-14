@@ -164,19 +164,3 @@ pkg-deb: pkg-src
 
 pkg-rpm: pkg-src
 	nspkg-rpm $(PACKAGE) $(VERSION)
-
-# Create an RPM package
-#pkg-rpm: pkg-src
-#	mkdir -p $(HOME)/.rpm/RPMS/i386
-#	mkdir -p $(HOME)/.rpm/SRPMS
-#	mkdir -p $(HOME)/.rpm/BUILD
-#	mkdir -p $(HOME)/.rpm/SOURCES
-#	mkdir -p $(HOME)/.rpm/tmp
-#	- rm -r $(HOME)/.rpm/BUILD/$(PACKAGE)-root
-#	- rm -r $(HOME)/.rpm/RPMS/$(PACKAGE)-*
-#	- rm -r $(HOME)/.rpm/SRPMS/$(PACKAGE)-*
-#	- rm -r $(HOME)/.rpm/SOURCES/$(PACKAGE)-*
-#	cp pkg/$(PACKAGE)-$(VERSION).tar.gz $(HOME)/.rpm/SOURCES/
-#	rpmbuild --quiet --nodeps --define="_topdir $(HOME)/.rpm" \
-#	    -ba install/rpm/neurospacesdeveloper.spec
-#	mv $(HOME)/.rpm/RPMS/i386/$(PACKAGE)-$(VERSION)-*.i386.rpm pkg/

@@ -29,7 +29,8 @@ my $developer_directory = "$ENV{HOME}/neurospaces_project/developer/source/snaps
 
 my $output_filename = "neurospaces_cron.stdout";
 
-
+my $deb_messages = "";
+my $rpm_messages = "";
 
 sub check_and_prepare
 {
@@ -556,7 +557,11 @@ sub build_pkgdeb
       {
 	try_to("cp -f $deb $dstdir",1);
       }
-      
+      else
+      {
+	$deb_messages .= "Debian package for $package was not built on this run.\n";
+      }
+
       if(-e $dsc)
       {
 	try_to("cp -f $dsc $dstdir",1);
@@ -899,6 +904,12 @@ sub produce_email_text
   {
     $status_message .= "\nThe debian packages built on this run are available via this link " . $configuration->{PKGDEBURL} . "\n";
 
+    if($deb_messages ne "")
+    {
+      $status_message .= "Debian Build Messages:\n";
+      $status_message .= $deb_messages;
+      $status_message .= "\n";
+    }
   }
 
 
