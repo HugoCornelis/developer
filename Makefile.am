@@ -163,7 +163,7 @@ pkg-deb: pkg-src
 	nspkg-deb $(TMP_DIR) $(PACKAGE) $(VERSION)
 
 pkg-rpm: pkg-src
-	bin/nspkg-rpm $(PACKAGE) $(VERSION)
+	nspkg-rpm $(PACKAGE) $(VERSION)
 
 # Create an RPM package
 #pkg-rpm: pkg-src
