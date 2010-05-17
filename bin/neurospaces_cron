@@ -14,6 +14,7 @@ my $option_no_check = 0;
 my $option_pkgdeb_directory = "";
 my $option_rpm_directory = "";
 my $option_srcdist_directory = "";
+my $option_user = "g3tester";
 
 my $configuration
     = {
@@ -194,7 +195,7 @@ sub cleanup_and_finalize
   # The g3tester user should be configurable. Will test this out first
   # before proceeding with adding that option. 
   #
-  my $trash_list = `find /tmp/ -user g3tester`;
+  my $trash_list = `find /tmp/ -user $option_user`;
 
   my @trash = split('\n',$trash_list);
 
@@ -440,16 +441,19 @@ sub main
 	# hold our debian packages we invoke our package build.
 	if(-d $option_pkgdeb_directory)
 	{
+	  print "Building Debian packages.\n";
 	  build_pkgdeb();
 	}
 
 	if(-d $option_rpm_directory)
 	{
+	  print "Building RPM packages\n.";
 	  build_rpm();
 	}
 
 	if(-d $option_srcdist_directory)
 	{
+	  print "Building source code distributions.\n";
 	  build_dist();
 	}
 
@@ -644,12 +648,20 @@ sub build_rpm
       chomp($package); #just in case
 
 
-      my $pkgdir =  "$ENV{HOME}/neurospaces_project/" . $package . "/source/snapshots/0/";
+      my $pkgdir =  "$ENV{HOME}/neurospaces_project/" . $package . "/source/snapshots/0/RPM_BUILD";
 
-      my $rpmfile = `find $pkgdir | grep $package | grep \\\\.rpm\$`;
+      # may need to do more work here if we ever get it to output more than
+      # one architecture.
+      my $rpmfile = `find $pkgdir/RPMS | grep $package | grep \\.rpm\$`;
       chomp($rpmfile);
 
-      my $dstdir =  "$option_srcdist_directory/" . $package;
+      my $srpmfile = `find $pkgdir/SRPMS | grep $package | grep \\.rpm\$`;
+      chomp($srpmfile);
+
+      my $build_log = $pkgdir . "/build_rpm.log";
+      chomp($build_log);
+
+      my $dstdir =  "$option_rpm_directory/" . $package;
 
       unless(-d $dstdir)
       {
@@ -664,6 +676,11 @@ sub build_rpm
       if(-e $rpmfile)
       {
 	try_to("cp -f $rpmfile $dstdir",1);
+      }
+
+      if(-e $srpmfile)
+      {
+	try_to("cp -f $srpmfile $dstdir",1);
       }
 
   }
@@ -698,6 +715,13 @@ sub parse_config_file
 
     print "This YAML file is invalid\n";
     return;
+
+  }
+
+  if(defined $configuration->{USER})
+  {
+    chomp($configuration->{USER});
+    print "\tTester user for this run is: $configuration->{USER}\n";
 
   }
 
@@ -813,11 +837,11 @@ sub parse_config_file
       print "\tDirectory for built debian packages is $configuration->{PKGDEBURL}\n";
   }
 
-  if(defined $configuration->{RPM})
+  if(defined $configuration->{RPMDIR})
   {
-    chomp($configuration->{RPM});
+    chomp($configuration->{RPMDIR});
 
-    $option_rpm_directory = $configuration->{RPM};
+    $option_rpm_directory = $configuration->{RPMDIR};
     print "\tDirectory to store RPM packages is $option_rpm_directory\n";
 
   }

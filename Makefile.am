@@ -90,6 +90,7 @@ clean-local:
 	$(RM) -f build_debian.log
 	$(RM) -rf RPM_BUILD
 	$(RM) -f build_rpm.log
+	$(RM) -f *.tar.gz
 
 dist-hook: dist-keywords
 #	cd $(srcdir) && if test -n "`mtn ls changed `" ; then false ; else true ; fi
