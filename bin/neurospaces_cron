@@ -639,7 +639,7 @@ sub build_dist
 sub build_rpm
 {
 
-  try_to("neurospaces_rpm");
+  try_to("neurospaces_pkgrpm");
 
   foreach (@enabled_packages)
   {
