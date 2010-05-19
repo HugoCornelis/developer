@@ -865,7 +865,7 @@ sub parse_config_file
   if(defined $configuration->{RPMURL})
   {
       chomp($configuration->{RPMURL});
-      print "\tDirectory for built debian packages is $configuration->{RPMURL}\n";
+      print "\tDirectory for built RPM packages is $configuration->{RPMURL}\n";
   }
 
   if(defined $configuration->{SRCDIST})
@@ -954,7 +954,7 @@ sub produce_email_text
 
   if(defined $configuration->{RPMURL})
   {
-    $status_message .= "\nThe RPM packages built on this run are available via this link " . $configuration->{PKGDEBURL} . "\n";
+    $status_message .= "\nThe RPM packages built on this run are available via this link " . $configuration->{RPMURL} . "\n";
 
     if($deb_messages ne "")
     {
