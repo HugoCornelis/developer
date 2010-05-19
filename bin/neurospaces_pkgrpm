@@ -40,7 +40,7 @@ my $verbose_options = defined $option_verbose ? "--verbose " x $option_verbose :
 my $developer_options = defined $option_developer ? "--developer " x $option_developer : '';
 my $regex_options = defined $option_regex_selector ? "--regex '$option_regex_selector' " : '';
 my $enable_options = defined $option_enable ? "--enable $option_enable " : '';
-my $dir_options = defined $option_dir ? "--pkg-tar-dir $option_dir " : "";
+my $dir_options = defined $option_dir ? "--pkg-rpm-dir $option_dir " : "";
 my $release_options = defined $option_release_tag ? "--release-tag '$option_release_tag' " : '';
 
 system "neurospaces_build --pkg-rpm $dir_options $release_options --no-installed-versions --no-configure --no-install --no-compile $verbose_options $developer_options $regex_options $enable_options";

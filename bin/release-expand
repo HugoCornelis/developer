@@ -18,7 +18,13 @@ use Getopt::Long;
 
 # parse options
 
-my $option_help;
+my $option_help = 0;
+my $option_email = 0;
+my $option_label = 0;
+my $option_major = 0;
+my $option_minor = 0;
+my $option_micro = 0;
+my $option_package = 0;
 my $option_remove;
 my $option_verbose;
 
@@ -28,6 +34,12 @@ sub read_cmd_line
 	= GetOptions
 	    (
 	     "help!" => \$option_help,
+	     "email=s" => \$option_email,
+	     "label=s" => \$option_label,
+	     "major=s" => \$option_major,
+	     "minor=s" => \$option_minor,
+	     "micro=s" => \$option_micro,
+	     "package=s" => \$option_package,
 	     "r|remove!" => \$option_remove,
 	     "v|verbose+" => \$option_verbose,
 	    );
@@ -42,6 +54,12 @@ $0 <options> package major minor micro label email
 
 options :
     help            print usage information.
+    email           Set the packager email.
+    label           Set the release label.
+    major           Set version major.
+    minor           Set version minor.
+    micro           Set version micro.
+    package         Set the package name.
     remove          remove labels instead of insert.
     verbose         set verbosity level.
 ";
@@ -54,26 +72,46 @@ options :
 read_cmd_line();
 
 # read config
+if(!-e './release-expand.config')
+{
+  die "Error: \'release-expand.config\' file is not found.\n";
+}
 
 my $config = do './release-expand.config';
 
-# get the package info
 
-my $package = defined $ARGV[0] ? $ARGV[0] : '';
-my $major = defined $ARGV[1] ? $ARGV[1] : '';
-my $minor = defined $ARGV[2] ? $ARGV[2] : '';
-my $micro = defined $ARGV[3] ? $ARGV[3] : '';
-my $label = defined $ARGV[4] ? $ARGV[4] : '';
-my $email = defined $ARGV[5] ? $ARGV[5] : '';
+# Priority will be Arguments first, config file second.
 
 # set default keyword values
+if($option_package)
+{
+  $config->{labels}->{package} = $option_package;
+}
 
-$config->{labels}->{package} = $package;
-$config->{labels}->{major} = $major;
-$config->{labels}->{minor} = $minor;
-$config->{labels}->{micro} = $micro;
-$config->{labels}->{label} = $label;
-$config->{labels}->{email} = $email;
+if($option_major)
+{
+  $config->{labels}->{major} = $option_major;
+}
+
+if($option_minor)
+{
+  $config->{labels}->{minor} = $option_minor;
+}
+
+if($option_micro)
+{
+  $config->{labels}->{micro} = $option_micro;
+}
+
+if($option_label)
+{
+  $config->{labels}->{label} = $option_label;
+}
+
+if($option_email)
+{
+  $config->{labels}->{email} = $option_email;
+}
 
 # loop over all files with keywords
 

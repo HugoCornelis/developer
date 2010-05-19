@@ -7,12 +7,17 @@
 %define name	developer
 
 # $Format: "%define release	${label}"$
-%define release		1
 
 
-# $Format: "%define version 	${label}"$
-%define version 	alpha
-%define buildroot 	%{_topdir}/%{name}-%{version}-root
+# $Format: "%define release	        ${label}"$
+%define release	        alpha
+
+
+# $Format: "%define version 	${major}.${minor}.${micro}"$
+%define version 	0.0.0
+
+%define buildroot 	%{_topdir}/%{name}-%{version}-%{release}-root
+
 
 BuildRoot:		%{buildroot}
 
@@ -24,7 +29,7 @@ License: 		GPL
 Name: 			%{name}
 Version: 		%{version}
 Release: 		%{release}
-Source: 		%{name}-%{version}.tar.gz
+Source: 		%{name}-%{version}-%{release}.tar.gz
 Prefix: 		/usr/local
 Group: 			Science
 Vendor: 		Hugo Cornelis <hugo.cornelis@gmail.com>
@@ -51,6 +56,9 @@ The Neurospaces developer package contains essential tools for Neurospaces devel
 # Group: Science
 # Provides: developer
 
+# The %setup section needs the -n option to indicate
+# the name of the directory the source tarball unzips to
+# if it is anything other than <name>-<version>
 %prep
 echo %_target
 echo %_target_alias
@@ -58,7 +66,7 @@ echo %_target_cpu
 echo %_target_os
 echo %_target_vendor
 echo Building %{name}-%{version}-%{release}
-%setup -q
+%setup -q -n %{name}-%{version}-%{release} 
 
 %build
 ./configure 
