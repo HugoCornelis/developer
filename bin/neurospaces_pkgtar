@@ -15,10 +15,11 @@ my $option_clean;
 my $option_configure;
 my $option_developer = 1;
 my $option_distclean;
-my $option_dist_dir = [ '/tmp/neurospaces/dist/tarballs', ];
+my $option_dir;
 my $option_enable;
 my $option_regex_selector;
-my $option_tag = 0;
+my $option_release_tag;
+my $option_version_tag;
 my $option_verbose;
 
 {
@@ -29,10 +30,11 @@ my $option_verbose;
 	     "configure!" => \$option_configure,
 	     "developer!" => \$option_developer,
 	     "distclean!" => \$option_distclean,
-# 	     "dist-dir=s" => $option_dist_dir,
+ 	     "dir=s" => \$option_dir,
 	     "enable=s" => \$option_enable,
 	     "regex-selector=s" => \$option_regex_selector,
-	     "tag=s" => \$option_tag,
+	     "release-tag=s" => \$option_release_tag,
+	     "version-tag=s" => \$option_version_tag,
 	     "v|verbose+" => \$option_verbose,
 	    );
 
@@ -45,10 +47,9 @@ my $option_verbose;
 {
 
 
-#    if ($release_label !~ m/([^-]+)-([^-]+)?(?:-([^-]+))?/)
-
+    #
     # The release label should follow the proper RPM and deb version format.
-    # 
+    # Architecture is automatically inserted via the debian and RPM config files. 
     # For RPMs:
     #    <name>-<version>-<release>.<architecture>.rpm
     #
@@ -59,36 +60,35 @@ my $option_verbose;
     #     <major>.<minor>.<micro>
     #
 
-    if (!$option_tag)
+
+    # Check for the release label.
+    if(!defined $option_release_tag)
     {
-	die "$0: *** Error: No release label found on the command line (must have the format [--tag major-minor-micro], -micro is optional)";
+	die "$0: *** Error: No release label found on the command line (must have the format [--tag major.minor.micro], -micro is optional)";
+
     }
 
-    my $release_label = $option_tag;
-
-    if ($release_label !~ m/([^-]+)\.([^-]+)?(?:\.([^-]+))?/ )
+    if(defined $option_version_tag)
     {
-	die "$0: *** Error: Release label does not have the correct format (must have the format [--tag major-minor-micro], -micro is optional)";
+      if ($option_version_tag !~ m/([^-]+)\.([^-]+)?(?:\.([^-]+))?/ )
+	{
+	  die "$0: *** Error: Version label does not have the correct format (must have the format [--version major.minor.micro], micro is optional)";
+	}
     }
-
-    my $release_major = $1;
-
-    my $release_minor = $2;
-
-    my $release_micro = $3;
 
 }
 
 my $clean_options = defined $option_clean ? "--clean " x $option_clean : '';
 my $distclean_options = defined $option_distclean ? "--distclean " x $option_distclean : '';
-my $dist_dir_options = "--dist-dir $option_dist_dir->[0] ";
+my $dir_options = defined $option_dir ? "--pkg-tar-dir $option_dir " : "";
 my $configure_options = defined $option_configure ? "--configure " x $option_configure : '--no-configure';
-my $tag_options = defined $option_tag ? "--tag $option_tag" : '';
+my $version_options = defined $option_version_tag ? "--version-tag  '$option_version_tag' " : '';
+my $release_options = defined $option_release_tag ? "--release-tag '$option_release_tag' " : '';
 my $verbose_options = defined $option_verbose ? "--verbose " x $option_verbose : '';
 my $developer_options = defined $option_developer ? "--developer " x $option_developer : '';
 my $regex_options = defined $option_regex_selector ? "--regex '$option_regex_selector' " : '';
 my $enable_options = defined $option_enable ? "--enable $option_enable " : '';
 
-system "neurospaces_build --dist $tag_options --src-tag $option_tag $clean_options $dist_dir_options $distclean_options $configure_options --no-installed-versions $verbose_options $developer_options $regex_options $enable_options";
+system "neurospaces_build --pkg-tar $clean_options $dir_options $distclean_options $configure_options --no-configure --no-compile --no-install --no-installed-versions $verbose_options $developer_options $version_options $release_options $regex_options $enable_options";
 
 

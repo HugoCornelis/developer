@@ -37,6 +37,7 @@ dist_bin_SCRIPTS = \
 	bin/neurospaces_packages \
 	bin/neurospaces_pkgdeb \
 	bin/neurospaces_pkgrpm \
+	bin/neurospaces_pkgtar \
 	bin/neurospaces_pull \
 	bin/neurospaces_push \
 	bin/neurospaces_tools_propagate \
@@ -92,7 +93,7 @@ clean-local:
 	$(RM) -f build_rpm.log
 	$(RM) -f *.tar.gz
 
-dist-hook: dist-keywords
+dist-hook: 
 #	cd $(srcdir) && if test -n "`mtn ls changed `" ; then false ; else true ; fi
 	find $(distdir) -name _Inline -exec chmod u+w -R \{\} \;
 	$(RM) -fr `find $(distdir) -name _Inline`
@@ -144,26 +145,11 @@ pkg-src: dist
 	mkdir -p pkg
 	cp $(PACKAGE)-$(VERSION).tar.gz pkg/$(PACKAGE)-$(VERSION).tar.gz
 
-#pkg-deb: dist
-#	./builddeb.sh $(TMP_DIR) $(PACKAGE) $(VERSION)
-
-#	- rm -rf  $(TMP_DIR)
-#	mkdir -p $(TMP_DIR)
-#	mv $(PACKAGE)-$(VERSION).tar.gz $(TMP_DIR)/
-
-#	tar --directory $(TMP_DIR)/ \
-#         -xf $(TMP_DIR)/$(PACKAGE)-$(VERSION).tar.gz
-#	cd $(TMP_DIR)/$(PACKAGE)-$(VERSION)/ \
-#                ./configure \
-#                dpkg-buildpackage -us -uc -rfakeroot \
-#                mv ../*.deb $(PWD)/pkg/
-#	rm -rf $(TMP_DIR)
-#EXTRA_DIST = debian
 TMP_DIR = tmp
 
 # Create a deb package
-pkg-deb: pkg-src
+pkg-deb: dist
 	nspkg-deb $(TMP_DIR) $(PACKAGE) $(VERSION)
 
-pkg-rpm: pkg-src
+pkg-rpm: dist
 	nspkg-rpm $(PACKAGE) $(VERSION)

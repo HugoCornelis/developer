@@ -36,8 +36,6 @@ my $option_dry_run = 0;
 my $option_install = 1;
 my $option_installed_versions = 1;
 my $option_keep_going;
-my $option_pkg_deb = 0;
-my $option_pkg_rpm = 0;
 my $option_regex_selector = ".*";
 my $option_repo_ci = 0;
 my $option_repo_clone = 0;
@@ -55,6 +53,20 @@ my $option_upload_server;
 my $option_verbose = 0;
 my $option_website_prepare;
 my $option_website_upload;
+
+
+# options for source code and package distribution.
+my $option_pkg_deb = 0;
+my $option_pkg_deb_dir = 0;
+my $option_pkg_rpm = 0;
+my $option_pkg_rpm_dir = 0;
+my $option_pkg_tar = 0;
+my $option_pkg_tar_dir = 0;
+my $option_version_major = 0;
+my $option_version_minor = 0;
+my $option_version_micro = 0;
+my $option_version_tag = 0;
+my $option_release_tag = 0;
 
 # options related to installation on a client machine
 
@@ -236,6 +248,16 @@ my $all_packages
 						},
 			     version_script => 'pb-version',
 			    },
+       publications => {
+			directory => "$ENV{HOME}/neurospaces_project/publications/source/snapshots/0",
+			disabled => 1,
+			order => 31,
+			version_control => {
+					    port_number => 4702,
+					    repository => "$ENV{HOME}/neurospaces_project/MTN/publications.mtn",
+					   },
+			version_script => 0,
+		       },
        ssp => {
 	       dependencies => {
 				'model-container' => 'for storing the model in computer memory',
@@ -747,6 +769,85 @@ sub all_operations_execute
 }
 
 
+#
+# sub($make_target)
+#
+# subroutine parses the version and release tags and
+# returns them in an array for executing via operation_execute.
+# The argument for the make target is use to ensure that the
+# code can be used for packaging tars, rpms and debs.
+sub parse_release_tags
+{
+
+  my $make_target = shift;
+  my $major;
+  my $minor;
+  my $micro;
+  my $label;
+  my $email;
+
+  my $command;
+  
+  push(@$command, 'release-expand');
+
+  if($option_version_tag)
+  {
+      my @ver = split(/\./,$option_version_tag);
+      
+      $major = $ver[0];
+      $minor = $ver[1];
+      
+      push(@$command, '--major');
+      push(@$command, $major);
+      push(@$command, '--minor');
+      push(@$command, $minor);
+
+      if($#ver == 2)
+      {
+	$micro = $ver[2];
+
+	push(@$command, '--micro');
+	push(@$command, $micro);
+
+      }
+
+  }
+  else
+  {
+
+    if($option_version_major)
+    {
+      push(@$command, '--major');
+      push(@$command, $option_version_major);
+    }
+
+    if($option_version_minor)
+    {
+      push(@$command, '--minor');
+      push(@$command, $option_version_minor);
+    }
+
+    if($option_version_micro)
+    {
+      push(@$command, '--micro');
+      push(@$command, $option_version_micro);
+    }
+
+  }
+
+  if($option_release_tag)
+  {
+    push(@$command, '--label');
+    push(@$command, $option_release_tag);
+  }
+
+  push(@$command, '&&');
+  push(@$command, 'make');
+  push(@$command, $make_target);
+  
+  return $command;
+}
+
 sub read_cmd_line
 {
     my $option_disable;
@@ -793,8 +894,13 @@ sub read_cmd_line
 		     "installed-versions!" => \$option_installed_versions,
 		     "keep-going!" => \$option_keep_going,
 		     "pkg-deb" => \$option_pkg_deb,
+		     "pkg-deb-dir=s" => \$option_pkg_deb_dir,
 		     "pkg-rpm" => \$option_pkg_rpm,
+		     "pkg-rpm-dir=s" => \$option_pkg_rpm_dir,
+		     "pkg-tar" => \$option_pkg_tar,
+		     "pkg-tar-dir=s" => \$option_pkg_tar_dir,
 		     "regex-selector=s" => \$option_regex_selector,
+		     "release-tag=s" => \$option_release_tag,
 		     "repo-ci=s" => \$option_repo_ci,
 		     "repo-clone=s" => \$option_repo_clone,
 		     "repo-co!" => \$option_repo_co,
@@ -810,6 +916,7 @@ sub read_cmd_line
 		     "upload-server=s" => \$option_upload_server,
 		     "verbose+" => \$option_verbose,
 		     "version" => \$option_version,
+		     "version-tag=s" => \$option_version_tag,
 		     "website-prepare!" => \$option_website_prepare,
 		     "website-upload!" => \$option_website_upload,
 
@@ -887,8 +994,13 @@ sub read_cmd_line
 	   "installed-versions!" => $option_installed_versions,
 	   "keep-going!" => $option_keep_going,
 	   "pkg-deb!" => $option_pkg_deb,
+	   "pkg-deb-dir=s" => $option_pkg_deb_dir,
 	   "pkg-rpm!" => $option_pkg_rpm,
+	   "pkg-rpm-dir=s" => \$option_pkg_rpm_dir,
+	   "pkg-tar!" => $option_pkg_tar,
+	   "pkg-tar-dir=s" => \$option_pkg_tar_dir,
 	   "regex-selector=s" => $option_regex_selector,
+	   "release-tag=s" => \$option_release_tag,
 	   "repo-ci=s" => $option_repo_ci,
 	   "repo-clone=s" => $option_repo_clone,
 	   "repo-co!" => $option_repo_co,
@@ -904,6 +1016,7 @@ sub read_cmd_line
 	   "upload-server=s" => $option_upload_server,
 	   "verbose+" => $option_verbose,
 	   "version" => $option_version,
+	   "version=s" => $option_version_tag,
 	   "website-prepare!" => $option_website_prepare,
 	   "website-upload!" => $option_website_upload,
 
@@ -1023,15 +1136,6 @@ sub read_cmd_line
 
 		if ($repository_name =~ m/^.*\.mtn$/)
 		{
-		  #t MONOTONE
-
-		  # if not enough information for init for monotone
-
-		  if (not -f $repository_name)
-		  {
-		      die "$0: *** Error: cannot init repository, repository_name not set";
-		  }
-
 		  # initialize the repository if necessary
 
 		  operation_execute
@@ -1052,13 +1156,12 @@ sub read_cmd_line
 		}
 		else
 		{
+		    # MERCURIAL init
 
-		  # MERCURIAL sync
-
-		  # operations:
-		  #   initialize the repo:
-		  #      hg init http://repo-genesis3.cbi.utsa.edu/hg/g-tube ${HOME}/neurospaces_project/g-tube/source/snapshots/0/
-		  # performs a clone of a repository if the project workspace isn't present.
+		    # operations:
+		    #   initialize the repo:
+		    #      hg init http://repo-genesis3.cbi.utsa.edu/hg/g-tube ${HOME}/neurospaces_project/g-tube/source/snapshots/0/
+		    # performs a clone of a repository if the project workspace isn't present.
 		}
 	    },
 	   },
@@ -1650,13 +1753,23 @@ sub read_cmd_line
 
 		    if ($monotone_version >= 0.45)
 		    {
-			@update_args = ['mtn', 'automate', 'get_base_revision_id',
-					'&&', 'mtn', '--db', $repository_name, '--branch', '0', 'update','--move-conflicting-paths', ];
+			@update_args = [
+					'/bin/echo', '-n', 'from', 'base_revision_id',
+					'&&', 'mtn', 'automate', 'get_base_revision_id',
+					'&&', 'mtn', '--db', $repository_name, '--branch', '0', 'update','--move-conflicting-paths',
+					'&&', '/bin/echo', '-n', 'to', 'base_revision_id',
+					'&&', 'mtn', 'automate', 'get_base_revision_id',
+				       ];
 		    }
 		    else
 		    {
-			@update_args = ['mtn', 'automate', 'get_base_revision_id',
-					'&&', 'mtn', '--db', $repository_name, '--branch', '0', 'update', ];
+			@update_args = [
+					'/bin/echo', '-n', 'from', 'base_revision_id',
+					'&&', 'mtn', 'automate', 'get_base_revision_id',
+					'&&', 'mtn', '--db', $repository_name, '--branch', '0', 'update',
+					'&&', '/bin/echo', '-n', 'to', 'base_revision_id',
+					'&&', 'mtn', 'automate', 'get_base_revision_id',
+				       ];
 		    }
 
 		    operation_execute
@@ -1777,7 +1890,9 @@ sub read_cmd_line
 			  # doesn't have any exact equivalen to monotones missing or unknown commands.
 			  # status essentially does all of it.
 			  ( "test", "!", '"`mtn ls unknown && mtn ls missing && mtn ls changed`"', ),
-			  ( '&&', 'release-expand', "'%package'", "'%release_major'", "'%release_minor'", "'%release_micro'", "'%release_major-%release_minor'", 'hugo.cornelis@gmail.com', '--verbose', ),
+			  ( '&&', 'release-expand', "--package", "'%package'", "--major", "'%release_major'", 
+			    "--minor", "'%release_minor'", "--micro", "'%release_micro'", "--label", 
+			    "'%release_major-%release_minor'", "--email",'hugo.cornelis@gmail.com', '--verbose', ),
 
 			  #! after keyword expansion, regenerate the
 			  #! autotool related files that perhaps are
@@ -1785,8 +1900,8 @@ sub read_cmd_line
 
 			  ( '&&', 'make', 'clean', ),
 			  ( '&&', 'make', 'clean', ),
-			  ( "&&", 'mtn', 'ci', "-m", "'1. Keywords only: $option_tag\n'", ),
-			  ( "&&", "test", "!", '"`mtn ls unknown && mtn ls missing && mtn ls changed`"', ),
+# 			  ( "&&", 'mtn', 'ci', "-m", "'1. Keywords only: $option_tag\n'", ),
+			  ( "&&", "test", "!", '"`mtn ls unknown && mtn ls missing`"', ),
 			 ],
 
 	   },
@@ -2173,11 +2288,457 @@ sub read_cmd_line
 	   },
 	   {
 	    condition => $option_pkg_deb,
-	    operation => [ 'make', 'pkg-deb'],
+	    description => 'Build debian packages with release tags',
+	    operation =>
+	    sub
+	    {
+		my $package_information = shift;
+
+		my $description = $package_information->{description};
+
+		my $directory = $package_information->{directory};
+
+		my $operations = $package_information->{operations};
+
+		my $package_name = $package_information->{package_name};
+
+		
+		# change the directory
+
+		chdir $directory;
+
+		my $command = parse_release_tags('pkg-deb');
+		
+
+		operation_execute
+		  (
+		   $operations,
+		   {
+		    description => $description,
+		    keywords => 0,
+		    package_name => $package_name,
+		   },
+		   $command,
+		  );
+
+		# Debian format:
+		#    <name>_<version>-<release>_<architecture>.deb
+
+		# Code isn't needed for now. 
+# 		my $deb_prefix = "$package_name" . "_" . "$major.$minor";
+		
+# 		if(defined $micro)
+# 		{
+# 		  $deb_prefix .= ".$micro";
+# 		}
+
+# 		$deb_prefix .= "-$label";
+
+		my $deb = `find $directory | grep $package_name | grep \\\\.deb\$`;
+		chomp($deb);
+		my $dsc = `find $directory | grep $package_name | grep \\.dsc\$`;
+		chomp($dsc);
+		my $changes = `find $directory | grep $package_name | grep \\.changes\$`;
+		chomp($changes);
+		my $build_log = $directory . "/build_debian.log";
+		chomp($build_log);
+
+
+		if(!-e $deb)
+		{
+		  print "Debian package for package $package_name was not created.\n";
+		}
+		else
+		{
+		  print "Debian package for package $package_name was created: $deb\n";
+		}
+
+
+
+		if($option_pkg_deb_dir)
+		{
+
+		  if(!-d $option_pkg_deb_dir)
+		  {
+		    operation_execute
+		      (
+		       $operations,
+		       {
+			description => $description,
+			keywords => 0,
+			package_name => $package_name,
+		       },
+		       [
+			'mkdir', '-p', $option_pkg_deb_dir,
+		       ],
+		      );
+ 
+		  }
+
+		  #
+		  # Since this produces multiple files we need to place them all into a directory. 
+		  my $deb_dir = $option_pkg_deb_dir . "/" . $package_name;
+
+
+		  if(!-d $deb_dir)
+		  {
+		    operation_execute
+		      (
+		       $operations,
+		       {
+			description => $description,
+			keywords => 0,
+			package_name => $package_name,
+		       },
+		       [
+			'mkdir', '-p', $deb_dir,
+		       ],
+		      );
+		  }
+
+		  # now we copy over each file built in the debian package build. 
+		  # perform a check for the existence of the file to prevent it from
+		  # stopping the neurospaces_build script. The build log should always
+		  # be copied over. 
+		  if(-d $deb_dir)
+		  {
+
+
+		    if(-e $deb)
+		    {
+		      operation_execute
+			(
+			 $operations,
+			 {
+			  description => $description,
+			  keywords => 0,
+			  package_name => $package_name,
+			 },
+			 [
+			  'cp', '-f', $deb, $deb_dir,
+			 ],
+			);
+		    }
+
+
+		    if(-e $dsc)
+		    {
+		      operation_execute
+			(
+			 $operations,
+			 {
+			  description => $description,
+			  keywords => 0,
+			  package_name => $package_name,
+			 },
+			 [
+			  'cp', '-f', $dsc, $deb_dir,
+			 ],
+			);
+		    }
+
+
+
+		    if(-e $changes)
+		    {
+		      operation_execute
+			(
+			 $operations,
+			 {
+			  description => $description,
+			  keywords => 0,
+			  package_name => $package_name,
+			 },
+			 [
+			  'cp', '-f', $changes, $deb_dir,
+			 ],
+			);
+		    }
+
+
+
+		    if(-e $build_log)
+		    {
+		      operation_execute
+			(
+			 $operations,
+			 {
+			  description => $description,
+			  keywords => 0,
+			  package_name => $package_name,
+			 },
+			 [
+			  'cp', '-f', $build_log, $deb_dir,
+			 ],
+			);
+		    }
+
+
+
+		  }
+		  else
+		  {
+		    print "Error: Directory $deb_dir could not be created.\n";
+		    print "Can't copy deb files.\n";
+		  }
+
+		}
+
+	    },
 	   },
+
 	   {
 	    condition => $option_pkg_rpm,
-	    operation => [ 'make', 'pkg-rpm'],
+	    description => 'Build RPM packages with release tags',
+	    operation =>
+	    sub
+	    {
+		my $package_information = shift;
+
+		my $description = $package_information->{description};
+
+		my $directory = $package_information->{directory};
+
+		my $operations = $package_information->{operations};
+
+		my $package_name = $package_information->{package_name};
+
+		
+		# change the directory
+
+		chdir $directory;
+
+		my $command = parse_release_tags('pkg-rpm');
+
+		operation_execute
+		    (
+		     $operations,
+		     {
+		      description => $description,
+		      keywords => 0,
+		      package_name => $package_name,
+		     },
+		     $command,
+		    );
+
+		my $pkgdir = $directory . "/RPM_BUILD";
+
+		# unless we build for multiple archs, there should only be one rpm in here.
+		my $rpmfile = `find $pkgdir/RPMS | grep $package_name | grep \\.rpm\$`;
+		chomp($rpmfile);
+
+		my $srpmfile = `find $pkgdir/SRPMS | grep $package_name | grep \\.rpm\$`;
+		chomp($srpmfile);
+
+		my $build_log = $directory . "/build_rpm.log";
+		chomp($build_log);
+
+		if(!-e $rpmfile)
+		{
+		  print "RPM file for package $package_name was not created.\n";
+		  return;
+		}
+		else
+		{
+		  print "RPM file for package $package_name was created: $rpmfile\n";
+		}
+
+		if($option_pkg_rpm_dir)
+		{
+		  #
+		  # Since this produces multiple files we need to place them all into a directory. 
+		  my $rpm_dir = $option_pkg_rpm_dir . "/" . $package_name;
+		  
+		  
+		  if(!-d $rpm_dir)
+		  {
+		    operation_execute
+		      (
+		       $operations,
+		       {
+			description => $description,
+			keywords => 0,
+			package_name => $package_name,
+		       },
+		       [
+			'mkdir', '-p', $rpm_dir,
+		       ],
+		      );
+		  }
+
+		  # copy over each rpm file. 
+		  if(-d $rpm_dir)
+		  {
+
+		    if(-e $rpmfile)
+		    {
+		      operation_execute
+			(
+			 $operations,
+			 {
+			  description => $description,
+			  keywords => 0,
+			  package_name => $package_name,
+			 },
+			 [
+			  'cp', '-f', $rpmfile, $rpm_dir,
+			 ],
+			);
+		    }
+
+
+		    if(-e $srpmfile)
+		    {
+		      operation_execute
+			(
+			 $operations,
+			 {
+			  description => $description,
+			  keywords => 0,
+			  package_name => $package_name,
+			 },
+			 [
+			  'cp', '-f', $srpmfile, $rpm_dir,
+			 ],
+			);
+		    }
+
+
+
+
+		    if(-e $build_log)
+		    {
+		      operation_execute
+			(
+			 $operations,
+			 {
+			  description => $description,
+			  keywords => 0,
+			  package_name => $package_name,
+			 },
+			 [
+			  'cp', '-f', $build_log, $rpm_dir,
+			 ],
+			);
+		    }
+
+
+		  }
+		  else
+		  {
+		    print "Error: Directory $rpm_dir could not be created.\n";
+		    print "Can't copy RPM files.\n";
+		  }
+
+		}
+
+	      }
+	   },
+
+	   {
+	    condition => $option_pkg_tar,
+	    description => 'Build source tarballs with release tags',
+	    operation =>
+	    sub
+	    {
+		my $package_information = shift;
+
+		my $description = $package_information->{description};
+
+		my $directory = $package_information->{directory};
+
+		my $operations = $package_information->{operations};
+
+		my $package_name = $package_information->{package_name};
+
+		
+		# change the directory
+
+		chdir $directory;
+
+		my $command = parse_release_tags('dist');
+
+		operation_execute
+		    (
+		     $operations,
+		     {
+		      description => $description,
+		      keywords => 0,
+		      package_name => $package_name,
+		     },
+		     $command,
+		    );
+
+# May reuse this code later. 
+# 		my $tarball = "$package_name-$major.$minor";
+		
+# 		if(defined $micro)
+# 		{
+# 		  $tarball .= ".$micro";
+# 		}
+
+# 		$tarball .= "-$label.tar.gz";
+
+		# should only be one file that matches this criteria.
+		my $tarball = `find $directory | grep $package_name | grep \.tar\.gz\$`;
+		chomp($tarball);
+
+		if(!-e $tarball)
+		{
+
+		  print "Source dist for package $package_name was not created.\n";
+		  return;
+
+		}
+		else
+		{
+		  print "Source dist for package $package_name was created: $tarball\n";
+		}
+
+
+		if($option_pkg_tar_dir)
+		{
+
+		  if(!-d $option_pkg_tar_dir)
+		  {
+		    operation_execute
+		      (
+		       $operations,
+		       {
+			description => $description,
+			keywords => 0,
+			package_name => $package_name,
+		       },
+		       [
+			'mkdir', '-p', $option_pkg_tar_dir,
+		       ],
+		      );
+ 
+		  }
+
+		  if(-d $option_pkg_tar_dir)
+		  {
+		    operation_execute
+		      (
+		       $operations,
+		       {
+			description => $description,
+			keywords => 0,
+			package_name => $package_name,
+		       },
+		       [
+			'cp', '-f', $tarball, $option_pkg_tar_dir,
+		       ],
+		      );
+		  }
+		  else
+		  {
+		    print "Error: Directory $option_pkg_tar_dir could not be created.\n";
+		  }
+
+		}
+
+	    },
 	   },
 	   {
 	    #! always make as the regular user to avoid cluttering the
@@ -3114,8 +3675,13 @@ options related to operation execution profile:
     --installed-versions     print the installed version of each software package.
     --keep-going             keep going in case of non-fatal errors (ala make -k).
     --pkg-deb                build debian packages for each software component.
+    --pkg-deb-dir            Directory to place debian packages after a debian build.
     --pkg-rpm                build RPM packages for each software component.
+    --pkg-rpm-dir            Directory to place RPM packages after an RPM build.
+    --pkg-tar                build source tarballs for each software package.
+    --pkg-tar-dir            Directory to place source tarballs into after creating a dist.
     --regex-selector         defines a regex to select specific packages.
+    --release-tag            Sets a release tag for source code distribution.
     --repo-ci                commit all modifications with the given changelog description.
     --repo-clone             checkout or update the workspace source code from a remote repository.
     --repo-co                checkout or update the workspace source code from a local repository.
@@ -3130,6 +3696,7 @@ options related to operation execution profile:
     --uninstall              uninstall packages, cannot be combined with installation options.
     --upload-server          enable uploading packages to this server (e.g. https://frs.sourceforge.net/uploads).
     --version                give version information.
+    --version-tag            The software version for a source code distribution release.
     --v|verbose              tell what is being done, specify multiple times to get more feedback.
     --website-prepare        prepare the website on your developer machine.
     --website-upload         upload the website to the webserver.
@@ -3480,7 +4047,7 @@ sub operation_execute
 sub version
 {
     # $Format: "    my $version=\"${package}-${label}\";"$
-    my $version="developer-0dba0d488a40d87421a3b431fe43fcb89ead3642.0";
+    my $version="developer-alpha";
 
     return $version;
 }
