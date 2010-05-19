@@ -1785,8 +1785,8 @@ sub read_cmd_line
 
 			  ( '&&', 'make', 'clean', ),
 			  ( '&&', 'make', 'clean', ),
-			  ( "&&", 'mtn', 'ci', "-m", "'1. Keywords only: $option_tag\n'", ),
-			  ( "&&", "test", "!", '"`mtn ls unknown && mtn ls missing && mtn ls changed`"', ),
+# 			  ( "&&", 'mtn', 'ci', "-m", "'1. Keywords only: $option_tag\n'", ),
+			  ( "&&", "test", "!", '"`mtn ls unknown && mtn ls missing`"', ),
 			 ],
 
 	   },
