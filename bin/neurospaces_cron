@@ -677,10 +677,26 @@ sub build_rpm
       {
 	try_to("cp -f $rpmfile $dstdir",1);
       }
+      else
+      {
+	$rpm_messages .= "\tRPM package for $package was not built on this run.\n";
+
+      }
 
       if(-e $srpmfile)
       {
 	try_to("cp -f $srpmfile $dstdir",1);
+      }
+      else
+      {
+	$rpm_messages .= "\tRPM source package for $package was not built on this run.\n";
+
+      }
+
+
+      if(-e $build_log)
+      {
+	try_to("cp -f $build_log $dstdir",1);
       }
 
   }
@@ -936,10 +952,16 @@ sub produce_email_text
     }
   }
 
-
   if(defined $configuration->{RPMURL})
   {
-    $status_message .= "\nThe RPM packages built on this run are available via this link " . $configuration->{RPMURL} . "\n";
+    $status_message .= "\nThe RPM packages built on this run are available via this link " . $configuration->{PKGDEBURL} . "\n";
+
+    if($deb_messages ne "")
+    {
+      $status_message .= "RPM Build Messages:\n";
+      $status_message .= $rpm_messages;
+      $status_message .= "\n";
+    }
 
   }
 
