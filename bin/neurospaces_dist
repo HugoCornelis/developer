@@ -43,6 +43,22 @@ my $option_verbose;
 }
 
 {
+
+
+#    if ($release_label !~ m/([^-]+)-([^-]+)?(?:-([^-]+))?/)
+
+    # The release label should follow the proper RPM and deb version format.
+    # 
+    # For RPMs:
+    #    <name>-<version>-<release>.<architecture>.rpm
+    #
+    # Debian format is typically:
+    #    <name>_<version>-<release>_<architecture>.deb
+    #
+    # In both cases version must be in the format:
+    #     <major>.<minor>.<micro>
+    #
+
     if (!$option_tag)
     {
 	die "$0: *** Error: No release label found on the command line (must have the format [--tag major-minor-micro], -micro is optional)";
@@ -50,7 +66,7 @@ my $option_verbose;
 
     my $release_label = $option_tag;
 
-    if ($release_label !~ m/([^-]+)-([^-]+)?(?:-([^-]+))?/)
+    if ($release_label !~ m/([^-]+)\.([^-]+)?(?:\.([^-]+))?/ )
     {
 	die "$0: *** Error: Release label does not have the correct format (must have the format [--tag major-minor-micro], -micro is optional)";
     }
