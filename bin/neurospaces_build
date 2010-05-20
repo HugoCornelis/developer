@@ -236,6 +236,16 @@ my $all_packages
 						},
 			     version_script => 'pb-version',
 			    },
+       publications => {
+			directory => "$ENV{HOME}/neurospaces_project/publications/source/snapshots/0",
+			disabled => 1,
+			order => 31,
+			version_control => {
+					    port_number => 4702,
+					    repository => "$ENV{HOME}/neurospaces_project/MTN/publications.mtn",
+					   },
+			version_script => 0,
+		       },
        ssp => {
 	       dependencies => {
 				'model-container' => 'for storing the model in computer memory',
@@ -1023,15 +1033,6 @@ sub read_cmd_line
 
 		if ($repository_name =~ m/^.*\.mtn$/)
 		{
-		  #t MONOTONE
-
-		  # if not enough information for init for monotone
-
-		  if (not -f $repository_name)
-		  {
-		      die "$0: *** Error: cannot init repository, repository_name not set";
-		  }
-
 		  # initialize the repository if necessary
 
 		  operation_execute
@@ -1052,13 +1053,12 @@ sub read_cmd_line
 		}
 		else
 		{
+		    # MERCURIAL init
 
-		  # MERCURIAL sync
-
-		  # operations:
-		  #   initialize the repo:
-		  #      hg init http://repo-genesis3.cbi.utsa.edu/hg/g-tube ${HOME}/neurospaces_project/g-tube/source/snapshots/0/
-		  # performs a clone of a repository if the project workspace isn't present.
+		    # operations:
+		    #   initialize the repo:
+		    #      hg init http://repo-genesis3.cbi.utsa.edu/hg/g-tube ${HOME}/neurospaces_project/g-tube/source/snapshots/0/
+		    # performs a clone of a repository if the project workspace isn't present.
 		}
 	    },
 	   },
