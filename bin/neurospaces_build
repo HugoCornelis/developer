@@ -1650,13 +1650,23 @@ sub read_cmd_line
 
 		    if ($monotone_version >= 0.45)
 		    {
-			@update_args = ['mtn', 'automate', 'get_base_revision_id',
-					'&&', 'mtn', '--db', $repository_name, '--branch', '0', 'update','--move-conflicting-paths', ];
+			@update_args = [
+					'echo', 'from', 'base_revision_id',
+					'&&', 'mtn', 'automate', 'get_base_revision_id',
+					'&&', 'mtn', '--db', $repository_name, '--branch', '0', 'update','--move-conflicting-paths',
+					'echo', 'to', 'base_revision_id',
+					'&&', 'mtn', 'automate', 'get_base_revision_id',
+				       ];
 		    }
 		    else
 		    {
-			@update_args = ['mtn', 'automate', 'get_base_revision_id',
-					'&&', 'mtn', '--db', $repository_name, '--branch', '0', 'update', ];
+			@update_args = [
+					'echo', 'from', 'base_revision_id',
+					'&&', 'mtn', 'automate', 'get_base_revision_id',
+					'&&', 'mtn', '--db', $repository_name, '--branch', '0', 'update',
+					'echo', 'to', 'base_revision_id',
+					'&&', 'mtn', 'automate', 'get_base_revision_id',
+				       ];
 		    }
 
 		    operation_execute
