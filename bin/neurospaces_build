@@ -1,3 +1,4 @@
+#!/usr/bin/perl -w -d:ptkdb
 #!/usr/bin/perl
 #!/usr/bin/perl -w -d:ptkdb
 #
@@ -1654,7 +1655,7 @@ sub read_cmd_line
 					'echo', 'from', 'base_revision_id',
 					'&&', 'mtn', 'automate', 'get_base_revision_id',
 					'&&', 'mtn', '--db', $repository_name, '--branch', '0', 'update','--move-conflicting-paths',
-					'echo', 'to', 'base_revision_id',
+					'&&', 'echo', 'to', 'base_revision_id',
 					'&&', 'mtn', 'automate', 'get_base_revision_id',
 				       ];
 		    }
@@ -1664,7 +1665,7 @@ sub read_cmd_line
 					'echo', 'from', 'base_revision_id',
 					'&&', 'mtn', 'automate', 'get_base_revision_id',
 					'&&', 'mtn', '--db', $repository_name, '--branch', '0', 'update',
-					'echo', 'to', 'base_revision_id',
+					'&&', 'echo', 'to', 'base_revision_id',
 					'&&', 'mtn', 'automate', 'get_base_revision_id',
 				       ];
 		    }
