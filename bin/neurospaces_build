@@ -2402,11 +2402,6 @@ sub read_cmd_line
 
 		  if(!-d $deb_dir)
 		  {
-		    system "mkdir -p $deb_dir";
-		  }
-
-		  if(-d $deb_dir)
-		  {
 		    operation_execute
 		      (
 		       $operations,
@@ -2416,12 +2411,90 @@ sub read_cmd_line
 			package_name => $package_name,
 		       },
 		       [
-			'cp', '-f', $deb, $deb_dir,"&&",
-			'cp', '-f', $dsc, $deb_dir,"&&",
-			'cp', '-f', $changes, $deb_dir,"&&",
-			'cp', '-f', $build_log, $deb_dir,
+			'mkdir', '-p', $deb_dir,
 		       ],
 		      );
+		  }
+
+		  # now we copy over each file built in the debian package build. 
+		  # perform a check for the existence of the file to prevent it from
+		  # stopping the neurospaces_build script. The build log should always
+		  # be copied over. 
+		  if(-d $deb_dir)
+		  {
+
+
+		    if(-e $deb)
+		    {
+		      operation_execute
+			(
+			 $operations,
+			 {
+			  description => $description,
+			  keywords => 0,
+			  package_name => $package_name,
+			 },
+			 [
+			  'cp', '-f', $deb, $deb_dir,
+			 ],
+			);
+		    }
+
+
+		    if(-e $dsc)
+		    {
+		      operation_execute
+			(
+			 $operations,
+			 {
+			  description => $description,
+			  keywords => 0,
+			  package_name => $package_name,
+			 },
+			 [
+			  'cp', '-f', $dsc, $deb_dir,
+			 ],
+			);
+		    }
+
+
+
+		    if(-e $changes)
+		    {
+		      operation_execute
+			(
+			 $operations,
+			 {
+			  description => $description,
+			  keywords => 0,
+			  package_name => $package_name,
+			 },
+			 [
+			  'cp', '-f', $changes, $deb_dir,
+			 ],
+			);
+		    }
+
+
+
+		    if(-e $build_log)
+		    {
+		      operation_execute
+			(
+			 $operations,
+			 {
+			  description => $description,
+			  keywords => 0,
+			  package_name => $package_name,
+			 },
+			 [
+			  'cp', '-f', $build_log, $deb_dir,
+			 ],
+			);
+		    }
+
+
+
 		  }
 		  else
 		  {
@@ -3945,7 +4018,7 @@ sub operation_execute
 sub version
 {
     # $Format: "    my $version=\"${package}-${label}\";"$
-    my $version="developer-alpha";
+    my $version="developer-herp";
 
     return $version;
 }
