@@ -36,8 +36,6 @@ my $option_dry_run = 0;
 my $option_install = 1;
 my $option_installed_versions = 1;
 my $option_keep_going;
-my $option_pkg_deb = 0;
-my $option_pkg_rpm = 0;
 my $option_regex_selector = ".*";
 my $option_repo_ci = 0;
 my $option_repo_clone = 0;
@@ -59,7 +57,9 @@ my $option_website_upload;
 
 # options for source code and package distribution.
 my $option_pkg_deb = 0;
+my $option_pkg_deb_dir = 0;
 my $option_pkg_rpm = 0;
+my $option_pkg_rpm_dir = 0;
 my $option_pkg_tar = 0;
 my $option_pkg_tar_dir = 0;
 my $option_version_major = 0;
@@ -815,6 +815,7 @@ sub read_cmd_line
 		     "installed-versions!" => \$option_installed_versions,
 		     "keep-going!" => \$option_keep_going,
 		     "pkg-deb" => \$option_pkg_deb,
+		     "pkg-deb-dir=s" => \$option_pkg_deb_dir,
 		     "pkg-rpm" => \$option_pkg_rpm,
 		     "pkg-tar" => \$option_pkg_tar,
 		     "pkg-tar-dir=s" => \$option_pkg_tar_dir,
@@ -913,6 +914,7 @@ sub read_cmd_line
 	   "installed-versions!" => $option_installed_versions,
 	   "keep-going!" => $option_keep_going,
 	   "pkg-deb!" => $option_pkg_deb,
+	   "pkg-deb-dir=s" => $option_pkg_deb_dir,
 	   "pkg-rpm!" => $option_pkg_rpm,
 	   "pkg-tar!" => $option_pkg_tar,
 	   "pkg-tar-dir=s" => \$option_pkg_tar_dir,
@@ -2206,6 +2208,233 @@ sub read_cmd_line
 	    operation => [ 'make', 'pkg-deb'],
 	   },
 	   {
+	    condition => $option_pkg_deb,
+	    description => 'Build debian packages with release tags',
+	    operation =>
+	    sub
+	    {
+		my $package_information = shift;
+
+		my $description = $package_information->{description};
+
+		my $directory = $package_information->{directory};
+
+		my $operations = $package_information->{operations};
+
+		my $package_name = $package_information->{package_name};
+
+		
+		# change the directory
+
+		chdir $directory;
+
+		my $major;
+		my $minor;
+		my $micro;
+		my $label;
+		my $email;
+
+		#
+		# First all tags must be updated. 
+		#
+		my $release_file = $directory . "/install/release.yml";
+
+		if(-e $release_file)
+		{
+		  my $release_configuration = YAML::LoadFile($release_file);
+
+		  if( defined $release_configuration->{major})
+		  {
+		    $major = $release_configuration->{major};
+		  }
+
+		  if( defined $release_configuration->{minor})
+		  {
+		    $minor = $release_configuration->{minor};
+		  }
+
+		  if( defined $release_configuration->{micro})
+		  {
+		    $micro = $release_configuration->{micro};
+		  }
+
+		  if( defined $release_configuration->{label})
+		  {
+		    $label = $release_configuration->{label};
+		  }
+
+		  if( defined $release_configuration->{email})
+		  {
+		    $email = $release_configuration->{email};
+		  }
+		}
+		else
+		{
+		  print "No release.yml file present.\n";
+		
+		  $major = `release-extract --major`;
+		  chomp($major);
+		  $minor = `release-extract --minor`;
+		  chomp($minor);
+		  $micro = `release-extract --micro`;
+		  chomp($micro);
+
+		  $label = "0";
+		  $email = "hugo.cornelis\@gmail.com";
+
+		}
+
+		if($option_version_major)
+		{
+		  $major = $option_version_major;
+		}
+
+		if($option_version_minor)
+		{
+		  $minor = $option_version_minor;
+		}
+
+		if($option_version_micro)
+		{
+		  $micro = $option_version_micro;
+		}
+
+		if($option_version_tag)
+		{
+		  my @ver = split(/\./,$option_version_tag);
+
+		  $major = $ver[0];
+		  $minor = $ver[1];
+
+		  if($#ver == 2)
+		  {
+		    $micro = $ver[2];
+		  }
+
+		}
+
+		if($option_release_tag)
+		{
+		  $label = $option_release_tag;
+		}
+
+
+		if(!defined $label)
+		{
+		  $label = "1";
+		}
+
+		# here we go a release expand to update the tags before
+		# building the tarball. 
+		print "release-expand $package_name $major $minor $micro $label $email --verbose\n";
+
+		operation_execute
+		    (
+		     $operations,
+		     {
+		      description => $description,
+		      keywords => 0,
+		      package_name => $package_name,
+		     },
+		     [
+		      'release-expand', $package_name, $major, $minor, $micro, $label,
+		      $email, '--verbose', '&&', 'make', 'pkg-deb',
+		     ],
+		    );
+
+
+		# Debian format:
+		#    <name>_<version>-<release>_<architecture>.deb
+		my $deb_prefix = "$package_name" . "_" . "$major.$minor";
+		
+		if(defined $micro)
+		{
+		  $deb_prefix .= ".$micro";
+		}
+
+		$deb_prefix .= "-$label";
+
+		my $deb = `find $directory | grep $package_name | grep \\\\.deb\$`;
+		chomp($deb);
+		my $dsc = `find $directory | grep $package_name | grep \\.dsc\$`;
+		chomp($dsc);
+		my $changes = `find $directory | grep $package_name | grep \\.changes\$`;
+		chomp($changes);
+		my $build_log = $directory . "/build_debian.log";
+		chomp($build_log);
+
+
+		if(!-e $deb)
+		{
+		  print "Debian package for package $package_name was not created.\n";
+		}
+		else
+		{
+		  print "Debian package for package $package_name was created: $deb\n";
+		}
+
+
+
+		if($option_pkg_deb_dir)
+		{
+
+		  if(!-d $option_pkg_deb_dir)
+		  {
+		    operation_execute
+		      (
+		       $operations,
+		       {
+			description => $description,
+			keywords => 0,
+			package_name => $package_name,
+		       },
+		       [
+			'mkdir', '-p', $option_pkg_deb_dir,
+		       ],
+		      );
+ 
+		  }
+
+		  #
+		  # Since this produces multiple files we need to place them all into a directory. 
+		  my $deb_dir = $option_pkg_deb_dir . "/" . $package_name;
+
+
+		  if(!-d $deb_dir)
+		  {
+		    system "mkdir -p $deb_dir";
+		  }
+
+		  if(-d $deb_dir)
+		  {
+		    operation_execute
+		      (
+		       $operations,
+		       {
+			description => $description,
+			keywords => 0,
+			package_name => $package_name,
+		       },
+		       [
+			'cp', '-f', $deb, $deb_dir,"&&",
+			'cp', '-f', $dsc, $deb_dir,"&&",
+			'cp', '-f', $changes, $deb_dir,"&&",
+			'cp', '-f', $build_log, $deb_dir,
+		       ],
+		      );
+		  }
+		  else
+		  {
+		    print "Error: Directory $deb_dir could not be created.\n";
+		    print "Can't copy deb files.\n";
+		  }
+
+		}
+
+	    },
+	   },
+
+	   {
 	    condition => $option_pkg_rpm,
 	    operation => [ 'make', 'pkg-rpm'],
 	   },
@@ -2318,6 +2547,12 @@ sub read_cmd_line
 		if($option_release_tag)
 		{
 		  $label = $option_release_tag;
+		}
+
+
+		if(!defined $label)
+		{
+		  $label = "1";
 		}
 
 
@@ -3710,7 +3945,7 @@ sub operation_execute
 sub version
 {
     # $Format: "    my $version=\"${package}-${label}\";"$
-    my $version="developer-herp";
+    my $version="developer-alpha";
 
     return $version;
 }
