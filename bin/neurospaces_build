@@ -56,6 +56,18 @@ my $option_verbose = 0;
 my $option_website_prepare;
 my $option_website_upload;
 
+
+# options for source code and package distribution.
+my $option_pkg_deb = 0;
+my $option_pkg_rpm = 0;
+my $option_pkg_tar = 0;
+my $option_pkg_tar_dir = 0;
+my $option_version_major = 0;
+my $option_version_minor = 0;
+my $option_version_micro = 0;
+my $option_version_tag = 0;
+my $option_release_tag = 0;
+
 # options related to installation on a client machine
 
 my $option_src_tag;
@@ -804,7 +816,10 @@ sub read_cmd_line
 		     "keep-going!" => \$option_keep_going,
 		     "pkg-deb" => \$option_pkg_deb,
 		     "pkg-rpm" => \$option_pkg_rpm,
+		     "pkg-tar" => \$option_pkg_tar,
+		     "pkg-tar-dir=s" => \$option_pkg_tar_dir,
 		     "regex-selector=s" => \$option_regex_selector,
+		     "release-tag=s" => \$option_release_tag,
 		     "repo-ci=s" => \$option_repo_ci,
 		     "repo-clone=s" => \$option_repo_clone,
 		     "repo-co!" => \$option_repo_co,
@@ -820,6 +835,7 @@ sub read_cmd_line
 		     "upload-server=s" => \$option_upload_server,
 		     "verbose+" => \$option_verbose,
 		     "version" => \$option_version,
+		     "version-tag=s" => \$option_version_tag,
 		     "website-prepare!" => \$option_website_prepare,
 		     "website-upload!" => \$option_website_upload,
 
@@ -898,7 +914,10 @@ sub read_cmd_line
 	   "keep-going!" => $option_keep_going,
 	   "pkg-deb!" => $option_pkg_deb,
 	   "pkg-rpm!" => $option_pkg_rpm,
+	   "pkg-tar!" => $option_pkg_tar,
+	   "pkg-tar-dir=s" => \$option_pkg_tar_dir,
 	   "regex-selector=s" => $option_regex_selector,
+	   "release-tag=s" => \$option_release_tag,
 	   "repo-ci=s" => $option_repo_ci,
 	   "repo-clone=s" => $option_repo_clone,
 	   "repo-co!" => $option_repo_co,
@@ -914,6 +933,7 @@ sub read_cmd_line
 	   "upload-server=s" => $option_upload_server,
 	   "verbose+" => $option_verbose,
 	   "version" => $option_version,
+	   "version=s" => $option_version_tag,
 	   "website-prepare!" => $option_website_prepare,
 	   "website-upload!" => $option_website_upload,
 
@@ -2180,6 +2200,202 @@ sub read_cmd_line
 	    operation => [ 'make', 'pkg-rpm'],
 	   },
 	   {
+	    condition => $option_pkg_tar,
+	    description => 'Build source tarballs with release tags',
+	    operation =>
+	    sub
+	    {
+		my $package_information = shift;
+
+		my $description = $package_information->{description};
+
+		my $directory = $package_information->{directory};
+
+		my $operations = $package_information->{operations};
+
+		my $package_name = $package_information->{package_name};
+
+		
+		# change the directory
+
+		chdir $directory;
+
+		my $major;
+		my $minor;
+		my $micro;
+		my $label;
+		my $email;
+
+		#
+		# First all tags must be updated. 
+		#
+		my $release_file = $directory . "/install/release.yml";
+
+		if(-e $release_file)
+		{
+		  my $release_configuration = YAML::LoadFile($release_file);
+
+		  if( defined $release_configuration->{major})
+		  {
+		    $major = $release_configuration->{major};
+		  }
+
+		  if( defined $release_configuration->{minor})
+		  {
+		    $minor = $release_configuration->{minor};
+		  }
+
+		  if( defined $release_configuration->{micro})
+		  {
+		    $micro = $release_configuration->{micro};
+		  }
+
+		  if( defined $release_configuration->{label})
+		  {
+		    $label = $release_configuration->{label};
+		  }
+
+		  if( defined $release_configuration->{email})
+		  {
+		    $email = $release_configuration->{email};
+		  }
+		}
+		else
+		{
+		  print "No release.yml file present.\n";
+		
+		  $major = `release-extract --major`;
+		  chomp($major);
+		  $minor = `release-extract --minor`;
+		  chomp($minor);
+		  $micro = `release-extract --micro`;
+		  chomp($micro);
+
+		  $label = "0";
+		  $email = "hugo.cornelis\@gmail.com";
+
+		}
+
+		if($option_version_major)
+		{
+		  $major = $option_version_major;
+		}
+
+		if($option_version_minor)
+		{
+		  $minor = $option_version_minor;
+		}
+
+		if($option_version_micro)
+		{
+		  $micro = $option_version_micro;
+		}
+
+		if($option_version_tag)
+		{
+		  my @ver = split(/\./,$option_version_tag);
+
+		  $major = $ver[0];
+		  $minor = $ver[1];
+
+		  if($#ver == 2)
+		  {
+		    $micro = $ver[2];
+		  }
+
+		}
+
+		if($option_release_tag)
+		{
+		  $label = $option_release_tag;
+		}
+
+
+		# here we go a release expand to update the tags before
+		# building the tarball. 
+		print "release-expand $package_name $major $minor $micro $label $email --verbose\n";
+
+		operation_execute
+		    (
+		     $operations,
+		     {
+		      description => $description,
+		      keywords => 0,
+		      package_name => $package_name,
+		     },
+		     [
+		      'release-expand', $package_name, $major, $minor, $micro, $label,
+		      $email, '--verbose', '&&', 'make', 'dist',
+		     ],
+		    );
+
+		my $tarball = "$package_name-$major.$minor";
+		
+		if(defined $micro)
+		{
+		  $tarball .= ".$micro";
+		}
+
+		$tarball .= "-$label.tar.gz";
+
+		if(!-e $tarball)
+		{
+
+		  print "Source dist for package $package_name was not created.\n";
+		  return;
+
+		}
+		else
+		{
+		  print "Source dist for package $package_name was created: $tarball\n";
+		}
+
+
+		if($option_pkg_tar_dir)
+		{
+
+		  if(!-d $option_pkg_tar_dir)
+		  {
+		    operation_execute
+		      (
+		       $operations,
+		       {
+			description => $description,
+			keywords => 0,
+			package_name => $package_name,
+		       },
+		       [
+			'mkdir', '-p', $option_pkg_tar_dir,
+		       ],
+		      );
+ 
+		  }
+
+		  if(-d $option_pkg_tar_dir)
+		  {
+		    operation_execute
+		      (
+		       $operations,
+		       {
+			description => $description,
+			keywords => 0,
+			package_name => $package_name,
+		       },
+		       [
+			'cp', '-f', $tarball, $option_pkg_tar_dir,
+		       ],
+		      );
+		  }
+		  else
+		  {
+		    print "Error: Directory $option_pkg_tar_dir could not be created.\n";
+		  }
+
+		}
+
+	    },
+	   },
+	   {
 	    #! always make as the regular user to avoid cluttering the
 	    #! source directory with root owned files
 
@@ -3115,7 +3331,10 @@ options related to operation execution profile:
     --keep-going             keep going in case of non-fatal errors (ala make -k).
     --pkg-deb                build debian packages for each software component.
     --pkg-rpm                build RPM packages for each software component.
+    --pkg-tar                build source tarballs for each software package.  
+    --pkg-tar-dir            Directory to place source tarballs into after creating a dist. 
     --regex-selector         defines a regex to select specific packages.
+    --release-tag            Sets a release tag for source code distribution. 
     --repo-ci                commit all modifications with the given changelog description.
     --repo-clone             checkout or update the workspace source code from a remote repository.
     --repo-co                checkout or update the workspace source code from a local repository.
@@ -3130,6 +3349,7 @@ options related to operation execution profile:
     --uninstall              uninstall packages, cannot be combined with installation options.
     --upload-server          enable uploading packages to this server (e.g. https://frs.sourceforge.net/uploads).
     --version                give version information.
+    --version-tag            The software version for a source code distribution release.
     --v|verbose              tell what is being done, specify multiple times to get more feedback.
     --website-prepare        prepare the website on your developer machine.
     --website-upload         upload the website to the webserver.
@@ -3480,7 +3700,7 @@ sub operation_execute
 sub version
 {
     # $Format: "    my $version=\"${package}-${label}\";"$
-    my $version="developer-0dba0d488a40d87421a3b431fe43fcb89ead3642.0";
+    my $version="developer-herp";
 
     return $version;
 }
