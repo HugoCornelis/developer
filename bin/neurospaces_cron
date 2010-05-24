@@ -11,7 +11,7 @@ use YAML;
 my $option_config = "";
 my $option_output_directory = "/tmp";
 my $option_no_check = 0;
-my $option_pkgdeb_directory = "";
+my $option_deb_directory = "";
 my $option_rpm_directory = "";
 my $option_srcdist_directory = "";
 my $option_user = "g3tester";
@@ -439,10 +439,10 @@ sub main
 
 	# If we set a valid pkgdeb directory to 
 	# hold our debian packages we invoke our package build.
-	if(-d $option_pkgdeb_directory)
+	if(-d $option_deb_directory)
 	{
 	  print "Building Debian packages.\n";
-	  build_pkgdeb();
+	  build_deb();
 	}
 
 	if(-d $option_rpm_directory)
@@ -521,68 +521,10 @@ sub main
 # Subroutine builds debian packages and places each successfully build one
 # into it's own directory in the declared deb pkg directory. 
 #
-sub build_pkgdeb
+sub build_deb
 {
 
-  try_to("neurospaces_pkgdeb");
-
-  foreach (@enabled_packages)
-  {
-
-      my $package = $_;
-      chomp($package); #just in case
-
-
-      my $pkgdir =  "$ENV{HOME}/neurospaces_project/" . $package . "/source/snapshots/0/";
-
-      my $deb = `find $pkgdir | grep $package | grep \\\\.deb\$`;
-      chomp($deb);
-      my $dsc = `find $pkgdir | grep $package | grep \\.dsc\$`;
-      chomp($dsc);
-      my $changes = `find $pkgdir | grep $package | grep \\.changes\$`;
-      chomp($changes);
-      my $build_log = $pkgdir . "/build_debian.log";
-      chomp($build_log);
-
-
-      my $dstdir =  "$option_pkgdeb_directory/" .$package;
-
-      unless(-d $dstdir)
-      {
-	try_to("mkdir -p $dstdir",1);
-      }
-      else
-      {
-	try_to("rm -f $dstdir/*",1);
-      }
-
-      # here we copy over our files. 
-      if(-e $deb)
-      {
-	try_to("cp -f $deb $dstdir",1);
-      }
-      else
-      {
-	$deb_messages .= "\tDebian package for $package was not built on this run.\n";
-      }
-
-      if(-e $dsc)
-      {
-	try_to("cp -f $dsc $dstdir",1);
-      }
-
-      if(-e $changes)
-      {
-	try_to("cp -f $changes $dstdir",1);
-      }
-
-      if(-e $build_log)
-      {
-	try_to("cp -f $build_log $dstdir",1);
-      }
-
-  }
-
+  try_to("neurospaces_pkgdeb --dir $option_deb_directory --release-tag '$mon-$mday-$year'");
 
   # always end a dist build with a revert
   try_to("neurospaces_revert");
@@ -813,8 +755,8 @@ sub parse_config_file
   {
     chomp($configuration->{PKGDEB});
 
-    $option_pkgdeb_directory = $configuration->{PKGDEB};
-    print "\tDirectory to store debian packages is $option_pkgdeb_directory\n";
+    $option_deb_directory = $configuration->{PKGDEB};
+    print "\tDirectory to store debian packages is $option_deb_directory\n";
 
   }
 
