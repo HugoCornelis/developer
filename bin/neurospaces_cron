@@ -902,7 +902,7 @@ sub produce_email_text
 
   my $status_message = "";
   my $errorcounts = `cat $outputfile | grep 'error_count'`;
-  my $revisions = `cat $outputfile | grep "Changes against parent"`;
+  my $revisions = `cat $outputfile | grep "base_revision_id"`;
   my $die_messages = `grep -B 10 die $outputfile`;
 
   $status_message
