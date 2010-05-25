@@ -769,6 +769,85 @@ sub all_operations_execute
 }
 
 
+#
+# sub($make_target)
+#
+# subroutine parses the version and release tags and
+# returns them in an array for executing via operation_execute.
+# The argument for the make target is use to ensure that the
+# code can be used for packaging tars, rpms and debs.
+sub parse_release_tags
+{
+
+  my $make_target = shift;
+  my $major;
+  my $minor;
+  my $micro;
+  my $label;
+  my $email;
+
+  my $command;
+  
+  push(@$command, 'release-expand');
+
+  if($option_version_tag)
+  {
+      my @ver = split(/\./,$option_version_tag);
+      
+      $major = $ver[0];
+      $minor = $ver[1];
+      
+      push(@$command, '--major');
+      push(@$command, $major);
+      push(@$command, '--minor');
+      push(@$command, $minor);
+
+      if($#ver == 2)
+      {
+	$micro = $ver[2];
+
+	push(@$command, '--micro');
+	push(@$command, $micro);
+
+      }
+
+  }
+  else
+  {
+
+    if($option_version_major)
+    {
+      push(@$command, '--major');
+      push(@$command, $option_version_major);
+    }
+
+    if($option_version_minor)
+    {
+      push(@$command, '--minor');
+      push(@$command, $option_version_minor);
+    }
+
+    if($option_version_micro)
+    {
+      push(@$command, '--micro');
+      push(@$command, $option_version_micro);
+    }
+
+  }
+
+  if($option_release_tag)
+  {
+    push(@$command, '--label');
+    push(@$command, $option_release_tag);
+  }
+
+  push(@$command, '&&');
+  push(@$command, 'make');
+  push(@$command, $make_target);
+  
+  return $command;
+}
+
 sub read_cmd_line
 {
     my $option_disable;
@@ -1809,7 +1888,9 @@ sub read_cmd_line
 			  # doesn't have any exact equivalen to monotones missing or unknown commands.
 			  # status essentially does all of it.
 			  ( "test", "!", '"`mtn ls unknown && mtn ls missing && mtn ls changed`"', ),
-			  ( '&&', 'release-expand', "'%package'", "'%release_major'", "'%release_minor'", "'%release_micro'", "'%release_major-%release_minor'", 'hugo.cornelis@gmail.com', '--verbose', ),
+			  ( '&&', 'release-expand', "--package", "'%package'", "--major", "'%release_major'", 
+			    "--minor", "'%release_minor'", "--micro", "'%release_micro'", "--label", 
+			    "'%release_major-%release_minor'", "--email",'hugo.cornelis@gmail.com', '--verbose', ),
 
 			  #! after keyword expansion, regenerate the
 			  #! autotool related files that perhaps are
@@ -2205,10 +2286,6 @@ sub read_cmd_line
 	   },
 	   {
 	    condition => $option_pkg_deb,
-	    operation => [ 'make', 'pkg-deb'],
-	   },
-	   {
-	    condition => $option_pkg_deb,
 	    description => 'Build debian packages with release tags',
 	    operation =>
 	    sub
@@ -2228,131 +2305,32 @@ sub read_cmd_line
 
 		chdir $directory;
 
-		my $major;
-		my $minor;
-		my $micro;
-		my $label;
-		my $email;
-
-		#
-		# First all tags must be updated. 
-		#
-		my $release_file = $directory . "/install/release.yml";
-
-		if(-e $release_file)
-		{
-		  my $release_configuration = YAML::LoadFile($release_file);
-
-		  if( defined $release_configuration->{major})
-		  {
-		    $major = $release_configuration->{major};
-		  }
-
-		  if( defined $release_configuration->{minor})
-		  {
-		    $minor = $release_configuration->{minor};
-		  }
-
-		  if( defined $release_configuration->{micro})
-		  {
-		    $micro = $release_configuration->{micro};
-		  }
-
-		  if( defined $release_configuration->{label})
-		  {
-		    $label = $release_configuration->{label};
-		  }
-
-		  if( defined $release_configuration->{email})
-		  {
-		    $email = $release_configuration->{email};
-		  }
-		}
-		else
-		{
-		  print "No release.yml file present.\n";
+		my $command = parse_release_tags('pkg-deb');
 		
-		  $major = `release-extract --major`;
-		  chomp($major);
-		  $minor = `release-extract --minor`;
-		  chomp($minor);
-		  $micro = `release-extract --micro`;
-		  chomp($micro);
-
-		  $label = "0";
-		  $email = "hugo.cornelis\@gmail.com";
-
-		}
-
-		if($option_version_major)
-		{
-		  $major = $option_version_major;
-		}
-
-		if($option_version_minor)
-		{
-		  $minor = $option_version_minor;
-		}
-
-		if($option_version_micro)
-		{
-		  $micro = $option_version_micro;
-		}
-
-		if($option_version_tag)
-		{
-		  my @ver = split(/\./,$option_version_tag);
-
-		  $major = $ver[0];
-		  $minor = $ver[1];
-
-		  if($#ver == 2)
-		  {
-		    $micro = $ver[2];
-		  }
-
-		}
-
-		if($option_release_tag)
-		{
-		  $label = $option_release_tag;
-		}
-
-
-		if(!defined $label)
-		{
-		  $label = "1";
-		}
-
-		# here we go a release expand to update the tags before
-		# building the tarball. 
-		print "release-expand $package_name $major $minor $micro $label $email --verbose\n";
 
 		operation_execute
-		    (
-		     $operations,
-		     {
-		      description => $description,
-		      keywords => 0,
-		      package_name => $package_name,
-		     },
-		     [
-		      'release-expand', $package_name, $major, $minor, $micro, $label,
-		      $email, '--verbose', '&&', 'make', 'pkg-deb',
-		     ],
-		    );
-
+		  (
+		   $operations,
+		   {
+		    description => $description,
+		    keywords => 0,
+		    package_name => $package_name,
+		   },
+		   $command,
+		  );
 
 		# Debian format:
 		#    <name>_<version>-<release>_<architecture>.deb
-		my $deb_prefix = "$package_name" . "_" . "$major.$minor";
-		
-		if(defined $micro)
-		{
-		  $deb_prefix .= ".$micro";
-		}
 
-		$deb_prefix .= "-$label";
+		# Code isn't needed for now. 
+# 		my $deb_prefix = "$package_name" . "_" . "$major.$minor";
+		
+# 		if(defined $micro)
+# 		{
+# 		  $deb_prefix .= ".$micro";
+# 		}
+
+# 		$deb_prefix .= "-$label";
 
 		my $deb = `find $directory | grep $package_name | grep \\\\.deb\$`;
 		chomp($deb);
@@ -2509,8 +2487,154 @@ sub read_cmd_line
 
 	   {
 	    condition => $option_pkg_rpm,
-	    operation => [ 'make', 'pkg-rpm'],
+	    description => 'Build RPM packages with release tags',
+	    operation =>
+	    sub
+	    {
+		my $package_information = shift;
+
+		my $description = $package_information->{description};
+
+		my $directory = $package_information->{directory};
+
+		my $operations = $package_information->{operations};
+
+		my $package_name = $package_information->{package_name};
+
+		
+		# change the directory
+
+		chdir $directory;
+
+		my $command = parse_release_tags('pkg-rpm');
+
+		operation_execute
+		    (
+		     $operations,
+		     {
+		      description => $description,
+		      keywords => 0,
+		      package_name => $package_name,
+		     },
+		     $command,
+		    );
+
+		my $pkgdir = $directory . "/RPM_BUILD";
+
+		# unless we build for multiple archs, there should only be one rpm in here.
+		my $rpmfile = `find $pkgdir/RPMS | grep $package_name | grep \\.rpm\$`;
+		chomp($rpmfile);
+
+		my $srpmfile = `find $pkgdir/SRPMS | grep $package_name | grep \\.rpm\$`;
+		chomp($srpmfile);
+
+		my $build_log = $directory . "/build_rpm.log";
+		chomp($build_log);
+
+		if(!-e $rpmfile)
+		{
+
+		  print "RPM file for package $package_name was not created.\n";
+		  return;
+
+		}
+		else
+		{
+		  print "RPM file for package $package_name was created: $rpmfile\n";
+		}
+
+		#
+		# Since this produces multiple files we need to place them all into a directory. 
+		my $rpm_dir = $option_pkg_rpm_dir . "/" . $package_name;
+
+		
+		if(!-d $rpm_dir)
+		{
+		  operation_execute
+		    (
+		     $operations,
+		     {
+		      description => $description,
+		      keywords => 0,
+		      package_name => $package_name,
+		     },
+		     [
+		      'mkdir', '-p', $rpm_dir,
+		     ],
+		    );
+		}
+
+		# copy over each rpm file. 
+		if(-d $rpm_dir)
+		{
+
+
+		  if(-e $rpmfile)
+		  {
+		    operation_execute
+		      (
+		       $operations,
+		       {
+			description => $description,
+			keywords => 0,
+			package_name => $package_name,
+		       },
+		       [
+			'cp', '-f', $rpmfile, $rpm_dir,
+		       ],
+		      );
+		  }
+
+
+		  if(-e $srpmfile)
+		  {
+		    operation_execute
+		      (
+		       $operations,
+		       {
+			description => $description,
+			keywords => 0,
+			package_name => $package_name,
+		       },
+		       [
+			'cp', '-f', $srpmfile, $rpm_dir,
+		       ],
+		      );
+		  }
+
+
+
+
+		  if(-e $build_log)
+		  {
+		    operation_execute
+		      (
+		       $operations,
+		       {
+			description => $description,
+			keywords => 0,
+			package_name => $package_name,
+		       },
+		       [
+			'cp', '-f', $build_log, $rpm_dir,
+		       ],
+		      );
+		  }
+
+
+
+		}
+		else
+		{
+		  print "Error: Directory $rpm_dir could not be created.\n";
+		  print "Can't copy RPM files.\n";
+		}
+
+	      }
+
+
 	   },
+
 	   {
 	    condition => $option_pkg_tar,
 	    description => 'Build source tarballs with release tags',
@@ -2532,106 +2656,7 @@ sub read_cmd_line
 
 		chdir $directory;
 
-		my $major;
-		my $minor;
-		my $micro;
-		my $label;
-		my $email;
-
-		#
-		# First all tags must be updated. 
-		#
-		my $release_file = $directory . "/install/release.yml";
-
-		if(-e $release_file)
-		{
-		  my $release_configuration = YAML::LoadFile($release_file);
-
-		  if( defined $release_configuration->{major})
-		  {
-		    $major = $release_configuration->{major};
-		  }
-
-		  if( defined $release_configuration->{minor})
-		  {
-		    $minor = $release_configuration->{minor};
-		  }
-
-		  if( defined $release_configuration->{micro})
-		  {
-		    $micro = $release_configuration->{micro};
-		  }
-
-		  if( defined $release_configuration->{label})
-		  {
-		    $label = $release_configuration->{label};
-		  }
-
-		  if( defined $release_configuration->{email})
-		  {
-		    $email = $release_configuration->{email};
-		  }
-		}
-		else
-		{
-		  print "No release.yml file present.\n";
-		
-		  $major = `release-extract --major`;
-		  chomp($major);
-		  $minor = `release-extract --minor`;
-		  chomp($minor);
-		  $micro = `release-extract --micro`;
-		  chomp($micro);
-
-		  $label = "0";
-		  $email = "hugo.cornelis\@gmail.com";
-
-		}
-
-		if($option_version_major)
-		{
-		  $major = $option_version_major;
-		}
-
-		if($option_version_minor)
-		{
-		  $minor = $option_version_minor;
-		}
-
-		if($option_version_micro)
-		{
-		  $micro = $option_version_micro;
-		}
-
-		if($option_version_tag)
-		{
-		  my @ver = split(/\./,$option_version_tag);
-
-		  $major = $ver[0];
-		  $minor = $ver[1];
-
-		  if($#ver == 2)
-		  {
-		    $micro = $ver[2];
-		  }
-
-		}
-
-		if($option_release_tag)
-		{
-		  $label = $option_release_tag;
-		}
-
-
-		if(!defined $label)
-		{
-		  $label = "1";
-		}
-
-
-		# here we go a release expand to update the tags before
-		# building the tarball. 
-		print "release-expand $package_name $major $minor $micro $label $email --verbose\n";
+		my $command = parse_release_tags('dist');
 
 		operation_execute
 		    (
@@ -2641,20 +2666,22 @@ sub read_cmd_line
 		      keywords => 0,
 		      package_name => $package_name,
 		     },
-		     [
-		      'release-expand', $package_name, $major, $minor, $micro, $label,
-		      $email, '--verbose', '&&', 'make', 'dist',
-		     ],
+		     $command,
 		    );
 
-		my $tarball = "$package_name-$major.$minor";
+# May reuse this code later. 
+# 		my $tarball = "$package_name-$major.$minor";
 		
-		if(defined $micro)
-		{
-		  $tarball .= ".$micro";
-		}
+# 		if(defined $micro)
+# 		{
+# 		  $tarball .= ".$micro";
+# 		}
 
-		$tarball .= "-$label.tar.gz";
+# 		$tarball .= "-$label.tar.gz";
+
+		# should only be one file that matches this criteria.
+		my $tarball = `find $directory | grep $package_name | grep \.tar\.gz\$`;
+		chomp($tarball);
 
 		if(!-e $tarball)
 		{
