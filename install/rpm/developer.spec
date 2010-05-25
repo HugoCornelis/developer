@@ -5,6 +5,8 @@
 
 # $Format: "%define name	${package}"$
 %define name	developer
+
+# $Format: "%define release	${label}"$
 %define release		1
 
 

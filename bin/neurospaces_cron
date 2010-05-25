@@ -524,6 +524,8 @@ sub main
 sub build_deb
 {
 
+  my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime time;
+
   try_to("neurospaces_pkgdeb --dir $option_deb_directory --release-tag '$mon-$mday-$year'");
 
   # always end a dist build with a revert
