@@ -538,7 +538,6 @@ sub build_deb
 sub build_dist
 {
 
-
   my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime time;
 
   try_to("neurospaces_pkgtar --dir $option_srcdist_directory --release-tag '$mon-$mday-$year'");
@@ -554,67 +553,9 @@ sub build_dist
 sub build_rpm
 {
 
-  try_to("neurospaces_pkgrpm");
+  my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime time;
 
-  foreach (@enabled_packages)
-  {
-
-      my $package = $_;
-      chomp($package); #just in case
-
-
-      my $pkgdir =  "$ENV{HOME}/neurospaces_project/" . $package . "/source/snapshots/0/RPM_BUILD";
-
-      # may need to do more work here if we ever get it to output more than
-      # one architecture.
-      my $rpmfile = `find $pkgdir/RPMS | grep $package | grep \\.rpm\$`;
-      chomp($rpmfile);
-
-      my $srpmfile = `find $pkgdir/SRPMS | grep $package | grep \\.rpm\$`;
-      chomp($srpmfile);
-
-      my $build_log = $pkgdir . "/build_rpm.log";
-      chomp($build_log);
-
-      my $dstdir =  "$option_rpm_directory/" . $package;
-
-      unless(-d $dstdir)
-      {
-	try_to("mkdir -p $dstdir",1);
-      }
-      else
-      {
-	try_to("rm -f $dstdir/*",1);
-      }
-
-      # here we copy over our files. 
-      if(-e $rpmfile)
-      {
-	try_to("cp -f $rpmfile $dstdir",1);
-      }
-      else
-      {
-	$rpm_messages .= "\tRPM package for $package was not built on this run.\n";
-
-      }
-
-      if(-e $srpmfile)
-      {
-	try_to("cp -f $srpmfile $dstdir",1);
-      }
-      else
-      {
-	$rpm_messages .= "\tRPM source package for $package was not built on this run.\n";
-
-      }
-
-
-      if(-e $build_log)
-      {
-	try_to("cp -f $build_log $dstdir",1);
-      }
-
-  }
+  try_to("neurospaces_pkgrpm --dir $option_rpm_directory --release-tag '$mon-$mday-$year'");
 
   # always end a dist build with a revert
   try_to("neurospaces_revert");
