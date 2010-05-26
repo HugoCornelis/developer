@@ -8,7 +8,7 @@
 
 
 # $Format: "%define release	        ${label}"$
-%define release	        alpha
+%define release	        test
 
 
 # $Format: "%define version 	${major}.${minor}.${micro}"$
@@ -54,6 +54,9 @@ The Neurospaces developer package contains essential tools for Neurospaces devel
 # Group: Science
 # Provides: developer
 
+# The %setup section needs the -n option to indicate
+# the name of the directory the source tarball unzips to
+# if it is anything other than <name>-<version>
 %prep
 echo %_target
 echo %_target_alias
@@ -61,7 +64,7 @@ echo %_target_cpu
 echo %_target_os
 echo %_target_vendor
 echo Building %{name}-%{version}-%{release}
-%setup -q
+%setup -q -n %{name}-%{version}-%{release} 
 
 %build
 ./configure 
