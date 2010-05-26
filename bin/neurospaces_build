@@ -896,6 +896,7 @@ sub read_cmd_line
 		     "pkg-deb" => \$option_pkg_deb,
 		     "pkg-deb-dir=s" => \$option_pkg_deb_dir,
 		     "pkg-rpm" => \$option_pkg_rpm,
+		     "pkg-rpm-dir=s" => \$option_pkg_rpm_dir,
 		     "pkg-tar" => \$option_pkg_tar,
 		     "pkg-tar-dir=s" => \$option_pkg_tar_dir,
 		     "regex-selector=s" => \$option_regex_selector,
@@ -995,6 +996,7 @@ sub read_cmd_line
 	   "pkg-deb!" => $option_pkg_deb,
 	   "pkg-deb-dir=s" => $option_pkg_deb_dir,
 	   "pkg-rpm!" => $option_pkg_rpm,
+	   "pkg-rpm-dir=s" => \$option_pkg_rpm_dir,
 	   "pkg-tar!" => $option_pkg_tar,
 	   "pkg-tar-dir=s" => \$option_pkg_tar_dir,
 	   "regex-selector=s" => $option_regex_selector,
@@ -2533,43 +2535,22 @@ sub read_cmd_line
 
 		if(!-e $rpmfile)
 		{
-
 		  print "RPM file for package $package_name was not created.\n";
 		  return;
-
 		}
 		else
 		{
 		  print "RPM file for package $package_name was created: $rpmfile\n";
 		}
 
-		#
-		# Since this produces multiple files we need to place them all into a directory. 
-		my $rpm_dir = $option_pkg_rpm_dir . "/" . $package_name;
-
-		
-		if(!-d $rpm_dir)
+		if($option_pkg_rpm_dir)
 		{
-		  operation_execute
-		    (
-		     $operations,
-		     {
-		      description => $description,
-		      keywords => 0,
-		      package_name => $package_name,
-		     },
-		     [
-		      'mkdir', '-p', $rpm_dir,
-		     ],
-		    );
-		}
-
-		# copy over each rpm file. 
-		if(-d $rpm_dir)
-		{
-
-
-		  if(-e $rpmfile)
+		  #
+		  # Since this produces multiple files we need to place them all into a directory. 
+		  my $rpm_dir = $option_pkg_rpm_dir . "/" . $package_name;
+		  
+		  
+		  if(!-d $rpm_dir)
 		  {
 		    operation_execute
 		      (
@@ -2580,59 +2561,78 @@ sub read_cmd_line
 			package_name => $package_name,
 		       },
 		       [
-			'cp', '-f', $rpmfile, $rpm_dir,
+			'mkdir', '-p', $rpm_dir,
 		       ],
 		      );
 		  }
 
-
-		  if(-e $srpmfile)
+		  # copy over each rpm file. 
+		  if(-d $rpm_dir)
 		  {
-		    operation_execute
-		      (
-		       $operations,
-		       {
-			description => $description,
-			keywords => 0,
-			package_name => $package_name,
-		       },
-		       [
-			'cp', '-f', $srpmfile, $rpm_dir,
-		       ],
-		      );
+
+		    if(-e $rpmfile)
+		    {
+		      operation_execute
+			(
+			 $operations,
+			 {
+			  description => $description,
+			  keywords => 0,
+			  package_name => $package_name,
+			 },
+			 [
+			  'cp', '-f', $rpmfile, $rpm_dir,
+			 ],
+			);
+		    }
+
+
+		    if(-e $srpmfile)
+		    {
+		      operation_execute
+			(
+			 $operations,
+			 {
+			  description => $description,
+			  keywords => 0,
+			  package_name => $package_name,
+			 },
+			 [
+			  'cp', '-f', $srpmfile, $rpm_dir,
+			 ],
+			);
+		    }
+
+
+
+
+		    if(-e $build_log)
+		    {
+		      operation_execute
+			(
+			 $operations,
+			 {
+			  description => $description,
+			  keywords => 0,
+			  package_name => $package_name,
+			 },
+			 [
+			  'cp', '-f', $build_log, $rpm_dir,
+			 ],
+			);
+		    }
+
+
 		  }
-
-
-
-
-		  if(-e $build_log)
+		  else
 		  {
-		    operation_execute
-		      (
-		       $operations,
-		       {
-			description => $description,
-			keywords => 0,
-			package_name => $package_name,
-		       },
-		       [
-			'cp', '-f', $build_log, $rpm_dir,
-		       ],
-		      );
+		    print "Error: Directory $rpm_dir could not be created.\n";
+		    print "Can't copy RPM files.\n";
 		  }
 
-
-
-		}
-		else
-		{
-		  print "Error: Directory $rpm_dir could not be created.\n";
-		  print "Can't copy RPM files.\n";
 		}
 
 	      }
-
-
 	   },
 
 	   {
@@ -3675,11 +3675,13 @@ options related to operation execution profile:
     --installed-versions     print the installed version of each software package.
     --keep-going             keep going in case of non-fatal errors (ala make -k).
     --pkg-deb                build debian packages for each software component.
+    --pkg-deb-dir            Directory to place debian packages after a debian build.
     --pkg-rpm                build RPM packages for each software component.
-    --pkg-tar                build source tarballs for each software package.  
-    --pkg-tar-dir            Directory to place source tarballs into after creating a dist. 
+    --pkg-rpm-dir            Directory to place RPM packages after an RPM build.
+    --pkg-tar                build source tarballs for each software package.
+    --pkg-tar-dir            Directory to place source tarballs into after creating a dist.
     --regex-selector         defines a regex to select specific packages.
-    --release-tag            Sets a release tag for source code distribution. 
+    --release-tag            Sets a release tag for source code distribution.
     --repo-ci                commit all modifications with the given changelog description.
     --repo-clone             checkout or update the workspace source code from a remote repository.
     --repo-co                checkout or update the workspace source code from a local repository.

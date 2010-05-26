@@ -8,7 +8,7 @@
 
 
 # $Format: "%define release	        ${label}"$
-%define release	        test
+%define release	        alpha
 
 
 # $Format: "%define version 	${major}.${minor}.${micro}"$
