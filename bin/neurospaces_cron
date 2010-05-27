@@ -526,7 +526,7 @@ sub build_deb
 
   my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime time;
 
-  try_to("neurospaces_pkgdeb --dir $option_deb_directory --release-tag '$mon-$mday-$year'");
+  try_to("neurospaces_pkgdeb --dir $option_deb_directory --release-tag '$mon.$mday.$year'");
 
   # always end a dist build with a revert
   try_to("neurospaces_revert");
@@ -540,7 +540,7 @@ sub build_dist
 
   my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime time;
 
-  try_to("neurospaces_pkgtar --dir $option_srcdist_directory --release-tag '$mon-$mday-$year'");
+  try_to("neurospaces_pkgtar --dir $option_srcdist_directory --release-tag '$mon.$mday.$year'");
 
   # always end a dist build with a revert
   try_to("neurospaces_revert");
@@ -555,7 +555,7 @@ sub build_rpm
 
   my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime time;
 
-  try_to("neurospaces_pkgrpm --dir $option_rpm_directory --release-tag '$mon-$mday-$year'");
+  try_to("neurospaces_pkgrpm --dir $option_rpm_directory --release-tag '$mon.$mday.$year'");
 
   # always end a dist build with a revert
   try_to("neurospaces_revert");
