@@ -33,6 +33,7 @@ Group: 			Science
 Vendor: 		Hugo Cornelis <hugo.cornelis@gmail.com>
 Packager: 		Mando Rodriguez <mandorodriguez@gmail.com>
 URL:			http://www.neurospaces.org
+AutoReqProv:		no
 
 %description
 The Neurospaces developer package contains essential tools for Neurospaces development. 
