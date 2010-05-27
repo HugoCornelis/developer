@@ -61,13 +61,6 @@ my $option_verbose;
     #
 
 
-    # Check for the release label.
-    if(!defined $option_release_tag)
-    {
-	die "$0: *** Error: No release label found on the command line (must have the format [--tag major.minor.micro], -micro is optional)";
-
-    }
-
     if(defined $option_version_tag)
     {
       if ($option_version_tag !~ m/([^-]+)\.([^-]+)?(?:\.([^-]+))?/ )
