@@ -1,0 +1,80 @@
+#!/usr/bin/perl -w
+#!/usr/bin/perl -d:ptkdb
+#
+
+
+use strict;
+
+
+BEGIN
+{
+    #! make check
+
+    push @INC, '../perl';
+
+    #! make distcheck
+
+    push @INC, '../../perl';
+
+    #! normal run
+
+    push @INC, './perl';
+
+    #! after install
+
+    push @INC, '/usr/local/glue/swig/perl';
+
+    # check for ".genesis3" directory. If not present we create
+    # it and set a directory for perl inline code. 
+    my $inline_path = "$ENV{HOME}/.genesis3/ssp/InlineCode";
+    if(! -e $inline_path)
+    {
+      use File::Path;
+
+      &File::Path::mkpath($inline_path);
+    }
+
+    $ENV{PERL_INLINE_DIRECTORY} = $inline_path;
+
+}
+
+
+use Neurospaces::Utilities;
+
+
+my $text1;
+
+my $text2;
+
+
+{
+    local $/;
+
+    $text1 = `cat $ARGV[0]`;
+
+    $text2 = `cat $ARGV[1]`;
+}
+
+
+my $error
+    = Neurospaces::Utilities::numerical_compare
+    (
+     {
+      description => "Testing two files",
+     },
+     $text1,
+     $text2,
+     '',
+    );
+
+
+if ($error)
+{
+    print "diffs: $error\n";
+}
+else
+{
+    print "ok";
+}
+
+

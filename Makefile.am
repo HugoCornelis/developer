@@ -52,6 +52,7 @@ dist_bin_SCRIPTS = \
 	bin/nstest_query \
 	bin/nspkg-deb \
 	bin/nspkg-rpm \
+	bin/numerical_compare \
 	bin/td-labels \
 	bin/td-majors \
 	bin/release-expand \
