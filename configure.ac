@@ -29,6 +29,12 @@ dnl AC_CONFIG_SUBDIRS()
 # $Format: "AM_INIT_AUTOMAKE(${package}, ${major}.${minor}.${micro}-${label})"$
 AM_INIT_AUTOMAKE(developer, 0.0.0-alpha)
 
+PERL_MODULES=`(cd perl && find . -name "*.pm" | perl -pe 's/\n/ /g')`
+AC_SUBST(PERL_MODULES)
+
+PERL_DATA=`(cd perl && find . -name "numbers-7x11.txt" | perl -pe 's/\n/ /g')`
+AC_SUBST(PERL_DATA)
+
 # Checks for programs.
 
 #   need to have this bail out when MTN = NULL
@@ -55,6 +61,8 @@ TEST_SPECIFICATION_FILES=`/bin/echo -n "tests/introduction.html " && find tests/
 AC_SUBST(TEST_SPECIFICATION_FILES)
 
 
-AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([Makefile
+		 perl/Makefile])
+
 AC_OUTPUT
 
