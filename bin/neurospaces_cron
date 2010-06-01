@@ -11,6 +11,9 @@ use YAML;
 my $option_config = "";
 my $option_output_directory = "/tmp";
 my $option_no_check = 0;
+my $option_no_install = 0;
+my $option_no_pull = 0;
+my $option_no_uninstall = 0;
 my $option_deb_directory = "";
 my $option_rpm_directory = "";
 my $option_srcdist_directory = "";
@@ -394,13 +397,19 @@ sub main
 
     # pull code from the repositories
 
-    try_to("neurospaces_pull");
+    unless($option_no_pull)
+    {
+      try_to("neurospaces_pull");
+    }
 
     # uninstall what was installed
 
-    try_to("neurospaces_uninstall");
+    unless($option_no_install)
+    {
+      try_to("neurospaces_uninstall");
 
-    install_developer();
+      install_developer();
+    }
 
     # update the source code in the workspaces, remove previous build
 
@@ -418,15 +427,19 @@ sub main
 
 	try_to("neurospaces_configure");
 
-	# install without check
+	unless($option_no_install)
+	{
+	  # install without check
 
-	try_to("neurospaces_install");
+	  try_to("neurospaces_install");
 
-	# uninstall again
+	  # uninstall again
 
-	try_to("neurospaces_uninstall");
+	  try_to("neurospaces_uninstall");
 
-	install_developer();
+	  install_developer();
+
+	}
 
 	# check with install
 
@@ -460,7 +473,12 @@ sub main
 
 	# uninstall again
 
-	try_to("neurospaces_uninstall");
+	unless($option_no_uninstall)
+	{
+		
+	   try_to("neurospaces_uninstall");
+
+	}		
 
 	install_developer();
 
@@ -692,6 +710,47 @@ sub parse_config_file
     }
 
   }
+
+
+
+  if(defined $configuration->{NOPULL})
+  {
+    chomp($configuration->{NOPULL});
+
+    if( uc($configuration->{NOPULL}) eq "TRUE")
+    {
+      print "\tOption \'no pull\' is set, a repository pull will not be done.\n";
+      $option_no_pull = 1;
+    }
+
+  }
+
+  if(defined $configuration->{NOINSTALL})
+  {
+    chomp($configuration->{NOINSTALL});
+
+    if( uc($configuration->{NOINSTALL}) eq "TRUE")
+    {
+      print "\tOption \'no install\' is set, an installation across all packages will not be run.\n";
+      $option_no_install = 1;
+    }
+
+  }
+
+  if(defined $configuration->{NOUNINSTALL})
+  {
+    chomp($configuration->{NOUNINSTALL});
+
+    if( uc($configuration->{NOUNINSTALL}) eq "TRUE")
+    {
+      print "\tOption \'no uninstall\' is set, an uninstallation will not take place at the end of the run.\n";
+      $option_no_uninstall = 1;
+    }
+
+  }
+
+
+
 
 
   if(defined $configuration->{PKGDEB})
