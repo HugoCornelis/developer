@@ -2523,24 +2523,28 @@ sub read_cmd_line
 
 		my $pkgdir = $directory . "/RPM_BUILD";
 
-		# unless we build for multiple archs, there should only be one rpm in here.
-		my $rpmfile = `find $pkgdir/RPMS | grep $package_name | grep \\.rpm\$`;
-		chomp($rpmfile);
-
+		my @rpmfiles = `find $pkgdir/RPMS | grep $package_name | grep \\.rpm\$`;
+		chomp(@rpmfiles);
+		
 		my $srpmfile = `find $pkgdir/SRPMS | grep $package_name | grep \\.rpm\$`;
 		chomp($srpmfile);
 
 		my $build_log = $directory . "/build_rpm.log";
 		chomp($build_log);
 
-		if(!-e $rpmfile)
+		if( @rpmfiles > 0 )
 		{
-		  print "RPM file for package $package_name was not created.\n";
-		  return;
-		}
-		else
-		{
-		  print "RPM file for package $package_name was created: $rpmfile\n";
+
+		  if(!-e $rpmfiles[0])
+		  {
+		    print "RPM file for package $package_name was not created.\n";
+		    return;
+		  }
+		  else
+		  {
+		    print "RPM file for package $package_name was created: $rpmfiles[0]\n";
+		  }
+
 		}
 
 		if($option_pkg_rpm_dir)
@@ -2570,23 +2574,28 @@ sub read_cmd_line
 		  if(-d $rpm_dir)
 		  {
 
-		    if(-e $rpmfile)
+		    foreach my $rpmfile(@rpmfiles)
 		    {
-		      operation_execute
-			(
-			 $operations,
-			 {
-			  description => $description,
-			  keywords => 0,
-			  package_name => $package_name,
-			 },
-			 [
-			  'cp', '-f', $rpmfile, $rpm_dir,
-			 ],
-			);
+		      if(-e $rpmfile)
+		      {
+			operation_execute
+			  (
+			   $operations,
+			   {
+			    description => $description,
+			    keywords => 0,
+			    package_name => $package_name,
+			   },
+			   [
+			    'cp', '-f', $rpmfile, $rpm_dir,
+			   ],
+			  );
+		      }
+
 		    }
 
 
+		    # Assuming we only have one source rpm.
 		    if(-e $srpmfile)
 		    {
 		      operation_execute
