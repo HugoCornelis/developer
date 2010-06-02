@@ -86,13 +86,13 @@ am__tar = ${AMTAR} chf - --format=posix "$$tardir"
 
 clean-local:
 	rm -rf $(TMP_DIR)
-	$(RM) -rf *.deb
-	$(RM) -f *.changes
-	$(RM) -f *.dsc
-	$(RM) -f build_debian.log
-	$(RM) -rf RPM_BUILD
-	$(RM) -f build_rpm.log
-	$(RM) -f *.tar.gz
+	$(RM) -rf $(top_srcdir)/*.deb
+	$(RM) -f $(top_srcdir)/*.changes
+	$(RM) -f $(top_srcdir)/*.dsc
+	$(RM) -f $(top_srcdir)/build_debian.log
+	$(RM) -rf $(top_srcdir)/RPM_BUILD
+	$(RM) -f $(top_srcdir)/build_rpm.log
+	$(RM) $(top_srcdir)/developer-*.tar.gz
 
 dist-hook: 
 #	cd $(srcdir) && if test -n "`mtn ls changed `" ; then false ; else true ; fi
