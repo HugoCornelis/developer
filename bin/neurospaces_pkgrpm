@@ -16,6 +16,7 @@ my $option_dir;
 my $option_enable;
 my $option_regex_selector;
 my $option_release_tag;
+my $option_version_tag;
 my $option_verbose;
 
 {
@@ -27,6 +28,7 @@ my $option_verbose;
 	     "enable=s" => \$option_enable,
 	     "regex-selector=s" => \$option_regex_selector,
 	     "release-tag=s" => \$option_release_tag,
+	     "version-tag=s" => \$option_version_tag,
 	     "v|verbose+" => \$option_verbose,
 	    );
 
@@ -34,7 +36,22 @@ my $option_verbose;
     {
 	die "$0: *** Error: Error in option processing";
     }
+
+
+
+    if(defined $option_version_tag)
+    {
+      if ($option_version_tag !~ m/([^-]+)\.([^-]+)?(?:\.([^-]+))?/ )
+	{
+	  die "$0: *** Error: Version label does not have the correct format (must have the format [--version major.minor.micro], micro is optional)";
+	}
+    }
+
+
 }
+
+
+
 
 my $verbose_options = defined $option_verbose ? "--verbose " x $option_verbose : '';
 my $developer_options = defined $option_developer ? "--developer " x $option_developer : '';
@@ -42,7 +59,8 @@ my $regex_options = defined $option_regex_selector ? "--regex '$option_regex_sel
 my $enable_options = defined $option_enable ? "--enable $option_enable " : '';
 my $dir_options = defined $option_dir ? "--pkg-rpm-dir $option_dir " : "";
 my $release_options = defined $option_release_tag ? "--release-tag '$option_release_tag' " : '';
+my $version_options = defined $option_version_tag ? "--version-tag  '$option_version_tag' " : '';
 
-system "neurospaces_build --pkg-rpm $dir_options $release_options --no-installed-versions --no-configure --no-install --no-compile $verbose_options $developer_options $regex_options $enable_options";
+system "neurospaces_build --pkg-rpm $dir_options $release_options $version_options --no-installed-versions --no-configure --no-install --no-compile $verbose_options $developer_options $regex_options $enable_options";
 
 
