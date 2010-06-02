@@ -34,6 +34,8 @@ Vendor: 		Hugo Cornelis <hugo.cornelis@gmail.com>
 Packager: 		Mando Rodriguez <mandorodriguez@gmail.com>
 URL:			http://www.neurospaces.org
 AutoReqProv:		no
+Provides:		perl(Neurospaces::Utilities)
+Requires:		perl >= 5.8.8, perl(YAML), perl(Data::Comparator), perl(Data::Transformator), perl(Getopt::Long)
 
 %description
 The Neurospaces developer package contains essential tools for Neurospaces development. 
