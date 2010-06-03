@@ -35,7 +35,7 @@ Packager: 		Mando Rodriguez <mandorodriguez@gmail.com>
 URL:			http://www.neurospaces.org
 AutoReqProv:		no
 Provides:		perl(Neurospaces::Utilities)
-Requires:		perl >= 5.8.8, perl(YAML), perl(Data::Comparator), perl(Data::Transformator), perl(Getopt::Long)
+Requires:		perl >= 5.8.8
 
 %description
 The Neurospaces developer package contains essential tools for Neurospaces development. 
