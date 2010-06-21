@@ -2377,7 +2377,7 @@ sub read_cmd_line
 
 		  #
 		  # Since this produces multiple files we need to place them all into a directory. 
-		  my $deb_dir = $option_pkg_deb_dir . "/" . $package_name;
+		  my $deb_dir = $option_pkg_deb_dir;
 
 
 		  if(!-d $deb_dir)
@@ -2551,9 +2551,8 @@ sub read_cmd_line
 		{
 		  #
 		  # Since this produces multiple files we need to place them all into a directory. 
-		  my $rpm_dir = $option_pkg_rpm_dir . "/" . $package_name;
-		  
-		  
+		  my $rpm_dir = $option_pkg_rpm_dir;
+		
 		  if(!-d $rpm_dir)
 		  {
 		    operation_execute
@@ -2612,8 +2611,8 @@ sub read_cmd_line
 			);
 		    }
 
-
-
+		
+		    my $target_build_log = $rpm_dir . "/build_" . $package_name . ".log";
 
 		    if(-e $build_log)
 		    {
@@ -2626,7 +2625,7 @@ sub read_cmd_line
 			  package_name => $package_name,
 			 },
 			 [
-			  'cp', '-f', $build_log, $rpm_dir,
+			  'cp', '-f', $build_log, $target_build_log,
 			 ],
 			);
 		    }
@@ -2688,7 +2687,6 @@ sub read_cmd_line
 
 # 		$tarball .= "-$label.tar.gz";
 
-		# should only be one file that matches this criteria.
 		my $tarball = `find $directory | grep $package_name | grep \.tar\.gz\$`;
 		chomp($tarball);
 
