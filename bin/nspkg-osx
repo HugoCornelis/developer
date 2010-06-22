@@ -1,0 +1,133 @@
+#!/usr/bin/perl -w 
+#!/usr/bin/perl -w -d:ptkdb
+#
+
+
+
+if($#ARGV != 1)
+{
+  usage()
+}
+
+
+use Cwd;
+my $top_dir = cwd;
+my $build_log = $top_dir . "/build_osx.log";
+my $package_name = $ARGV[0];
+my $version = $ARGV[1];
+
+
+
+my $dist_dir = $package_name . "-" . $version;
+my $dist_src = $dist_dir . ".tar.gz";
+my $osx_build_dir = $top_dir . "/OSX_BUILD";
+my $rpm_spec_file = $package_name . ".spec";
+
+my $os = $^O;
+
+if($os ne "darwin")
+{
+
+  die "This packager is only meant to run in MAC OSX.\n";
+
+}
+
+
+unless(-d "install")
+{
+  die "No ''install\' directory present.\n";
+}
+
+
+unless(-d "install/osx/Resources")
+{
+
+  die "No Mac OSX package resources.\n";
+
+}
+
+#
+# end of essential data file checks.
+#
+
+
+#
+#remove last log
+#
+if(-e $build_log)
+{
+  try_to("rm $build_log",1);
+}
+
+
+
+
+print "Creating OSX build directory structure\n";
+
+
+if(-d $osx_build_dir)
+{
+  try_to("sudo rm -rf $osx_build_dir",1);
+}
+
+try_to("mkdir -p $osx_build_dir/Package_Root",1);
+
+try_to("./autogen.sh && ./configure --prefix=$osx_build_dir/Package_Root");
+
+try_to("make install");
+
+try_to("cp -rf $top_dir/install/osx/Resources $osx_build_dir/Resources");
+
+
+print "Setting permissions\n";
+
+try_to("chown -R root:wheel OSX_BUILD/*");
+
+print "Done.\n";
+
+#
+# print usage info.
+#
+sub usage
+{
+
+  print "Usage $0: <package name> <version>\n\n";
+  exit;
+
+}
+
+#
+# ($command)
+#
+sub try_to
+{
+    my $command = shift;
+
+    my $no_verbose = shift;
+
+    my $allow_fail = shift;
+
+    if (!$no_verbose)
+    {
+	print "---\n";
+	print "$0: trying to $command\n";
+    }
+
+    my $output_path = $build_log;
+
+    #! $command executed in a subshell such that redirection applies
+    #! to all commands.
+
+    system "( $command ) >>$output_path 2>&1";
+
+    if ($?)
+    {
+	if ($allow_fail)
+	{
+	    system "echo >>$output_path 2>&1 failed with $?: $command\n";
+	}
+
+
+    }
+}
+

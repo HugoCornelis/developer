@@ -52,6 +52,7 @@ dist_bin_SCRIPTS = \
 	bin/nstest_query \
 	bin/nspkg-deb \
 	bin/nspkg-rpm \
+	bin/nspkg-osx \
 	bin/numerical_compare \
 	bin/td-labels \
 	bin/td-majors \
@@ -90,7 +91,7 @@ clean-local:
 	$(RM) -f $(top_srcdir)/*.changes
 	$(RM) -f $(top_srcdir)/*.dsc
 	$(RM) -f $(top_srcdir)/build_debian.log
-	$(RM) -rf $(top_srcdir)/RPM_BUILD
+	$(RM) -rf $(top_srcdir)/*_BUILD/
 	$(RM) -f $(top_srcdir)/build_rpm.log
 	$(RM) $(top_srcdir)/developer-*.tar.gz
 
@@ -154,3 +155,6 @@ pkg-deb: dist
 
 pkg-rpm: dist
 	nspkg-rpm $(PACKAGE) $(VERSION)
+
+pkg-osx: 
+	bin/nspkg-osx $(PACKAGE) $(VERSION)
