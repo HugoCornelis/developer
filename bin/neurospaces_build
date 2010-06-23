@@ -2455,8 +2455,8 @@ sub read_cmd_line
 			);
 		    }
 
-
-
+		    my $target_build_log = $deb_dir . "/build_" . $package_name . ".log";
+		    
 		    if(-e $build_log)
 		    {
 		      operation_execute
@@ -2468,7 +2468,7 @@ sub read_cmd_line
 			  package_name => $package_name,
 			 },
 			 [
-			  'cp', '-f', $build_log, $deb_dir,
+			  'cp', '-f', $build_log, $target_build_log,
 			 ],
 			);
 		    }
