@@ -544,10 +544,33 @@ sub build_deb
 
   my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime time;
 
-  try_to("neurospaces_pkgdeb --dir $option_deb_directory --release-tag '$mon.$mday.$year'");
+  my $deb_tmp = "/tmp/deb_builds";
+  
+  try_to("neurospaces_pkgdeb --dir $deb_tmp --release-tag '$mon.$mday.$year'");
 
   # always end a dist build with a revert
   try_to("neurospaces_revert");
+
+
+  if($option_deb_directory)
+  {
+
+    if(-d $option_deb_directory)
+    {
+      
+      # first clean out whatever is in there first, then copy
+      # over our files and remove the tmp directory.
+
+      system "rm -rf $option_deb_directory/*";
+
+      system "cp -rf $deb_tmp/* $option_deb_directory";
+
+      system "rm -rf $deb_tmp";
+
+
+    }
+  }
+
 
 
 }
