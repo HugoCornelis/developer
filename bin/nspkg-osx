@@ -24,6 +24,7 @@ my $osx_build_dir = $top_dir . "/OSX_BUILD";
 my $rpm_spec_file = $package_name . ".spec";
 
 my $os = $^O;
+my $packagemaker = "/Developer/Applications/Utilities/PackageMaker.app/Contents/MacOS/PackageMaker";
 
 if($os ne "darwin")
 {
@@ -81,9 +82,13 @@ try_to("cp -rf $top_dir/install/osx/Resources $osx_build_dir/Resources");
 
 print "Setting permissions\n";
 
-try_to("chown -R root:wheel OSX_BUILD/*");
+try_to("sudo chown -R root:wheel OSX_BUILD/*");
 
 print "Done.\n";
+
+print "*** Now run PackageMaker using the file in $top_dir/install/osx ***\n";
+print "*** Be sure to execute a \'sudo rm -rf OSX_BUILD\' due to root ***\n";
+print "*** permissions on the generated files ***\n";
 
 #
 # print usage info.
