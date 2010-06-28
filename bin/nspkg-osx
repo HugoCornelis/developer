@@ -68,7 +68,7 @@ print "Creating OSX build directory structure\n";
 
 if(-d $osx_build_dir)
 {
-  try_to("sudo rm -rf $osx_build_dir",1);
+  try_to("rm -rf $osx_build_dir",1);
 }
 
 try_to("mkdir -p $osx_build_dir/Package_Root",1);
@@ -80,15 +80,15 @@ try_to("make install");
 try_to("cp -rf $top_dir/install/osx/Resources $osx_build_dir/Resources");
 
 
-print "Setting permissions\n";
+# print "Setting permissions\n";
 
-try_to("sudo chown -R root:wheel OSX_BUILD/*");
+# try_to("sudo chown -R root:wheel OSX_BUILD/*");
 
 print "Done.\n";
 
 print "*** Now run PackageMaker using the file in $top_dir/install/osx ***\n";
-print "*** Be sure to execute a \'sudo rm -rf OSX_BUILD\' due to root ***\n";
-print "*** permissions on the generated files ***\n";
+#print "*** Be sure to execute a \'sudo rm -rf OSX_BUILD\' due to root ***\n";
+#print "*** permissions on the generated files ***\n";
 
 #
 # print usage info.
