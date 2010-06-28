@@ -16,3 +16,4 @@ Makefile\.in$
 .dsc$
 \.log$
 _BUILD$
+.pkg$

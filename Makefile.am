@@ -157,4 +157,4 @@ pkg-rpm: dist
 	nspkg-rpm $(PACKAGE) $(VERSION)
 
 pkg-osx: 
-	bin/nspkg-osx $(PACKAGE) $(VERSION)
+	nspkg-osx 

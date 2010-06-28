@@ -4,24 +4,12 @@
 
 
 
-if($#ARGV != 1)
-{
-  usage()
-}
-
 
 use Cwd;
 my $top_dir = cwd;
 my $build_log = $top_dir . "/build_osx.log";
-my $package_name = $ARGV[0];
-my $version = $ARGV[1];
 
-
-
-my $dist_dir = $package_name . "-" . $version;
-my $dist_src = $dist_dir . ".tar.gz";
 my $osx_build_dir = $top_dir . "/OSX_BUILD";
-my $rpm_spec_file = $package_name . ".spec";
 
 my $os = $^O;
 my $packagemaker = "/Developer/Applications/Utilities/PackageMaker.app/Contents/MacOS/PackageMaker";
