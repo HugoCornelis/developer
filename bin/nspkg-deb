@@ -4,7 +4,7 @@
 
 
 
-if($#ARGV != 2)
+if($#ARGV != 1)
 {
   usage()
 }
@@ -13,9 +13,9 @@ if($#ARGV != 2)
 use Cwd;
 my $top_dir = cwd;
 my $build_log = $top_dir . "/build_debian.log";
-my $tmp_dir = $ARGV[0];
-my $package_name = $ARGV[1];
-my $version = $ARGV[2];
+my $build_dir = $top_dir . "/DEB_BUILD";
+my $package_name = $ARGV[0];
+my $version = $ARGV[1];
 
 
 
@@ -83,12 +83,12 @@ if(-e $build_log)
 }
 
 print "Building Debian package\n";
-print "tmp dir is $tmp_dir\n";
+print "tmp dir is $build_dir\n";
 
-print "Creating temp directory $tmp_dir\n";
+print "Creating temp directory $build_dir\n";
 
-try_to("rm -rf $tmp_dir",1);
-try_to("mkdir -p $tmp_dir",1);
+try_to("rm -rf $build_dir",1);
+try_to("mkdir -p $build_dir",1);
 
 unless(-e $dist_src)
 {
@@ -98,24 +98,24 @@ unless(-e $dist_src)
 }
 else
 {
-  try_to("cp $dist_src $tmp_dir",1);
+  try_to("cp $dist_src $build_dir",1);
 }
 
-print "Unzipping distribtion code in $tmp_dir\n\n";
+print "Unzipping distribtion code in $build_dir\n\n";
 
-try_to("tar -C $tmp_dir -zxvf $dist_src",1);
+try_to("tar -C $build_dir -zxvf $dist_src",1);
 try_to("rm $dist_src",1);
 
-try_to("mkdir -p $tmp_dir/$dist_dir/debian/$package_name",1);
+try_to("mkdir -p $build_dir/$dist_dir/debian/$package_name",1);
 
-try_to("cp install/deb/changelog $tmp_dir/$dist_dir/debian",1);
-try_to("cp install/deb/copyright $tmp_dir/$dist_dir/debian",1);
-try_to("cp install/deb/control $tmp_dir/$dist_dir/debian",1);
-try_to("cp install/deb/rules $tmp_dir/$dist_dir/debian",1);
+try_to("cp install/deb/changelog $build_dir/$dist_dir/debian",1);
+try_to("cp install/deb/copyright $build_dir/$dist_dir/debian",1);
+try_to("cp install/deb/control $build_dir/$dist_dir/debian",1);
+try_to("cp install/deb/rules $build_dir/$dist_dir/debian",1);
 
-print "Changing directory to $tmp_dir/$dist_dir.\n\n";
+print "Changing directory to $build_dir/$dist_dir.\n\n";
 
-chdir "$tmp_dir/$dist_dir";
+chdir "$build_dir/$dist_dir";
 
 print "Performing configure\n";
 
@@ -145,9 +145,9 @@ try_to("mv *.changes $top_dir",1);
 
 chdir $top_dir;
 
-print "Removing temp directory \'$tmp_dir\'\n";
+print "Removing temp directory \'$build_dir\'\n";
 
-try_to("rm -rf $tmp_dir",1);
+try_to("rm -rf $build_dir",1);
 
 print "Done.\n";
 
