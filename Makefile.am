@@ -92,7 +92,6 @@ clean-local:
 	$(RM) -f $(top_srcdir)/*.dsc
 	$(RM) -f $(top_srcdir)/build_*.log
 	$(RM) -rf $(top_srcdir)/*_BUILD/
-	$(RM) -f $(top_srcdir)/build_rpm.log
 	$(RM) $(top_srcdir)/developer-*.tar.gz
 
 dist-hook: 
