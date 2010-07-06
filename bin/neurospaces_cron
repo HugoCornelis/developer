@@ -298,13 +298,13 @@ sub copy_tests
   # clean out the old tests
   system "rm -f $option_output_directory/text_*";
 
-
+  system "rm -f $option_output_directory/report_*";
 
 
   # copy over the new ones.
   system "mv -f /tmp/text_* $option_output_directory";
 
-
+  system "mv -f /tmp/report_* $option_output_directory";
 
 }
 
