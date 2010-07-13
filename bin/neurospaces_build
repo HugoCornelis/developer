@@ -2687,6 +2687,8 @@ sub read_cmd_line
 
 # 		$tarball .= "-$label.tar.gz";
 
+		#t this type of test cannot work reliably: fi what if multiple tarballs are found?
+
 		my $tarball = `find $directory | grep $package_name | grep \.tar\.gz\$`;
 		chomp($tarball);
 
