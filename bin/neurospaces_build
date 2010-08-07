@@ -227,6 +227,16 @@ my $all_packages
 				    },
 		    directory => "$ENV{HOME}/neurospaces_project/ns-sli/source/snapshots/0",
 		    order => 6,
+		    operations => {
+				   './configure' => {
+						     debug => [
+							       "CFLAGS=-g -O0",
+							      ],
+						     release => [
+								 "CFLAGS=-g -O9",
+								],
+						    },
+				  },
 		    version_control => {
 					port_number => 4692,
 					repository => "$ENV{HOME}/neurospaces_project/MTN/ns-sli.mtn",
