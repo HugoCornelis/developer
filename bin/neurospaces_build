@@ -97,7 +97,6 @@ my $all_packages
     = {
        experiment => {
 		      directory => "$ENV{HOME}/neurospaces_project/experiment/source/snapshots/0",
-		      disabled => 'working on it, available soon',
 		      order => 1.5,
 		      version_control => {
 					  port_number => 4703,
