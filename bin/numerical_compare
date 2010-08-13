@@ -39,7 +39,7 @@ BEGIN
 }
 
 
-use Neurospaces::Tester::Comparators;
+use Neurospaces::Tester;
 
 
 my $text1;
@@ -58,7 +58,7 @@ my $text2;
 
 {
     my $error
-	= Neurospaces::Utilities::numerical_compare
+	= Neurospaces::Tester::Comparators::numerical
 	    (
 	     {
 	      description => "Testing two files",
