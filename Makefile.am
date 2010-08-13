@@ -54,10 +54,11 @@ dist_bin_SCRIPTS = \
 	bin/nspkg-rpm \
 	bin/nspkg-osx \
 	bin/numerical_compare \
-	bin/td-labels \
-	bin/td-majors \
 	bin/release-expand \
-	bin/release-extract
+	bin/release-extract \
+	bin/signal_voltage_characteristics \
+	bin/td-labels \
+	bin/td-majors
 
 developertestdir=$(prefix)/neurospaces/developer
 nobase_dist_developertest_DATA=@TEST_SPECIFICATION_FILES@
