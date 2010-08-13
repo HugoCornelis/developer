@@ -39,7 +39,7 @@ BEGIN
 }
 
 
-use Neurospaces::Utilities;
+use Neurospaces::Tester::Comparators;
 
 
 my $text1;
@@ -56,25 +56,26 @@ my $text2;
 }
 
 
-my $error
-    = Neurospaces::Utilities::numerical_compare
-    (
-     {
-      description => "Testing two files",
-     },
-     $text1,
-     $text2,
-     '',
-    );
-
-
-if ($error)
 {
-    print "diffs: $error\n";
-}
-else
-{
-    print "ok";
+    my $error
+	= Neurospaces::Utilities::numerical_compare
+	    (
+	     {
+	      description => "Testing two files",
+	     },
+	     $text1,
+	     $text2,
+	     '',
+	    );
+
+    if ($error)
+    {
+	print "diffs: $error\n";
+    }
+    else
+    {
+	print "ok";
+    }
 }
 
 
