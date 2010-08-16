@@ -29,6 +29,7 @@ dist_bin_SCRIPTS = \
 	bin/neurospaces_cron \
 	bin/neurospaces_dist \
 	bin/neurospaces_docs \
+	bin/neurospaces_docs-level7 \
 	bin/neurospaces_harness \
 	bin/neurospaces_init \
 	bin/neurospaces_install \
