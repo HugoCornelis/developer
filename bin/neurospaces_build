@@ -50,6 +50,7 @@ my $option_repo_sync = 0;
 my $option_tag = 0;
 my $option_uninstall = 0;
 my $option_upload_server;
+my $option_upstream_version;
 my $option_verbose = 0;
 my $option_website_prepare;
 my $option_website_upload;
@@ -932,6 +933,7 @@ sub read_cmd_line
 		     "tag=s" => \$option_tag,
 		     "uninstall!" => \$option_uninstall,
 		     "upload-server=s" => \$option_upload_server,
+		     "upstream-version=s" => \$option_upstream_version,
 		     "verbose+" => \$option_verbose,
 		     "version" => \$option_version,
 		     "version-tag=s" => \$option_version_tag,
@@ -1032,6 +1034,7 @@ sub read_cmd_line
 	   "tag=s" => $option_tag,
 	   "uninstall!" => $option_uninstall,
 	   "upload-server=s" => $option_upload_server,
+	   "upstream-version=s" => $option_upstream_version,
 	   "verbose+" => $option_verbose,
 	   "version" => $option_version,
 	   "version=s" => $option_version_tag,
@@ -1769,12 +1772,19 @@ sub read_cmd_line
 
 		    my @update_args;
 
+		    my $upstream_version_options = [ '--branch', '0', ];
+
+		    if ($option_upstream_version)
+		    {
+			$upstream_version_options = [ split /\s/, $option_upstream_version, ];
+		    }
+
 		    if ($monotone_version >= 0.45)
 		    {
 			@update_args = [
 					'/bin/echo', '-n', 'from', 'base_revision_id',
 					'&&', 'mtn', 'automate', 'get_base_revision_id',
-					'&&', 'mtn', '--db', $repository_name, '--branch', '0', 'update','--move-conflicting-paths',
+					'&&', 'mtn', '--db', $repository_name, @$upstream_version_options, 'update','--move-conflicting-paths',
 					'&&', '/bin/echo', '-n', 'to', 'base_revision_id',
 					'&&', 'mtn', 'automate', 'get_base_revision_id',
 				       ];
@@ -1784,7 +1794,7 @@ sub read_cmd_line
 			@update_args = [
 					'/bin/echo', '-n', 'from', 'base_revision_id',
 					'&&', 'mtn', 'automate', 'get_base_revision_id',
-					'&&', 'mtn', '--db', $repository_name, '--branch', '0', 'update',
+					'&&', 'mtn', '--db', $repository_name, @$upstream_version_options, 'update',
 					'&&', '/bin/echo', '-n', 'to', 'base_revision_id',
 					'&&', 'mtn', 'automate', 'get_base_revision_id',
 				       ];
@@ -2835,7 +2845,7 @@ sub read_cmd_line
 
 		my $repository_name
 		    = $package_information->{package}->{version_control}->{repository}
-			|| $directory . '/' . $package_name . '/' . 'mtn',;
+			|| $directory . '/' . $package_name . '/' . 'mtn';
 
 		my $port_number = $package_information->{package}->{version_control}->{port_number};
 
@@ -2915,15 +2925,22 @@ sub read_cmd_line
 
 		my @update_args;
 
+		my $upstream_version_options = [ '--branch', '0', ];
+
+		if ($option_upstream_version)
+		{
+		    $upstream_version_options = [ split /\s/, $option_upstream_version, ];
+		}
+
 		if ($monotone_version >= 0.45)
 		{
 		    @update_args = [ 'mtn', 'automate', 'get_base_revision_id',
-				     '&&', 'mtn', '--db', $repository_name, '--branch', '0', 'update','--move-conflicting-paths', ];
+				     '&&', 'mtn', '--db', $repository_name, @$upstream_version_options, 'update','--move-conflicting-paths', ];
 	        }
 	        else
 	        {
 		    @update_args = [ 'mtn', 'automate', 'get_base_revision_id',
-				     '&&', 'mtn', '--db', $repository_name, '--branch', '0', 'update', ];
+				     '&&', 'mtn', '--db', $repository_name, @$upstream_version_options, 'update', ];
 		}
 
 		operation_execute
