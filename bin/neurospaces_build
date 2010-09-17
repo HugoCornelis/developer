@@ -2715,10 +2715,17 @@ sub read_cmd_line
 
 # 		$tarball .= "-$label.tar.gz";
 
-		#t this type of test cannot work reliably: fi what if multiple tarballs are found?
+		#t this type of test cannot work reliably: fi what if multiple tarballs are found?r
+		
+		# mando 9/17/2010: Added a '-' to the end of the package name to narrow
+		# down the hits, only thing that should meet the criteria is a developer tarball.
+		# Also added the maxdepth option to ensure it only searched the top level directory.
+		# Only way it can fail is if there is more than one developer tarball in the top
+		# level directory. Should not happen on cron runs alone since it performs a clean.
 
-		my $tarball = `find $directory | grep $package_name | grep \.tar\.gz\$`;
+		my $tarball = `find $directory -maxdepth 1| grep $package_name- | grep \.tar\.gz\$`;
 		chomp($tarball);
+
 
 		if(!-e $tarball)
 		{
@@ -2730,6 +2737,7 @@ sub read_cmd_line
 		else
 		{
 		  print "Source dist for package $package_name was created: $tarball\n";
+
 		}
 
 
@@ -2755,6 +2763,24 @@ sub read_cmd_line
 
 		  if(-d $option_pkg_tar_dir)
 		  {
+
+		    #
+		    # At this point the tarball exists so we 
+		    # delete the old tarball before copying over
+		    # the new.
+		    operation_execute
+		      (
+		       $operations,
+		       {
+			description => $description,
+			keywords => 0,
+			package_name => $package_name,
+		       },
+		       [
+			'rm', '-f', "$option_pkg_tar_dir/$package_name-*.tar.gz",
+		       ],
+		      );
+
 		    operation_execute
 		      (
 		       $operations,
