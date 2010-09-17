@@ -904,10 +904,12 @@ sub produce_email_text
   {
     $status_message .= "\nThe debian packages built on this run are available via this link " . $configuration->{PKGDEBURL} . "\n";
 
-    if($deb_messages ne "")
+    my $debian_build_errors = `cat $outputfile | grep "Debian package for package" | grep "was not created"`;
+
+    if($debian_build_errors ne "")
     {
       $status_message .= "Debian Build Messages:\n";
-      $status_message .= $deb_messages;
+      $status_message .= $debian_build_errors;
       $status_message .= "\n";
     }
   }
@@ -916,10 +918,13 @@ sub produce_email_text
   {
     $status_message .= "\nThe RPM packages built on this run are available via this link " . $configuration->{RPMURL} . "\n";
 
-    if($deb_messages ne "")
+    my $rpm_build_errors = `cat $outputfile | grep "RPM file for package" | grep "was not created"`;
+
+
+    if($rpm_build_errors ne "")
     {
       $status_message .= "RPM Build Messages:\n";
-      $status_message .= $rpm_messages;
+      $status_message .= $rpm_build_errors;
       $status_message .= "\n";
     }
 
@@ -927,7 +932,14 @@ sub produce_email_text
 
   if(defined $configuration->{SRCDISTURL})
   {
-    $status_message .= "\nThe source tarballs from this run are available via this link " . $configuration->{SRCDISTURL} . "\n";
+    my $tarball_build_errors = `cat $outputfile | grep "Source dist for package" | grep "was not created"`;
+
+    if($tarball_build_errors ne "")
+    {
+      $status_message .= "RPM Build Messages:\n";
+      $status_message .= $tarball_build_errors;
+      $status_message .= "\n";
+    }
 
   }
 
