@@ -1198,7 +1198,7 @@ sub read_cmd_line
 			  package_name => $package_name,
 			 },
 			 [
-			  'hg', 'init', "http://$repo_server/hg/$package_name", $directory,
+			  'hg', 'clone', "http://$repo_server/hg/$package_name", $directory,
 			 ],
 			);
 		}
