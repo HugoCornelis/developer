@@ -1177,12 +1177,30 @@ sub read_cmd_line
 		}
 		else
 		{
+		    my $repo_server = version_control_translate_server('default');
+
 		    # MERCURIAL init
 
 		    # operations:
 		    #   initialize the repo:
 		    #      hg init http://repo-genesis3.cbi.utsa.edu/hg/g-tube ${HOME}/neurospaces_project/g-tube/source/snapshots/0/
 		    # performs a clone of a repository if the project workspace isn't present.
+
+		    operation_execute
+			(
+			 $operations,
+			 {
+			  description => $description,
+
+			  #t always zero here, but I guess this simply depends on working in client mode ?
+
+			  keywords => 0,
+			  package_name => $package_name,
+			 },
+			 [
+			  'hg', 'init', "http://$repo_server/hg/$package_name", $directory,
+			 ],
+			);
 		}
 	    },
 	   },
