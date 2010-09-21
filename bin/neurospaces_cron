@@ -545,7 +545,9 @@ sub build_deb
   my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime time;
 
   my $deb_tmp = "/tmp/deb_builds";
-  
+
+  $mon++;
+
   try_to("neurospaces_pkgdeb --dir $deb_tmp --release-tag '$mon.$mday.$year'");
 
   # always end a dist build with a revert
@@ -581,6 +583,8 @@ sub build_dist
 
   my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime time;
 
+  $mon++;
+
   try_to("neurospaces_pkgtar --dir $option_srcdist_directory --release-tag '$mon.$mday.$year'");
 
   # always end a dist build with a revert
@@ -597,6 +601,8 @@ sub build_rpm
   my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime time;
 
   my $rpm_tmp = "/tmp/rpm_builds";
+
+  $mon++;
 
   try_to("neurospaces_pkgrpm --dir $rpm_tmp --release-tag '$mon.$mday.$year'");
 
