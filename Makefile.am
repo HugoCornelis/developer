@@ -17,6 +17,7 @@
 SUBDIRS = perl
 
 dist_bin_SCRIPTS = \
+	cpan_modules \
 	bin/mcad2doxy \
 	bin/mtn-ancestors \
 	bin/neurospaces_build \
@@ -80,6 +81,7 @@ dist-keywords:
 # The variable EXTRA_DIST could also be used here.
 
 EXTRA_DIST = \
+	cpan \
 	docs \
 	tests \
 	license.txt
@@ -88,6 +90,7 @@ am__tar = ${AMTAR} chf - --format=posix "$$tardir"
 
 
 clean-local:
+	rm -rf $(top_srcdir)/cpan_modules
 	rm -rf $(TMP_DIR)
 	$(RM) -rf $(top_srcdir)/*.deb
 	$(RM) -f $(top_srcdir)/*.changes
@@ -100,6 +103,11 @@ dist-hook:
 	$(srcdir)/install-sh -d $(distdir)/tests
 	$(srcdir)/install-sh -d $(distdir)/tests/html
 	( cd $(distdir)/tests && chmod -R u+w . && ./tests_2_html --introduction introduction.html )
+
+cpan_modules:
+	@echo "======================== Installing CPAN modules"
+	( cd cpan ; ./cpan_install *.gz )
+	touch $(top_srcdir)/cpan_modules
 
 html-upload-prepare:
 
