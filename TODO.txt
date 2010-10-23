@@ -1,5 +1,8 @@
 -*- outline -*-
 
+* move
+bin/signal_voltage_characteristics to the Experiment package.
+
 * neurospaces_cron
 collects the output of all tested packages, summarizes, emails the
 summary, computes a SHA on the summary, puts a file with filename the
