@@ -17,7 +17,6 @@
 SUBDIRS = perl
 
 dist_bin_SCRIPTS = \
-	cpan_modules \
 	bin/mcad2doxy \
 	bin/mtn-ancestors \
 	bin/neurospaces_build \
@@ -35,26 +34,26 @@ dist_bin_SCRIPTS = \
 	bin/neurospaces_init \
 	bin/neurospaces_install \
 	bin/neurospaces_kill_servers \
-	bin/neurospaces_revert \
 	bin/neurospaces_packages \
 	bin/neurospaces_pkgdeb \
 	bin/neurospaces_pkgrpm \
 	bin/neurospaces_pkgtar \
 	bin/neurospaces_pull \
 	bin/neurospaces_push \
-	bin/neurospaces_tools_propagate \
+	bin/neurospaces_revert \
 	bin/neurospaces_serve \
 	bin/neurospaces_status \
 	bin/neurospaces_sync \
+	bin/neurospaces_tools_propagate \
 	bin/neurospaces_uninstall \
 	bin/neurospaces_update \
 	bin/neurospaces_upgrade \
 	bin/neurospaces_versions \
 	bin/neurospaces_website_prepare \
-	bin/nstest_query \
 	bin/nspkg-deb \
-	bin/nspkg-rpm \
 	bin/nspkg-osx \
+	bin/nspkg-rpm \
+	bin/nstest_query \
 	bin/numerical_compare \
 	bin/release-expand \
 	bin/release-extract \
@@ -90,7 +89,7 @@ am__tar = ${AMTAR} chf - --format=posix "$$tardir"
 
 
 clean-local:
-	rm -rf $(top_srcdir)/cpan_modules
+	rm -rf $(top_srcdir)/neurospaces_cpan_modules
 	rm -rf $(TMP_DIR)
 	$(RM) -rf $(top_srcdir)/*.deb
 	$(RM) -f $(top_srcdir)/*.changes
@@ -104,10 +103,12 @@ dist-hook:
 	$(srcdir)/install-sh -d $(distdir)/tests/html
 	( cd $(distdir)/tests && chmod -R u+w . && ./tests_2_html --introduction introduction.html )
 
-cpan_modules:
+install-data-local: neurospaces_cpan_modules
+
+neurospaces_cpan_modules:
 	@echo "======================== Installing CPAN modules"
 	( cd cpan ; ./cpan_install *.gz )
-	touch $(top_srcdir)/cpan_modules
+	touch $(top_srcdir)/neurospaces_cpan_modules
 
 html-upload-prepare:
 
