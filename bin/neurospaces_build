@@ -191,6 +191,16 @@ my $all_packages
 					      ],
 			     directory => "$ENV{HOME}/neurospaces_project/model-container/source/snapshots/0",
 			     disabled => 0,
+			     operations => {
+					    './configure' => {
+							      debug => [
+									"CFLAGS=-g -O0",
+								       ],
+							      release => [
+									  "CFLAGS=-g -O9",
+									 ],
+							     },
+					   },
 			     order => 1,
 			     version_control => {
 						 port_number => 4693,
