@@ -24,6 +24,7 @@ Makefile\.in$
 ^installed
 ^installer-.*.tar.gz$
 ^missing$
+^neurospaces_cpan_modules$
 ^pkg$
 ^tmp$
 _BUILD$
