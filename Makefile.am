@@ -31,6 +31,7 @@ dist_bin_SCRIPTS = \
 	bin/neurospaces_docs \
 	bin/neurospaces_docs-level7 \
 	bin/neurospaces_harness \
+	bin/neurospaces_history \
 	bin/neurospaces_init \
 	bin/neurospaces_install \
 	bin/neurospaces_kill_servers \

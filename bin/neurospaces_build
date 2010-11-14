@@ -40,6 +40,8 @@ my $option_regex_selector = ".*";
 my $option_repo_ci = 0;
 my $option_repo_clone = 0;
 my $option_repo_co = 0;
+my $option_repo_history = 0;
+my $option_repo_history_last = 2;
 my $option_repo_init = 0;
 my $option_repo_pull = 0;
 my $option_repo_push = 0;
@@ -944,6 +946,8 @@ sub read_cmd_line
 		     "repo-clone=s" => \$option_repo_clone,
 		     "repo-co!" => \$option_repo_co,
 		     "repo-init!" => \$option_repo_init,
+		     "repo-history!" => \$option_repo_history,
+		     "repo-history-last=i" => \$option_repo_history_last,
 		     "repo-pull=s" => \$option_repo_pull,
 		     "repo-push=s" => \$option_repo_push,
 		     "repo-revert!" => \$option_repo_revert,
@@ -1045,6 +1049,8 @@ sub read_cmd_line
 	   "repo-clone=s" => $option_repo_clone,
 	   "repo-co!" => $option_repo_co,
 	   "repo-init!" => $option_repo_init,
+	   "repo-history!" => $option_repo_history,
+	   "repo-history-last=i" => $option_repo_history_last,
 	   "repo-pull=s" => $option_repo_pull,
 	   "repo-push=s" => $option_repo_push,
 	   "repo-revert!" => $option_repo_revert,
@@ -3410,17 +3416,13 @@ sub read_cmd_line
 
 		my $information_sets
 		    = {
-		       #t MONOTONE
+		       #t MERCURIAL
+		       #t hg status
 
-		       # MERCURIAL status
-		       # hg status
 		       missing => [ "mtn", "ls", "missing", ],
 		       status => [ 'mtn', 'status', ],
 		       unknown => [ "mtn", "ls", "unknown", ],
 		      };
-
-		# MERCURIAL status 
-		# command: hg status
 
 		# go through all informational operations
 
@@ -3471,6 +3473,122 @@ sub read_cmd_line
 			      package_name => $package_name,
 			     },
 			     $information_sets->{$information_set},
+			    );
+		    }
+		}
+	    },
+	   },
+	   {
+	    condition => $option_repo_history,
+	    description => 'asking for past revision information',
+	    operation =>
+	    sub
+	    {
+		my $package_information = shift;
+
+		# get specific arguments
+
+		my $description = $package_information->{description};
+
+		my $directory = $package_information->{directory};
+
+		my $operations = $package_information->{operations};
+
+		my $package_name = $package_information->{package_name};
+
+		#t where does this default value come from?  Cannot work correctly?
+
+		my $repository_name
+		    = $package_information->{package}->{version_control}->{repository}
+			|| $directory . '/' . $package_name . '/' . 'mtn';
+
+		my $port_number = $package_information->{package}->{version_control}->{port_number};
+
+		# print header
+
+		my $text = "$0: *** package $package_name";
+
+		print "\n\n" . ("-" x length $text) . "\n$text\n";
+
+# 		# if not enough information for comparing
+
+# 		if (not -f $repository_name and not -d $repository_name)
+# 		{
+# 		    die "$0: *** Error: cannot compare with repository, repository_name not set";
+# 		}
+
+# 		if (not $port_number and $repository_name =~ m/^.*\.mtn$/)
+# 		{
+# 		    die "$0: *** Error: cannot compare with repository, port_number not set";
+# 		}
+
+		# change the directory
+
+		my $success = chdir $directory;
+
+		if (!$success)
+		{
+		    die "$0: *** Error: package $package_name cannot change from directory to directory ($directory): $!";
+		}
+
+		# construct a default set with information commands
+
+		my $history_sets
+		    = {
+		       #t for MERCURIAL
+		       #t hg log
+
+		       log => [ "mtn", "log", "--last", $option_repo_history_last, ],
+		       status => [ 'mtn', 'status', ],
+		      };
+
+		# go through all log operations
+
+		foreach my $history_set (
+					 qw(
+					    status
+					    log
+					  )
+					)
+		{
+		    # and overwrite with specific commands for this package if applicable
+
+		    #! exists such that a '0' or undef can erase the default history_set command
+
+		    if (exists $package_information->{package}->{version_control}->{commands}->{$history_set})
+		    {
+			$history_sets->{$history_set}
+			    = $package_information->{package}->{version_control}->{commands}->{$history_set};
+		    }
+		}
+
+		# go through all log operations
+
+		foreach my $history_set (
+					 qw(
+					    status
+					    log
+					  )
+					)
+		{
+		    # if the history_set command is defined
+
+		    if ($history_sets->{$history_set})
+		    {
+			# execute the history_set command
+
+			operation_execute
+			    (
+			     $operations,
+			     {
+			      description => "history_set $history_set",
+
+			      #t always zero here, but I guess this simply depends on working in client mode ?
+
+			      keywords => 0,
+			      package_name => $package_name,
+			     },
+			     $history_sets->{$history_set},
 			    );
 		    }
 		}
@@ -3794,6 +3912,8 @@ options related to operation execution profile:
     --repo-clone             checkout or update the workspace source code from a remote repository.
     --repo-co                checkout or update the workspace source code from a local repository.
     --repo-init              initialize those local repositories that do not exist yet.
+    --repo-history           show locally stored history information of enabled software components.
+    --repo-history-last      number of history records to show.
     --repo-pull              pull the repositories from this server (e.g. repo-genesis3.cbi.utsa.edu).
     --repo-push              push the repositories to this server (e.g. repo-genesis3.cbi.utsa.edu).
     --repo-serve             start the version control program in server mode to give others access to your code.
