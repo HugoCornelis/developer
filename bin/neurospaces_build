@@ -3447,9 +3447,9 @@ sub read_cmd_line
 
 		foreach my $information_set (
 					     qw(
+						status
 						missing
 						unknown
-						status
 					       )
 					    )
 		{
