@@ -156,7 +156,7 @@ my $all_packages
 		 },
       'g-tube' => {
 		   directory => "$ENV{HOME}/neurospaces_project/g-tube/source/snapshots/0",
-		   disabled => 'Mercurial isn\'t implemented yet',
+		   disabled => 'g-tube is not complete yet',
 		   order => 31,
 		   version_control => {
 				       repository => "$ENV{HOME}/neurospaces_project/g-tube/source/snapshots/0/.hg",
