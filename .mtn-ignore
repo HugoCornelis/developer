@@ -13,6 +13,8 @@ Makefile\.in$
 ^cpan/Data-Utilities-0.04
 ^cpan/Digest-SHA-5.48
 ^cpan/File-Find-Rule-0.32
+^cpan/HTML-Table-2.08a
+^cpan/HTML-Template-2.9
 ^cpan/Inline-0.46
 ^cpan/Inline-Python-0.37
 ^cpan/Number-Compare-0.01
