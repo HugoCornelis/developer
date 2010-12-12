@@ -196,11 +196,6 @@ my $all_packages
 		     version_script => 'neurospaces_build --version',
 		    },
        'model-container' => {
-			     #t make distinction between debug and release
-
-			     './configure' => [
-					       '--with-delete-operation',
-					      ],
 			     directory => "$ENV{HOME}/neurospaces_project/model-container/source/snapshots/0",
 			     disabled => 0,
 			     operations => {
