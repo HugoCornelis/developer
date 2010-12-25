@@ -92,7 +92,15 @@ use YAML;
 
 if (-f '/etc/neurospaces/developer/build.yml')
 {
-    $whole_build_configuration = YAML::LoadFile('/etc/neurospaces/developer/build.yml');
+    eval
+    {
+	$whole_build_configuration = YAML::LoadFile('/etc/neurospaces/developer/build.yml');
+    };
+
+    if ($@)
+    {
+	die "$0: *** Error: reading file /etc/neurospaces/developer/build.yml ($@)";
+    }
 }
 
 
