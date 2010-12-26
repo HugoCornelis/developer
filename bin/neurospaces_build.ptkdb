@@ -1,15 +1,42 @@
 $files = {
-           '_<./neurospaces_build' => [
-                                        {
-                                          'expr' => undef,
-                                          'value' => '1',
-                                          'text' => '    foreach my $first_package_name (keys %$all_packages)
+           '_<bin/neurospaces_build' => [
+                                          {
+                                            'expr' => undef,
+                                            'value' => '1',
+                                            'text' => '		my $pid
 ',
-                                          'fname' => './neurospaces_build',
-                                          'type' => 'user',
-                                          'line' => '2994'
-                                        }
-                                      ]
+                                            'fname' => 'bin/neurospaces_build',
+                                            'type' => 'user',
+                                            'line' => '1310'
+                                          },
+                                          {
+                                            'expr' => undef,
+                                            'value' => '1',
+                                            'text' => '	if ($package->{disabled})
+',
+                                            'fname' => 'bin/neurospaces_build',
+                                            'type' => 'user',
+                                            'line' => 579
+                                          },
+                                          {
+                                            'expr' => undef,
+                                            'value' => '1',
+                                            'text' => '	    if ($option_uninstall)
+',
+                                            'fname' => 'bin/neurospaces_build',
+                                            'type' => 'user',
+                                            'line' => 611
+                                          },
+                                          {
+                                            'expr' => undef,
+                                            'value' => '1',
+                                            'text' => 'main();
+',
+                                            'fname' => 'bin/neurospaces_build',
+                                            'type' => 'user',
+                                            'line' => 4344
+                                          }
+                                        ]
          };
 $expr_list = [
                {
@@ -26,4 +53,4 @@ $expr_list = [
                }
              ];
 $eval_saved_text = undef;
-$main_win_geometry = '1280x951+140+61';
+$main_win_geometry = '1594x820+0+0';
