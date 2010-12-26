@@ -1342,7 +1342,7 @@ sub read_cmd_line
 			 },
 			 [
 			  # 		      'mtn', '--db', $repository_name, 'serve', "$repo_server:$port_number",
-			  'mtn', '--db', $repository_name, 'serve', "--bind=:$port_number",
+			  'mtn', '--db', $repository_name, 'serve', "--bind=0.0.0.0:$port_number",
 			 ],
 			);
 
