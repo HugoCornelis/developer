@@ -47,6 +47,15 @@ AC_CHECK_PROGS([DPKG_BUILDPACKAGE],dpkg-buildpackage,[NULL])
 AC_CHECK_PROGS([DH],dh,[NULL])
 AC_CHECK_PROGS([RPMBUILD],rpmbuild,[NULL])
 
+dnl Check for Python and it's headers
+AM_PATH_PYTHON(,[],[
+   echo "Python is not installed."
+   exit -1
+])
+
+AC_MSG_CHECKING([Python prefix is ])
+  AC_MSG_RESULT(['$PYTHON_PREFIX'])
+
 # Checks for libraries.
 
 # Checks for header files.
