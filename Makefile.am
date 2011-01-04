@@ -14,7 +14,7 @@
 ##############################################################################
 
 
-SUBDIRS = perl
+SUBDIRS = perl python
 
 dist_bin_SCRIPTS = \
 	bin/mcad2doxy \
