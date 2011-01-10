@@ -126,7 +126,9 @@ foreach my $file (@$files)
 
     unless(-e $file)
     {
-      next;
+	print STDERR "$0: *** Error: $file does not exist\n";
+
+	next;
     }
 
     my $content;
