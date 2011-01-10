@@ -325,6 +325,21 @@ my $all_packages
 				   repository => "$ENV{HOME}/neurospaces_project/MTN/ssp.mtn",
 				  },
 	      },
+
+       sspy => {
+	       dependencies => {
+				'model-container' => 'for storing the model in computer memory',
+				heccer => 'for solving single neurons',
+			       },
+	       directory => "$ENV{HOME}/neurospaces_project/sspy/source/snapshots/0",
+	       disabled => "Still under development.",
+	       order => 3.1,
+	       version_control => {
+				   port_number => 4705,
+				   repository => "$ENV{HOME}/neurospaces_project/MTN/sspy.mtn",
+				  },
+	      },
+
        studio => {
 		  dependencies => {
 				   'model-container' => 'for storing the model in computer memory',
