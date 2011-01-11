@@ -47,13 +47,23 @@ my $enable_options = defined $option_enable ? "--enable $option_enable " : '';
 
 # note: the following three invocations are copied from neurospaces_uninstall, neurospaces_pull, neurospaces_install, the subs are copied from neurospaces_cron
 
+# uninstall
+
 system "neurospaces_build --uninstall --no-compile --no-install $clean_options $configure_options --no-installed-versions $verbose_options $developer_options $regex_options $enable_options";
+
+# reinstall developer package
 
 install_developer();
 
+# pull new code to repos
+
 system "neurospaces_build --repo-pull $option_repo_pull --no-installed-versions --no-configure --no-install --no-compile $verbose_options $developer_options $regex_options $enable_options";
 
+# checkout from repos to workspaces
+
 system "neurospaces_build --no-configure --no-install --no-compile --repo-co --no-installed-versions $verbose_options $developer_options $regex_options $enable_options";
+
+# optional clean, optional configure, compile, install
 
 system "neurospaces_build $clean_options $configure_options --no-installed-versions $verbose_options $developer_options $regex_options $enable_options";
 
