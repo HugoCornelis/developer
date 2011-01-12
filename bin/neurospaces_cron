@@ -9,6 +9,7 @@ use strict;
 use YAML;
 
 my $option_config = "";
+my $option_distclean = 0;
 my $option_output_directory = "/tmp";
 my $option_no_check = 0;
 my $option_no_install = 0;
@@ -212,6 +213,7 @@ sub cleanup_and_finalize
   try_to("echo $0: done with cleanup.\n", 1);
 
   try_to("date", 1);
+
 
 }
 
@@ -521,6 +523,14 @@ sub main
       # clean up after the tests.
 
       cleanup_and_finalize();
+
+    }
+
+
+    if( $option_distclean )
+    {
+
+      try_to("neurospaces_clean --distclean");
 
     }
 
@@ -846,6 +856,20 @@ sub parse_config_file
   {
       chomp($configuration->{SRCDISTURL});
       print "\tDirectory for source tarballs is $configuration->{SRCDISTURL}\n";
+  }
+
+
+
+  if(defined $configuration->{DISTCLEAN})
+  {
+    chomp($configuration->{DISTCLEAN});
+
+    if( uc($configuration->{DISTCLEAN}) eq "TRUE")
+    {
+      print "\tOption \'distclean\' is on, a distclean will take place at the end of the run.\n";
+      $option_distclean = 1;
+    }
+
   }
 
 
