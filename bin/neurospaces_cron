@@ -9,7 +9,6 @@ use strict;
 use YAML;
 
 my $option_config = "";
-my $option_distclean = 0;
 my $option_output_directory = "/tmp";
 my $option_no_check = 0;
 my $option_no_install = 0;
@@ -527,12 +526,12 @@ sub main
     }
 
 
-    if( $option_distclean )
-    {
+    #
+    # Performs a distclean in all source directories
+    # so as to remove automake generated files like config.status
+    #
+    try_to("neurospaces_clean --distclean");
 
-      try_to("neurospaces_clean --distclean");
-
-    }
 
     my $status_message = produce_email_text();
 
@@ -856,20 +855,6 @@ sub parse_config_file
   {
       chomp($configuration->{SRCDISTURL});
       print "\tDirectory for source tarballs is $configuration->{SRCDISTURL}\n";
-  }
-
-
-
-  if(defined $configuration->{DISTCLEAN})
-  {
-    chomp($configuration->{DISTCLEAN});
-
-    if( uc($configuration->{DISTCLEAN}) eq "TRUE")
-    {
-      print "\tOption \'distclean\' is on, a distclean will take place at the end of the run.\n";
-      $option_distclean = 1;
-    }
-
   }
 
 
