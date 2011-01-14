@@ -35,6 +35,7 @@ dist_bin_SCRIPTS = \
 	bin/neurospaces_init \
 	bin/neurospaces_install \
 	bin/neurospaces_kill_servers \
+	bin/neurospaces_migrate \
 	bin/neurospaces_packages \
 	bin/neurospaces_pkgdeb \
 	bin/neurospaces_pkgrpm \

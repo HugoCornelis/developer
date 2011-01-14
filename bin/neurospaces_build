@@ -43,6 +43,7 @@ my $option_repo_co = 0;
 my $option_repo_history = 0;
 my $option_repo_history_last = 2;
 my $option_repo_init = 0;
+my $option_repo_migrate = 0;
 my $option_repo_pull = 0;
 my $option_repo_push = 0;
 my $option_repo_revert = 0;
@@ -974,6 +975,7 @@ sub read_cmd_line
 		     "repo-clone=s" => \$option_repo_clone,
 		     "repo-co!" => \$option_repo_co,
 		     "repo-init!" => \$option_repo_init,
+		     "repo-migrate!" => \$option_repo_migrate,
 		     "repo-history!" => \$option_repo_history,
 		     "repo-history-last=i" => \$option_repo_history_last,
 		     "repo-pull=s" => \$option_repo_pull,
@@ -1077,6 +1079,7 @@ sub read_cmd_line
 	   "repo-clone=s" => $option_repo_clone,
 	   "repo-co!" => $option_repo_co,
 	   "repo-init!" => $option_repo_init,
+	   "repo-migrate!" => $option_repo_migrate,
 	   "repo-history!" => $option_repo_history,
 	   "repo-history-last=i" => $option_repo_history_last,
 	   "repo-pull=s" => $option_repo_pull,
@@ -1256,6 +1259,59 @@ sub read_cmd_line
 			 ],
 			);
 		}
+	    },
+	   },
+
+	   {
+	    condition => $option_repo_migrate,
+	    description => 'migrating monotone repositories to latest schema',
+	    operation =>
+	    sub
+	    {
+		my $package_information = shift;
+
+		# get specific arguments
+
+		my $description = $package_information->{description};
+
+		my $directory = $package_information->{directory};
+
+		my $operations = $package_information->{operations};
+
+		my $package_name = $package_information->{package_name};
+
+		#t where does this default value come from?  Cannot work correctly?
+
+		my $repository_name
+		    = $package_information->{package}->{version_control}->{repository}
+			|| $directory . '/' . $package_name . '/' . 'mtn';
+
+		#
+		# Check to see if the repository name ends with .mtn, if not we assume it ends
+		# in .hg, in which case we don't need the port number since mercurial serves over http.
+		#
+
+		if ($repository_name =~ m/^.*\.mtn$/)
+		{
+		  # initialize the repository if necessary
+
+		  operation_execute
+		    (
+		     $operations,
+		     {
+		      description => $description,
+
+		      #t always zero here, but I guess this simply depends on working in client mode ?
+
+		      keywords => 0,
+		      package_name => $package_name,
+		     },
+		     [
+		      'test', '-f', $repository_name, '||', 'mtn', '--db', $repository_name, 'db', 'migrate',
+		     ],
+		    );
+		}
+		
 	    },
 	   },
 	   {
