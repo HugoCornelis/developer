@@ -401,7 +401,10 @@ sub main
     unless($option_no_pull)
     {
       try_to("neurospaces_pull");
+
     }
+
+    try_to("neurospaces_configure");
 
     # uninstall what was installed
 
