@@ -1948,6 +1948,15 @@ sub read_cmd_line
 		    # MERCURIAL merge
 		    # command: hg merge
 
+		    #t check first for outstanding changes in the workspace
+		    #t   if found, die
+		    #t
+		    #t then hg merge (as below, puts the result in the workspace)
+		    #t
+		    #t automated hg commit (with -C option for checkin comment?)
+		    #t
+		    #t then contineu with test -d .hg
+
 		    # change the directory
 
 		    if (not chdir $directory)
