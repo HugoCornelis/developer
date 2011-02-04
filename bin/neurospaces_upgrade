@@ -45,15 +45,11 @@ my $developer_options = defined $option_developer ? "--developer " x $option_dev
 my $regex_options = defined $option_regex_selector ? "--regex '$option_regex_selector' " : '';
 my $enable_options = defined $option_enable ? "--enable $option_enable " : '';
 
-# note: the following three invocations are copied from neurospaces_uninstall, neurospaces_pull, neurospaces_install, the subs are copied from neurospaces_cron
-
 # uninstall
 
-system "neurospaces_build --uninstall --no-compile --no-install $clean_options $configure_options --no-installed-versions $verbose_options $developer_options $regex_options $enable_options";
+system "neurospaces_dev_install $clean_options $configure_options $verbose_options $developer_options $regex_options $enable_options";
 
-# reinstall developer package
-
-install_developer();
+# note: the following three invocations are copied from neurospaces_uninstall, neurospaces_pull, neurospaces_install, the subs are copied from neurospaces_cron
 
 # pull new code to repos
 

@@ -423,13 +423,22 @@ sub main
 
     # loop over all the configurations we want to test
 
-    foreach my $package_configuration (1)
+    # note that it is possible that a profile has different settings
+    # in each package, eg. we may add a configuration profile
+    # 'fast_random' where the heccer random generator is fast but
+    # sloppy (but that should never become the default of course).
+    # This would only affect the heccer package, but not the others.
+
+    foreach my $profile_configuration (
+				       "--configure-type debug",
+				       "--configure-type release",
+				      )
     {
 	#t insert configuration options in the configurator package
 
 	# configure all packages
 
-	try_to("neurospaces_configure");
+	try_to("neurospaces_configure $profile_configuration");
 
 	unless($option_no_install)
 	{
