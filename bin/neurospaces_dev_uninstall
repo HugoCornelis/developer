@@ -1,0 +1,109 @@
+#!/usr/bin/perl -w
+#!/usr/bin/perl -d:ptkdb -w
+#
+
+
+use strict;
+
+
+use Getopt::Long;
+
+use YAML;
+
+
+my $option_clean;
+my $option_configure = 1;
+my $option_developer = 1;
+my $option_enable;
+my $option_regex_selector;
+my $option_repo_pull = 'repo-genesis3.cbi.utsa.edu';
+my $option_verbose;
+
+{
+    my $result
+	= GetOptions
+	    (
+	     "clean!" => \$option_clean,
+	     "configure!" => \$option_configure,
+	     "developer!" => \$option_developer,
+	     "enable=s" => \$option_enable,
+	     "regex-selector=s" => \$option_regex_selector,
+	     "repo-pull=s" => \$option_repo_pull,
+	     "v|verbose+" => \$option_verbose,
+	    );
+
+    if (!$result)
+    {
+	die "$0: *** Error: Error in option processing";
+    }
+}
+
+my $clean_options = defined $option_clean ? "--clean " x $option_clean : '';
+my $configure_options = defined $option_configure ? "--configure " x $option_configure : '--no-configure';
+my $verbose_options = defined $option_verbose ? "--verbose " x $option_verbose : '';
+my $developer_options = defined $option_developer ? "--developer " x $option_developer : '';
+my $regex_options = defined $option_regex_selector ? "--regex '$option_regex_selector' " : '';
+my $enable_options = defined $option_enable ? "--enable $option_enable " : '';
+
+# note: the following code was copied from neurospaces_upgrade
+
+# uninstall
+
+system "neurospaces_build --uninstall --no-compile --no-install $clean_options $configure_options --no-installed-versions $verbose_options $developer_options $regex_options $enable_options";
+
+# reinstall developer package
+
+install_developer();
+
+
+sub install_developer
+{
+    my $developer_directory = "$ENV{HOME}/neurospaces_project/developer/source/snapshots/0";
+
+    chdir($developer_directory);
+
+    try_to("./autogen.sh && ./configure && make && sudo make install");
+}
+
+
+sub try_to
+{
+    my $command = shift;
+
+    my $no_verbose = shift;
+
+    my $allow_fail = shift;
+
+    if (!$no_verbose)
+    {
+	print "---\n";
+	print "$0: trying to $command\n";
+    }
+
+#     my $output_path = $option_output_directory . "/" . $output_filename;
+
+#     #! $command executed in a subshell such that redirection applies
+#     #! to all commands.
+
+#     system "( $command ) >>$output_path 2>&1";
+
+    system "( $command )";
+
+    if ($?)
+    {
+	if ($allow_fail)
+	{
+# 	    system "echo >>$output_path 2>&1 failed with $?: $command\n";
+
+	    system "echo failed with $?: $command\n";
+	}
+	else
+	{
+	    report_error($command, $?);
+
+	    die "$0: $command returned $?";
+	}
+    }
+}
+
+
