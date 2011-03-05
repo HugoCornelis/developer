@@ -78,7 +78,7 @@ sub check_user_id
     # get effective user id
 
 
-    my $num_id = $>;
+#     my $num_id = $>;
 
 #--- commenting this out from the old implementation
 #     # convert to ascii representation
