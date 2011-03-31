@@ -2,3 +2,8 @@ Some information on creating python eggs:
 
 http://mrtopf.de/blog/en/a-small-introduction-to-python-eggs/
 
+
+Information on DistUtils from the SWIG documentation:
+
+http://www.swig.org/Doc2.0/Python.html#Python_nn6
+
