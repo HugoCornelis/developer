@@ -7,3 +7,8 @@ Information on DistUtils from the SWIG documentation:
 
 http://www.swig.org/Doc2.0/Python.html#Python_nn6
 
+
+Quick information on compiling SWIG shared libraries on Mac OS X:
+
+http://www.dabeaz.com/cgi-bin/wiki.pl?SwigFaqMaxOSXSharedLibraries
+
