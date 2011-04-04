@@ -4,7 +4,7 @@ Allowing compilation of universal binaries is actually easy, you
 simply disable dependency tracking and allow all arch flags (ppc, i386, x86_64). 
 However this increases the size of the compiled files by a great deal; libneurospaces
 goes from 8 MB to 27 MB.  This should be available as an option via the 
-installation scripts.
+installation scripts. Information on automake flags: http://www.gnu.org/software/hello/manual/automake/Options.html
 
 * move
 bin/signal_voltage_characteristics to the Experiment package.
