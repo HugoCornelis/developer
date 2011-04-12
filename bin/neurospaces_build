@@ -2305,11 +2305,11 @@ sub read_cmd_line
 
 	   {
 	    condition => $option_mac_universal,
-	    operation => [ './configure', '--with-universal', ],
+	    operation => [ './configure', '--with-universal', '--disable-dependency-tracking',],
 	   },
 	   {
 	    condition => ($option_configure && $option_mac_universal) || $option_compile || $option_check || $option_install,
-	    operation => [ 'test', '-f', './configure', '--with-universal','||', './autogen.sh', ],
+	    operation => [ 'test', '-f', './configure', '--with-universal', '--disable-dependency-tracking','||', './autogen.sh', ],
 	   },
 	   {
 	    condition => $option_configure || $option_compile || $option_check || $option_install,
