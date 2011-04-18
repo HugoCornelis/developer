@@ -2308,15 +2308,11 @@ sub read_cmd_line
 	    operation => [ './configure', '--with-universal', '--disable-dependency-tracking',],
 	   },
 	   {
-	    condition => ($option_configure && $option_mac_universal) || $option_compile || $option_check || $option_install,
-	    operation => [ 'test', '-f', './configure', '--with-universal', '--disable-dependency-tracking','||', './autogen.sh', ],
-	   },
-	   {
 	    condition => $option_configure || $option_compile || $option_check || $option_install,
 	    operation => [ 'test', '-f', './configure', '||', './autogen.sh', ],
 	   },
 	   {
-	    condition => $option_configure,
+	    condition => $option_configure && $option_mac_universal == 0,
 	    operation => [ './configure', ],
 	   },
 
