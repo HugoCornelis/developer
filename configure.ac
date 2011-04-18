@@ -20,6 +20,33 @@ AC_PREREQ(2.59)
 # $Format: "AC_INIT(${package}, ${major}.${minor}.${micro}-${label}, ${email})"$
 AC_INIT(developer, 0.0.0-alpha, hugo.cornelis@gmail.com)
 
+
+
+AC_MSG_CHECKING(whether we build universal binaries.)
+AC_ARG_WITH(universal,
+[AS_HELP_STRING([--with-universal],
+              [Build universal binaries on Mac OS X.])],
+[ case "$val" in
+  no)
+
+    AC_MSG_RESULT(no)
+    OSX_UNIVERSAL="no"
+
+    ;;
+  *)
+
+    AC_MSG_RESULT(yes)
+    OSX_UNIVERSAL="yes"
+
+    ;;
+  esac ],
+  AC_MSG_RESULT(no)
+  OSX_UNIVERSAL="no"
+)
+AC_SUBST(OSX_UNIVERSAL)
+
+
+
 AC_CONFIG_SRCDIR([Makefile.am])
 
 dnl dnl all subdirs
