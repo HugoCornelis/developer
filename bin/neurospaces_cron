@@ -17,6 +17,7 @@ my $option_no_uninstall = 0;
 my $option_deb_directory = "";
 my $option_rpm_directory = "";
 my $option_srcdist_directory = "";
+my $option_universal = 0;
 my $option_user = "g3tester";
 
 my $configuration
@@ -437,8 +438,17 @@ sub main
 	#t insert configuration options in the configurator package
 
 	# configure all packages
+        my $configure_command = "neurospaces_configure $profile_configuration";
 
-	try_to("neurospaces_configure $profile_configuration");
+        if( $option_universal )
+	{
+
+	  $configure_command .= " --universal";
+
+        }
+
+	try_to($configure_command);
+
 
 	unless($option_no_install)
 	{
@@ -870,6 +880,28 @@ sub parse_config_file
   }
 
 
+
+
+  if(defined $configuration->{UNIVERSAL})
+  {
+    chomp($configuration->{UNIVERSAL});
+
+    if( uc($configuration->{UNIVERSAL}) eq "TRUE")
+    {
+      if( $Config{osname} eq "darwin" )
+      {
+        print "\tOption \'universal\' is set, Universal binaries will be built.\n";
+        $option_universal = 1;
+      }
+      else
+      {
+	print "\tCan't set Option \'universal\', only available on Mac OS X\n";
+      }
+    }
+
+  }
+
+
   print "Done Parsing $config_file:\n";
 
 }
@@ -899,6 +931,13 @@ sub produce_email_text
 	  . "/"
 	  . $output_filename . "\n"
 	 );
+
+  if ($option_universal)
+  {
+
+    $status_message .= "This build was built as universal binaries\n";
+
+  }
 
   if (defined $configuration->{URL})
   {
