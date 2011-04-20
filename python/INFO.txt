@@ -12,3 +12,6 @@ Quick information on compiling SWIG shared libraries on Mac OS X:
 
 http://www.dabeaz.com/cgi-bin/wiki.pl?SwigFaqMaxOSXSharedLibraries
 
+Full clickable API listing for distutils:
+
+http://pys60.garage.maemo.org/doc/dist/api-reference.html
