@@ -15,3 +15,8 @@ http://www.dabeaz.com/cgi-bin/wiki.pl?SwigFaqMaxOSXSharedLibraries
 Full clickable API listing for distutils:
 
 http://pys60.garage.maemo.org/doc/dist/api-reference.html
+
+setup.py examples for django and pyglet, both are excellent references:
+
+http://code.djangoproject.com/browser/django/trunk/setup.py
+http://code.google.com/p/pyglet/source/browse/setup.py
