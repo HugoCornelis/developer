@@ -20,3 +20,9 @@ setup.py examples for django and pyglet, both are excellent references:
 
 http://code.djangoproject.com/browser/django/trunk/setup.py
 http://code.google.com/p/pyglet/source/browse/setup.py
+
+
+
+distutils info for the Extension class.
+
+http://pydoc.org/2.5.1/distutils.extension.html
