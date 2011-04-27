@@ -5,17 +5,35 @@ This file provides data for a packages integration
 into the CBI architecture.
 """
 
+__author__ = "Mando Rodriguez"
+__copyright__ = "Copyright 2010, The GENESIS Project"
+__credits__ = ["Hugo Cornelis", "Dave Beeman"]
+__license__ = "GPL"
+__version__ = "0.1"
+__maintainer__ = "Mando Rodriguez"
+__email__ = "rodrigueza14@uthscsa.edu"
+__status__ = "Development"
+__url__ = "http://genesis-sim.org"
+__description__ = """
+This is the root management module for GENESIS. GENESIS is composed of several
+sub packages for reading and storing models, solvers, experimental protocols,
+and GUI interfaces. The root 'g3' package helps to determine which versions of
+packages are installed and performs updates, removal, and installation of needed
+packages to run a simulation. 
+"""
+__download_url__ = "http://repo-genesis3.cbi.utsa.edu"
+
 def GetRevisionInfo():
-# $Format: return "${monotone_id}"$
-    return "test"
+# $Format: "    return \"${monotone_id}\""$
+    return "094ae8e1382b1fe2c1ed1f6404ecd4781d55f2fb"
 
 def GetPackageName():
-# $Format: return "${package}"$
-    return "test"
+# $Format: "    return \"${package}\""$
+    return "developer"
 
 def GetVersion():
-# $Format: return "${major}.${minor}.${micro}-${label}"$
-    return "test"
+# $Format: "    return \"${major}.${minor}.${micro}-${label}\""$
+    return "0.0.0-alpha"
 
 def GetDependencies():
     """!
