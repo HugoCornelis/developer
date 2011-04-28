@@ -1,3 +1,11 @@
+the developer package is neurospaces
+the model-container too.
+userdocs and gshell are genesis
+publications is also genesis
+gtube is genesis
+heccer is neurosapces
+
+
 Some information on creating python eggs:
 
 http://mrtopf.de/blog/en/a-small-introduction-to-python-eggs/
