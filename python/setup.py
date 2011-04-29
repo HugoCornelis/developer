@@ -4,7 +4,7 @@ import sys
 from distutils.core import setup
 from distutils.command.install_data import install_data
 #from setuptools import setup, find_packages
-import sspy.__cbi__ as cbi
+import neurospaces.__cbi__ as cbi
 
 
 #-------------------------------------------------------------------------------
