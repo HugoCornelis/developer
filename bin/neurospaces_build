@@ -1206,7 +1206,9 @@ sub read_cmd_line
 
 		#t where does this default value come from?  Cannot work correctly?
 
-		my $repository_name
+				    #      hg init http://repo-genesis3.cbi.utsa.edu/hg/g-tube ${HOME}/neurospaces_project/g-tube/source/snapshots/0/
+		    # performs a clone of a repository if the project workspace isn't present.
+my $repository_name
 		    = $package_information->{package}->{version_control}->{repository}
 			|| $directory . '/' . $package_name . '/' . 'mtn';
 
@@ -1243,9 +1245,10 @@ sub read_cmd_line
 
 		    # operations:
 		    #   initialize the repo:
-		    #      hg init http://repo-genesis3.cbi.utsa.edu/hg/g-tube ${HOME}/neurospaces_project/g-tube/source/snapshots/0/
-		    # performs a clone of a repository if the project workspace isn't present.
-
+		    #      hg init ${HOME}/neurospaces__project/g-tube/source/snapshots/0
+		    #
+		    # Initializes an empty repository
+		    #
 		    operation_execute
 			(
 			 $operations,
@@ -1258,7 +1261,7 @@ sub read_cmd_line
 			  package_name => $package_name,
 			 },
 			 [
-			  'hg', 'clone', "http://$repo_server/hg/$package_name", $directory,
+			  'test', '-f', $repository_name, '||', 'hg', 'init', $directory,
 			 ],
 			);
 		}
@@ -1575,28 +1578,49 @@ sub read_cmd_line
 	      {
 		  # MERCURIAL PULL
 
-		  # hg pull http://repo-genesis3.cbi.utsa.edu/hg/g-tube
-		  # hg pull http://$repo_server/hg/$package_name
-
-		  # change the directory
-
-		  if (not chdir $directory)
-		  {
-		      die "$0: *** Error: cannot change to directory $directory";
-		  }
+		  # mercurial server is  http://repo-genesis3.cbi.utsa.edu/hg/g-tube
+		  # command:
+		  #   hg pull http://$repo_server/hg/$package_name -R $ENV{HOME}/neurospaces_project/g-tube/source/snapshots/0 --update
+		  #
+		
+		if(not -d $repository_name)
+		{
 
 		  operation_execute
-		      (
-		       $operations,
-		       {
-			description => $description,
-			keywords => 0,
-			package_name => $package_name,
-		       },
-		       [
-			'hg', 'pull',
-		       ],
-		      );
+		    (
+		     $operations,
+		     {
+		      description => "$description: (initializing the repository)",
+		      keywords => 0,
+		      package_name => $package_name,
+		     },
+		     [
+		      'hg', 'init', $directory,
+		     ],
+		    );
+		}
+
+
+		if (not -d $repository_name)
+		{
+		  die "$0: *** Error: cannot pull repository, $repository_name doesn't exist";
+		}
+
+		my $mercurial_server = "http://" . $repo_server . "/hg/" . $package_name;
+
+		operation_execute
+		  (
+		   $operations,
+		   {
+		    description => $description,
+		    keywords => 0,
+		    package_name => $package_name,
+		   },
+		   [
+		    'hg', 'pull', $mercurial_server, '-R', $directory, '--update',
+		   ],
+		  );
+
 	      }
 	    },
 	   },
@@ -1705,7 +1729,7 @@ sub read_cmd_line
 		    );
 
 		# MERCURIAL 
-		# hg push http://repo-genesis3.cbi.utsa.edu/hg/gui
+		# hg push http://repo-genesis3.cbi.utsa.edu/hg/g-tube
 
 	    },
 	   },
@@ -1958,7 +1982,7 @@ sub read_cmd_line
 		    #t
 		    #t automated hg commit (with -C option for checkin comment?)
 		    #t
-		    #t then contineu with test -d .hg
+		    #t then continue with test -d .hg
 
 		    # change the directory
 
@@ -3696,7 +3720,84 @@ sub read_cmd_line
 	   },
 	   {
 	    condition => $option_repo_revert,
-	    operation => [ 'mtn', 'revert', '.', ],
+	    description => 'reverting all repositories',
+	    operation => 
+	    sub
+	    {
+
+		my $package_information = shift;
+
+		# get specific arguments
+
+		my $description = $package_information->{description};
+
+		my $directory = $package_information->{directory};
+
+		my $operations = $package_information->{operations};
+
+		my $package_name = $package_information->{package_name};
+
+		#t where does this default value come from?  Cannot work correctly?
+
+		my $repository_name
+		    = $package_information->{package}->{version_control}->{repository}
+			|| $directory . '/' . $package_name . '/' . 'mtn';
+
+
+
+		if ($repository_name =~ m/^.*\.mtn$/)
+		{
+
+
+		  if (not -f $repository_name)
+		  {
+		    die "$0: *** Error: cannot revert repository, $repository_name doesn't exist";
+		  }
+
+		  operation_execute
+		    (
+		     $operations,
+		     {
+		      description => $description,
+		      keywords => 0,
+		      package_name => $package_name,
+		     },
+		     [
+		      'mtn', 'revert', '.',
+		     ],
+		    );
+
+
+
+		}
+		else
+		{
+
+
+		  if (not -d $repository_name)
+		  {
+		    die "$0: *** Error: cannot revert mercurial repository, $repository_name doesn't exist";
+		  }
+
+
+		  operation_execute
+		    (
+		     $operations,
+		     {
+		      description => $description,
+		      keywords => 0,
+		      package_name => $package_name,
+		     },
+		     [
+		      'hg', 'revert', '--all',
+		     ],
+		    );
+
+
+		}
+
+	    }
+
 	   },
 	   {
 	    condition => $option_repo_sync,
@@ -3796,66 +3897,51 @@ sub read_cmd_line
 		  # MERCURIAL sync
 
 		  # operations:
-		  #   initialize the repo: 
-		  #      hg clone http://repo-genesis3.cbi.utsa.edu/hg/g-tube ${HOME}/neurospaces_project/g-tube/source/snapshots/0/
-		  #   cd ${HOME}/neurospaces_project/g-tube/source/snapshots/0
-		  #   hg pull
-		  #   (hg merge)? since you can't push if you have multiple heads.
-		  #   hg push
+		  #      hg pull http://repo-genesis3.cbi.utsa.edu/hg/g-tube -R $ENV{HOME}/neurospaces_project/g-tube/source/snapshots/0/ --update
+		  #   hg push -R $ENV{HOME}/neurospaces_project/g-tube/source/snapshots/0/
 
 		  # performs a clone of a repository if the project workspace isn't present.
-# 		  my $mercurial_server = $repo_server . '/' . $package_name;
-
-# 		  operation_execute
-# 		    (
-# 		     $operations,
-# 		     {
-# 		      description => $description,
-
-# 		      #t always zero here, but I guess this simply depends on working in client mode ?
-
-# 		      keywords => 0,
-# 		      package_name => $package_name,
-# 		     },
-# 		     [
-# 		      'test', '-f', $repository_name, '||', 'hg', 'clone', $mercurial_server, $directory,
-# 		     ],
-# 		    );
+ 		  my $mercurial_server = "http://" . $repo_server . "/hg/" . $package_name;
+	       
+		  if (not -d $repository_name)
+		  {
+		    die "$0: *** Error: cannot sync mercurial repository, $repository_name doesn't exist";
+		  }
 
 
-		  # first perform a pull -u to pull and update.
-# 		  operation_execute
-# 		    (
-# 		     $operations,
-# 		     {
-# 		      description => $description,
+		  operation_execute
+		    (
+		     $operations,
+		     {
+		      description => $description,
+		      keywords => 0,
+		      package_name => $package_name,
+		     },
+		     [
+		      'test', '-f', $repository_name, '||', 'hg', 'pull', $mercurial_server, '-R', $directory, '--update'
+		     ],
+		    );
 
-# 		      keywords => 0,
-# 		      package_name => $package_name,
-# 		     },
-# 		     [
-# 		      'hg', 'pull', '-u', $mercurial_server,
-# 		     ],
-# 		    );
+
 
 
 		  # then perform a push, a sync must be done in two operations.
-		  # note: this push operation should always fail since the ssh key
-		  # setup hasn't been properly installed on repo-genesis3. The final implementation
-		  # should use something like ssh://repo-genesis3.cbi.utsa.edu for the $mercurial_server call.
-# 		  operation_execute
-# 		    (
-# 		     $operations,
-# 		     {
-# 		      description => $description,
+		  # note: repo-genesis3 uses ssh authentication.
+		  # This should work if the user has properly set up 
+		  # mercurial and their ssh key.
+		  operation_execute
+		    (
+		     $operations,
+		     {
+		      description => $description,
 
-# 		      keywords => 0,
-# 		      package_name => $package_name,
-# 		     },
-# 		     [
-# 		      'hg', 'push', $mercurial_server,
-# 		     ],
-# 		    );
+		      keywords => 0,
+		      package_name => $package_name,
+		     },
+		     [
+		      'hg', 'push', '-R', $directory,
+		     ],
+		    );
 
 
 		}
