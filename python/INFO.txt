@@ -5,6 +5,7 @@ publications is also genesis
 gtube is genesis
 heccer is neurosapces
 
+Very handy Python C API guide: http://zid-luxinst.uibk.ac.at/python/api.pdf
 
 Some information on creating python eggs:
 
