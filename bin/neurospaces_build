@@ -376,27 +376,6 @@ my $all_packages
       };
 
 
-my $version_control_servers
-    = [
-       {
-	name => 'default',
-	address => 'repo-genesis3.cbi.utsa.edu',
-       },
-       {
-	name => 'default2',
-	address => 'repo.cbi.utsa.edu',
-       },
-       {
-	name => 'backup_server',
-	address => '84.193.227.151',
-       },
-       {
-	name => 'mercurial_server',
-	address => 'http://repo-genesis3.cbi.utsa.edu/hg/',
-       },
-      ];
-
-
 my $build_report
     = {
        description => {
@@ -1239,7 +1218,7 @@ my $repository_name
 		}
 		else
 		{
-		    my $repo_server = version_control_translate_server('default');
+		    my $repo_server = version_control_translate_server($package_information, 'default');
 
 		    # MERCURIAL init
 
@@ -1360,7 +1339,7 @@ my $repository_name
 
 # 		# translate well krnown names to a routable address
 
-# 		my $repo_server = version_control_translate_server($option_repo_serve);
+# 		my $repo_server = version_control_translate_server($package_information, $option_repo_serve);
 
 		# initialize the repository if necessary
 
@@ -1490,7 +1469,7 @@ my $repository_name
 		    = $package_information->{package}->{version_control}->{repository}
 			|| $directory . '/' . $package_name . '/' . 'mtn';
 
-		my $repo_server = version_control_translate_server($option_repo_pull);
+		my $repo_server = version_control_translate_server($package_information, $option_repo_pull);
 
 		#
 		# Check to see if the repository name ends with .mtn, if not we assume it ends
@@ -1706,7 +1685,7 @@ my $repository_name
 
 		# translate well known names to a routable address
 
-		my $repo_server = version_control_translate_server($option_repo_push);
+		my $repo_server = version_control_translate_server($package_information, $option_repo_push);
 
 		# push the repository
 
@@ -1799,7 +1778,7 @@ my $repository_name
 
 		    # translate well known names to a routable address
 
-		    my $repo_server = version_control_translate_server($option_repo_clone);
+		    my $repo_server = version_control_translate_server($package_information, $option_repo_clone);
 
 		    # clone the source code in the remote repository
 
@@ -3827,7 +3806,7 @@ my $repository_name
 
 		# translate well known names to a routable address
 
-		my $repo_server = version_control_translate_server($option_repo_sync);
+		my $repo_server = version_control_translate_server($package_information, $option_repo_sync);
 
 		#
 		# Check to see if the repository name ends with .mtn, if not we assume it ends
@@ -4316,9 +4295,14 @@ options related to behavior of external applications:
 		       = $package_information->{version_control}->{repository}
 			   || $package_information->{directory} . '/' . 'mtn';
 
+		   my $repository_server
+		       = $package_information->{version_control}->{server}
+			   || version_control_translate_server($package_information, 'default');
+
 		   {
 		       package => $_,
 		       repository_name => $repository_name,
+		       repository_server => $repository_server,
 		   };
 	       }
 	       sort
@@ -4596,13 +4580,45 @@ sub monotone_version
 
 sub version_control_translate_server
 {
+    my $package_information = shift;
+
     my $server_name = shift;
+
+    my $package_version_control_servers
+	= [
+	   {
+	    name => 'default',
+	    address => $package_information->{package}->{version_control}->{server} || 'repo-genesis3.cbi.utsa.edu',
+	   },
+	   {
+	    name => 'default2',
+	    address => $package_information->{package}->{version_control}->{backup_server} || 'repo.cbi.utsa.edu',
+	   },
+	  ];
+
+    my $global_version_control_servers
+	= [
+	   {
+	    name => 'backup_server',
+	    address => '84.193.227.151',
+	   },
+	   {
+	    name => 'mercurial_server',
+	    address => 'http://repo-genesis3.cbi.utsa.edu/hg/',
+	   },
+	  ];
+
+    my $version_control_servers
+	= [
+	   @$package_version_control_servers,
+	   @$global_version_control_servers,
+	  ];
 
     # by default, the result is the given name
 
     my $result = $server_name;
 
-    # loop over all known servers
+    # loop over all known global servers
 
     foreach my $version_control_server (@$version_control_servers)
     {
