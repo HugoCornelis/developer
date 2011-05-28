@@ -4071,6 +4071,7 @@ options related to operation execution profile:
     --directories-create     create package directory structure.
     --disable                explicitly disable this regex of packages in the configuration.
     --dist                   build distribution tarballs.
+    --dist-dir               distribution directories to copy the tarballs to?
     --distcheck              check created tarballs.
     --distclean              distclean before compiling.
     --distkeywords           do keyword expansion (be careful with this one).

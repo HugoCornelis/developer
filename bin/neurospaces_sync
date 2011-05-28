@@ -14,7 +14,7 @@ use YAML;
 my $option_developer = 1;
 my $option_enable;
 my $option_regex_selector;
-my $option_repo_sync = 'repo-genesis3.cbi.utsa.edu';
+my $option_repo_sync = 'default';
 my $option_verbose;
 
 {

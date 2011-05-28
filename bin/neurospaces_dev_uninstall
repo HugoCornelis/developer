@@ -17,7 +17,6 @@ my $option_developer = 1;
 my $option_enable;
 my $option_mac_universal;
 my $option_regex_selector;
-my $option_repo_pull = 'repo-genesis3.cbi.utsa.edu';
 my $option_verbose;
 
 {
@@ -29,7 +28,6 @@ my $option_verbose;
 	     "developer!" => \$option_developer,
 	     "enable=s" => \$option_enable,
 	     "regex-selector=s" => \$option_regex_selector,
-	     "repo-pull=s" => \$option_repo_pull,
 	     "universal!" => \$option_mac_universal,
 	     "v|verbose+" => \$option_verbose,
 	    );
