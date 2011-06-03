@@ -2306,13 +2306,21 @@ my $repository_name
 
 	   # everything that is compilation related needs a configure script, so create it.
 
+
+	   {
+	    condition => $option_configure || $option_compile || $option_check || $option_install,
+#
+# If a change is made to the automake files (Makefile.am and confgiure.ac) that changes
+# file paths then autogen.sh must be rerun. A previously existing configure file may exist
+# but the test command prevents a new one from being generated. An error that can stop
+# a build can occur when autoheader is not rerun.
+#
+#	    operation => [ 'test', '-f', './configure', '||', './autogen.sh', ],
+	    operation => [ './autogen.sh', ],
+	   },
 	   {
 	    condition => $option_mac_universal,
 	    operation => [ './configure', '--with-universal', '--disable-dependency-tracking',],
-	   },
-	   {
-	    condition => $option_configure || $option_compile || $option_check || $option_install,
-	    operation => [ 'test', '-f', './configure', '||', './autogen.sh', ],
 	   },
 	   {
 	    condition => $option_configure && $option_mac_universal == 0,
@@ -2322,7 +2330,7 @@ my $repository_name
 	   # everything that is compilation related needs makefiles, so create them.
 
 	   {
-	    condition => $option_compile || $option_check || $option_install,
+	    condition => $option_mac_universal || $option_compile || $option_check || $option_install,
 	    operation => [ 'test', '-f', './Makefile', '||', './configure', ],
 	   },
 	   {
