@@ -1,0 +1,124 @@
+#!/usr/bin/perl -w
+#!/usr/bin/perl -d:ptkdb -w
+#
+
+
+use strict;
+
+
+use Getopt::Long;
+
+use YAML;
+
+
+my $option_package_names = [];
+my $option_verbose;
+
+
+$SIG{'__DIE__'}
+    = sub
+      {
+	  use Carp;
+
+	  print STDERR Carp::longmess(@_);
+      };
+
+
+$SIG{'INT'}
+    = sub
+      {
+	  use Carp;
+
+	  print STDERR Carp::longmess(@_);
+      };
+
+
+sub main
+{
+    read_cmd_line();
+
+    foreach my $package_name (@$option_package_names)
+    {
+	print "$0: creating package $package_name\n";
+
+	system "mkdir -p '$ENV{HOME}/neurospaces_project/$package_name/source/snapshots/0'";
+
+	system "mkdir -p '$ENV{HOME}/neurospaces_project/$package_name/source/snapshots/0/perl'";
+
+	system "mkdir -p '$ENV{HOME}/neurospaces_project/$package_name/source/snapshots/0/python'";
+
+	system "mkdir -p '$ENV{HOME}/neurospaces_project/$package_name/source/snapshots/0/install/rpm'";
+
+	system "mkdir -p '$ENV{HOME}/neurospaces_project/$package_name/source/snapshots/0/tests'";
+
+	system "mkdir -p '$ENV{HOME}/neurospaces_project/$package_name/source/snapshots/0/docs'";
+
+	system "mkdir -p '$ENV{HOME}/neurospaces_project/$package_name/source/snapshots/0/bin'";
+
+	system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/autogen.sh' '$ENV{HOME}/neurospaces_project/$package_name/source/snapshots/0/'";
+
+	system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/tests/tests_2_html' '$ENV{HOME}/neurospaces_project/$package_name/source/snapshots/0/tests'";
+
+	system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/tests/introduction.template' '$ENV{HOME}/neurospaces_project/$package_name/source/snapshots/0/tests/introduction.html'";
+
+	system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/install/rpm/developer.spec' '$ENV{HOME}/neurospaces_project/$package_name/source/snapshots/0/install/rpm/$package_name.spec'";
+
+	system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/TODO.template' '$ENV{HOME}/neurospaces_project/$package_name/source/snapshots/0/TODO.txt'";
+
+	system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/COPYING' '$ENV{HOME}/neurospaces_project/$package_name/source/snapshots/0/'";
+
+	system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/license.txt' '$ENV{HOME}/neurospaces_project/$package_name/source/snapshots/0/'";
+
+	system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/release-expand.template' '$ENV{HOME}/neurospaces_project/$package_name/source/snapshots/0/release-expand.config'";
+
+	system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/tests.template' '$ENV{HOME}/neurospaces_project/$package_name/source/snapshots/0/tests.config'";
+
+	system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/configure.template' '$ENV{HOME}/neurospaces_project/$package_name/source/snapshots/0/configure.ac'";
+
+	system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/Makefile.template' '$ENV{HOME}/neurospaces_project/$package_name/source/snapshots/0/Makefile.am'";
+
+	system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/bin/neurospaces_template' '$ENV{HOME}/neurospaces_project/$package_name/source/snapshots/0/bin/$package_name'";
+
+    }
+
+}
+
+
+sub read_cmd_line
+{
+    my $option_help;
+
+    my $result
+	= GetOptions
+	    (
+	     "help" => \$option_help,
+	     "package-name=s" => $option_package_names,
+	     "v|verbose+" => \$option_verbose,
+	    );
+
+    if (!$result)
+    {
+	die "$0: *** Error: Error in option processing";
+    }
+
+    if ($option_help)
+    {
+	print
+	    "
+$0: test definition executor
+
+options:
+    --help               print usage information.
+    --package-name       set package name to create, may be used one or more times.
+    --verbose            set verbosity level.
+";
+
+	exit 1;
+    }
+
+}
+
+
+main();
+
+
