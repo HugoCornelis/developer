@@ -58,6 +58,10 @@ system "neurospaces_dev_uninstall $clean_options $configure_options $mac_options
 
 system "neurospaces_build --repo-pull $option_repo_pull --no-installed-versions --no-configure --no-install --no-compile $verbose_options $developer_options $regex_options $enable_options";
 
+# create directories for new packages
+
+system "neurospaces_build --no-configure --no-compile --no-install --no-installed-versions $verbose_options $developer_options $regex_options $enable_options --directories-create";
+
 # checkout from repos to workspaces
 
 system "neurospaces_build --no-configure --no-install --no-compile --repo-co --no-installed-versions $verbose_options $developer_options $regex_options $enable_options";
