@@ -13,7 +13,6 @@ my $config
 		 './python/neurospaces/__cbi__.py',
 		 './install/rpm/__package_name__.spec',
 		 './tests.config',
-		 './tests/tests.config',
 		],
 
        # fill in the keywords and there expansion.  For instance,

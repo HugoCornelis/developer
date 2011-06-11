@@ -85,8 +85,6 @@ sub main
 
 	system "perl -e 's/__package_name__/$package_name/sg' -pi '$ENV{HOME}/neurospaces_project/$package_name/source/snapshots/0/release-expand.config'";
 
-	system "cd '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/' ; release-expand";
-
 	# initialize the repository
 
 	system "neurospaces_init --regex '$package_name'";
@@ -94,6 +92,10 @@ sub main
 	# initialize the interface with the repository
 
 	system "neurospaces_setup --regex '$package_name'";
+
+	# initialize keywords based on their current expansion
+
+	system "cd '$ENV{HOME}/neurospaces_project/$package_name/source/snapshots/0/' ; release-expand";
 
     }
 
