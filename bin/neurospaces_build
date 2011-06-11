@@ -49,6 +49,7 @@ my $option_repo_pull = 0;
 my $option_repo_push = 0;
 my $option_repo_revert = 0;
 my $option_repo_serve = 0;
+my $option_repo_setup = 0;
 my $option_repo_status = 0;
 my $option_repo_sync = 0;
 my $option_tag = 0;
@@ -962,6 +963,7 @@ sub read_cmd_line
 		     "repo-push=s" => \$option_repo_push,
 		     "repo-revert!" => \$option_repo_revert,
 		     "repo-serve!" => \$option_repo_serve,
+		     "repo-setup!" => \$option_repo_setup,
 		     "repo-status!" => \$option_repo_status,
 		     "repo-sync=s" => \$option_repo_sync,
 		     "tag=s" => \$option_tag,
@@ -1067,6 +1069,7 @@ sub read_cmd_line
 	   "repo-push=s" => $option_repo_push,
 	   "repo-revert!" => $option_repo_revert,
 	   "repo-serve!" => $option_repo_serve,
+	   "repo-setup!" => $option_repo_setup,
 	   "repo-status!" => $option_repo_status,
 	   "repo-sync=s" => $option_repo_sync,
 	   "tag=s" => $option_tag,
@@ -1185,9 +1188,10 @@ sub read_cmd_line
 
 		#t where does this default value come from?  Cannot work correctly?
 
-				    #      hg init http://repo-genesis3.cbi.utsa.edu/hg/g-tube ${HOME}/neurospaces_project/g-tube/source/snapshots/0/
-		    # performs a clone of a repository if the project workspace isn't present.
-my $repository_name
+		#      hg init http://repo-genesis3.cbi.utsa.edu/hg/g-tube ${HOME}/neurospaces_project/g-tube/source/snapshots/0/
+		# performs a clone of a repository if the project workspace isn't present.
+
+		my $repository_name
 		    = $package_information->{package}->{version_control}->{repository}
 			|| $directory . '/' . $package_name . '/' . 'mtn';
 
@@ -1198,27 +1202,27 @@ my $repository_name
 
 		if ($repository_name =~ m/^.*\.mtn$/)
 		{
-		  # initialize the repository if necessary
+		    # initialize the repository if necessary
 
-		  operation_execute
-		    (
-		     $operations,
-		     {
-		      description => $description,
+		    operation_execute
+			(
+			 $operations,
+			 {
+			  description => $description,
 
-		      #t always zero here, but I guess this simply depends on working in client mode ?
+			  #t always zero here, but I guess this simply depends on working in client mode ?
 
-		      keywords => 0,
-		      package_name => $package_name,
-		     },
-		     [
-		      'test', '-f', $repository_name, '||', 'mtn', '--db', $repository_name, 'db', 'init',
-		     ],
-		    );
+			  keywords => 0,
+			  package_name => $package_name,
+			 },
+			 [
+			  'test', '-f', $repository_name, '||', 'mtn', '--db', $repository_name, 'db', 'init',
+			 ],
+			);
 		}
 		else
 		{
-		    my $repo_server = version_control_translate_server($package_information, 'default');
+# 		    my $repo_server = version_control_translate_server($package_information, 'default');
 
 		    # MERCURIAL init
 
@@ -1710,6 +1714,85 @@ my $repository_name
 		# MERCURIAL 
 		# hg push http://repo-genesis3.cbi.utsa.edu/hg/g-tube
 
+	    },
+	   },
+	   {
+	    condition => $option_repo_setup,
+	    description => 'creating the interface between the workspace and the source code repositories',
+	    operation =>
+	    sub
+	    {
+		my $package_information = shift;
+
+		# get specific arguments
+
+		my $description = $package_information->{description};
+
+		my $directory = $package_information->{directory};
+
+		my $operations = $package_information->{operations};
+
+		my $package_name = $package_information->{package_name};
+
+		#t where does this default value come from?  Cannot work correctly?
+
+		my $repository_name
+		    = $package_information->{package}->{version_control}->{repository}
+			|| $directory . '/' . $package_name . '/' . 'mtn';
+
+		my $port_number = $package_information->{package}->{version_control}->{port_number};
+
+		# if not enough information for serving
+
+		if (not -f $repository_name and not -d $repository_name)
+		{
+		    die "$0: *** Error: cannot find repository, repository_name not set";
+		}
+
+# 		if (not $port_number and $repository_name =~ m/^.*\.mtn$/)
+# 		{
+# 		    die "$0: *** Error: cannot serve repository, port_number not set";
+# 		}
+
+		# change the directory
+
+		if (not chdir $directory)
+		{
+		    die "$0: *** Error: cannot change to directory $directory";
+		}
+
+# 		# translate well krnown names to a routable address
+
+# 		my $repo_server = version_control_translate_server($package_information, $option_repo_serve);
+
+		# initialize the interface if necessary
+
+		if ($repository_name =~ m/^.*\.mtn$/)
+		{
+		    #t MONOTONE
+
+		    operation_execute
+			(
+			 $operations,
+			 {
+			  description => $description,
+
+			  #t always zero here, but I guess this simply depends on working in client mode ?
+
+			  keywords => 0,
+			  package_name => $package_name,
+			 },
+			 [
+			  'test', '-d', '_MTN', '||', 'mtn', '--db', $repository_name, '--branch', '0', 'setup',
+			 ],
+			);
+		}
+		else
+		{
+		    # MERCURIAL WORKSPACE INITIALIZATION
+
+		    #t Mando?
+		}
 	    },
 	   },
 	   {
@@ -3889,7 +3972,7 @@ my $repository_name
 
 		  # performs a clone of a repository if the project workspace isn't present.
  		  my $mercurial_server = "http://" . $repo_server . "/hg/" . $package_name;
-	       
+
 		  if (not -d $repository_name)
 		  {
 		    die "$0: *** Error: cannot sync mercurial repository, $repository_name doesn't exist";
@@ -4091,10 +4174,12 @@ options related to operation execution profile:
     --repo-push              push the repositories to this server (e.g. repo-genesis3.cbi.utsa.edu).
     --repo-serve             start the version control program in server mode to give others access to your code.
                              this will automatically fork processes as needed and return control to the terminal.
+    --repo-setup             create a workspace interface to the version control repository if it does not exist yet.
     --repo-status            compare workspace with source code repository branch head.
     --repo-sync              sync the repositories with this server (e.g. repo-genesis3.cbi.utsa.edu).
     --tag                    set this tag on all packages.
     --uninstall              uninstall packages, cannot be combined with installation options.
+    --universal              sets flags for building universal binaries on Mac OS X.
     --upload-server          enable uploading packages to this server (e.g. https://frs.sourceforge.net/uploads).
     --version                give version information.
     --version-tag            The software version for a source code distribution release.
@@ -4207,6 +4292,7 @@ options related to operation execution profile:
     --repo-push              push the repositories to this server (e.g. repo-genesis3.cbi.utsa.edu).
     --repo-serve             start the version control program in server mode to give others access to your code.
                              this will automatically fork processes as needed and return control to the terminal.
+    --repo-setup             create a workspace interface to the version control repository if it does not exist yet.
     --repo-status            compare workspace with source code repository branch head.
     --repo-sync              sync the repositories with this server (e.g. repo-genesis3.cbi.utsa.edu).
     --tag                    set this tag on all packages.

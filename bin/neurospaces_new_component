@@ -39,13 +39,15 @@ sub main
 
     foreach my $package_name (@$option_package_names)
     {
-	print "$0: creating package $package_name\n";
+	print "$0: creating neurospaces package $package_name\n";
 
 	system "mkdir -p '$ENV{HOME}/neurospaces_project/$package_name/source/snapshots/0'";
 
 	system "mkdir -p '$ENV{HOME}/neurospaces_project/$package_name/source/snapshots/0/perl'";
 
 	system "mkdir -p '$ENV{HOME}/neurospaces_project/$package_name/source/snapshots/0/python'";
+
+	system "mkdir -p '$ENV{HOME}/neurospaces_project/$package_name/source/snapshots/0/python/neurospaces'";
 
 	system "mkdir -p '$ENV{HOME}/neurospaces_project/$package_name/source/snapshots/0/install/rpm'";
 
@@ -56,6 +58,8 @@ sub main
 	system "mkdir -p '$ENV{HOME}/neurospaces_project/$package_name/source/snapshots/0/bin'";
 
 	system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/autogen.sh' '$ENV{HOME}/neurospaces_project/$package_name/source/snapshots/0/'";
+
+	system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/python/neurospaces/__cbi__.py' '$ENV{HOME}/neurospaces_project/$package_name/source/snapshots/0/python/neurospaces'";
 
 	system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/tests/tests_2_html' '$ENV{HOME}/neurospaces_project/$package_name/source/snapshots/0/tests'";
 
@@ -69,8 +73,6 @@ sub main
 
 	system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/license.txt' '$ENV{HOME}/neurospaces_project/$package_name/source/snapshots/0/'";
 
-	system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/release-expand.template' '$ENV{HOME}/neurospaces_project/$package_name/source/snapshots/0/release-expand.config'";
-
 	system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/tests.template' '$ENV{HOME}/neurospaces_project/$package_name/source/snapshots/0/tests.config'";
 
 	system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/configure.template' '$ENV{HOME}/neurospaces_project/$package_name/source/snapshots/0/configure.ac'";
@@ -78,6 +80,20 @@ sub main
 	system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/Makefile.template' '$ENV{HOME}/neurospaces_project/$package_name/source/snapshots/0/Makefile.am'";
 
 	system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/bin/neurospaces_template' '$ENV{HOME}/neurospaces_project/$package_name/source/snapshots/0/bin/$package_name'";
+
+	system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/release-expand.template' '$ENV{HOME}/neurospaces_project/$package_name/source/snapshots/0/release-expand.config'";
+
+	system "perl -e 's/__package_name__/$package_name/sg' -pi '$ENV{HOME}/neurospaces_project/$package_name/source/snapshots/0/release-expand.config'";
+
+	system "cd '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/' ; release-expand";
+
+	# initialize the repository
+
+	system "neurospaces_init --regex '$package_name'";
+
+	# initialize the interface with the repository
+
+	system "neurospaces_setup --regex '$package_name'";
 
     }
 
@@ -96,16 +112,12 @@ sub read_cmd_line
 	     "v|verbose+" => \$option_verbose,
 	    );
 
-    if (!$result)
-    {
-	die "$0: *** Error: Error in option processing";
-    }
-
-    if ($option_help)
+    if ($option_help
+	|| scalar @ARGV)
     {
 	print
 	    "
-$0: test definition executor
+$0: create new neurospaces package source trees.
 
 options:
     --help               print usage information.
@@ -114,6 +126,11 @@ options:
 ";
 
 	exit 1;
+    }
+
+    if (!$result)
+    {
+	die "$0: *** Error: Error in option processing";
     }
 
 }

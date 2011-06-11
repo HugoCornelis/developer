@@ -46,6 +46,7 @@ dist_bin_SCRIPTS = \
 	bin/neurospaces_push \
 	bin/neurospaces_revert \
 	bin/neurospaces_serve \
+	bin/neurospaces_setup \
 	bin/neurospaces_status \
 	bin/neurospaces_sync \
 	bin/neurospaces_tools_propagate \

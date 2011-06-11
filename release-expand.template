@@ -8,11 +8,10 @@ my $config
        # defined in the next section are expanded.
 
        files => [
-		 './bin/neurospaces_build',
-		 './bin/neurospaces_versions',
+		 './bin/__package_name__',
 		 './configure.ac',
 		 './python/neurospaces/__cbi__.py',
-		 './install/rpm/developer.spec',
+		 './install/rpm/__package_name__.spec',
 		 './tests.config',
 		 './tests/tests.config',
 		],
