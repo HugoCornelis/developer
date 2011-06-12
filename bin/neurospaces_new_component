@@ -87,11 +87,11 @@ sub main
 
 	# initialize the repository
 
-	system "neurospaces_init --regex '$package_name'";
+	system "neurospaces_init --regex '(^$package_name\$)'";
 
 	# initialize the interface with the repository
 
-	system "neurospaces_setup --regex '$package_name'";
+	system "neurospaces_setup --regex '(^$package_name\$)'";
 
 	# initialize keywords based on their current expansion
 
