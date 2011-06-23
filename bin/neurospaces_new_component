@@ -85,6 +85,10 @@ sub main
 
 	system "perl -e 's/__package_name__/$package_name/sg' -pi '$ENV{HOME}/neurospaces_project/$package_name/source/snapshots/0/release-expand.config'";
 
+	system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/.mtn-ignore.template' '$ENV{HOME}/neurospaces_project/$package_name/source/snapshots/0/.mtn-ignore'";
+
+	system "perl -e 's/__package_name__/$package_name/sg' -pi '$ENV{HOME}/neurospaces_project/$package_name/source/snapshots/0/.mtn-ignore'";
+
 	# initialize the repository
 
 	system "neurospaces_init --regex '(^$package_name\$)'";
