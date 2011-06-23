@@ -8,6 +8,7 @@ my $config
        # defined in the next section are expanded.
 
        files => [
+		 './Makefile.am',
 		 './bin/__package_name__',
 		 './configure.ac',
 		 './python/neurospaces/__cbi__.py',

@@ -20,9 +20,8 @@
 dist_bin_SCRIPTS =
 #	bin/neurospaces_versions
 
-# correct the name 'developer' with the name of your package
-$(PACKAGE)testdir=$(prefix)/neurospaces/$(PACKAGE)
-nobase_dist_$(PACKAGE)test_DATA=@TEST_SPECIFICATION_FILES@
+@PACKAGE@testdir=$(prefix)/neurospaces/$(PACKAGE)
+nobase_dist_@PACKAGE@test_DATA=@TEST_SPECIFICATION_FILES@
 
 RELEASE_MAJOR=`release-extract --major`
 RELEASE_MINOR=`release-extract --minor`
@@ -33,7 +32,6 @@ show-release-labels:
 
 dist-keywords:
 	release-expand $(PACKAGE) $(RELEASE_MAJOR) $(RELEASE_MINOR) $(RELEASE_MICRO) $(RELEASE_MAJOR).$(RELEASE_MINOR) hugo.cornelis@gmail.com --verbose
-#	release-expand developer des 10 0 des-10 hugo.cornelis@gmail.com --verbose
 
 # the tests are copied overhere.
 #

@@ -119,7 +119,8 @@ sub read_cmd_line
 	    );
 
     if ($option_help
-	|| scalar @ARGV)
+	|| scalar @ARGV
+	|| ! scalar @$option_package_names)
     {
 	print
 	    "
