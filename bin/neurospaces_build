@@ -3914,7 +3914,7 @@ sub read_cmd_line
 
 		  if (not -f $repository_name)
 		  {
-		    die "$0: *** Error: cannot sync repository, repository_name not set";
+		    die "$0: *** Error: cannot sync repository, repository not found in the filesystem";
 		  }
 
 		  if (not $port_number and $repository_name =~ m/^.*\.mtn$/)
@@ -4072,6 +4072,9 @@ sub read_cmd_line
 
 	    # if the version control port numbers are the same
 
+	    #! to support version control systems other than monotone,
+	    #! we only compare port numbers if they have been defined.
+
 	    if ($first_package->{version_control}
 		and $first_package->{version_control}->{port_number}
 		and $second_package->{version_control}
@@ -4083,6 +4086,28 @@ sub read_cmd_line
 		    die "$0: *** Error: package $first_package_name and $second_package_name have the same version control port number";
 		}
 	    }
+	}
+
+	# if the directory of the package is not set
+
+	if (not exists $first_package->{directory})
+	{
+	    # set default
+
+	    $first_package->{directory} = $ENV{HOME} . "/neurospaces_project/$first_package_name/source/snapshots/0";
+
+	    $first_package->{directory} =~ s(//)(/)g;
+	}
+
+	# if the version control repository filesystem location is not set
+
+	if (not exists $first_package->{version_control}->{repository})
+	{
+	    # set default
+
+	    $first_package->{version_control}->{repository} = $ENV{HOME} . "/neurospaces_project/MTN/$first_package_name.mtn";
+
+	    $first_package->{version_control}->{repository} =~ s(//)(/)g;
 	}
     }
 
@@ -4393,10 +4418,14 @@ options related to behavior of external applications:
 		       = $package_information->{version_control}->{server}
 			   || version_control_translate_server($package_information, 'default');
 
+		   my $repository_port_number
+		       = $package_information->{version_control}->{port_number};
+
 		   {
 		       package => $_,
 		       repository_name => $repository_name,
-		       repository_server => $repository_server,
+# 		       repository_port_number => $repository_port_number,
+		       repository_server => $repository_server . ":" . $repository_port_number,
 		   };
 	       }
 	       sort
