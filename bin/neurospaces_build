@@ -905,6 +905,7 @@ sub read_cmd_line
     my $option_enable;
     my $option_help = 0;
     my $option_help_all = 0;
+    my $option_help_build_order = 0;
     my $option_help_operations = 0;
     my $option_help_packages = 0;
     my $option_help_repositories;
@@ -938,6 +939,7 @@ sub read_cmd_line
 		     "enable=s" => \$option_enable,
 		     "help!" => \$option_help,
 		     "help-all!" => \$option_help_all,
+		     "help-build-order!" => \$option_help_build_order,
 		     "help-operations!" => \$option_help_operations,
 		     "help-packages!" => \$option_help_packages,
 		     "help-repositories!" => \$option_help_repositories,
@@ -1044,6 +1046,7 @@ sub read_cmd_line
 	   "enable=s" => $option_enable,
 	   "help!" => $option_help,
 	   "help-all!" => $option_help_all,
+	   "help-build-order!" => $option_help_build_order,
 	   "help-operations!" => $option_help_operations,
 	   "help-packages!" => $option_help_packages,
 	   "help-repositories!" => $option_help_repositories,
@@ -4175,6 +4178,7 @@ options related to operation execution profile:
     --enable                 explicitly enable these regex of packages in the configuration.
     --help                   print usage information.
     --help-all               print usage, all packages and all operations.
+    --help-build-order       print information on software package build order.
     --help-operations        print known operations.
     --help-packages          print known packages, in order of build.
     --help-repositories      print known source code repositories.
@@ -4285,6 +4289,7 @@ options related to operation execution profile:
     --directories-create     create package directory structure.
     --disable                explicitly disable this regex of packages in the configuration.
     --dist                   build distribution tarballs.
+    --dist-dir               distribution directories to copy the tarballs to?
     --distcheck              check created tarballs.
     --distclean              distclean before compiling.
     --distkeywords           do keyword expansion (be careful with this one).
@@ -4293,6 +4298,7 @@ options related to operation execution profile:
     --enable                 explicitly enable these regex of packages in the configuration.
     --help                   print usage information.
     --help-all               print usage, all packages and all operations.
+    --help-build-order       print information on software package build order.
     --help-operations        print known operations.
     --help-packages          print known packages, in order of build.
     --help-repositories      print known source code repositories.
@@ -4372,6 +4378,46 @@ options related to behavior of external applications:
 		   @$all_operations,
 		  )
 		    . "\n";
+
+	exit 1;
+    }
+
+    if ($option_help_build_order)
+    {
+	my $build_order
+	    = [
+	       map
+	       {
+		   my $result = $all_packages->{$_};
+
+		   $result->{name} = $_;
+
+		   delete $result->{directory};
+		   delete $result->{operations};
+		   delete $result->{disabled};
+		   delete $result->{version_control};
+		   delete $result->{version_script};
+
+		   $result;
+	       }
+	       sort
+	       {
+		   $all_packages->{$a}->{order} <=> $all_packages->{$b}->{order}
+	       }
+	       grep
+	       {
+		   not $all_packages->{$_}->{disabled}
+	       }
+	       grep
+	       {
+		   $_ =~ /$option_regex_selector/i
+	       }
+	       keys %$all_packages
+	      ];
+
+	use YAML;
+
+	print Dump( { build_order => $build_order, }, );
 
 	exit 1;
     }
