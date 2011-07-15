@@ -1324,7 +1324,7 @@ sub read_cmd_line
 			  package_name => $package_name,
 			 },
 			 [
-			  'test', '-f', $repository_name, '||', 'mtn', '--db', $repository_name, 'ls', 'keys',
+			  'test', '-f', $repository_name, '&&', 'mtn', '--db', $repository_name, 'ls', 'keys',
 			 ],
 			);
 		}
