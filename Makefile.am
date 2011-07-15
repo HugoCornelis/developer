@@ -44,6 +44,8 @@ dist_bin_SCRIPTS = \
 	bin/neurospaces_pkgtar \
 	bin/neurospaces_pull \
 	bin/neurospaces_push \
+	bin/neurospaces_repo_keys \
+	bin/neurospaces_repositories \
 	bin/neurospaces_revert \
 	bin/neurospaces_serve \
 	bin/neurospaces_setup \

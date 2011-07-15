@@ -44,6 +44,7 @@ my $option_repo_co = 0;
 my $option_repo_history = 0;
 my $option_repo_history_last = 2;
 my $option_repo_init = 0;
+my $option_repo_keys = 0;
 my $option_repo_migrate = 0;
 my $option_repo_pull = 0;
 my $option_repo_push = 0;
@@ -978,6 +979,7 @@ sub read_cmd_line
 		     "repo-clone=s" => \$option_repo_clone,
 		     "repo-co!" => \$option_repo_co,
 		     "repo-init!" => \$option_repo_init,
+		     "repo-keys!" => \$option_repo_keys,
 		     "repo-migrate!" => \$option_repo_migrate,
 		     "repo-history!" => \$option_repo_history,
 		     "repo-history-last=i" => \$option_repo_history_last,
@@ -1085,6 +1087,7 @@ sub read_cmd_line
 	   "repo-clone=s" => $option_repo_clone,
 	   "repo-co!" => $option_repo_co,
 	   "repo-init!" => $option_repo_init,
+	   "repo-keys!" => $option_repo_keys,
 	   "repo-migrate!" => $option_repo_migrate,
 	   "repo-history!" => $option_repo_history,
 	   "repo-history-last=i" => $option_repo_history_last,
@@ -1273,7 +1276,88 @@ sub read_cmd_line
 		}
 	    },
 	   },
+	   {
+	    condition => $option_repo_keys,
+	    description => 'querying repository for public keys',
+	    operation =>
+	    sub
+	    {
+		my $package_information = shift;
 
+		# get specific arguments
+
+		my $description = $package_information->{description};
+
+		my $directory = $package_information->{directory};
+
+		my $operations = $package_information->{operations};
+
+		my $package_name = $package_information->{package_name};
+
+		#t where does this default value come from?  Cannot work correctly?
+
+		#      hg init http://repo-genesis3.cbi.utsa.edu/hg/g-tube ${HOME}/neurospaces_project/g-tube/source/snapshots/0/
+		# performs a clone of a repository if the project workspace isn't present.
+
+		my $repository_name
+		    = $package_information->{package}->{version_control}->{repository}
+			|| $directory . '/' . $package_name . '/' . 'mtn';
+
+		#
+		# Check to see if the repository name ends with .mtn, if not we assume it ends
+		# in .hg, in which case we don't need the port number since mercurial serves over http.
+		#
+
+		if ($repository_name =~ m/^.*\.mtn$/)
+		{
+		    # initialize the repository if necessary
+
+		    operation_execute
+			(
+			 $operations,
+			 {
+			  description => $description,
+
+			  #t always zero here, but I guess this simply depends on working in client mode ?
+
+			  keywords => 0,
+			  package_name => $package_name,
+			 },
+			 [
+			  'test', '-f', $repository_name, '||', 'mtn', '--db', $repository_name, 'ls', 'keys',
+			 ],
+			);
+		}
+		else
+		{
+# 		    my $repo_server = version_control_translate_server($package_information, 'default');
+
+		    # MERCURIAL init
+
+		    # operations:
+		    #   initialize the repo:
+		    #      hg init ${HOME}/neurospaces__project/g-tube/source/snapshots/0
+		    #
+		    # Initializes an empty repository
+		    #
+# 		    operation_execute
+# 			(
+# 			 $operations,
+# 			 {
+# 			  description => $description,
+
+# 			  #t always zero here, but I guess this simply depends on working in client mode ?
+
+# 			  keywords => 0,
+# 			  package_name => $package_name,
+# 			 },
+# 			 [
+# 			  'test', '-f', $repository_name, '||', 'hg', 'init', $directory,
+# 			 ],
+# 			);
+		}
+	    },
+	   },
 	   {
 	    condition => $option_repo_migrate,
 	    description => 'migrating monotone repositories to latest schema',
@@ -4217,6 +4301,7 @@ options related to operation execution profile:
     --repo-clone             checkout or update the workspace source code from a remote repository.
     --repo-co                checkout or update the workspace source code from a local repository.
     --repo-init              initialize those local repositories that do not exist yet.
+    --repo-keys              show public keys stored by version control systems.
     --repo-history           show locally stored history information of enabled software components.
     --repo-history-last      number of history records to show.
     --repo-pull              pull the repositories from this server (e.g. repo-genesis3.cbi.utsa.edu).
@@ -4337,6 +4422,7 @@ options related to operation execution profile:
     --repo-clone             checkout or update the workspace source code from a remote repository.
     --repo-co                checkout or update the workspace source code from a local repository.
     --repo-init              initialize those local repositories that do not exist yet.
+    --repo-keys              show public keys stored by version control systems.
     --repo-history           show locally stored history information of enabled software components.
     --repo-history-last      number of history records to show.
     --repo-pull              pull the repositories from this server (e.g. repo-genesis3.cbi.utsa.edu).
