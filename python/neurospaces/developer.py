@@ -23,7 +23,7 @@ class PackageManager:
     Performs diagnostic management of installed GENESIS3 packages.
     """
     
-    def __int__(self):
+    def __int__(self, verbose=False):
 
 
         self.installed_packages = []
