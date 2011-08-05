@@ -126,7 +126,7 @@ CLASSIFIERS = [
     'Topic :: Research :: Neuroscience',
 ]
 
-DATA_FILES=find_files('sspy')
+DATA_FILES=find_files('neurospaces')
 
 OPTIONS={
     'sdist': {
@@ -137,7 +137,7 @@ OPTIONS={
 
 PLATFORMS=["Unix", "Lunix", "MacOS X"]
 
-PY_MODULES=['sspy']
+PY_MODULES=['neurospaces', 'genesis3']
 
 
 CMDCLASS = None
@@ -148,7 +148,7 @@ else:
 
 
 #-------------------------------------------------------------------------------
-pdb.set_trace()
+
 setup(
     name=NAME,
     version=VERSION,
@@ -167,7 +167,6 @@ setup(
     classifiers=CLASSIFIERS,
     options=OPTIONS,
     platforms=PLATFORMS,
-    scripts=['sspy.py'],
-    setup_requires=['g3'],
+#    scripts=['sspy.py'],
 )
 
