@@ -15,11 +15,8 @@ __email__ = "rodrigueza14@uthscsa.edu"
 __status__ = "Development"
 __url__ = "http://genesis-sim.org"
 __description__ = """
-This is the root management module for GENESIS. GENESIS is composed of several
-sub packages for reading and storing models, solvers, experimental protocols,
-and GUI interfaces. The root 'g3' package helps to determine which versions of
-packages are installed and performs updates, removal, and installation of needed
-packages to run a simulation. 
+The experiment module houses experimental protocols for use
+in simulations in GENESIS 3. 
 """
 __download_url__ = "http://repo-genesis3.cbi.utsa.edu"
 
@@ -27,11 +24,11 @@ class PackageInfo:
     
     def GetRevisionInfo():
 # $Format: "        return \"${monotone_id}\""$
-        return "609ee575e9b994be615e017461dd894e0e03fd66"
+        return "b827606eacc9c544355df892a8244865898ab937"
 
     def GetName():
 # $Format: "        return \"${package}\""$
-        return "developer"
+        return "experiment"
 
     def GetVersion():
 # $Format: "        return \"${major}.${minor}.${micro}-${label}\""$
@@ -44,3 +41,4 @@ class PackageInfo:
         dependencies = []
         
         return dependencies
+

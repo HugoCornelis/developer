@@ -1,41 +1,4 @@
-#!/usr/bin/env python
-"""
-class for performing uninstallations of genesis 3 components.
-Derived from the uninstall script from wxPython.
-"""
 
-import sys, os, glob
-from fnmatch import fnmatchcase
-import cPickle, urllib
-
-#---------------------------------------------------------------------------
-
-
-RCPTDIR = "/Library/Receipts"
-RSRCDIR = "Contents/Resources"
-
-# Only completly clean out dirs that have one of these as a prefix.
-# We do this because the file list returned from lsbom will include /,
-# /usr, /usr/local, etc.
-MAC_PREFIXES = [ '/Library/Python/2.3/',
-             '/Library/Python/2.4/',
-             '/Library/Python/2.5/',
-             '/Library/Frameworks/Python.framework/Versions/2.3/lib/python2.3/site-packages/',
-             '/Library/Frameworks/Python.framework/Versions/2.4/lib/python2.4/site-packages/',
-             '/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/',
-             '/usr/local/lib/',
-             ]
-
-# The files that match one of the items in this list will only be
-# removed if the last installation of wxPython on the system is being
-# uninstalled.
-COMMON_FILES = [ '/usr/local/bin/*',
-                 'wx.pth',
-                 'wxversion.py',
-                 ]
-
-
-#---------------------------------------------------------------------------
 
 class AccessError(Exception):
     pass
