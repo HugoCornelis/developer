@@ -10,7 +10,7 @@ from test_library import add_developer_path
 
 add_developer_path()
 
-from neurospaces.developer import PackageManager
+from neurospaces.packages import PackageManager
 
 pm = PackageManager(directory='tests/python/test_dir/neurospaces')
 

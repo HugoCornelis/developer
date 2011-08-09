@@ -3,8 +3,9 @@
 class for performing uninstallations of genesis 3 components.
 Derived from the uninstall script from wxPython.
 """
-
+import imp
 import sys, os, glob
+import pdb
 from fnmatch import fnmatchcase
 import cPickle, urllib
 
@@ -34,7 +35,11 @@ COMMON_FILES = [ '/usr/local/bin/*',
                  'wxversion.py',
                  ]
 
+#---------------------------------------------------------------------------
 
+class PackageError(Exception):
+    pass
+    
 #---------------------------------------------------------------------------
 
 
@@ -75,6 +80,9 @@ class PackageManager:
                 
         self.installed_packages = []
 
+        self.FindInstalled()
+
+        pdb.set_trace()
 #---------------------------------------------------------------------------
 
     def GetInstalledPackages(self):
@@ -88,14 +96,44 @@ class PackageManager:
 
         """
         
-        for path, directories, files in os.walk( self._root_directory ):
+        for path, directories, files in os.walk( self.root_directory ):
             
             if os.path.isfile( os.path.join( path, self.identifier )):
                 
                 cbi_identifier = os.path.join(path, self.identifier)
 
-                
+                package_info = self.GetPackageInfo(cbi_identifier)
 
-    
+                recipt = dict(info=package_info,
+                              installed=path)
+
+                self.installed_packages.append(recipt)
+                
+#---------------------------------------------------------------------------
+
+    def GetPackageInfo(self, cbi_identifier):
+
+        package_info = None
+
+        mod_name,file_ext = os.path.splitext(os.path.split(cbi_identifier)[-1])
+
+        py_mod = imp.load_source(mod_name, cbi_identifier)
+
+        if not 'PackageInfo' in dir(py_mod):
+
+            raise PackageError("No 'PackageInfo' class found in the cbi identifier file")
+
+        else:
+
+            try:
+
+                package_info = py_mod.PackageInfo()
+
+            except Exception, e:
+
+                raise
+
+        return package_info
+
 #---------------------------------------------------------------------------
 
