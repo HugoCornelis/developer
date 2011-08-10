@@ -39,7 +39,11 @@ COMMON_FILES = [ '/usr/local/bin/*',
 
 class PackageError(Exception):
     pass
-    
+
+class PermissionError(Exception):
+    pass
+
+
 #---------------------------------------------------------------------------
 
 
@@ -78,11 +82,10 @@ class PackageManager:
 
         self.identifier = identifier
                 
-        self.installed_packages = []
+        self.install_recipts = []
 
         self.FindInstalled()
 
-        pdb.set_trace()
 #---------------------------------------------------------------------------
 
     def GetInstalledPackages(self):
@@ -105,7 +108,7 @@ class PackageManager:
                 package_info = self.GetPackageInfo(cbi_identifier)
 
                 recipt = dict(info=package_info,
-                              installed=path)
+                              installed=os.path.abspath(path))
 
                 self.installed_packages.append(recipt)
                 
@@ -134,6 +137,19 @@ class PackageManager:
                 raise
 
         return package_info
+
+#---------------------------------------------------------------------------
+
+    def HaveAccess(self, install_dir):
+
+        return os.path.exists(install_dir) and os.access(install_dir, os.W_OK) 
+
+#---------------------------------------------------------------------------
+
+    def Uninstall(self, package):
+
+        
+        pass
 
 #---------------------------------------------------------------------------
 

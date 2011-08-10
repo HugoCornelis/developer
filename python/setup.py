@@ -4,7 +4,11 @@ import sys
 from distutils.core import setup
 from distutils.command.install_data import install_data
 #from setuptools import setup, find_packages
+
 import neurospaces.__cbi__ as cbi
+from neurospaces.__cbi__ import PackageInfo
+
+_package_info = PackageInfo()
 
 
 #-------------------------------------------------------------------------------
@@ -98,8 +102,8 @@ def find_files(root_directory, file_types=_file_types):
 
 
 #-------------------------------------------------------------------------------
-NAME = cbi.GetPackageName()
-VERSION = cbi.GetVersion()
+NAME = _package_info.GetName()
+VERSION = _package_info.GetVersion()
 AUTHOR = cbi.__author__
 AUTHOR_EMAIL = cbi.__email__
 LICENSE = cbi.__license__
@@ -148,7 +152,7 @@ else:
 
 
 #-------------------------------------------------------------------------------
-
+pdb.set_trace()
 setup(
     name=NAME,
     version=VERSION,
@@ -161,8 +165,8 @@ setup(
     license=LICENSE,
     keywords=KEYWORDS,
     url=URL,
-    packages=['sspy'],
-    package_data={'sspy' : DATA_FILES},
+    packages=['neurospaces'],
+    package_data={'neurospaces' : DATA_FILES},
 #     package_dir={'' : ''},
     classifiers=CLASSIFIERS,
     options=OPTIONS,

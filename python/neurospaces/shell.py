@@ -19,7 +19,7 @@ class SSPyShell(cmd.Cmd):
 
     def __init__(self, developer=None,
                  intro='Welcome to the Neurospaces Developer shell. Type help or ? to list commands.\n',
-                 prompt='ns-dev> ',
+                 prompt='ns-pkgmgr> ',
                  verbose=True):
         """
 

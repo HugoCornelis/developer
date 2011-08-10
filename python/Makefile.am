@@ -11,3 +11,5 @@ nobase_dist_python_DATA = \
 
 clean-local:
 	$(RM) `find . -name "*.pyc"`
+	$(RM) -rf $(srcdir)/build
+	$(RM) -rf $(srcdir)/dist
