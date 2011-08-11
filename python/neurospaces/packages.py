@@ -89,13 +89,19 @@ class PackageManager:
 #---------------------------------------------------------------------------
 
     def GetInstalledPackages(self):
-
+        
+        self.FindInstalled()
+        
         return self.install_recipts
 
 #---------------------------------------------------------------------------
 
     def GetPackageNames(self):
 
+        # refresh package list
+
+        self.FindInstalled()
+        
         package_names = []
         
         for r in self.install_recipts:
@@ -113,6 +119,8 @@ class PackageManager:
         """
 
         """
+
+        self.install_recipts = []
         
         for path, directories, files in os.walk( self.root_directory ):
             
@@ -195,11 +203,11 @@ class PackageManager:
 
         if not self.HaveAccess(install_dir):
 
-            raise PermissionError("Unable to uninstall, no permissions: %s" % e.args[0])
+            raise PermissionError("Unable to uninstall, need permission: %s" % e.args[0])
 
 
         else:
-            
+    
             print "Removing: %s installation at '%s'" % (package_name, install_dir)
 
             files = os.listdir(install_dir)
@@ -208,18 +216,21 @@ class PackageManager:
                 
                 for f in files:
                     
-                    fname = os.path.join(install_dir, file)
+                    fname = os.path.join(install_dir, f)
                     
                     if not os.path.isdir(fname):
                         
                         os.unlink(fname)
                         
-            iles = os.listdir(install_dir)
+            files = os.listdir(install_dir)
             
             if not files:  # perhaps some stale symlinks, or .pyc files
 
                 os.rmdir(install_dir)
-        
+
+            # after uninstalling we refresh the package list.
+            self.FindInstalled()
+                
 
 #---------------------------------------------------------------------------
 
