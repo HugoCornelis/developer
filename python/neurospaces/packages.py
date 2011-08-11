@@ -94,6 +94,21 @@ class PackageManager:
 
 #---------------------------------------------------------------------------
 
+    def GetPackageNames(self):
+
+        package_names = []
+        
+        for r in self.install_recipts:
+
+            p_name = r['info'].GetName()
+
+            package_names.append(p_name)
+
+
+        return package_names
+
+#---------------------------------------------------------------------------
+
     def FindInstalled(self):
         """
 

@@ -50,6 +50,10 @@ class PackageShell(cmd.Cmd):
 
         self.package_manager = package_manager
 
+        #---- chached items --------------------------------------
+        self._package_names = self.package_manager.GetPackageNames()
+
+        #---------------------------------------------------------
 
 #---------------------------------------------------------------------------
 
@@ -168,6 +172,52 @@ class PackageShell(cmd.Cmd):
             return []
 
         return completions
+
+
+
+#---------------------------------------------------------------------------
+# uninstall
+
+    def do_uninstall(self, arg):
+        print "hello again", arg, "!"
+
+        if arg == "" or arg is None:
+
+            print "No package given to uninstall"
+
+        package = arg
+
+        try:
+            
+            self.package_manager.Uninstall(arg)
+            
+        except Exception, e:
+
+            print e
+
+    # using these as templates
+    def help_uninstall(self):
+        print "usage: uninstall [package_name]",
+        print "-- uninstalls a python package"
+
+    def complete_uninstall(self, text, line, start_index, end_index):
+
+        tokens = line.split()
+
+        if len(tokens) == 1:
+
+            completions = self._package_names
+            
+        elif len(tokens) == 2:
+        
+            completions = self._get_completions(tokens[1], text, self._package_names)
+
+        else:
+
+            return []
+
+        return completions
+
 
 
 #---------------------------------------------------------------------------
