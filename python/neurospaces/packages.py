@@ -201,7 +201,24 @@ class PackageManager:
         else:
             
             print "Removing: %s installation at '%s'" % (package_name, install_dir)
-            os.rmdir(install_dir)
+
+            files = os.listdir(install_dir)
+
+            if files:
+                
+                for f in files:
+                    
+                    fname = os.path.join(install_dir, file)
+                    
+                    if not os.path.isdir(fname):
+                        
+                        os.unlink(fname)
+                        
+            iles = os.listdir(install_dir)
+            
+            if not files:  # perhaps some stale symlinks, or .pyc files
+
+                os.rmdir(install_dir)
         
 
 #---------------------------------------------------------------------------
