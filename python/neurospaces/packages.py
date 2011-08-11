@@ -90,7 +90,7 @@ class PackageManager:
 
     def GetInstalledPackages(self):
 
-        return self.installed_packages
+        return self.install_recipts
 
 #---------------------------------------------------------------------------
 
@@ -110,7 +110,7 @@ class PackageManager:
                 recipt = dict(info=package_info,
                               installed=os.path.abspath(path))
 
-                self.installed_packages.append(recipt)
+                self.install_recipts.append(recipt)
                 
 #---------------------------------------------------------------------------
 
@@ -140,16 +140,54 @@ class PackageManager:
 
 #---------------------------------------------------------------------------
 
-    def HaveAccess(self, install_dir):
+    def GetRecipt(self, package):
 
-        return os.path.exists(install_dir) and os.access(install_dir, os.W_OK) 
+        for recipt in self.install_recipts:
+
+            if recipt['info'].GetName() == package:
+
+                return recipt
+
+        return None
+
+#---------------------------------------------------------------------------
+
+    def HaveAccess(self, path):
+
+        return os.path.exists(path) and os.access(path, os.W_OK) 
 
 #---------------------------------------------------------------------------
 
     def Uninstall(self, package):
 
+        recipt = self.GetRecipt(package)
+
+        if recipt is None:
+
+            raise PackageError("The package '%s' is not installed" % package)
+
+        try:
+            
+            package_name = recipt['info'].GetName()
+            package_rev = recipt['info'].GetRevisionInfo()
+            package_version = recipt['info'].GetVersion()
+
+            install_dir = recipt['installed']
+
+        except KeyError, e:
+
+            raise PackageError("%s" % e)
+
+        if not self.HaveAccess(install_dir):
+
+            raise PermissionError("Unable to uninstall, no permissions: %s" % e.args[0])
+
+
+        else:
+            
+            print "Removing: %s installation at '%s'" % (package_name, install_dir)
+            os.rmdir(install_dir)
         
-        pass
 
 #---------------------------------------------------------------------------
 

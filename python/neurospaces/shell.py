@@ -11,13 +11,13 @@ import shlex # for more complex string splitting
 import sys
 
 
-class SSPyShell(cmd.Cmd):
+class PackageShell(cmd.Cmd):
     """!
 
     
     """
 
-    def __init__(self, developer=None,
+    def __init__(self, package_manager=None,
                  intro='Welcome to the Neurospaces Developer shell. Type help or ? to list commands.\n',
                  prompt='ns-pkgmgr> ',
                  verbose=True):
@@ -48,8 +48,7 @@ class SSPyShell(cmd.Cmd):
 
         self.histfile = None
 
-        # some internal cached lists for auto completion
-        self._package_list = []
+        self.package_manager = package_manager
 
 
 #---------------------------------------------------------------------------
@@ -111,13 +110,65 @@ class SSPyShell(cmd.Cmd):
         elif len(tokens) == 2:
         # Here we autocomplete an element
         
-            completions = self._get_completions(tokens[1], text, self._element_list)
+            completions = self._get_completions(tokens[1], text, [])
 
         else:
 
             return []
 
         return completions
+
+
+#---------------------------------------------------------------------------
+# list_packages
+
+    def do_list_packages(self, arg):
+
+        verbose = False
+        
+        if arg == 'verbose' or arg == 'v':
+
+            verbose = True
+
+        package_list = self.package_manager.GetInstalledPackages()
+
+        print ""
+        
+        for p in package_list:
+
+            if verbose:
+
+                print "Name: %s" % p['info'].GetName()
+                print "Version: %s" % p['info'].GetVersion()
+                print "Revision: %s" % p['info'].GetRevisionInfo()
+                print "Install Location: %s" % p['installed']
+                print ""
+                
+            else:
+
+                print "%s" % p['info'].GetName()
+
+        print ""
+
+    # using these as templates
+    def help_list_packages(self):
+        print "usage: list_packages [v, verbose]",
+        print "-- "
+
+    def complete_list_packages(self, text, line, start_index, end_index):
+
+        tokens = line.split()
+
+        if len(tokens) == 1:
+
+            completions = ['v', 'verbose']
+            
+        else:
+
+            return []
+
+        return completions
+
 
 #---------------------------------------------------------------------------
 # clear
@@ -193,7 +244,7 @@ class SSPyShell(cmd.Cmd):
 
     def do_version(self, arg):
         
-        version = self._scheduler.Version()
+        version = self.package_manager.Version()
 
         print "%s" % version
         
@@ -205,7 +256,7 @@ class SSPyShell(cmd.Cmd):
 # quit
     def do_quit(self, arg):
         
-        self._scheduler = None
+        self.package_manager = None
 
         sys.exit(1)
 
