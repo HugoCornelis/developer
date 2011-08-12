@@ -179,7 +179,6 @@ class PackageShell(cmd.Cmd):
 # uninstall
 
     def do_uninstall(self, arg):
-        print "hello again", arg, "!"
 
         if arg == "" or arg is None:
 

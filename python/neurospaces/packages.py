@@ -3,10 +3,13 @@
 class for performing uninstallations of genesis 3 components.
 Derived from the uninstall script from wxPython.
 """
+import glob
 import imp
-import sys, os, glob
+import os
 import pdb
+import sys
 from fnmatch import fnmatchcase
+from commands import getoutput
 import cPickle, urllib
 
 #---------------------------------------------------------------------------
@@ -30,10 +33,7 @@ MAC_PREFIXES = [ '/Library/Python/2.3/',
 # The files that match one of the items in this list will only be
 # removed if the last installation of wxPython on the system is being
 # uninstalled.
-COMMON_FILES = [ '/usr/local/bin/*',
-                 'wx.pth',
-                 'wxversion.py',
-                 ]
+COMMON_FILES = [ '/usr/local/bin/*',]
 
 #---------------------------------------------------------------------------
 
@@ -60,6 +60,10 @@ def findInstalled():
 
 #---------------------------------------------------------------------------
 
+_module_directory = os.path.join( os.path.dirname(os.path.abspath(__file__)))
+
+#---------------------------------------------------------------------------
+
 class PackageManager:
     """
     Performs diagnostic management of installed GENESIS3 packages. The PackageManager
@@ -74,12 +78,13 @@ class PackageManager:
     and compiles a list with the info and install location.
     """
     
-    def __init__(self, directory=os.path.join( os.path.dirname(os.path.abspath(__file__))),
-                 identifier="__cbi__.py",
-                 verbose=False):
+    def __init__(self, directory=_module_directory, identifier="__cbi__.py", verbose=False):
 
-        self.root_directory = directory
+        self.neurospaces_directory = directory
 
+        # a cache variable
+        self.root_directory = None
+        
         self.identifier = identifier
                 
         self.install_recipts = []
@@ -122,7 +127,7 @@ class PackageManager:
 
         self.install_recipts = []
         
-        for path, directories, files in os.walk( self.root_directory ):
+        for path, directories, files in os.walk( self.neurospaces_directory ):
             
             if os.path.isfile( os.path.join( path, self.identifier )):
                 
@@ -134,7 +139,36 @@ class PackageManager:
                               installed=os.path.abspath(path))
 
                 self.install_recipts.append(recipt)
-                
+
+        self.FindEggInfo()
+
+#---------------------------------------------------------------------------
+
+    def FindEggInfo(self):
+        """
+
+        """
+        
+        if self.root_directory is None:
+        
+            self.root_directory = self.neurospaces_directory.rstrip('neurospaces')
+
+
+        for r in self.install_recipts:
+
+            package_name = r['info'].GetName()
+
+            sys.version_info
+
+            reg_exp = os.path.join(self.root_directory, "%s*py%d.%d*.egg-info" % (package_name, sys.version_info[0], sys.version_info[1]))
+
+            info_files = glob.glob(reg_exp)
+
+            if info_files:
+
+                r['egg-info'] = info_files[0]
+
+        
 #---------------------------------------------------------------------------
 
     def GetPackageInfo(self, cbi_identifier):
@@ -203,8 +237,16 @@ class PackageManager:
 
         if not self.HaveAccess(install_dir):
 
-            raise PermissionError("Unable to uninstall, need permission: %s" % e.args[0])
+            #raise PermissionError("Unable to uninstall, need permission: %s" % e.args[0])
 
+            getoutput("sudo rm -rf %s" % install_dir)
+
+            # now we remove the egg-info file if present
+            if recipt.has_key('egg-info'):
+
+                print "\tRemoving egg-info file '%s'" % recipt['egg-info']
+                
+                os.unlink(recipt['egg-info'])
 
         else:
     
@@ -227,6 +269,15 @@ class PackageManager:
             if not files:  # perhaps some stale symlinks, or .pyc files
 
                 os.rmdir(install_dir)
+
+            # now we remove the egg-info file if present
+            if recipt.has_key('egg-info'):
+
+                print "\tRemoving egg-info file '%s'" % recipt['egg-info']
+                
+                os.unlink(recipt['egg-info'])
+            
+                
 
             # after uninstalling we refresh the package list.
             self.FindInstalled()

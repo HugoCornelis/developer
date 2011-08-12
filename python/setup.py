@@ -141,7 +141,7 @@ OPTIONS={
 
 PLATFORMS=["Unix", "Lunix", "MacOS X"]
 
-PY_MODULES=['neurospaces', 'genesis3']
+PY_MODULES=['neurospaces']
 
 
 CMDCLASS = None
@@ -152,7 +152,6 @@ else:
 
 
 #-------------------------------------------------------------------------------
-pdb.set_trace()
 setup(
     name=NAME,
     version=VERSION,
