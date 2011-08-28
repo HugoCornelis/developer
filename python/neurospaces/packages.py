@@ -12,6 +12,11 @@ from fnmatch import fnmatchcase
 from commands import getoutput
 import cPickle, urllib
 
+
+from __cbi__ import PackageInfo
+
+_package_info = PackageInfo()
+
 #---------------------------------------------------------------------------
 
 
@@ -93,6 +98,12 @@ class PackageManager:
 
 #---------------------------------------------------------------------------
 
+    def GetVersion(self):
+
+        return "version %s (%s)" % (_package_info.GetVersion(), _package_info.GetRevisionInfo())
+
+#---------------------------------------------------------------------------
+        
     def GetInstalledPackages(self):
         
         self.FindInstalled()
@@ -266,9 +277,19 @@ class PackageManager:
                         
             files = os.listdir(install_dir)
             
-            if not files:  # perhaps some stale symlinks, or .pyc files
+            #if not files:  # perhaps some stale symlinks, or .pyc files
+            #os.rmdir(install_dir)
 
-                os.rmdir(install_dir)
+            # we remove all of the install directory
+
+            if self.HaveAccess(install_dir):
+
+                getoutput("rm -rf %s" % install_dir)
+
+            else:
+                
+                getoutput("sudo rm -rf %s" % install_dir)
+
 
             # now we remove the egg-info file if present
             if recipt.has_key('egg-info'):

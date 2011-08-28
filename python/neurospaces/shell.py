@@ -293,7 +293,7 @@ class PackageShell(cmd.Cmd):
 
     def do_version(self, arg):
         
-        version = self.package_manager.Version()
+        version = self.package_manager.GetVersion()
 
         print "%s" % version
         
