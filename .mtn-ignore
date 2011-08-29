@@ -30,3 +30,7 @@ Makefile\.in$
 ^pkg$
 ^tmp$
 _BUILD$
+build$
+dist$
+html$
+MANIFEST$
