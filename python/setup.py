@@ -109,7 +109,7 @@ AUTHOR_EMAIL = cbi.__email__
 LICENSE = cbi.__license__
 URL = cbi.__url__
 DOWNLOAD_URL = cbi.__download_url__
-DESCRIPTION="A pluggable scheduler for the GENESIS simulator"
+DESCRIPTION="The root package for Neurospaces components for GENESIS 3"
 LONG_DESCRIPTION=cbi.__description__
 
 KEYWORDS="neuroscience neurosimulator simulator modeling GENESIS"
@@ -118,16 +118,15 @@ KEYWORDS="neuroscience neurosimulator simulator modeling GENESIS"
 CLASSIFIERS = [
     'Development Status :: 3 - Alpha',
     'Environment :: Console',
-    'Environment :: Desktop Application',
     'Intended Audience :: End Users/Desktop',
     'Intended Audience :: Developers',
-    'Intended Audience :: Research',
-    'Intended Audience :: Science',        
-    'License :: OSI Approved :: GPL License',
+    'Intended Audience :: Science/Research',
+    'License :: OSI Approved :: GNU General Public License (GPL)',
     'Operating System :: MacOS :: MacOS X',
-    'Operating System :: POSIX',
-    'Programming Language :: Python',
-    'Topic :: Research :: Neuroscience',
+    'Operating System :: POSIX :: Linux',
+    'Programming Language :: Python :: 2.5',
+    'Programming Language :: Python :: 2.6',
+    'Topic :: Software Development :: Libraries :: Python Modules',
 ]
 
 DATA_FILES=find_files('neurospaces')
