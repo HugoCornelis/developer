@@ -51,7 +51,7 @@ class PackageShell(cmd.Cmd):
         self.package_manager = package_manager
 
         #---- chached items --------------------------------------
-        self._package_names = self.package_manager.GetPackageNames()
+        self._package_names = self.package_manager.get_package_names()
 
         #---------------------------------------------------------
 
@@ -134,7 +134,7 @@ class PackageShell(cmd.Cmd):
 
             verbose = True
 
-        package_list = self.package_manager.GetInstalledPackages()
+        package_list = self.package_manager.get_installed_packages()
 
         print ""
         
@@ -188,7 +188,7 @@ class PackageShell(cmd.Cmd):
 
         try:
             
-            self.package_manager.Uninstall(arg)
+            self.package_manager.uninstall(arg)
             
         except Exception, e:
 
@@ -293,7 +293,7 @@ class PackageShell(cmd.Cmd):
 
     def do_version(self, arg):
         
-        version = self.package_manager.GetVersion()
+        version = self.package_manager.get_version()
 
         print "%s" % version
         

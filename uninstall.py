@@ -17,5 +17,5 @@ except ImportError:
 
 package_manager = PackageManager(verbose=False)
 
-package_manager.Uninstall('developer')
+package_manager.uninstall('developer')
 

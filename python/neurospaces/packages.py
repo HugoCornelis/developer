@@ -94,29 +94,29 @@ class PackageManager:
                 
         self.install_recipts = []
 
-        self.FindInstalled()
+        self.find_installed()
 
 #---------------------------------------------------------------------------
 
-    def GetVersion(self):
+    def get_version(self):
 
         return "version %s (%s)" % (_package_info.GetVersion(), _package_info.GetRevisionInfo())
 
 #---------------------------------------------------------------------------
         
-    def GetInstalledPackages(self):
+    def get_installed_packages(self):
         
-        self.FindInstalled()
+        self.find_installed()
         
         return self.install_recipts
 
 #---------------------------------------------------------------------------
 
-    def GetPackageNames(self):
+    def get_package_names(self):
 
         # refresh package list
 
-        self.FindInstalled()
+        self.find_installed()
         
         package_names = []
         
@@ -131,7 +131,7 @@ class PackageManager:
 
 #---------------------------------------------------------------------------
 
-    def FindInstalled(self):
+    def find_installed(self):
         """
 
         """
@@ -144,18 +144,18 @@ class PackageManager:
                 
                 cbi_identifier = os.path.join(path, self.identifier)
 
-                package_info = self.GetPackageInfo(cbi_identifier)
+                package_info = self.get_package_info(cbi_identifier)
 
                 recipt = dict(info=package_info,
                               installed=os.path.abspath(path))
 
                 self.install_recipts.append(recipt)
 
-        self.FindEggInfo()
+        self.find_egg_info()
 
 #---------------------------------------------------------------------------
 
-    def FindEggInfo(self):
+    def find_egg_info(self):
         """
 
         """
@@ -182,7 +182,7 @@ class PackageManager:
         
 #---------------------------------------------------------------------------
 
-    def GetPackageInfo(self, cbi_identifier):
+    def get_package_info(self, cbi_identifier):
 
         package_info = None
 
@@ -208,7 +208,7 @@ class PackageManager:
 
 #---------------------------------------------------------------------------
 
-    def GetRecipt(self, package):
+    def get_recipt(self, package):
 
         for recipt in self.install_recipts:
 
@@ -220,15 +220,15 @@ class PackageManager:
 
 #---------------------------------------------------------------------------
 
-    def HaveAccess(self, path):
+    def have_access(self, path):
 
         return os.path.exists(path) and os.access(path, os.W_OK) 
 
 #---------------------------------------------------------------------------
 
-    def Uninstall(self, package):
+    def uninstall(self, package):
 
-        recipt = self.GetRecipt(package)
+        recipt = self.get_recipt(package)
 
         if recipt is None:
 
@@ -246,7 +246,7 @@ class PackageManager:
 
             raise PackageError("%s" % e)
 
-        if not self.HaveAccess(install_dir):
+        if not self.have_access(install_dir):
 
             #raise PermissionError("Unable to uninstall, need permission: %s" % e.args[0])
 
@@ -282,7 +282,7 @@ class PackageManager:
 
             # we remove all of the install directory
 
-            if self.HaveAccess(install_dir):
+            if self.have_access(install_dir):
 
                 getoutput("rm -rf %s" % install_dir)
 
@@ -301,7 +301,7 @@ class PackageManager:
                 
 
             # after uninstalling we refresh the package list.
-            self.FindInstalled()
+            self.find_installed()
                 
 
 #---------------------------------------------------------------------------
