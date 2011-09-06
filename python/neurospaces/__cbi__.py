@@ -17,7 +17,7 @@ __url__ = "http://genesis-sim.org"
 __description__ = """
 This is the root management module for GENESIS. GENESIS is composed of several
 sub packages for reading and storing models, solvers, experimental protocols,
-and GUI interfaces. The root 'g3' package helps to determine which versions of
+and GUI interfaces. The root 'neurospaces' package helps to determine which versions of
 packages are installed and performs updates, removal, and installation of needed
 packages to run a simulation. 
 """
