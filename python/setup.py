@@ -116,7 +116,7 @@ KEYWORDS="neuroscience neurosimulator simulator modeling GENESIS"
 
 # Get strings from http://pypi.python.org/pypi?%3Aaction=list_classifiers
 CLASSIFIERS = [
-    'Development Status :: 0 - Alpha',
+    'Development Status :: 3 - Alpha',
     'Environment :: Console',
     'Environment :: Desktop Application',
     'Intended Audience :: End Users/Desktop',
