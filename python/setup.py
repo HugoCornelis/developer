@@ -3,8 +3,23 @@ import pdb
 import sys
 from distutils.core import setup
 from distutils.command.install_data import install_data
-#from setuptools import setup, find_packages
 
+# This will work for both setuptools and distutils
+# main difference is that if distutils is imported then
+# the bdist_egg option is not available.
+try:
+    
+    from setuptools import setup, find_packages
+
+except ImportError:
+
+    from distutils.core import setup
+
+    def find_packages():
+
+        return ['neurospaces']
+
+    
 import neurospaces.__cbi__ as cbi
 from neurospaces.__cbi__ import PackageInfo
 
@@ -163,7 +178,7 @@ setup(
     license=LICENSE,
     keywords=KEYWORDS,
     url=URL,
-    packages=['neurospaces'],
+    packages=find_packages(),
     package_data={'neurospaces' : DATA_FILES},
 #     package_dir={'' : ''},
     classifiers=CLASSIFIERS,
