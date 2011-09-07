@@ -46,7 +46,7 @@ package_manager = PackageManager(verbose=False)
 
 try:
     
-    package_manager.Uninstall('developer')
+    package_manager.uninstall('developer')
 
 except Exception, e:
 
