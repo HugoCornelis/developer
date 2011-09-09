@@ -11,6 +11,15 @@ use Getopt::Long;
 use YAML;
 
 
+$SIG{'INT'}
+    = sub
+      {
+	  # we try to reinstall the developer package in case we were interrupted when uninstalling it
+
+	  install_developer();
+      };
+
+
 my $option_clean;
 my $option_configure = 1;
 my $option_developer = 1;
