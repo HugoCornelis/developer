@@ -11,7 +11,7 @@ __credits__ = ["Hugo Cornelis", "Dave Beeman"]
 __license__ = "GPL"
 __version__ = "0.1"
 __maintainer__ = "Mando Rodriguez"
-__email__ = "rodrigueza14@uthscsa.edu"
+__email__ = "rodrigueza14 at uthscsa dot edu"
 __status__ = "Development"
 __url__ = "http://genesis-sim.org"
 __description__ = """
@@ -30,8 +30,8 @@ class PackageInfo:
         return "609ee575e9b994be615e017461dd894e0e03fd66"
 
     def GetName(self):
-# $Format: "        return \"${package}\""$
-        return "developer"
+
+        return "neurospaces"
 
     def GetVersion(self):
 # $Format: "        return \"${major}.${minor}.${micro}-${label}\""$
