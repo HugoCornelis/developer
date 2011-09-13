@@ -69,6 +69,12 @@ _module_directory = os.path.join( os.path.dirname(os.path.abspath(__file__)))
 
 #---------------------------------------------------------------------------
 
+#
+# A link with some good info on uninstalling and managing packages installed
+# via egg.
+# http://peak.telecommunity.com/DevCenter/EasyInstall#uninstalling-packages
+#
+
 class PackageManager:
     """
     Performs diagnostic management of installed GENESIS3 packages. The PackageManager
