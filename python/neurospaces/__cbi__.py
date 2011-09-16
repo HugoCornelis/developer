@@ -41,6 +41,7 @@ class PackageInfo:
         """!
         @brief Provides a list of other CBI dependencies needed.
         """
-        dependencies = []
+        dependencies = ['model-container', 'heccer', 'experiment',
+                        'chemesis3',]
         
         return dependencies
