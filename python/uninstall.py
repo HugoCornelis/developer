@@ -32,6 +32,66 @@ except ValueError:
 
     pass
 
+
+
+def remove_egg(module_name):
+    """
+    finds all easy path files, collects all paths to eggs that
+    are installed and removes all of them.
+    """
+    from commands import getoutput
+    import glob
+    
+    installs = []
+
+    for path in sys.path:
+
+        # Check for an easy-install.pth file and a module with the name
+
+        easy_install_file = os.path.join(path, 'easy-install.pth')
+                                         
+        found_eggs = glob.glob("%s%s%s*.egg" % (path, os.sep, module_name))
+        
+        if os.path.isfile(easy_install_file) and  len(found_eggs) > 0:
+
+            installs.append(dict(pth_file=easy_install_file,
+                                 eggs=found_eggs))
+
+
+    if len(installs) == 0:
+
+        print "No python eggs found."
+
+        return
+
+    else:
+        
+        print "Found %d python eggs installed" % len(installs)
+
+        for inst in installs:
+
+            pth_file = inst['pth_file']
+            eggs = inst['eggs']
+            
+            # First remove the egg
+
+            for egg in eggs:
+                
+                print "Deleting egg: %s" % egg
+
+                if os.access(egg, os.W_OK):
+
+                    cmdout = getoutput("rm -rf %s" % egg)
+
+                else:
+
+                    cmdout = getoutput("sudo rm -rf %s" % egg)
+
+        
+        
+
+
+
 try:
     
     from neurospaces.packages import PackageManager
@@ -46,7 +106,7 @@ package_manager = PackageManager(verbose=False)
 
 try:
     
-    package_manager.uninstall('developer')
+    package_manager.uninstall('neurospaces')
 
 except Exception, e:
 
