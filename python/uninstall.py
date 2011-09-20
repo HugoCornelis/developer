@@ -41,6 +41,7 @@ def remove_egg(module_name):
     """
     from commands import getoutput
     import glob
+    import re
     
     installs = []
 
@@ -52,7 +53,7 @@ def remove_egg(module_name):
                                          
         found_eggs = glob.glob("%s%s%s*.egg" % (path, os.sep, module_name))
         
-        if os.path.isfile(easy_install_file) and  len(found_eggs) > 0:
+        if os.path.isfile(easy_install_file) and len(found_eggs) > 0:
 
             installs.append(dict(pth_file=easy_install_file,
                                  eggs=found_eggs))
@@ -72,25 +73,57 @@ def remove_egg(module_name):
 
             pth_file = inst['pth_file']
             eggs = inst['eggs']
+
+            f = open(pth_file, 'r')
+
+            pth_data = f.read()
+
+            tmp_data = pth_data.split('\n')
+
+            pth_lines = []
             
-            # First remove the egg
+            for line in tmp_data:
 
-            for egg in eggs:
-                
-                print "Deleting egg: %s" % egg
+                if not re.search("\S*%s\-\S*\.egg$" % module_name, line):
 
-                if os.access(egg, os.W_OK):
+                    pth_lines.append(line)
 
-                    cmdout = getoutput("rm -rf %s" % egg)
+            pth_data = '\n'.join(pth_lines)
+            
+            f.close()
+            
+            # Remove the egg and easy-install.pth file
 
-                else:
+            remove_these_files  = []
 
-                    cmdout = getoutput("sudo rm -rf %s" % egg)
+            remove_these_files.extend(eggs)
+            remove_these_files.append(pth_file)
 
+            print "Removing the following files: \n%s" % '\n'.join(remove_these_files)
+
+            if os.access(remove_these_files[0], os.W_OK):
+
+                cmdout = getoutput("rm -rf %s" % ' '.join(remove_these_files))
+
+            else:
+
+                cmdout = getoutput("sudo rm -rf %s" % ' '.join(remove_these_files))
+
+
+            print "Writing a new easy-install.pth file: %s" % pth_file
+            
+            f = open(pth_file, 'w')
+
+            f.write(pth_data)
+
+            f.close()
+
+            if not os.path.isfile(pth_file):
+
+                raise Exception("An error occured, the easy-path.pth file wasn't written")
         
-        
 
-
+remove_egg('neurospaces')
 
 try:
     
