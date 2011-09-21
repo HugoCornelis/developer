@@ -64,7 +64,6 @@ def remove_egg(module_name):
             installs.append(dict(pth_file=easy_install_file,
                                  eggs=egg_data))
 
-    pdb.set_trace()
     if len(installs) == 0:
 
         print "No python eggs found."
