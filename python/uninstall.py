@@ -53,12 +53,18 @@ def remove_egg(module_name):
                                          
         found_eggs = glob.glob("%s%s%s*.egg" % (path, os.sep, module_name))
         
+        found_infos = glob.glob("%s%s%s*.egg-info" % (path, os.sep, module_name))
+
+        egg_data = []
+        egg_data.extend(found_eggs)
+        egg_data.extend(found_infos)
+        
         if os.path.isfile(easy_install_file) and len(found_eggs) > 0:
 
             installs.append(dict(pth_file=easy_install_file,
-                                 eggs=found_eggs))
+                                 eggs=egg_data))
 
-
+    pdb.set_trace()
     if len(installs) == 0:
 
         print "No python eggs found."
@@ -109,6 +115,7 @@ def remove_egg(module_name):
 
                 cmdout = getoutput("sudo rm -rf %s" % ' '.join(remove_these_files))
 
+            print cmdout
 
             print "Writing a new easy-install.pth file: %s" % pth_file
             
