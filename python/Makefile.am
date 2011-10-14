@@ -13,6 +13,7 @@ setup: setup.py
 	$(PYTHON) setup.py build
 	$(PYTHON) setup.py build_py
 
+
 install-exec-hook:
 	$(PYTHON) setup.py install
 
@@ -23,7 +24,4 @@ all: setup
 
 clean-local:
 	$(RM) `find . -name "*.pyc"`
-	$(RM) -rf $(srcdir)/build
-	$(RM) -rf $(srcdir)/dist
-	$(RM) -rf $(srcdir)*.egg-info
-
+	$(PYTHON) clean.py
