@@ -9,6 +9,13 @@
 # 	neurospaces/__cbi__.py \
 # 	neurospaces/__init__.py 
 
+
+EXTRA_DIST = \
+	clean.py \
+	setup.py \
+	uninstall.py \
+	INFO.txt
+
 setup: setup.py
 	$(PYTHON) setup.py build
 	$(PYTHON) setup.py build_py
