@@ -1,0 +1,37 @@
+#!/usr/bin/perl -w
+#!/usr/bin/perl -w -d:ptkdb
+#!
+
+
+use strict;
+
+
+use YAML;
+
+my $build_database_yaml = `neurospaces_build --help-all`;
+
+my $build_database = Load($build_database_yaml);
+
+my $all_packages = $build_database->{all_packages};
+
+my $__component_name___directory = $all_packages->{__component_name__}->{directory};
+
+system "cd \"$__component_name___directory\" && __component_name__-check";
+
+if ($?)
+{
+    die "$0: *** Error: __component_name__-check concludes there is something wrong with your documentation workspace.";
+}
+
+system "neurospaces_sync --enable __component_name__ --regex __component_name__ --verbose";
+
+if ($?)
+{
+    die "$0: *** Error: $?";
+}
+else
+{
+    system "neurospaces_update --enable __component_name__ --regex __component_name__ --verbose";
+}
+
+

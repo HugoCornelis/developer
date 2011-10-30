@@ -12,6 +12,9 @@ use YAML;
 
 
 my $option_component_names = [];
+my $option_documentation_set;
+my $option_repository;
+my $option_repository_port;
 my $option_verbose;
 
 
@@ -39,6 +42,69 @@ sub main
 
     foreach my $component_name (@$option_component_names)
     {
+	# if the component is already known
+
+	my $build_database_yaml = `neurospaces_build --help-all`;
+
+	my $build_database = Load($build_database_yaml);
+
+	my $all_packages = $build_database->{all_packages};
+
+	if (exists $all_packages->{$component_name})
+	{
+	    # we don't do this, bail out.
+
+	    print "$0: *** Error: $component_name is already configured, not proceeding\n";
+
+	    next;
+	}
+
+	if (-e "$ENV{HOME}/neurospaces_project/$component_name")
+	{
+	    # we don't do this, bail out.
+
+	    print "$0: *** Error: $component_name has a workspace, not proceeding\n";
+
+	    next;
+	}
+
+	# if the repository port number was set
+
+	if ($option_repository_port)
+	{
+	    # configure the new component with the given port.
+
+	    # this will make the new component available to the developer tools.
+
+	    my $build_database_filename = "/etc/neurospaces/developer/build.yml";
+
+	    use YAML;
+
+	    my $build_database = YAML::LoadFile($build_database_filename);
+
+	    my $all_packages = $build_database->{all_packages};
+
+	    $all_packages->{$component_name}
+		= {
+		   order => 101,
+		   version_control => {
+				       port_number => $option_repository_port,
+				      },
+		  };
+
+	    YAML::DumpFile($build_database_filename, $build_database);
+	}
+
+	# if a repository should be created
+
+	if ($option_repository)
+	{
+	    # create the repository
+
+	    system "neurospaces_init --regex '$component_name'"
+
+	}
+
 	print "$0: creating neurospaces component $component_name\n";
 
 	system "mkdir -p '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0'";
@@ -101,6 +167,32 @@ sub main
 
 	system "cd '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/' ; release-expand";
 
+	# if this is a documentation set
+
+	if ($option_documentation_set)
+	{
+	    # copy new document
+
+	    system "cp -a '$ENV{HOME}/neurospaces_project/userdocs/source/snapshots/0/NewDocument' '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/NewDocument'";
+
+	    # copy makefile template that installs the documentation build scripts
+
+	    system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/Makefile.documentation.template' '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/Makefile.am'";
+
+	    system "perl -e 's/__component_name__/$component_name/sg' -pi '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/Makefile.am'";
+
+	    # copy tool scripts for automation of operations such as syncs
+
+	    system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/documentation-sync.template' '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/bin/$component_name-sync'";
+
+	    system "perl -e 's/__component_name__/$component_name/sg' -pi '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/bin/$component_name-sync'";
+
+	    system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/documentation-version.template' '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/bin/$component_name-version'";
+
+	    system "perl -e 's/__component_name__/$component_name/sg' -pi '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/bin/$component_name-version'";
+
+	}
+
     }
 
 }
@@ -115,6 +207,9 @@ sub read_cmd_line
 	    (
 	     "help" => \$option_help,
 	     "component-name=s" => $option_component_names,
+	     "documentation-set!" => \$option_documentation_set,
+	     "repository!" => \$option_repository,
+	     "repository-port=s" => \$option_repository_port,
 	     "v|verbose+" => \$option_verbose,
 	    );
 
@@ -129,6 +224,9 @@ $0: create new neurospaces component source trees.
 options:
     --help               print usage information.
     --component-name     set component name to create, may be used one or more times.
+    --documents          create the new components as documentation sets.
+    --repository         create the component repository if it does not exist yet.  This requires the component to be configured.
+    --repository-port    use the given port number to configure the new component.
     --verbose            set verbosity level.
 ";
 
