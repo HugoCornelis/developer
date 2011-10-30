@@ -9,15 +9,15 @@ my $config
 
        files => [
 		 './Makefile.am',
-		 './bin/__package_name__',
+		 './bin/__component_name__',
 		 './configure.ac',
 		 './python/neurospaces/__cbi__.py',
-		 './install/rpm/__package_name__.spec',
+		 './install/rpm/__component_name__.spec',
 		 './tests.config',
 		],
 
        # fill in the keywords and there expansion.  For instance,
-       # package should be expanded to the name of your package.
+       # component should be expanded to the name of your component.
 
        labels => {
 		  email => 'hugo.cornelis@gmail.com',
@@ -26,7 +26,7 @@ my $config
 		  minor => '0',
 		  micro => '0',
 		  monotone_id => `mtn automate get_current_revision_id | perl -pe 's/\n//g'`,
-		  package => '__package_name__',
+		  component => '__component_name__',
 		 },
       };
 

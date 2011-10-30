@@ -9,7 +9,7 @@ Makefile\.in$
 ^config.log$
 ^config.status$
 ^configure$
-^__package_name__-.*tar.gz$
+^__component_name__-.*tar.gz$
 ^installed
 ^installer-.*.tar.gz$
 ^missing$
