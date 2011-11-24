@@ -224,7 +224,7 @@ $0: create new neurospaces component source trees.
 options:
     --help               print usage information.
     --component-name     set component name to create, may be used one or more times.
-    --documents          create the new components as documentation sets.
+    --documentation-set  create the new components as documentation sets.
     --repository         create the component repository if it does not exist yet.  This requires the component to be configured.
     --repository-port    use the given port number to configure the new component.
     --verbose            set verbosity level.
