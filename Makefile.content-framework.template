@@ -68,7 +68,7 @@ dist-hook:
 #	touch $(top_srcdir)/neurospaces_cpan_modules
 
 install-exec-local:
-	( cd $(bindir) ; for script in `ls userdocs-* | grep -v version | grep -v sync | grep -v pull | grep -v push` ; do ln -vsf {userdocs,__component_name__}-`echo $$script | cut -f2- -d-` ; done )
+	( cd $(bindir) ; for script in `ls content-framework-* | grep -v version | grep -v sync | grep -v pull | grep -v push` ; do ln -vsf {content-framework,__component_name__}-`echo $$script | cut -f2- -d-` ; done )
 
 uninstall-local:
 	( cd $(bindir) ; echo __component_name__-* ; $(RM) __component_name__-* )
