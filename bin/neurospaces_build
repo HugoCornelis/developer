@@ -4063,7 +4063,7 @@ sub read_cmd_line
 		      package_name => $package_name,
 		     },
 		     [
-		      'mtn', '--db', $repository_name, 'sync', '--ticker=count', "$repo_server:$port_number",
+		      'mtn', '--db', $repository_name, 'sync', '--ticker=count', "$repo_server:$port_number", '0',
 		     ],
 		    );
 
