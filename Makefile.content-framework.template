@@ -69,7 +69,7 @@ dist-hook:
 
 install-exec-local:
 	( cd $(bindir) ; for script in `ls content-framework-* | grep -v version | grep -v sync | grep -v pull | grep -v push` ; do ln -vsf {content-framework,__component_name__}-`echo $$script | cut -f3- -d-` ; done )
-	( cd $(bindir) ; for script in `ls content-framework_* | grep -v version | grep -v sync | grep -v pull | grep -v push` ; do ln -vsf {content-framework,__component_name__}-`echo $$script | cut -f2- -d_` ; done )
+	( cd $(bindir) ; for script in `ls content-framework_* | grep -v version | grep -v sync | grep -v pull | grep -v push` ; do ln -vsf {content-framework,__component_name__}_`echo $$script | cut -f2- -d_` ; done )
 
 uninstall-local:
 	( cd $(bindir) ; echo __component_name__-* ; $(RM) __component_name__-* )
