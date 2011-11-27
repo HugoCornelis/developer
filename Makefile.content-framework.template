@@ -74,20 +74,37 @@ install-exec-local:
 uninstall-local:
 	( cd $(bindir) ; echo __component_name__[_-]* ; $(RM) __component_name__[_-]* )
 
-html-upload-prepare:
-	rm -fr html/htdocs/neurospaces_project/$(PACKAGE)
-	mkdir -p html/htdocs/neurospaces_project/$(PACKAGE)
-# $Format: "	( cd tests && ./tests_2_html --header '<img src=\"ns-main-logo-dark2-notext-32x32.jpg\" alt=\"Main Neurospaces logo\"> ${package}, ${label}, ${email} <hr>' --introduction introduction.html )" $
-	( cd tests && ./tests_2_html --header '<img src="ns-main-logo-dark2-notext-32x32.jpg" alt="Main Neurospaces logo"> neurospaces 0.1675 Thu, 27 Dec 2007 15:58:18 -0600 hugo<hr>' --introduction introduction.html )
+test: check
 
-#t perhaps also add a target to check the syntax of all the html ?
+#TESTS = $(srcdir)/tests/neurospaces_harness
+
+html-upload-prepare:
+	( cd tests && ./tests_2_html --introduction introduction.html )
+	$(srcdir)/install-sh -d html
+	$(srcdir)/install-sh -d html/htdocs
+	$(srcdir)/install-sh -d html/htdocs/neurospaces_project
+	$(srcdir)/install-sh -d html/htdocs/neurospaces_project/__component_name__
+	$(srcdir)/install-sh -d html/htdocs/neurospaces_project/__component_name__/html_source
+	tar cfh - tests/html | ( cd html/htdocs/neurospaces_project/__component_name__ && tar vxf - )
 
 html-upload: html-upload-prepare
 	scp -pr html/htdocs/* hcornelis,neurospaces@web.sourceforge.net:/home/groups/n/ne/neurospaces/htdocs/
 
-test: check
+website-clean:
+	$(RM) -fr html/htdocs/neurospaces_project/__component_name__/
 
-#TESTS = $(srcdir)/tests/neurospaces_harness
+website-prepare:
+	__component_name__-build --tags published
+
+website-prepare-local:
+	__component_name__-build --tags local --tags published
+
+website-upload: website-clean website-prepare html-upload
+
+webcheck:
+	rm -rf html/htdocs/neurospaces_project/__component_name__/webcheck
+	mkdir html/htdocs/neurospaces_project/__component_name__/webcheck
+	webcheck -o html/htdocs/neurospaces_project/__component_name__/webcheck html/htdocs/neurospaces_project/__component_name__ --redirects=10
 
 docs-level1:
 
