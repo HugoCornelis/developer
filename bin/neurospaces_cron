@@ -900,12 +900,17 @@ sub produce_email_text
 	    $status_message .= $tarball_build_errors;
 	    $status_message .= "\n";
 	}
-
     }
 
     $status_message .= "\nRevisions:\n" . $revisions . "\n";
     $status_message .= "\nError Counts:\n" . $errorcounts . "\n";
     $status_message .= "\nDie Messages:\n" . $die_messages . "\n";
+
+    $status_message
+	.=
+	    "\n"
+		. "Your configuration:\n\n"
+		    . YAML::Dump($configuration);
 
     return $status_message;
 }
