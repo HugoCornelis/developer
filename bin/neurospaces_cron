@@ -1043,7 +1043,6 @@ sub rotate_logs
 }
 
 
-
 #
 # This will actually send mail.
 #
