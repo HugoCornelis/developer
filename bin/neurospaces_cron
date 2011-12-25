@@ -907,11 +907,8 @@ sub parse_config_file
 }
 
 
+# also look at the content-framework cron script.
 
-#
-# Forms the status message to be sent
-# in the cronjob email.
-#
 sub produce_email_text
 {
 
