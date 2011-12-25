@@ -1009,13 +1009,11 @@ sub rotate_logs
 
     for ($i = $numlogs-1; $i > -1; $i--)
     {
-
 	my $log = $logdir . $logname . '.' . $i;
 
 	if ( -e $log )
 	{
-
-	    # mv should preserve permissions.
+	    # note that mv preserves permissions.
 
 	    my $nextlog = $logdir . $logname . '.' . ($i + 1);
 
