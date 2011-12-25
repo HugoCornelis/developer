@@ -10,6 +10,7 @@ use Getopt::Long;
 
 use YAML;
 
+
 my $option_config = "";
 my $option_output_directory = "/tmp";
 my $option_no_check = 0;
