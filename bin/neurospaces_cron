@@ -3,9 +3,11 @@
 #
 
 
+use strict;
+
 use Config;
 use Getopt::Long;
-use strict;
+
 use YAML;
 
 my $option_config = "";
@@ -24,9 +26,7 @@ my $configuration
     = {
       };
 
-
 my @enabled_packages = get_enabled_packages();
-
 
 #! note the following are currently a constants
 
@@ -36,6 +36,7 @@ my $output_filename = "neurospaces_cron.stdout";
 
 my $deb_messages = "";
 my $rpm_messages = "";
+
 
 sub check_and_prepare
 {
@@ -64,15 +65,12 @@ sub check_and_prepare
     # install the developer
 
     install_developer();
-
-
-
 }
 
 
 #
 # Function checks the user of the owner calling the neurospaces_cron
-# process. 
+# process.
 #
 sub check_user_id
 {
@@ -99,25 +97,25 @@ sub check_user_id
 #     if (scalar @$records ne 1)
 #--- end comment
 
-
     # note: getlogin() will return root even when using "sudo -u"
+
     my $user = getpwuid($>) || "Not Found";
 
-    if($user eq "Not Found")
+    if ($user eq "Not Found")
     {
 	report_error("check_user_id()", "$0 cannot determine username under which we are running");
 
-	
 	# just to make sure that this script stops we die
 
 	die "check_user_id()" . "$0 cannot determine username under which we are running";
     }
 
 
-    if($user eq "root")
+    if ($user eq "root")
     {
-	report_error("check_user_id()", 
-		     "$0 must not be executed by root\n");
+	report_error
+	    ("check_user_id()",
+	     "$0 must not be executed by root\n");
 
 
 	# just to make sure that this script stops we die
@@ -126,14 +124,14 @@ sub check_user_id
     }
     else
     {
+	# Hugo: comment on this.
+	#
+	# Should probably put additional logic in here to check if
+	# a defined user like "g3tester" is executing the cron script.
+	# The user definition should come from the configuration file.
+	#
 
-      # Hugo: comment on this. 
-      #
-      # Should probably put additional logic in here to check if
-      # a defined user like "g3tester" is executing the cron script.
-      # The user definition should come from the configuration file.
-      #
-      try_to("echo Proceeding as user: $user\n");
+	try_to("echo Proceeding as user: $user\n");
     }
 
 #--- Commenting this out while using the slimmer code
@@ -176,45 +174,38 @@ sub check_user_id
 #t cleanup of output files should perhaps be optional?
 sub cleanup_and_finalize
 {
+    print "Cleaning generate files out of /tmp\n";
 
-  print "Cleaning generate files out of /tmp\n";
+    my $user = `whoami`;
 
-  my $user = `whoami`;
+    if ($user eq "root")
+    {
+	print "Cron job is running as root, not safe to clean /tmp";
+	# send mail here or check if root at the start and send mail?
 
-  if($user eq "root")
-  {
-    print "Cron job is running as root, not safe to clean /tmp";
-    #
-    # send mail here or check if root at the start and send mail?
-    #
-    return;
-  }
+	return;
+    }
 
+    # note: the following line won't execute the command.
+    #system "find /tmp -user g3tester -exec rm -rf {} \;";
 
-  # note: the following line won't execute the command.
-  #system "find /tmp -user g3tester -exec rm -rf {} \;";
+    # The g3tester user should be configurable. Will test this out first
+    # before proceeding with adding that option. 
 
+    my $trash_list = `find /tmp/ -user $option_user`;
 
-  #
-  # The g3tester user should be configurable. Will test this out first
-  # before proceeding with adding that option. 
-  #
-  my $trash_list = `find /tmp/ -user $option_user`;
+    my @trash = split('\n',$trash_list);
 
-  my @trash = split('\n',$trash_list);
+    print "Deleting trash.\n";
 
-  print "Deleting trash.\n";
+    foreach (@trash)
+    {
+	system "rm -rf $_";
+    }
 
-  foreach(@trash)
-  {
-    system "rm -rf $_";
-  }
+    try_to("echo $0: done with cleanup.\n", 1);
 
-  try_to("echo $0: done with cleanup.\n", 1);
-
-  try_to("date", 1);
-
-
+    try_to("date", 1);
 }
 
 
@@ -225,89 +216,76 @@ sub cleanup_and_finalize
 #
 sub copy_docs
 {
-
-  if (defined $configuration->{DOXYGENOUTPUT})
-  {
-
-    my $packagelist = join(',',@enabled_packages);
-
-    print "\nCopying Doxygen output for $packagelist to $configuration->{DOXYGENOUTPUT}.\n\n";
-
-    system "rm -rf $configuration->{DOXYGENOUTPUT}/*";
-
-    foreach (@enabled_packages)
+    if (defined $configuration->{DOXYGENOUTPUT})
     {
+	my $packagelist = join(',',@enabled_packages);
 
-      my $package = $_;
-      chomp($package); #just in case
-      my $htmldir = "$ENV{HOME}/neurospaces_project/" . $package . "/source/snapshots/0/docs/html";
-      my $dstdir =  "$configuration->{DOXYGENOUTPUT}/" .$package;
+	print "\nCopying Doxygen output for $packagelist to $configuration->{DOXYGENOUTPUT}.\n\n";
 
-      if( -d $htmldir )
-      {
-	system "cp -rf $htmldir $dstdir";
-      }
+	system "rm -rf $configuration->{DOXYGENOUTPUT}/*";
 
+	foreach (@enabled_packages)
+	{
+	    my $package = $_;
+	    chomp($package);	#just in case
+	    my $htmldir = "$ENV{HOME}/neurospaces_project/" . $package . "/source/snapshots/0/docs/html";
+	    my $dstdir =  "$configuration->{DOXYGENOUTPUT}/" .$package;
 
+	    if ( -d $htmldir )
+	    {
+		system "cp -rf $htmldir $dstdir";
+	    }
+	}
     }
 
-  }
-
-  if (defined $configuration->{REGTESTOUTPUT})
-  {
-    my $packagelist = join(',',@enabled_packages);
-    print "\nCopying regression test output for $packagelist to $configuration->{DOXYGENOUTPUT}.\n\n";
-
-    system "rm -rf $configuration->{REGTESTOUTPUT}/*";
-
-    foreach (@enabled_packages)
+    if (defined $configuration->{REGTESTOUTPUT})
     {
+	my $packagelist = join(',',@enabled_packages);
 
-      my $package = $_;
-      chomp($package);
-      my $htmldir = "$ENV{HOME}/neurospaces_project/" . $package . "/source/snapshots/0/tests/html";
-      my $dstdir =  "$configuration->{REGTESTOUTPUT}/" .$package;
+	print "\nCopying regression test output for $packagelist to $configuration->{DOXYGENOUTPUT}.\n\n";
 
-      if( -d $htmldir )
-      {
-	system "cp -rf $htmldir $dstdir";
-      }
+	system "rm -rf $configuration->{REGTESTOUTPUT}/*";
 
+	foreach (@enabled_packages)
+	{
+	    my $package = $_;
+	    chomp($package);
+	    my $htmldir = "$ENV{HOME}/neurospaces_project/" . $package . "/source/snapshots/0/tests/html";
+	    my $dstdir =  "$configuration->{REGTESTOUTPUT}/" .$package;
 
+	    if ( -d $htmldir )
+	    {
+		system "cp -rf $htmldir $dstdir";
+	    }
+	}
     }
-
-  }
-
-  
 }
 
 
 #
-# Copies the test output to a dorectory specified in the 
-# configuration file. 
+# Copies the test output to a dorectory specified in the
+# configuration file.
 #
 sub copy_tests
 {
+    if ($option_output_directory eq "/tmp")
+    {
+	# if default no need to do anything.
 
-  if ($option_output_directory eq "/tmp")
-  {
-      # if default no need to do anything.
+	return;
+    }
 
-      return;
-  }
+    # clean out the old tests
 
+    system "rm -f $option_output_directory/text_*";
 
-  # clean out the old tests
-  system "rm -f $option_output_directory/text_*";
+    system "rm -f $option_output_directory/report_*";
 
-  system "rm -f $option_output_directory/report_*";
+    # copy over the new ones.
 
+    system "mv -f /tmp/text_* $option_output_directory";
 
-  # copy over the new ones.
-  system "mv -f /tmp/text_* $option_output_directory";
-
-  system "mv -f /tmp/report_* $option_output_directory";
-
+    system "mv -f /tmp/report_* $option_output_directory";
 }
 
 
@@ -319,26 +297,22 @@ sub install_developer
 }
 
 
-##
-#
 # Function simply gets the list of enabled packages from the developer
 # package and loads them up into an array. 
 sub get_enabled_packages
 {
+    my $package_text = `neurospaces_build --help-packages`;
 
-  my $package_text = `neurospaces_build --help-packages`;
+    my $tmp =  YAML::Load($package_text);
 
-  my $tmp =  YAML::Load($package_text);
-  
-  my $package_list = $tmp->{'enabled packages in order of build'};
+    my $package_list = $tmp->{'enabled packages in order of build'};
 
-  return @$package_list;
+    return @$package_list;
 }
 
 
 sub main
 {
-
     {
 	my $result
 	    = GetOptions
@@ -349,13 +323,11 @@ sub main
 
     }
 
-
     if ($option_config)
     {
 	parse_config_file($option_config);
     }
 
-    #
     # For security reasons cronjobs use a restricted $PATH
     # which leaves out /usr/local/bin and prevents it from executing some
     # commands.
@@ -367,12 +339,12 @@ sub main
     # correctly then the incorrect path for headers will be set as well. Option is added here
     # to prevent the user from having to manually set a path. Must be prepended to search here
     # first or it will pick up symbolic links in /usr/bin or /usr/local/bin
-    #
+
     my $bin_path =  ":/bin:/usr/bin:/usr/local/bin";
 
-    if( $Config{osname} eq "darwin" )
+    if ( $Config{osname} eq "darwin" )
     {
-      $bin_path = ":/Library/Frameworks/Python.framework/Versions/Current/bin" . $bin_path;
+	$bin_path = ":/Library/Frameworks/Python.framework/Versions/Current/bin" . $bin_path;
     }
 
     $ENV{PATH} .= $bin_path;
@@ -399,21 +371,20 @@ sub main
 
     # pull code from the repositories
 
-    unless($option_no_pull)
+    unless ($option_no_pull)
     {
-      try_to("neurospaces_pull");
-
+	try_to("neurospaces_pull");
     }
 
     try_to("neurospaces_configure");
 
     # uninstall what was installed
 
-    unless($option_no_install)
+    unless ($option_no_install)
     {
-      try_to("neurospaces_uninstall");
+	try_to("neurospaces_uninstall");
 
-      install_developer();
+	install_developer();
     }
 
     # update the source code in the workspaces, remove previous build
@@ -438,69 +409,65 @@ sub main
 	#t insert configuration options in the configurator package
 
 	# configure all packages
+
         my $configure_command = "neurospaces_configure $profile_configuration";
 
-        if( $option_universal )
+        if ( $option_universal )
 	{
-
-	  $configure_command .= " --universal";
-
+	    $configure_command .= " --universal";
         }
 
 	try_to($configure_command);
 
-
-	unless($option_no_install)
+	unless ($option_no_install)
 	{
-	  # install without check
+	    # install without check
 
-	  try_to("neurospaces_install");
+	    try_to("neurospaces_install");
 
-	  # uninstall again
+	    # uninstall again
 
-	  try_to("neurospaces_uninstall");
+	    try_to("neurospaces_uninstall");
 
-	  install_developer();
-
+	    install_developer();
 	}
 
 	# check with install
 
-	unless($option_no_check)
+	unless ($option_no_check)
 	{
-	  try_to("neurospaces_check");
+	    try_to("neurospaces_check");
 	}
-
-
 
 	# If we set a valid pkgdeb directory to 
 	# hold our debian packages we invoke our package build.
-	if(-d $option_deb_directory)
+
+	if (-d $option_deb_directory)
 	{
-	  print "Building Debian packages.\n";
-	  build_deb();
+	    print "Building Debian packages.\n";
+
+	    build_deb();
 	}
 
-	if(-d $option_rpm_directory)
+	if (-d $option_rpm_directory)
 	{
-	  print "Building RPM packages\n.";
-	  build_rpm();
+	    print "Building RPM packages\n.";
+
+	    build_rpm();
 	}
 
-	if(-d $option_srcdist_directory)
+	if (-d $option_srcdist_directory)
 	{
-	  print "Building source code distributions.\n";
-	  build_dist();
-	}
+	    print "Building source code distributions.\n";
 
+	    build_dist();
+	}
 
 	# uninstall again
 
-	unless($option_no_uninstall)
+	unless ($option_no_uninstall)
 	{
-		
 	   try_to("neurospaces_uninstall");
-
 	}		
 
 	install_developer();
@@ -514,17 +481,14 @@ sub main
 	#t compile, install, uninstall, check, uninstall, clean
     }
 
-
     # build docs if present in configuration
     # do this AFTER the clean so that the swig stuff doesn't get doxygenized
 
-    if( (defined $configuration->{DOXYGENOUTPUT}) || (defined $configuration->{REGTESTOUTPUT}) )
+    if ( (defined $configuration->{DOXYGENOUTPUT}) || (defined $configuration->{REGTESTOUTPUT}) )
     {
-      try_to("neurospaces_docs");
+	try_to("neurospaces_docs");
 
-
-      copy_docs();
-
+	copy_docs();
     }
 
 #     # now build tarballs
@@ -532,28 +496,22 @@ sub main
 #     my $release_label = time();
 
 #     try_to("neurospaces_dist --tag $release_label-0");
-    
-    unless($option_no_check)
+
+    unless ($option_no_check)
     {
+	# copy our individual test output files to the output directory
 
-      # copy our individual test output files to the output directory
+	copy_tests();
 
-      copy_tests();
+	# clean up after the tests.
 
-
-      # clean up after the tests.
-
-      cleanup_and_finalize();
-
+	cleanup_and_finalize();
     }
 
-
-    #
     # Performs a distclean in all source directories
     # so as to remove automake generated files like config.status
-    #
-    try_to("neurospaces_clean --distclean");
 
+    try_to("neurospaces_clean --distclean");
 
     my $status_message = produce_email_text();
 
@@ -565,101 +523,84 @@ sub main
 }
 
 
-
 #
 # Subroutine builds debian packages and places each successfully build one
-# into it's own directory in the declared deb pkg directory. 
+# into it's own directory in the declared deb pkg directory.
 #
 sub build_deb
 {
+    my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime time;
 
-  my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime time;
+    my $deb_tmp = "/tmp/deb_builds";
 
-  my $deb_tmp = "/tmp/deb_builds";
+    $mon++;
 
-  $mon++;
+    try_to("neurospaces_pkgdeb --dir $deb_tmp --release-tag '$mon.$mday.$year'");
 
-  try_to("neurospaces_pkgdeb --dir $deb_tmp --release-tag '$mon.$mday.$year'");
+    # always end a dist build with a revert
 
-  # always end a dist build with a revert
-  try_to("neurospaces_revert");
+    try_to("neurospaces_revert");
 
-
-  if($option_deb_directory)
-  {
-
-    if(-d $option_deb_directory)
+    if ($option_deb_directory)
     {
-      
-      # first clean out whatever is in there first, then copy
-      # over our files and remove the tmp directory.
 
-      system "rm -rf $option_deb_directory/*";
+	if (-d $option_deb_directory)
+	{
+	    # first clean out whatever is in there first, then copy
+	    # over our files and remove the tmp directory.
 
-      system "cp -rf $deb_tmp/* $option_deb_directory";
+	    system "rm -rf $option_deb_directory/*";
 
-      system "rm -rf $deb_tmp";
+	    system "cp -rf $deb_tmp/* $option_deb_directory";
 
-
+	    system "rm -rf $deb_tmp";
+	}
     }
-  }
-
-
-
 }
 
 
 sub build_dist
 {
+    my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime time;
 
-  my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime time;
+    $mon++;
 
-  $mon++;
+    try_to("neurospaces_pkgtar --dir $option_srcdist_directory --release-tag '$mon.$mday.$year'");
 
-  try_to("neurospaces_pkgtar --dir $option_srcdist_directory --release-tag '$mon.$mday.$year'");
+    # always end a dist build with a revert
 
-  # always end a dist build with a revert
-  try_to("neurospaces_revert");
-
+    try_to("neurospaces_revert");
 }
-
-
 
 
 sub build_rpm
 {
+    my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime time;
 
-  my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime time;
+    my $rpm_tmp = "/tmp/rpm_builds";
 
-  my $rpm_tmp = "/tmp/rpm_builds";
+    $mon++;
 
-  $mon++;
+    try_to("neurospaces_pkgrpm --dir $rpm_tmp --release-tag '$mon.$mday.$year'");
 
-  try_to("neurospaces_pkgrpm --dir $rpm_tmp --release-tag '$mon.$mday.$year'");
+    # always end a dist build with a revert
 
-  # always end a dist build with a revert
-  try_to("neurospaces_revert");
+    try_to("neurospaces_revert");
 
-
-  if($option_rpm_directory)
-  {
-
-    if(-d $option_rpm_directory)
+    if ($option_rpm_directory)
     {
-      
-      # first clean out whatever is in there first, then copy
-      # over our files and remove the tmp directory.
+	if (-d $option_rpm_directory)
+	{
+	    # first clean out whatever is in there first, then copy
+	    # over our files and remove the tmp directory.
 
-      system "rm -rf $option_rpm_directory/*";
+	    system "rm -rf $option_rpm_directory/*";
 
-      system "cp -rf $rpm_tmp/* $option_rpm_directory";
+	    system "cp -rf $rpm_tmp/* $option_rpm_directory";
 
-      system "rm -rf $rpm_tmp";
-
-
+	    system "rm -rf $rpm_tmp";
+	}
     }
-  }
-
 }
 
 
@@ -668,351 +609,307 @@ sub build_rpm
 #
 sub parse_config_file
 {
-  my $config_file = shift;
+    my $config_file = shift;
 
-  if (! -e $config_file)
-  {
-      print "\n$config_file is an invalid filename\n";
-
-      return;
-  }
-
-  print "\nParsing configuration in $config_file\n\n";
-
-  $configuration = YAML::LoadFile($config_file);
-
-
-  if(!defined $configuration)
-  {
-
-    print "This YAML file is invalid\n";
-    return;
-
-  }
-
-  if(defined $configuration->{USER})
-  {
-    chomp($configuration->{USER});
-    print "\tTester user for this run is: $configuration->{USER}\n";
-
-  }
-
-  if(defined $configuration->{MAILTO})
-  {
-    chomp($configuration->{MAILTO});
-    print "\tSend to email: $configuration->{MAILTO}\n";
-  }
-
-  if(defined $configuration->{MAILFROM})
-  {
-    chomp($configuration->{MAILFROM});
-    print "\tSend from email: $configuration->{MAILFROM}\n";
-  }
-
-
-  if(defined $configuration->{MAILBCC})
-  {
-    chomp($configuration->{MAILBCC});
-    print "\tCourtesy copies of email are being sent to: $configuration->{MAILBCC}\n";
-  }
-
-
-  if(defined $configuration->{OUTPUTDIR})
-  {
-      #! note that this overrides an option from set by the command line
-
-      $option_output_directory = $configuration->{OUTPUTDIR};
-      chomp($option_output_directory);
-      print "\tOutput directory is $option_output_directory\n";
-  }
-
-
-  if(defined $configuration->{URL})
-  {
-      chomp($configuration->{URL});
-      print "\tOutput directory for test harness output is $configuration->{URL}\n";
-  }
-
-
-
-  if(defined $configuration->{DOXYGENOUTPUT})
-  {
-      chomp($configuration->{DOXYGENOUTPUT});
-      print "\tURL for serving the doxygen output is $configuration->{DOXYGENOUTPUT}\n";
-  }
-
-
-  if(defined $configuration->{DOXYGENURL})
-  {
-      chomp($configuration->{DOXYGENURL});
-      print "\tOutput directory for doxygen is $configuration->{DOXYGENURL}\n";
-  }
-
-
-  if(defined $configuration->{REGTESTURL})
-  {
-      chomp($configuration->{REGTESTURL});
-      print "\tURL for serving the regression tests is $configuration->{REGTESTURL}\n";
-  }
-
-
-  if(defined $configuration->{REGTESTOUTPUT})
-  {
-      chomp($configuration->{REGTESTOUTPUT});
-      print "\tOutput directory for regression tests is $configuration->{DOXYGENOUTPUT}\n";
-  }
-
-
-  if(defined $configuration->{LOGROTATE})
-  {
-
-    chomp($configuration->{LOGROTATE});
-    print "\tNumber of logs to rotate $configuration->{LOGROTATE}\n";
-
-  }
-
-
-  if(defined $configuration->{LOGDIR})
-  {
-
-    chomp($configuration->{LOGDIR});
-    print "\tDirectory to store past logs is $configuration->{LOGDIR}\n";
-
-  }
-
-
-  if(defined $configuration->{NOCHECK})
-  {
-    chomp($configuration->{NOCHECK});
-
-    if( uc($configuration->{NOCHECK}) eq "TRUE")
+    if (! -e $config_file)
     {
-      print "\tOption \'no check\' is set, tests will not be run.\n";
-      $option_no_check = 1;
+	print "\n$config_file is an invalid filename\n";
+
+	return;
     }
 
-  }
+    print "\nParsing configuration in $config_file\n\n";
 
+    $configuration = YAML::LoadFile($config_file);
 
-
-  if(defined $configuration->{NOPULL})
-  {
-    chomp($configuration->{NOPULL});
-
-    if( uc($configuration->{NOPULL}) eq "TRUE")
+    if (!defined $configuration)
     {
-      print "\tOption \'no pull\' is set, a repository pull will not be done.\n";
-      $option_no_pull = 1;
+	print "This YAML file is invalid\n";
+	return;
     }
 
-  }
-
-  if(defined $configuration->{NOINSTALL})
-  {
-    chomp($configuration->{NOINSTALL});
-
-    if( uc($configuration->{NOINSTALL}) eq "TRUE")
+    if (defined $configuration->{USER})
     {
-      print "\tOption \'no install\' is set, an installation across all packages will not be run.\n";
-      $option_no_install = 1;
+	chomp($configuration->{USER});
+	print "\tTester user for this run is: $configuration->{USER}\n";
     }
 
-  }
-
-  if(defined $configuration->{NOUNINSTALL})
-  {
-    chomp($configuration->{NOUNINSTALL});
-
-    if( uc($configuration->{NOUNINSTALL}) eq "TRUE")
+    if (defined $configuration->{MAILTO})
     {
-      print "\tOption \'no uninstall\' is set, an uninstallation will not take place at the end of the run.\n";
-      $option_no_uninstall = 1;
+	chomp($configuration->{MAILTO});
+	print "\tSend to email: $configuration->{MAILTO}\n";
     }
 
-  }
-
-
-
-
-
-  if(defined $configuration->{PKGDEB})
-  {
-    chomp($configuration->{PKGDEB});
-
-    $option_deb_directory = $configuration->{PKGDEB};
-    print "\tDirectory to store debian packages is $option_deb_directory\n";
-
-  }
-
-  if(defined $configuration->{PKGDEBURL})
-  {
-      chomp($configuration->{PKGDEBURL});
-      print "\tDirectory for built debian packages is $configuration->{PKGDEBURL}\n";
-  }
-
-  if(defined $configuration->{RPMDIR})
-  {
-    chomp($configuration->{RPMDIR});
-
-    $option_rpm_directory = $configuration->{RPMDIR};
-    print "\tDirectory to store RPM packages is $option_rpm_directory\n";
-
-  }
-
-  if(defined $configuration->{RPMURL})
-  {
-      chomp($configuration->{RPMURL});
-      print "\tDirectory for built RPM packages is $configuration->{RPMURL}\n";
-  }
-
-  if(defined $configuration->{SRCDIST})
-  {
-    chomp($configuration->{SRCDIST});
-
-    $option_srcdist_directory = $configuration->{SRCDIST};
-    print "\tDirectory to store source tarballs is $option_srcdist_directory\n";
-  }
-
-  if(defined $configuration->{SRCDISTURL})
-  {
-      chomp($configuration->{SRCDISTURL});
-      print "\tDirectory for source tarballs is $configuration->{SRCDISTURL}\n";
-  }
-
-
-
-
-  if(defined $configuration->{UNIVERSAL})
-  {
-    chomp($configuration->{UNIVERSAL});
-
-    if( uc($configuration->{UNIVERSAL}) eq "TRUE")
+    if (defined $configuration->{MAILFROM})
     {
-      if( $Config{osname} eq "darwin" )
-      {
-        print "\tOption \'universal\' is set, Universal binaries will be built.\n";
-        $option_universal = 1;
-      }
-      else
-      {
-	print "\tCan't set Option \'universal\', only available on Mac OS X\n";
-      }
+	chomp($configuration->{MAILFROM});
+	print "\tSend from email: $configuration->{MAILFROM}\n";
     }
 
-  }
+    if (defined $configuration->{MAILBCC})
+    {
+	chomp($configuration->{MAILBCC});
+	print "\tCourtesy copies of email are being sent to: $configuration->{MAILBCC}\n";
+    }
 
+    if (defined $configuration->{OUTPUTDIR})
+    {
+	#! note that this overrides an option from set by the command line
 
-  print "Done Parsing $config_file:\n";
+	$option_output_directory = $configuration->{OUTPUTDIR};
+	chomp($option_output_directory);
+	print "\tOutput directory is $option_output_directory\n";
+    }
 
+    if (defined $configuration->{URL})
+    {
+	chomp($configuration->{URL});
+	print "\tOutput directory for test harness output is $configuration->{URL}\n";
+    }
+
+    if (defined $configuration->{DOXYGENOUTPUT})
+    {
+	chomp($configuration->{DOXYGENOUTPUT});
+	print "\tURL for serving the doxygen output is $configuration->{DOXYGENOUTPUT}\n";
+    }
+
+    if (defined $configuration->{DOXYGENURL})
+    {
+	chomp($configuration->{DOXYGENURL});
+	print "\tOutput directory for doxygen is $configuration->{DOXYGENURL}\n";
+    }
+
+    if (defined $configuration->{REGTESTURL})
+    {
+	chomp($configuration->{REGTESTURL});
+	print "\tURL for serving the regression tests is $configuration->{REGTESTURL}\n";
+    }
+
+    if (defined $configuration->{REGTESTOUTPUT})
+    {
+	chomp($configuration->{REGTESTOUTPUT});
+	print "\tOutput directory for regression tests is $configuration->{DOXYGENOUTPUT}\n";
+    }
+
+    if (defined $configuration->{LOGROTATE})
+    {
+	chomp($configuration->{LOGROTATE});
+	print "\tNumber of logs to rotate $configuration->{LOGROTATE}\n";
+    }
+
+    if (defined $configuration->{LOGDIR})
+    {
+	chomp($configuration->{LOGDIR});
+	print "\tDirectory to store past logs is $configuration->{LOGDIR}\n";
+    }
+
+    if (defined $configuration->{NOCHECK})
+    {
+	chomp($configuration->{NOCHECK});
+
+	if ( uc($configuration->{NOCHECK}) eq "TRUE")
+	{
+	    print "\tOption \'no check\' is set, tests will not be run.\n";
+	    $option_no_check = 1;
+	}
+    }
+
+    if (defined $configuration->{NOPULL})
+    {
+	chomp($configuration->{NOPULL});
+
+	if ( uc($configuration->{NOPULL}) eq "TRUE")
+	{
+	    print "\tOption \'no pull\' is set, a repository pull will not be done.\n";
+	    $option_no_pull = 1;
+	}
+    }
+
+    if (defined $configuration->{NOINSTALL})
+    {
+	chomp($configuration->{NOINSTALL});
+
+	if ( uc($configuration->{NOINSTALL}) eq "TRUE")
+	{
+	    print "\tOption \'no install\' is set, an installation across all packages will not be run.\n";
+	    $option_no_install = 1;
+	}
+    }
+
+    if (defined $configuration->{NOUNINSTALL})
+    {
+	chomp($configuration->{NOUNINSTALL});
+
+	if ( uc($configuration->{NOUNINSTALL}) eq "TRUE")
+	{
+	    print "\tOption \'no uninstall\' is set, an uninstallation will not take place at the end of the run.\n";
+	    $option_no_uninstall = 1;
+	}
+    }
+
+    if (defined $configuration->{PKGDEB})
+    {
+	chomp($configuration->{PKGDEB});
+
+	$option_deb_directory = $configuration->{PKGDEB};
+	print "\tDirectory to store debian packages is $option_deb_directory\n";
+    }
+
+    if (defined $configuration->{PKGDEBURL})
+    {
+	chomp($configuration->{PKGDEBURL});
+	print "\tDirectory for built debian packages is $configuration->{PKGDEBURL}\n";
+    }
+
+    if (defined $configuration->{RPMDIR})
+    {
+	chomp($configuration->{RPMDIR});
+
+	$option_rpm_directory = $configuration->{RPMDIR};
+	print "\tDirectory to store RPM packages is $option_rpm_directory\n";
+    }
+
+    if (defined $configuration->{RPMURL})
+    {
+	chomp($configuration->{RPMURL});
+	print "\tDirectory for built RPM packages is $configuration->{RPMURL}\n";
+    }
+
+    if (defined $configuration->{SRCDIST})
+    {
+	chomp($configuration->{SRCDIST});
+
+	$option_srcdist_directory = $configuration->{SRCDIST};
+	print "\tDirectory to store source tarballs is $option_srcdist_directory\n";
+    }
+
+    if (defined $configuration->{SRCDISTURL})
+    {
+	chomp($configuration->{SRCDISTURL});
+	print "\tDirectory for source tarballs is $configuration->{SRCDISTURL}\n";
+    }
+
+    if (defined $configuration->{UNIVERSAL})
+    {
+	chomp($configuration->{UNIVERSAL});
+
+	if ( uc($configuration->{UNIVERSAL}) eq "TRUE")
+	{
+	    if ( $Config{osname} eq "darwin" )
+	    {
+		print "\tOption \'universal\' is set, Universal binaries will be built.\n";
+		$option_universal = 1;
+	    }
+	    else
+	    {
+		print "\tCan't set Option \'universal\', only available on Mac OS X\n";
+	    }
+	}
+
+    }
+
+    print "Done Parsing $config_file:\n";
 }
-
 
 # also look at the content-framework cron script.
 
 sub produce_email_text
 {
+    my $outputfile = $option_output_directory . "/" . $output_filename;
 
-  my $outputfile = $option_output_directory . "/" . $output_filename;
+    #   try_to("echo testing command line grep -B 10 die $outputfile", 1);
 
-#   try_to("echo testing command line grep -B 10 die $outputfile", 1);
+    my $status_message = "";
+    my $errorcounts = `cat $outputfile | grep 'error_count'`;
+    my $revisions = `cat $outputfile | grep "base_revision_id"`;
+    my $die_messages = `grep -v 't/died\.\.\.\.' $outputfile | grep -v 't/dont_overwrite_die_handler' | grep -v 't/subtest/die' | grep -v 't/Tester/tbt_03die' | grep -B 15 die`;
 
-  my $status_message = "";
-  my $errorcounts = `cat $outputfile | grep 'error_count'`;
-  my $revisions = `cat $outputfile | grep "base_revision_id"`;
-  my $die_messages = `grep -v 't/died\.\.\.\.' $outputfile | grep -v 't/dont_overwrite_die_handler' | grep -v 't/subtest/die' | grep -v 't/Tester/tbt_03die' | grep -B 15 die`;
+    $status_message
+	.= (
+	    "$0:\nCheck for your output on the host machine here "
+	    . $option_output_directory
+	    . "/"
+	    . $output_filename . "\n"
+	   );
 
-  $status_message
-      .= (
-	  "$0:\nCheck for your output on the host machine here "
-	  . $option_output_directory
-	  . "/"
-	  . $output_filename . "\n"
-	 );
-
-  if ($option_universal)
-  {
-
-    $status_message .= "This build was built as universal binaries\n";
-
-  }
-
-  if (defined $configuration->{URL})
-  {
-      $status_message .= "Check the test output over the web via this link " . $configuration->{URL} . "\n";
-  }
-
-
-  if(defined $configuration->{DOXYGENOUTPUT})
-  {
-    $status_message .= "\nCheck for the Doxygen output locally in this directory " . $configuration->{DOXYGENOUTPUT} . "\n";
-  }
-
-  if(defined $configuration->{DOXYGENURL})
-  {
-    $status_message .= "\nCheck the Doxygen output over the web via this link " . $configuration->{DOXYGENURL} . "\n";
-  }
-
-
-  if(defined $configuration->{REGTESTOUTPUT})
-  {
-    $status_message .= "\nCheck for the regression test output locally in this directory " . $configuration->{REGTESTOUTPUT} . "\n";
-  }
-
-  if(defined $configuration->{REGTESTURL})
-  {
-    $status_message .= "\nCheck the regression test output over the web via this link " . $configuration->{REGTESTURL} . "\n";
-  }
-
-  if(defined $configuration->{PKGDEBURL})
-  {
-    $status_message .= "\nThe debian packages built on this run are available via this link " . $configuration->{PKGDEBURL} . "\n";
-
-    my $debian_build_errors = `cat $outputfile | grep "Debian package for package" | grep "was not created"`;
-
-    if($debian_build_errors ne "")
+    if ($option_universal)
     {
-      $status_message .= "Debian Build Messages:\n";
-      $status_message .= $debian_build_errors;
-      $status_message .= "\n";
-    }
-  }
-
-  if(defined $configuration->{RPMURL})
-  {
-    $status_message .= "\nThe RPM packages built on this run are available via this link " . $configuration->{RPMURL} . "\n";
-
-    my $rpm_build_errors = `cat $outputfile | grep "RPM file for package" | grep "was not created"`;
-
-
-    if($rpm_build_errors ne "")
-    {
-      $status_message .= "RPM Build Messages:\n";
-      $status_message .= $rpm_build_errors;
-      $status_message .= "\n";
+	$status_message .= "This build was built as universal binaries\n";
     }
 
-  }
-
-  if(defined $configuration->{SRCDISTURL})
-  {
-    my $tarball_build_errors = `cat $outputfile | grep "Source dist for package" | grep "was not created"`;
-
-    if($tarball_build_errors ne "")
+    if (defined $configuration->{URL})
     {
-      $status_message .= "RPM Build Messages:\n";
-      $status_message .= $tarball_build_errors;
-      $status_message .= "\n";
+	$status_message .= "Check the test output over the web via this link " . $configuration->{URL} . "\n";
     }
 
-  }
+    if (defined $configuration->{DOXYGENOUTPUT})
+    {
+	$status_message .= "\nCheck for the Doxygen output locally in this directory " . $configuration->{DOXYGENOUTPUT} . "\n";
+    }
 
-  $status_message .= "\nRevisions:\n" . $revisions . "\n";
-  $status_message .= "\nError Counts:\n" . $errorcounts . "\n";
-  $status_message .= "\nDie Messages:\n" . $die_messages . "\n";
-	
+    if (defined $configuration->{DOXYGENURL})
+    {
+	$status_message .= "\nCheck the Doxygen output over the web via this link " . $configuration->{DOXYGENURL} . "\n";
+    }
 
-  return $status_message;
 
+    if (defined $configuration->{REGTESTOUTPUT})
+    {
+	$status_message .= "\nCheck for the regression test output locally in this directory " . $configuration->{REGTESTOUTPUT} . "\n";
+    }
+
+    if (defined $configuration->{REGTESTURL})
+    {
+	$status_message .= "\nCheck the regression test output over the web via this link " . $configuration->{REGTESTURL} . "\n";
+    }
+
+    if (defined $configuration->{PKGDEBURL})
+    {
+	$status_message .= "\nThe debian packages built on this run are available via this link " . $configuration->{PKGDEBURL} . "\n";
+
+	my $debian_build_errors = `cat $outputfile | grep "Debian package for package" | grep "was not created"`;
+
+	if ($debian_build_errors ne "")
+	{
+	    $status_message .= "Debian Build Messages:\n";
+	    $status_message .= $debian_build_errors;
+	    $status_message .= "\n";
+	}
+    }
+
+    if (defined $configuration->{RPMURL})
+    {
+	$status_message .= "\nThe RPM packages built on this run are available via this link " . $configuration->{RPMURL} . "\n";
+
+	my $rpm_build_errors = `cat $outputfile | grep "RPM file for package" | grep "was not created"`;
+
+	if ($rpm_build_errors ne "")
+	{
+	    $status_message .= "RPM Build Messages:\n";
+	    $status_message .= $rpm_build_errors;
+	    $status_message .= "\n";
+	}
+
+    }
+
+    if (defined $configuration->{SRCDISTURL})
+    {
+	my $tarball_build_errors = `cat $outputfile | grep "Source dist for package" | grep "was not created"`;
+
+	if ($tarball_build_errors ne "")
+	{
+	    $status_message .= "RPM Build Messages:\n";
+	    $status_message .= $tarball_build_errors;
+	    $status_message .= "\n";
+	}
+
+    }
+
+    $status_message .= "\nRevisions:\n" . $revisions . "\n";
+    $status_message .= "\nError Counts:\n" . $errorcounts . "\n";
+    $status_message .= "\nDie Messages:\n" . $die_messages . "\n";
+
+    return $status_message;
 }
 
 
@@ -1063,84 +960,85 @@ sub try_to
 }
 
 
-
 # Rotates logs with the name '$logname'
-#
+
 sub rotate_logs
 {
+    my $output_dir = $configuration->{OUTPUTDIR};
 
-  my $output_dir = $configuration->{OUTPUTDIR};
-  my $logname = $output_filename;
-  my $numlogs  = -1;
+    my $logname = $output_filename;
 
-  if(not defined $configuration->{LOGROTATE})
-  {
-    #i If we aren't rotating logs when we just delete 
-    #i the log from the last run.
-    #i
-    if (-e $logname)
+    my $numlogs  = -1;
+
+    if (not defined $configuration->{LOGROTATE})
     {
-	system "rm -f $logname";
-    }
-    return;
-  }
-  else
-  {
-    $numlogs = $configuration->{LOGROTATE};
-  }
-
-
-  my $logdir = $output_dir;
-
-
-  if(defined $configuration->{LOGDIR})
-  {
-
-    $logdir = $configuration->{LOGDIR};
-
-    if(! -d $logdir)
-    {
-      mkdir $logdir
-    }
-
-    $logdir .= "/";
-  }
-
-
-  # we shift all of our logs if present. 
-  # Whatever log happens to be the last one should
-  # get overwritten with a previous log.
-  my $i;
-  for($i = $numlogs-1; $i > -1; $i--)
-  {
-
-    my $log = $logdir . $logname .'.' . $i;
-
-    if( -e $log )
-    {
-
-      # mv should preserve permissions.
-
-      my $nextlog = $logdir . $logname . '.' . ($i+1);
-
-      system "mv -f $log $nextlog";
-
+	#i If we aren't rotating logs when we just delete 
+	#i the log from the last run.
+	#i
+	if (-e $logname)
+	{
+	    system "rm -f $logname";
+	}
+	return;
     }
     else
     {
-      next;
+	$numlogs = $configuration->{LOGROTATE};
     }
 
-  }
 
-  # after the shift, we should be able to move the 
-  # first log to slot 0. Now the original slot is open
-  # for a log run.
-  my $nextlog = $logdir . $logname . '.' . 0;
-  system "mv -f $logname $nextlog";
+    my $logdir = $output_dir;
 
-  return;
 
+    if (defined $configuration->{LOGDIR})
+    {
+
+	$logdir = $configuration->{LOGDIR};
+
+	if (! -d $logdir)
+	{
+	    mkdir $logdir
+	}
+
+	$logdir .= "/";
+    }
+
+
+    # we shift all of our logs if present. 
+    # Whatever log happens to be the last one should
+    # get overwritten with a previous log.
+
+    my $i;
+
+    for ($i = $numlogs-1; $i > -1; $i--)
+    {
+
+	my $log = $logdir . $logname .'.' . $i;
+
+	if ( -e $log )
+	{
+
+	    # mv should preserve permissions.
+
+	    my $nextlog = $logdir . $logname . '.' . ($i+1);
+
+	    system "mv -f $log $nextlog";
+	}
+	else
+	{
+	    next;
+	}
+    }
+
+    # after the shift, we should be able to move the 
+    # first log to slot 0. Now the original slot is open
+    # for a log run.
+
+    my $nextlog = $logdir . $logname . '.' . 0;
+
+    system "mv -f $logname $nextlog";
+
+    return;
 }
 
 
@@ -1153,55 +1051,53 @@ sub rotate_logs
 sub try_to_mail
 {
     my $subject = shift;
+
     my $message = shift;
 
     my $sendto = "";
+
     if (!defined $configuration->{MAILTO})
     {
 	return;
     }
     else
     {
-
       $sendto = $configuration->{MAILTO};
-
     }
 
     my $replyto = "";
-    if(defined $configuration->{MAILFROM})
+
+    if (defined $configuration->{MAILFROM})
     {
-
-      $replyto = $configuration->{MAILFROM};
-
+	$replyto = $configuration->{MAILFROM};
     }
-
 
     my $bcc = "";
-    if(defined $configuration->{MAILBCC})
+
+    if (defined $configuration->{MAILBCC})
     {
-
       $bcc = $configuration->{MAILBCC};
-
     }
-
 
     open(MAIL, "|/usr/sbin/sendmail -oi -t");
+
     print MAIL "To: $sendto\n";
 
-    if($replyto ne "")
+    if ($replyto ne "")
     {
-      print MAIL "From: $replyto\n";
+	print MAIL "From: $replyto\n";
     }
 
-    if($bcc ne "")
+    if ($bcc ne "")
     {
-      print MAIL "Bcc: $bcc\n";
+	print MAIL "Bcc: $bcc\n";
     }
 
     print MAIL "Subject: $subject\n\n";
-    print MAIL "$message\n";
-    close(MAIL);
 
+    print MAIL "$message\n";
+
+    close(MAIL);
 }
 
 
