@@ -973,13 +973,13 @@ sub rotate_logs
 
     if (not defined $configuration->{LOGROTATE})
     {
-	#i If we aren't rotating logs when we just delete 
-	#i the log from the last run.
-	#i
+	# if not rotating logs, delete the log from the last run.
+
 	if (-e $logname)
 	{
 	    system "rm -f $logname";
 	}
+
 	return;
     }
     else
@@ -987,13 +987,10 @@ sub rotate_logs
 	$numlogs = $configuration->{LOGROTATE};
     }
 
-
     my $logdir = $output_dir;
-
 
     if (defined $configuration->{LOGDIR})
     {
-
 	$logdir = $configuration->{LOGDIR};
 
 	if (! -d $logdir)
@@ -1004,8 +1001,7 @@ sub rotate_logs
 	$logdir .= "/";
     }
 
-
-    # we shift all of our logs if present. 
+    # we shift all of our logs if present.
     # Whatever log happens to be the last one should
     # get overwritten with a previous log.
 
@@ -1014,14 +1010,14 @@ sub rotate_logs
     for ($i = $numlogs-1; $i > -1; $i--)
     {
 
-	my $log = $logdir . $logname .'.' . $i;
+	my $log = $logdir . $logname . '.' . $i;
 
 	if ( -e $log )
 	{
 
 	    # mv should preserve permissions.
 
-	    my $nextlog = $logdir . $logname . '.' . ($i+1);
+	    my $nextlog = $logdir . $logname . '.' . ($i + 1);
 
 	    system "mv -f $log $nextlog";
 	}
