@@ -605,9 +605,6 @@ sub build_rpm
 }
 
 
-#
-# ($config_file) a file with a configuration in it.
-#
 sub parse_config_file
 {
     my $config_file = shift;
