@@ -72,9 +72,10 @@ options :
 read_cmd_line();
 
 # read config
-if(!-e './release-expand.config')
+
+if (!-e './release-expand.config')
 {
-  die "Error: \'release-expand.config\' file is not found.\n";
+    die "Error: \'release-expand.config\' file is not found.\n";
 }
 
 my $config = do './release-expand.config';
@@ -83,34 +84,35 @@ my $config = do './release-expand.config';
 # Priority will be Arguments first, config file second.
 
 # set default keyword values
-if($option_package)
+
+if ($option_package)
 {
-  $config->{labels}->{package} = $option_package;
+    $config->{labels}->{package} = $option_package;
 }
 
-if($option_major)
+if ($option_major)
 {
-  $config->{labels}->{major} = $option_major;
+    $config->{labels}->{major} = $option_major;
 }
 
-if($option_minor)
+if ($option_minor)
 {
-  $config->{labels}->{minor} = $option_minor;
+    $config->{labels}->{minor} = $option_minor;
 }
 
-if($option_micro)
+if ($option_micro)
 {
-  $config->{labels}->{micro} = $option_micro;
+    $config->{labels}->{micro} = $option_micro;
 }
 
-if($option_label)
+if ($option_label)
 {
-  $config->{labels}->{label} = $option_label;
+    $config->{labels}->{label} = $option_label;
 }
 
-if($option_email)
+if ($option_email)
 {
-  $config->{labels}->{email} = $option_email;
+    $config->{labels}->{email} = $option_email;
 }
 
 # loop over all files with keywords
@@ -124,7 +126,7 @@ foreach my $file (@$files)
 	print STDERR "Expanding in $file\n";
     }
 
-    unless(-e $file)
+    unless (-e $file)
     {
 	print STDERR "$0: *** Error: $file does not exist\n";
 
@@ -138,8 +140,11 @@ foreach my $file (@$files)
 
 	open my $descriptor, $file
 	    or die $!;
+
 	undef $/;
+
 	$content = <$descriptor>;
+
 	close $descriptor;
     }
 
