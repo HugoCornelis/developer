@@ -145,7 +145,8 @@ my $all_packages
 		     order => 2.5,
 		     version_control => {
 					 port_number => 4706,
-					 server => '91.183.94.6',
+					 repository => "$ENV{HOME}/neurospaces_project/MTN/chemesis3.mtn",
+					 #server => '91.183.94.6',
 					},
 		    },
        configuration => {
