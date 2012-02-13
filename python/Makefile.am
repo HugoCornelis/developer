@@ -5,9 +5,12 @@
 # 	neurospaces/__cbi__.py \
 # 	neurospaces/__init__.py 
 
-# nobase_dist_python_DATA = \
-# 	neurospaces/__cbi__.py \
-# 	neurospaces/__init__.py 
+nobase_dist_python_DATA = \
+	neurospaces/__cbi__.py \
+	neurospaces/__init__.py \
+	neurospaces/launcher.py \
+	neurospaces/packages.py \
+	neurospaces/shell.py 
 
 
 EXTRA_DIST = \
