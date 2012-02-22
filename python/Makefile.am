@@ -5,15 +5,15 @@
 # 	neurospaces/__cbi__.py \
 # 	neurospaces/__init__.py 
 
-nobase_dist_python_DATA = \
+#nobase_dist_python_DATA = 
+
+
+EXTRA_DIST = \
 	neurospaces/__cbi__.py \
 	neurospaces/__init__.py \
 	neurospaces/launcher.py \
 	neurospaces/packages.py \
-	neurospaces/shell.py 
-
-
-EXTRA_DIST = \
+	neurospaces/shell.py \
 	clean.py \
 	setup.py \
 	uninstall.py \

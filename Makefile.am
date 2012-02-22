@@ -104,6 +104,7 @@ clean-local:
 	$(RM) -f $(top_srcdir)/build_*.log
 	$(RM) -rf $(top_srcdir)/*_BUILD/
 	$(RM) $(top_srcdir)/developer-*.tar.gz
+	$(RM) -rf $(top_srcdir)/developer-*
 
 dist-hook: 
 	$(srcdir)/install-sh -d $(distdir)/tests
