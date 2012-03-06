@@ -1,0 +1,16 @@
+$files = {
+           '_<bin/neurospaces_new_component' => [
+                                                  {
+                                                    'expr' => undef,
+                                                    'value' => '1',
+                                                    'text' => '    foreach my $component_name (@$option_component_names)
+',
+                                                    'fname' => 'bin/neurospaces_new_component',
+                                                    'type' => 'user',
+                                                    'line' => '44'
+                                                  }
+                                                ]
+         };
+$expr_list = [];
+$eval_saved_text = undef;
+$main_win_geometry = '1594x820+0+0';
