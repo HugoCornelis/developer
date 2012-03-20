@@ -514,9 +514,6 @@ sub main
 
     try_to("neurospaces_clean --distclean");
 
-    # Just added this to prevent any conflicts from tag updates.
-    try_to("neurospaces_revert");
-
     my $status_message = produce_email_text();
 
     try_to_mail("neurospaces_cron finished", $status_message);
