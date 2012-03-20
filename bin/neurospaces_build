@@ -3915,6 +3915,23 @@ sub read_cmd_line
 
 		my $package_name = $package_information->{package_name};
 
+
+		#----- This section of code changes the directory
+		my $current_directory = getcwd();
+
+		if ($option_verbose > 1)
+		{
+		  print "$0: package $package_name, chdir from ($current_directory) to ($directory)\n";
+		}
+
+		my $success = chdir $directory;
+
+		if (!$success)
+		{
+		  die "$0: *** Error: package $package_name cannot change from directory ($current_directory) to directory ($directory): $!";
+		}
+		#------ End directory change
+
 		#t where does this default value come from?  Cannot work correctly?
 
 		my $repository_name
@@ -3973,6 +3990,15 @@ sub read_cmd_line
 
 
 		}
+		
+		#----- Change back to the previous current directory
+		$success = chdir $current_directory;
+
+		if (!$success)
+		{
+		  die "$0: *** Error: package $package_name, cannot change from directory ($directory) to directory ($current_directory): $!";
+		}
+		#---- End directory rechange
 
 	    }
 
