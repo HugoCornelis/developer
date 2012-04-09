@@ -39,7 +39,7 @@ my $option_verbose;
 }
 
 my $clean_options = defined $option_clean ? "--clean " x $option_clean : '';
-my $configure_options = defined $option_configure ? "--configure " x $option_configure : '--no-configure';
+my $configure_options = $option_configure ? "--configure " x $option_configure : '--no-configure';
 my $verbose_options = defined $option_verbose ? "--verbose " x $option_verbose : '';
 my $developer_options = defined $option_developer ? "--developer " x $option_developer : '';
 my $regex_options = defined $option_regex_selector ? "--regex '$option_regex_selector' " : '';

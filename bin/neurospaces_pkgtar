@@ -76,7 +76,7 @@ my $option_verbose;
 my $clean_options = defined $option_clean ? "--clean " x $option_clean : '';
 my $distclean_options = defined $option_distclean ? "--distclean " x $option_distclean : '';
 my $dir_options = defined $option_dir ? "--pkg-tar-dir $option_dir " : "";
-my $configure_options = defined $option_configure ? "--configure " x $option_configure : '--no-configure';
+my $configure_options = $option_configure ? "--configure " x $option_configure : '--no-configure';
 my $version_options = defined $option_version_tag ? "--version-tag  '$option_version_tag' " : '';
 my $release_options = defined $option_release_tag ? "--release-tag '$option_release_tag' " : '';
 my $verbose_options = defined $option_verbose ? "--verbose " x $option_verbose : '';
