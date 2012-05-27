@@ -14,9 +14,9 @@ my $build_database = Load($build_database_yaml);
 
 my $all_packages = $build_database->{all_packages};
 
-my $__component_name___directory = $all_packages->{__component_name__}->{directory};
+my $directory = $all_packages->{'__component_name__'}->{directory};
 
-system "cd \"$__component_name___directory\" && __component_name__-check";
+system "cd \"$directory\" && __component_name__-check";
 
 if ($?)
 {
