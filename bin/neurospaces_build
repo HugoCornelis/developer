@@ -124,8 +124,8 @@ my $all_packages
 				    },
 		      order => 1.5,
 		      version_control => {
+					  branch_name => 0,
 					  port_number => 4703,
-					  repository => "$ENV{HOME}/neurospaces_project/MTN/experiment.mtn",
 					 },
 		     },
        chemesis3 => {
@@ -144,8 +144,8 @@ my $all_packages
 				   },
 		     order => 2.5,
 		     version_control => {
+					 branch_name => 0,
 					 port_number => 4706,
-					 repository => "$ENV{HOME}/neurospaces_project/MTN/chemesis3.mtn",
 					 #server => '91.183.94.6',
 					},
 		    },
@@ -182,8 +182,8 @@ my $all_packages
 		  directory => "$ENV{HOME}/neurospaces_project/gshell/source/snapshots/0",
 		  order => 13,
 		  version_control => {
+				      branch_name => 0,
 				      port_number => 4699,
-				      repository => "$ENV{HOME}/neurospaces_project/MTN/gshell.mtn",
 				     },
 		  version_script => 'genesis-g3 --version',
 		 },
@@ -192,6 +192,7 @@ my $all_packages
 		   disabled => 'g-tube is not complete yet',
 		   order => 30,
 		   version_control => {
+				       branch_name => 0,
 				       repository => "$ENV{HOME}/neurospaces_project/g-tube/source/snapshots/0/.hg",
 				      },
 		   version_script => 0,
@@ -214,8 +215,8 @@ my $all_packages
 				},
 		  order => 2,
 		  version_control => {
+				      branch_name => 0,
 				      port_number => 4694,
-				      repository => "$ENV{HOME}/neurospaces_project/MTN/heccer.mtn",
 				     },
 		 },
        developer => {
@@ -223,8 +224,8 @@ my $all_packages
 		     disabled => 0, # disabled => 1,
 		     order => 0,
 		     version_control => {
+					 branch_name => 0,
 					 port_number => 4696,
-					 repository => "$ENV{HOME}/neurospaces_project/MTN/developer.mtn",
 					},
 		     version_script => 'neurospaces_build --version',
 		    },
@@ -243,8 +244,8 @@ my $all_packages
 					   },
 			     order => 1,
 			     version_control => {
+						 branch_name => 0,
 						 port_number => 4693,
-						 repository => "$ENV{HOME}/neurospaces_project/MTN/model-container.mtn",
 						},
 			    },
        exchange => {
@@ -254,8 +255,8 @@ my $all_packages
 		    directory => "$ENV{HOME}/neurospaces_project/exchange/source/snapshots/0",
 		    order => 6.5,
 		    version_control => {
+					branch_name => 0,
 					port_number => 4701,
-					repository => "$ENV{HOME}/neurospaces_project/MTN/exchange.mtn",
 				       },
 		    version_script => 'neurospaces_exchange --version',
 		   },
@@ -297,8 +298,8 @@ my $all_packages
 						    },
 				  },
 		    version_control => {
+					branch_name => 0,
 					port_number => 4692,
-					repository => "$ENV{HOME}/neurospaces_project/MTN/ns-sli.mtn",
 				       },
 		    version_script => 0,
 		   },
@@ -312,6 +313,7 @@ my $all_packages
 			     disabled => 1,
 			     order => 7,
 			     version_control => {
+						 branch_name => 0,
 						 port_number => 4697,
 						 repository => "$ENV{HOME}/neurospaces_project/MTN/neurospacesweb.mtn",
 						},
@@ -322,8 +324,8 @@ my $all_packages
 			disabled => 'Allan\'s experiment working area',
 			order => 32,
 			version_control => {
+					    branch_name => 0,
 					    port_number => 4702,
-					    repository => "$ENV{HOME}/neurospaces_project/MTN/publications.mtn",
 					   },
 			version_script => 0,
 		       },
@@ -332,8 +334,8 @@ my $all_packages
 		disabled => 'slow progress, yet important',
 		order => 29,
 		version_control => {
+				    branch_name => 0,
 				    port_number => 4704,
-				    repository => "$ENV{HOME}/neurospaces_project/MTN/rtxi.mtn",
 				   },
 		version_script => 0,
 	       },
@@ -346,8 +348,8 @@ my $all_packages
 	       disabled => 0,
 	       order => 3,
 	       version_control => {
+				   branch_name => 0,
 				   port_number => 4695,
-				   repository => "$ENV{HOME}/neurospaces_project/MTN/ssp.mtn",
 				  },
 	      },
 
@@ -360,8 +362,8 @@ my $all_packages
 # 	       disabled => "Still under development.",
 	       order => 3.1,
 	       version_control => {
+				   branch_name => 0,
 				   port_number => 4705,
-				   repository => "$ENV{HOME}/neurospaces_project/MTN/sspy.mtn",
 				  },
 	      },
 
@@ -375,8 +377,8 @@ my $all_packages
 		  disabled => 0,
 		  order => 5,
 		  version_control => {
+				      branch_name => 0,
 				      port_number => 4698,
-				      repository => "$ENV{HOME}/neurospaces_project/MTN/studio.mtn",
 				     },
 		  version_script => 'neurospaces --version',
 		 },
@@ -391,8 +393,8 @@ my $all_packages
 		    disabled => 0,
 		    order => 31,
 		    version_control => {
+					branch_name => 0,
 					port_number => 4700,
-					repository => "$ENV{HOME}/neurospaces_project/MTN/userdocs.mtn",
 				       },
 		    version_script => 0,
 		   },
@@ -1877,7 +1879,12 @@ sub read_cmd_line
 
 		if ($repository_name =~ m/^.*\.mtn$/)
 		{
-		    #t MONOTONE
+		    # monotone
+
+		    my $branch_name
+			= (exists $package_information->{package}->{version_control}->{branch_name}
+			   ? $package_information->{package}->{version_control}->{branch_name}
+			   : $package_name);
 
 		    operation_execute
 			(
@@ -1891,7 +1898,7 @@ sub read_cmd_line
 			  package_name => $package_name,
 			 },
 			 [
-			  'test', '-d', '_MTN', '||', 'mtn', '--db', $repository_name, '--branch', '0', 'setup',
+			  'test', '-d', '_MTN', '||', 'mtn', '--db', $repository_name, '--branch', $branch_name, 'setup',
 			 ],
 			);
 		}
@@ -1971,9 +1978,14 @@ sub read_cmd_line
 
 		    my $repo_server = version_control_translate_server($package_information, $option_repo_clone);
 
+		    my $branch_name
+			= (exists $package_information->{package}->{version_control}->{branch_name}
+			   ? $package_information->{package}->{version_control}->{branch_name}
+			   : $package_name);
+
 		    # clone the source code in the remote repository
 
-		    #t MONOTONE
+		    # monotone
 
 		    operation_execute
 			(
@@ -1987,7 +1999,7 @@ sub read_cmd_line
 			  package_name => $package_name,
 			 },
 			 [
-			  'mtn', '--db', $repository_name, 'clone', "$repo_server:$port_number", '--branch', '0',
+			  'mtn', '--db', $repository_name, 'clone', "$repo_server:$port_number", '--branch', $branch_name,
 			 ],
 			);
 
@@ -2053,6 +2065,11 @@ sub read_cmd_line
 
 		if ($repository_name =~ m/^.*\.mtn$/)
 		{
+		    my $branch_name
+			= (exists $package_information->{package}->{version_control}->{branch_name}
+			   ? $package_information->{package}->{version_control}->{branch_name}
+			   : $package_name);
+
 		    # if allowed by the configuration, default is yes
 
 		    if (not $whole_build_configuration->{no_automated_merges})
@@ -2069,7 +2086,7 @@ sub read_cmd_line
 			      package_name => $package_name,
 			     },
 			     [
-			      'mtn', '--db', $repository_name, '--branch', '0', 'merge',
+			      'mtn', '--db', $repository_name, '--branch', $branch_name, 'merge',
 			     ],
 			    );
 		    }
@@ -2089,7 +2106,7 @@ sub read_cmd_line
 			 },
 			 [
 			  'test', '-d', '_MTN',
-			  '||', 'mtn', '--db', $repository_name, '--branch', '0', 'co', '.',
+			  '||', 'mtn', '--db', $repository_name, '--branch', $branch_name, 'co', '.',
 			 ],
 			);
 
@@ -2097,7 +2114,7 @@ sub read_cmd_line
 
 		    my @update_args;
 
-		    my $upstream_version_options = [ '--branch', '0', ];
+		    my $upstream_version_options = [ '--branch', $branch_name, ];
 
 		    if ($option_upstream_version)
 		    {
@@ -2181,6 +2198,11 @@ sub read_cmd_line
 
 		    # checkout code
 
+		    my $branch_name
+			= (exists $package_information->{package}->{version_control}->{branch_name}
+			   ? $package_information->{package}->{version_control}->{branch_name}
+			   : $package_name);
+
 		    operation_execute
 			(
 			 $operations,
@@ -2194,7 +2216,7 @@ sub read_cmd_line
 			 },
 			 [
 			  'test', '-d', '.hg',
-			  '||', 'hg', 'checkout', '-r', '0',
+			  '||', 'hg', 'checkout', '-r', $branch_name,
 			 ],
 			);
 
@@ -3240,6 +3262,11 @@ sub read_cmd_line
 		    die "$0: *** Error: cannot change to directory $directory";
 		}
 
+		my $branch_name
+		    = (exists $package_information->{package}->{version_control}->{branch_name}
+		       ? $package_information->{package}->{version_control}->{branch_name}
+		       : $package_name);
+
 		# merge code
 
 		#t MERCURIAL merge
@@ -3259,7 +3286,7 @@ sub read_cmd_line
 		     [
 # 		      'test', '-d', '_MTN',
 # 		      '||',
-		      'mtn', '--db', $repository_name, '--branch', '0', 'merge',
+		      'mtn', '--db', $repository_name, '--branch', $branch_name, 'merge',
 		     ],
 		    );
 
@@ -3267,6 +3294,11 @@ sub read_cmd_line
 
 		#t MERCURAL commit
 		# hg commit
+
+		my $branch_name
+		    = (exists $package_information->{package}->{version_control}->{branch_name}
+		       ? $package_information->{package}->{version_control}->{branch_name}
+		       : $package_name);
 
 		operation_execute
 		    (
@@ -3282,7 +3314,7 @@ sub read_cmd_line
 		     [
 # 		      'test', '-d', '_MTN',
 # 		      '||',
-		      'mtn', '--db', $repository_name, '--branch', '0', 'ci', '.', '--message', $option_repo_ci,
+		      'mtn', '--db', $repository_name, '--branch', $branch_name, 'ci', '.', '--message', $option_repo_ci,
 		     ],
 		    );
 
@@ -3291,13 +3323,18 @@ sub read_cmd_line
 		#t MONOTONE
 		
 		# MERCURIAL update checkout
-		# these two are actually aliased to each other because of how it pulls a workspace. 
+		# these two are actually aliased to each other because of how it pulls a workspace.
 		# You simply update to a particular revision number.
 		# hg update [-r revision]
 
 		my @update_args;
 
-		my $upstream_version_options = [ '--branch', '0', ];
+		my $branch_name
+		    = (exists $package_information->{package}->{version_control}->{branch_name}
+		       ? $package_information->{package}->{version_control}->{branch_name}
+		       : $package_name);
+
+		my $upstream_version_options = [ '--branch', $branch_name, ];
 
 		if ($option_upstream_version)
 		{
@@ -3899,10 +3936,9 @@ sub read_cmd_line
 	   {
 	    condition => $option_repo_revert,
 	    description => 'reverting all repositories',
-	    operation => 
+	    operation =>
 	    sub
 	    {
-
 		my $package_information = shift;
 
 		# get specific arguments
@@ -3915,22 +3951,21 @@ sub read_cmd_line
 
 		my $package_name = $package_information->{package_name};
 
+		# change the directory
 
-		#----- This section of code changes the directory
 		my $current_directory = getcwd();
 
 		if ($option_verbose > 1)
 		{
-		  print "$0: package $package_name, chdir from ($current_directory) to ($directory)\n";
+		    print "$0: package $package_name, chdir from ($current_directory) to ($directory)\n";
 		}
 
 		my $success = chdir $directory;
 
 		if (!$success)
 		{
-		  die "$0: *** Error: package $package_name cannot change from directory ($current_directory) to directory ($directory): $!";
+		    die "$0: *** Error: package $package_name cannot change from directory ($current_directory) to directory ($directory): $!";
 		}
-		#------ End directory change
 
 		#t where does this default value come from?  Cannot work correctly?
 
@@ -3938,70 +3973,58 @@ sub read_cmd_line
 		    = $package_information->{package}->{version_control}->{repository}
 			|| $directory . '/' . $package_name . '/' . 'mtn';
 
-
-
 		if ($repository_name =~ m/^.*\.mtn$/)
 		{
+		    if (not -f $repository_name)
+		    {
+			die "$0: *** Error: cannot revert repository, $repository_name doesn't exist";
+		    }
 
-
-		  if (not -f $repository_name)
-		  {
-		    die "$0: *** Error: cannot revert repository, $repository_name doesn't exist";
-		  }
-
-		  operation_execute
-		    (
-		     $operations,
-		     {
-		      description => $description,
-		      keywords => 0,
-		      package_name => $package_name,
-		     },
-		     [
-		      'mtn', 'revert', '.',
-		     ],
-		    );
-
-
-
+		    operation_execute
+			(
+			 $operations,
+			 {
+			  description => $description,
+			  keywords => 0,
+			  package_name => $package_name,
+			 },
+			 [
+			  'mtn', 'revert', '.',
+			 ],
+			);
 		}
 		else
 		{
+		    if (not -d $repository_name)
+		    {
+			die "$0: *** Error: cannot revert mercurial repository, $repository_name doesn't exist";
+		    }
 
-
-		  if (not -d $repository_name)
-		  {
-		    die "$0: *** Error: cannot revert mercurial repository, $repository_name doesn't exist";
-		  }
-
-
-		  operation_execute
-		    (
-		     $operations,
-		     {
-		      description => $description,
-		      keywords => 0,
-		      package_name => $package_name,
-		     },
-		     [
-		      'hg', 'revert', '--all',
-		     ],
-		    );
+		    operation_execute
+			(
+			 $operations,
+			 {
+			  description => $description,
+			  keywords => 0,
+			  package_name => $package_name,
+			 },
+			 [
+			  'hg', 'revert', '--all',
+			 ],
+			);
 
 
 		}
 		
-		#----- Change back to the previous current directory
+		# change back to the previous current directory
+
 		$success = chdir $current_directory;
 
 		if (!$success)
 		{
-		  die "$0: *** Error: package $package_name, cannot change from directory ($directory) to directory ($current_directory): $!";
+		    die "$0: *** Error: package $package_name, cannot change from directory ($directory) to directory ($current_directory): $!";
 		}
-		#---- End directory rechange
-
 	    }
-
 	   },
 	   {
 	    condition => $option_repo_sync,
@@ -4027,8 +4050,6 @@ sub read_cmd_line
 		    = $package_information->{package}->{version_control}->{repository}
 			|| $directory . '/' . $package_name . '/' . 'mtn';
 
-
-
 		# translate well known names to a routable address
 
 		my $repo_server = version_control_translate_server($package_information, $option_repo_sync);
@@ -4040,119 +4061,115 @@ sub read_cmd_line
 
 		if ($repository_name =~ m/^.*\.mtn$/)
 		{
-		  #t MONOTONE
+		    # monotone
 
-		  my $port_number = $package_information->{package}->{version_control}->{port_number};
+		    my $port_number = $package_information->{package}->{version_control}->{port_number};
 
-		  # if not enough information for syncing for monotone
+		    # if not enough information for syncing for monotone
 
-		  if (not -f $repository_name)
-		  {
-		    die "$0: *** Error: cannot sync repository, repository not found in the filesystem";
-		  }
+		    if (not -f $repository_name)
+		    {
+			die "$0: *** Error: cannot sync repository, repository not found in the filesystem";
+		    }
 
-		  if (not $port_number and $repository_name =~ m/^.*\.mtn$/)
-		  {
-		    die "$0: *** Error: cannot sync repository, port_number not set";
-		  }
+		    if (not $port_number and $repository_name =~ m/^.*\.mtn$/)
+		    {
+			die "$0: *** Error: cannot sync repository, port_number not set";
+		    }
 
-		  # initialize the repository if necessary
+		    # initialize the repository if necessary
 
-		  operation_execute
-		    (
-		     $operations,
-		     {
-		      description => $description,
+		    operation_execute
+			(
+			 $operations,
+			 {
+			  description => $description,
 
-		      #t always zero here, but I guess this simply depends on working in client mode ?
+			  #t always zero here, but I guess this simply depends on working in client mode ?
 
-		      keywords => 0,
-		      package_name => $package_name,
-		     },
-		     [
-		      'test', '-f', $repository_name, '||', 'mtn', '--db', $repository_name, 'db', 'init',
-		     ],
-		    );
+			  keywords => 0,
+			  package_name => $package_name,
+			 },
+			 [
+			  'test', '-f', $repository_name, '||', 'mtn', '--db', $repository_name, 'db', 'init',
+			 ],
+			);
 
-		  # sync the repository
+		    # sync the repository
 
-		  #t MONOTONE
+		    my $branch_name
+			= (exists $package_information->{package}->{version_control}->{branch_name}
+			   ? $package_information->{package}->{version_control}->{branch_name}
+			   : $package_name);
 
-		  operation_execute
-		    (
-		     $operations,
-		     {
-		      description => $description,
+		    # monotone
 
-		      #t always zero here, but I guess this simply depends on working in client mode ?
+		    operation_execute
+			(
+			 $operations,
+			 {
+			  description => $description,
 
-		      keywords => 0,
-		      package_name => $package_name,
-		     },
-		     [
-		      'mtn', '--db', $repository_name, 'sync', '--ticker=count', "$repo_server:$port_number", '0',
-		     ],
-		    );
+			  #t always zero here, but I guess this simply depends on working in client mode ?
 
+			  keywords => 0,
+			  package_name => $package_name,
+			 },
+			 [
+			  'mtn', '--db', $repository_name, 'sync', '--ticker=count', "$repo_server:$port_number", $branch_name,
+			 ],
+			);
 		}
 		else
 		{
+		    # MERCURIAL sync
 
-		  # MERCURIAL sync
+		    # operations:
+		    #      hg pull http://repo-genesis3.cbi.utsa.edu/hg/g-tube -R $ENV{HOME}/neurospaces_project/g-tube/source/snapshots/0/ --update
+		    #   hg push -R $ENV{HOME}/neurospaces_project/g-tube/source/snapshots/0/
 
-		  # operations:
-		  #      hg pull http://repo-genesis3.cbi.utsa.edu/hg/g-tube -R $ENV{HOME}/neurospaces_project/g-tube/source/snapshots/0/ --update
-		  #   hg push -R $ENV{HOME}/neurospaces_project/g-tube/source/snapshots/0/
+		    # performs a clone of a repository if the project workspace isn't present.
+		    my $mercurial_server = "http://" . $repo_server . "/hg/" . $package_name;
 
-		  # performs a clone of a repository if the project workspace isn't present.
- 		  my $mercurial_server = "http://" . $repo_server . "/hg/" . $package_name;
+		    if (not -d $repository_name)
+		    {
+			die "$0: *** Error: cannot sync mercurial repository, $repository_name doesn't exist";
+		    }
 
-		  if (not -d $repository_name)
-		  {
-		    die "$0: *** Error: cannot sync mercurial repository, $repository_name doesn't exist";
-		  }
+		    operation_execute
+			(
+			 $operations,
+			 {
+			  description => $description,
+			  keywords => 0,
+			  package_name => $package_name,
+			 },
+			 [
+			  'test', '-f', $repository_name, '||', 'hg', 'pull', $mercurial_server, '-R', $directory, '--update'
+			 ],
+			);
 
+		    # then perform a push, a sync must be done in two operations.
+		    # note: repo-genesis3 uses ssh authentication.
+		    # This should work if the user has properly set up 
+		    # mercurial and their ssh key.
 
-		  operation_execute
-		    (
-		     $operations,
-		     {
-		      description => $description,
-		      keywords => 0,
-		      package_name => $package_name,
-		     },
-		     [
-		      'test', '-f', $repository_name, '||', 'hg', 'pull', $mercurial_server, '-R', $directory, '--update'
-		     ],
-		    );
-
-
-
-
-		  # then perform a push, a sync must be done in two operations.
-		  # note: repo-genesis3 uses ssh authentication.
-		  # This should work if the user has properly set up 
-		  # mercurial and their ssh key.
-		  operation_execute
-		    (
-		     $operations,
-		     {
-		      description => $description,
-
-		      keywords => 0,
-		      package_name => $package_name,
-		     },
-		     [
-		      'hg', 'push', '-R', $directory,
-		     ],
-		    );
-
-
+		    operation_execute
+			(
+			 $operations,
+			 {
+			  description => $description,
+			  keywords => 0,
+			  package_name => $package_name,
+			 },
+			 [
+			  'hg', 'push', '-R', $directory,
+			 ],
+			);
 		}
-
-		},
-	      },
-	   ];
+	    },
+	   },
+	  ];
 
     # process environment options
 
