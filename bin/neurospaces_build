@@ -1646,6 +1646,11 @@ sub read_cmd_line
 			die "$0: *** Error: cannot pull repository, port_number not set";
 		    }
 
+		    my $branch_name
+			= (exists $package_information->{package}->{version_control}->{branch_name}
+			   ? $package_information->{package}->{version_control}->{branch_name}
+			   : $package_name);
+
 		    # translate well known names to a routable address
 
 		    # pull the repository
@@ -1662,7 +1667,7 @@ sub read_cmd_line
 			  package_name => $package_name,
 			 },
 			 [
-			  'mtn', '--db', $repository_name, 'pull', '--ticker=count', "$repo_server:$port_number", '"*"',
+			  'mtn', '--db', $repository_name, 'pull', '--ticker=count', "$repo_server:$port_number", "'$branch_name'",
 			 ],
 			);
 
@@ -1801,9 +1806,12 @@ sub read_cmd_line
 
 		my $repo_server = version_control_translate_server($package_information, $option_repo_push);
 
-		# push the repository
+		my $branch_name
+		    = (exists $package_information->{package}->{version_control}->{branch_name}
+		       ? $package_information->{package}->{version_control}->{branch_name}
+		       : $package_name);
 
-		#t MONOTONE
+		# push the repository
 
 		operation_execute
 		    (
@@ -1817,7 +1825,7 @@ sub read_cmd_line
 		      package_name => $package_name,
 		     },
 		     [
-		      'mtn', '--db', $repository_name, 'push', '--ticker=count', "$repo_server:$port_number", '"*"',
+		      'mtn', '--db', $repository_name, 'push', '--ticker=count', "$repo_server:$port_number", "'$branch_name'",
 		     ],
 		    );
 
