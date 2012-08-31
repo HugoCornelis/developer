@@ -12,6 +12,7 @@ use YAML;
 
 
 my $option_clean;
+my $option_configure_prefix;
 my $option_configure_type = 'release';
 my $option_developer = 1;
 my $option_distclean;
@@ -25,6 +26,7 @@ my $option_verbose;
 	= GetOptions
 	    (
 	     "clean!" => \$option_clean,
+	     "configure-prefix!" => \$option_configure_prefix,
 	     "configure-type=s" => \$option_configure_type,
 	     "developer!" => \$option_developer,
 	     "distclean!" => \$option_distclean,
@@ -41,6 +43,7 @@ my $option_verbose;
 }
 
 my $clean_options = defined $option_clean ? "--clean " x $option_clean : '';
+my $configure = !defined $option_configure_prefix ? "--configure" : '--configure-with-prefix';
 my $configure_type_options = defined $option_configure_type ? "--configure-type $option_configure_type" : '';
 my $distclean_options = defined $option_distclean ? "--distclean " x $option_distclean : '';
 my $verbose_options = defined $option_verbose ? "--verbose " x $option_verbose : '';
@@ -49,6 +52,8 @@ my $regex_options = defined $option_regex_selector ? "--regex '$option_regex_sel
 my $enable_options = defined $option_enable ? "--enable $option_enable " : '';
 my $mac_options = defined $option_mac_universal ? "--universal" : '';
 
-system "neurospaces_build --no-compile --no-install $clean_options $distclean_options $mac_options --configure $configure_type_options --no-installed-versions $verbose_options $developer_options $regex_options $enable_options";
+# print "neurospaces_build --no-compile --no-install $clean_options $distclean_options $mac_options $configure $configure_type_options --no-installed-versions $verbose_options $developer_options $regex_options $enable_options\n";
+system "neurospaces_build --no-compile --no-install $clean_options $distclean_options $mac_options $configure $configure_type_options --no-installed-versions $verbose_options $developer_options $regex_options $enable_options";
+
 
 

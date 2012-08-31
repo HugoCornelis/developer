@@ -22,6 +22,7 @@ my $option_certification_report = 0;
 my $option_check = 0;
 my $option_clean = 0;
 my $option_compile = 1;
+my $option_configure_with_prefix = 0;
 my $option_configure = 1;
 my $option_configure_type = 'release';
 my $option_countcode;
@@ -949,6 +950,7 @@ sub read_cmd_line
 		     "clean!" => \$option_clean,
 		     "compile!" => \$option_compile,
 		     "configure!" => \$option_configure,
+		     "configure-with-prefix!" => \$option_configure_with_prefix,
 		     "configure-type=s" => \$option_configure_type,
 		     "countcode=s" => \$option_countcode,
 		     "directories-create!" => \$option_directories_create,
@@ -1057,6 +1059,7 @@ sub read_cmd_line
 	   "clean!" => $option_clean,
 	   "compile!" => $option_compile,
 	   "configure!" => $option_configure,
+	   "configure-with-prefix!" => $option_configure_with_prefix,
 	   "configure-type=s" => $option_configure_type,
 	   "countcode=s" => $option_countcode,
 	   "directories-create!" => $option_directories_create,
@@ -2540,12 +2543,19 @@ sub read_cmd_line
 	    operation => [ './autogen.sh', ],
 	   },
 	   {
-	    condition => $option_mac_universal,
+	    condition => $option_mac_universal && $option_configure_with_prefix == 0,
 	    operation => [ './configure', '--with-universal', '--disable-dependency-tracking',],
 	   },
 	   {
-	    condition => $option_configure && $option_mac_universal == 0,
+	    condition => $option_configure && $option_mac_universal == 0 && $option_configure_with_prefix == 0,
 	    operation => [ './configure', ],
+	   },
+
+	   # for the luebeck workshop: have a configure prefix different from /usr/local
+
+	   {
+	    condition => $option_configure_with_prefix && $option_mac_universal == 0,
+	    operation => [ './configure', '--prefix', '/usr/local/poolsoft/genesis3',],
 	   },
 
 	   # everything that is compilation related needs makefiles, so create them.
@@ -4320,6 +4330,7 @@ options related to operation execution profile:
     --clean                  clean before compiling.
     --compile                compile packages.
     --configure              configure before compiling.
+    --configure-with-prefix  configure with a hardcoded prefix.
     --configure-type         type of configuration (default is 'release').
     --countcode              countcode at different times during the build.
     --directories-create     create package directory structure.
@@ -4441,6 +4452,7 @@ options related to operation execution profile:
     --clean                  clean before compiling.
     --compile                compile packages.
     --configure              configure before compiling.
+    --configure-with-prefix  configure with a hardcoded prefix.
     --configure-type         type of configuration (default is 'release').
     --countcode              countcode at different times during the build.
     --directories-create     create package directory structure.
