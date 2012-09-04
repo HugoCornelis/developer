@@ -112,6 +112,7 @@ if (-f '/etc/neurospaces/developer/build.yml')
 my $all_packages
     = {
        experiment => {
+		      description => 'Experimental protocols',
 		      directory => "$ENV{HOME}/neurospaces_project/experiment/source/snapshots/0",
 		      operations => {
 				     './configure' => {
@@ -133,6 +134,7 @@ my $all_packages
 		     dependencies => {
 				      experiment => 'for running the tests',
 				     },
+		     description => 'a simple reaction-diffusion solver',
 		     operations => {
 				    './configure' => {
 						      debug => [
@@ -153,6 +155,7 @@ my $all_packages
        configuration => {
 			 dependencies => {
 					 },
+			 description => 'common configurations of NS / G-3',
 			 directory => "$ENV{HOME}/neurospaces_project/configuration",
 			 disabled => 1,
 			 order => 27,
@@ -161,6 +164,7 @@ my $all_packages
        dash => {
 		dependencies => {
 				},
+		description => 'a single neuron solver that uses dual exponential equations to model channel currents',
 		directory => "$ENV{HOME}/neurospaces_project/dash/source/snapshots/0",
 		disabled => 1,
 		order => 2,
@@ -169,6 +173,7 @@ my $all_packages
        geometry => {
 		    dependencies => {
 				    },
+		    description => 'a collection of algorithms of computational geometry useful for the conversion of EM image stacks ao.',
 		    directory => "$ENV{HOME}/neurospaces_project/geometry/source/snapshots/0",
 		    disabled => 1,
 		    order => 4,
@@ -180,6 +185,7 @@ my $all_packages
 				   heccer => 'for solving single neurons',
 				   ssp => 'to schedule the solvers',
 				  },
+		  description => 'an interactive GENESIS shell environment developed in perl',
 		  directory => "$ENV{HOME}/neurospaces_project/gshell/source/snapshots/0",
 		  order => 13,
 		  version_control => {
@@ -190,6 +196,7 @@ my $all_packages
 		 },
       'g-tube' => {
 		   directory => "$ENV{HOME}/neurospaces_project/g-tube/source/snapshots/0",
+		   description => 'GENESIS GUI',
 #		   disabled => 'g-tube is not complete yet',
 		   order => 30,
 		   version_control => {
@@ -202,6 +209,7 @@ my $all_packages
 		  dependencies => {
 				   'model-container' => 'for storing the model in computer memory',
 				  },
+		  description => 'a single neuron solver',
 		  directory => "$ENV{HOME}/neurospaces_project/heccer/source/snapshots/0",
 		  disabled => 0,
 		  operations => {
@@ -221,6 +229,7 @@ my $all_packages
 				     },
 		 },
        developer => {
+		     description => 'developer utilities that comply for GENESIS 3',
 		     directory => "$ENV{HOME}/neurospaces_project/developer/source/snapshots/0",
 		     disabled => 0, # disabled => 1,
 		     order => 0,
@@ -231,6 +240,7 @@ my $all_packages
 		     version_script => 'neurospaces_build --version',
 		    },
        'model-container' => {
+			     description => 'solver-independent model storage',
 			     directory => "$ENV{HOME}/neurospaces_project/model-container/source/snapshots/0",
 			     disabled => 0,
 			     operations => {
@@ -253,6 +263,7 @@ my $all_packages
 		    dependencies => {
 				     'model-container' => 'for storing the model in computer memory',
 				    },
+		    description => 'model exchange using common standars such as NeuroML and NineML',
 		    directory => "$ENV{HOME}/neurospaces_project/exchange/source/snapshots/0",
 		    order => 6.5,
 		    version_control => {
@@ -262,6 +273,7 @@ my $all_packages
 		    version_script => 'neurospaces_exchange --version',
 		   },
        neurospaces_prcs => {
+			    description => 'solver-independent model storage -- OLD',
 			    directory => "$ENV{HOME}/neurospaces_project/model-container/source/snapshots/prcs.0",
 			    disabled => 'obsoleted by the model-container under mtn control rather than prcs',
 			    order => 0.5,
@@ -286,6 +298,7 @@ my $all_packages
 				     'model-container' => 'for storing the model in computer memory',
 				     heccer => 'for solving single neurons',
 				    },
+		    description => 'GENESIS-2 Backward Compatibility',
 		    directory => "$ENV{HOME}/neurospaces_project/ns-sli/source/snapshots/0",
 		    order => 6,
 		    operations => {
@@ -310,6 +323,7 @@ my $all_packages
 					      heccer => 'for solving single neurons',
 					      ssp => 'to schedule the solvers',
 					     },
+			     description => 'inspect and compare simulation output',
 			     directory => "$ENV{HOME}/neurospaces_project/project-browser/source/snapshots/0",
 			     disabled => 1,
 			     order => 7,
@@ -321,6 +335,7 @@ my $all_packages
 			     version_script => 'pb-version',
 			    },
        publications => {
+			description => 'prototyping the publication framework',
 			directory => "$ENV{HOME}/neurospaces_project/publications/source/snapshots/0",
 			disabled => 'Allan\'s experiment working area',
 			order => 32,
@@ -331,6 +346,7 @@ my $all_packages
 			version_script => 0,
 		       },
        rtxi => {
+		description => 'interface with the RTXI dynamic clamp software',
 		directory => "$ENV{HOME}/neurospaces_project/rtxi/source/snapshots/0",
 		disabled => 'slow progress, yet important',
 		order => 29,
@@ -345,6 +361,7 @@ my $all_packages
 				'model-container' => 'for storing the model in computer memory',
 				heccer => 'for solving single neurons',
 			       },
+	       description => 'simple scheduler in perl',
 	       directory => "$ENV{HOME}/neurospaces_project/ssp/source/snapshots/0",
 	       disabled => 0,
 	       order => 3,
@@ -353,12 +370,12 @@ my $all_packages
 				   port_number => 4695,
 				  },
 	      },
-
        sspy => {
 	       dependencies => {
 				'model-container' => 'for storing the model in computer memory',
 				heccer => 'for solving single neurons',
 			       },
+	       description => 'simple scheduler in python',
 	       directory => "$ENV{HOME}/neurospaces_project/sspy/source/snapshots/0",
 # 	       disabled => "Still under development.",
 	       order => 3.1,
@@ -367,13 +384,13 @@ my $all_packages
 				   port_number => 4705,
 				  },
 	      },
-
        studio => {
 		  dependencies => {
 				   'model-container' => 'for storing the model in computer memory',
 				   heccer => 'for solving single neurons',
 				   ssp => 'to schedule the solvers',
 				  },
+		  description => 'visualizes and explores models in the model-container',
 		  directory => "$ENV{HOME}/neurospaces_project/studio/source/snapshots/0",
 		  disabled => 0,
 		  order => 5,
@@ -384,12 +401,14 @@ my $all_packages
 		  version_script => 'neurospaces --version',
 		 },
        system => {
+		  description => 'system data',
 		  directory => "$ENV{HOME}/neurospaces_project/.",
 		  disabled => 1,
 		  order => 129,
 		  version_script => 0,
 		 },
        userdocs => {
+		    description => 'all you need to know about installing, using and simulating using GENESIS 3. ',
 		    directory => "$ENV{HOME}/neurospaces_project/userdocs/source/snapshots/0",
 		    disabled => 0,
 		    order => 31,
