@@ -370,6 +370,11 @@ sub main
 
     try_to("neurospaces_status");
 
+    # note that because neurospaces_upgrade is often used by regular
+    # users, it must come first.
+
+    try_to("neurospaces_upgrade");
+
     # pull code from the repositories
 
     unless ($option_no_pull)
