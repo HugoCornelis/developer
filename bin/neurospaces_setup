@@ -12,6 +12,7 @@ use YAML;
 
 
 my $option_developer = 1;
+my $option_disable;
 my $option_enable;
 my $option_regex_selector;
 my $option_repo_setup = 0;
@@ -22,6 +23,7 @@ my $option_verbose;
 	= GetOptions
 	    (
 	     "developer!" => \$option_developer,
+	     "disable=s" => \$option_disable,
 	     "enable=s" => \$option_enable,
 	     "regex-selector=s" => \$option_regex_selector,
 	     "v|verbose+" => \$option_verbose,
@@ -37,7 +39,8 @@ my $verbose_options = defined $option_verbose ? "--verbose " x $option_verbose :
 my $developer_options = defined $option_developer ? "--developer " x $option_developer : '';
 my $regex_options = defined $option_regex_selector ? "--regex '$option_regex_selector' " : '';
 my $enable_options = defined $option_enable ? "--enable $option_enable " : '';
+my $disable_options = defined $option_disable ? "--disable '$option_disable' " : '';
 
-system "neurospaces_build --repo-setup --no-installed-versions --no-configure --no-install --no-compile $verbose_options $developer_options $regex_options $enable_options";
+system "neurospaces_build --repo-setup --no-installed-versions --no-configure --no-install --no-compile $verbose_options $developer_options $regex_options $enable_options $disable_options";
 
 

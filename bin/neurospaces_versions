@@ -22,6 +22,7 @@ $SIG{__DIE__}
 
 
 my $option_developer = 1;
+my $option_disable;
 my $option_enable;
 my $option_regex_selector;
 my $option_verbose;
@@ -39,8 +40,9 @@ sub main
     my $developer_options = defined $option_developer ? "--developer " x $option_developer : '';
     my $regex_options = defined $option_regex_selector ? "--regex '$option_regex_selector' " : '';
     my $enable_options = defined $option_enable ? "--enable $option_enable " : '';
+    my $disable_options = defined $option_disable ? "--disable '$option_disable' " : '';
 
-    system "neurospaces_build $verbose_options $developer_options $regex_options $enable_options --no-configure --no-compile --no-install";
+    system "neurospaces_build $verbose_options $developer_options $regex_options $enable_options $disable_options --no-configure --no-compile --no-install";
 }
 
 
@@ -53,6 +55,7 @@ sub read_cmd_line
 	= GetOptions
 	    (
 	     "developer!" => \$option_developer,
+	     "disable=s" => \$option_disable,
 	     "enable=s" => \$option_enable,
 	     "help!" => \$option_help,
 	     "regex-selector=s" => \$option_regex_selector,
@@ -78,9 +81,13 @@ $0 <options>
 $0: print out version information for all registered packages.
 
 options:
-    help               print usage information.
-    verbose            set verbosity level.
-    version            give version information.
+    --developer          toggle developer flag.
+    --disable            disable these packages (regex).
+    --enable             enable these packages (regex).
+    --help               print usage information.
+    --regex-selector     select these packages (regex).
+    --verbose            set verbosity level.
+    --version            give version information.
 ";
 
 	exit 1;

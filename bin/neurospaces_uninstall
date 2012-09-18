@@ -14,6 +14,7 @@ use YAML;
 my $option_clean;
 my $option_configure;
 my $option_developer = 1;
+my $option_disable;
 my $option_enable;
 my $option_mac_universal;
 my $option_regex_selector;
@@ -26,6 +27,7 @@ my $option_verbose;
 	     "clean!" => \$option_clean,
 	     "configure!" => \$option_configure,
 	     "developer!" => \$option_developer,
+	     "disable=s" => \$option_disable,
 	     "enable=s" => \$option_enable,
 	     "regex-selector=s" => \$option_regex_selector,
 	     "universal!" => \$option_mac_universal,
@@ -44,8 +46,9 @@ my $verbose_options = defined $option_verbose ? "--verbose " x $option_verbose :
 my $developer_options = defined $option_developer ? "--developer " x $option_developer : '';
 my $regex_options = defined $option_regex_selector ? "--regex '$option_regex_selector' " : '';
 my $enable_options = defined $option_enable ? "--enable $option_enable " : '';
+my $disable_options = defined $option_disable ? "--disable '$option_disable' " : '';
 my $mac_options = defined $option_mac_universal ? "--universal" : '';
 
-system "neurospaces_build --uninstall --no-compile --no-install $clean_options $configure_options $mac_options --no-installed-versions $verbose_options $developer_options $regex_options $enable_options";
+system "neurospaces_build --uninstall --no-compile --no-install $clean_options $configure_options $mac_options --no-installed-versions $verbose_options $developer_options $regex_options $enable_options $disable_options";
 
 

@@ -15,6 +15,7 @@ my $option_clean;
 my $option_configure_prefix;
 my $option_configure_type = 'release';
 my $option_developer = 1;
+my $option_disable;
 my $option_distclean;
 my $option_enable;
 my $option_mac_universal;
@@ -29,6 +30,7 @@ my $option_verbose;
 	     "configure-prefix!" => \$option_configure_prefix,
 	     "configure-type=s" => \$option_configure_type,
 	     "developer!" => \$option_developer,
+	     "disable=s" => \$option_disable,
 	     "distclean!" => \$option_distclean,
 	     "enable=s" => \$option_enable,
 	     "regex-selector=s" => \$option_regex_selector,
@@ -50,10 +52,11 @@ my $verbose_options = defined $option_verbose ? "--verbose " x $option_verbose :
 my $developer_options = defined $option_developer ? "--developer " x $option_developer : '';
 my $regex_options = defined $option_regex_selector ? "--regex '$option_regex_selector' " : '';
 my $enable_options = defined $option_enable ? "--enable $option_enable " : '';
+my $disable_options = defined $option_disable ? "--disable '$option_disable' " : '';
 my $mac_options = defined $option_mac_universal ? "--universal" : '';
 
 # print "neurospaces_build --no-compile --no-install $clean_options $distclean_options $mac_options $configure $configure_type_options --no-installed-versions $verbose_options $developer_options $regex_options $enable_options\n";
-system "neurospaces_build --no-compile --no-install $clean_options $distclean_options $mac_options $configure $configure_type_options --no-installed-versions $verbose_options $developer_options $regex_options $enable_options";
+system "neurospaces_build --no-compile --no-install $clean_options $distclean_options $mac_options $configure $configure_type_options --no-installed-versions $verbose_options $developer_options $regex_options $enable_options $disable_options";
 
 
 

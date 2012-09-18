@@ -11,6 +11,7 @@ use Getopt::Long;
 use YAML;
 
 
+my $option_disable;
 my $option_enable;
 my $option_regex_selector;
 my $option_verbose;
@@ -19,6 +20,7 @@ my $option_verbose;
     my $result
 	= GetOptions
 	    (
+	     "disable=s" => \$option_disable,
 	     "enable=s" => \$option_enable,
 	     "regex-selector=s" => \$option_regex_selector,
 	     "v|verbose+" => \$option_verbose,
@@ -33,7 +35,8 @@ my $option_verbose;
 my $verbose_options = defined $option_verbose ? "--verbose " x $option_verbose : '';
 my $regex_options = defined $option_regex_selector ? "--regex '$option_regex_selector' " : '';
 my $enable_options = defined $option_enable ? "--enable $option_enable " : '';
+my $disable_options = defined $option_disable ? "--disable '$option_disable' " : '';
 
-system "neurospaces_build --help-repositories $regex_options $enable_options";
+system "neurospaces_build --help-repositories $regex_options $enable_options $disable_options";
 
 
