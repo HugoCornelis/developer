@@ -5,11 +5,12 @@ Makefile$
 Makefile\.in$
 \.deb$
 \.log$
+^__component_name__-.*tar.gz$
 ^aclocal\.m4$
 ^config.log$
 ^config.status$
 ^configure$
-^__component_name__-.*tar.gz$
+^install-sh$
 ^installed
 ^installer-.*.tar.gz$
 ^missing$
