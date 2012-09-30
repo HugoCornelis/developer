@@ -38,6 +38,7 @@ my $option_install = 1;
 my $option_installed_versions = 1;
 my $option_keep_going;
 my $option_mac_universal = 0;
+my $option_package_tags = [];
 my $option_regex_selector = ".*";
 my $option_repo_ci = 0;
 my $option_repo_clone = 0;
@@ -679,6 +680,8 @@ sub all_operations_execute
 
 	my $package = $all_packages->{$package_name};
 
+	# skip disabled packages
+
 	if ($package->{disabled})
 	{
 	    if ($option_verbose)
@@ -689,6 +692,8 @@ sub all_operations_execute
 	    next;
 	}
 
+	# skip packages that are not selected by regex
+
 	if ($package_name !~ /$option_regex_selector/i)
 	{
 	    if ($option_verbose)
@@ -697,6 +702,36 @@ sub all_operations_execute
 	    }
 
 	    next;
+	}
+
+	# skip packages that are not selected by tag
+
+	if (@$option_package_tags)
+	{
+	    my $selected = 0;
+
+	    my $package_tags = $package->{tags} || [];
+
+	    foreach my $package_tag (@$package_tags)
+	    {
+		foreach my $option_package_tag (@$option_package_tags)
+		{
+		    if ($package_tag eq $option_package_tag)
+		    {
+			$selected = $package_tag;
+		    }
+		}
+	    }
+
+	    if (not $selected)
+	    {
+		if ($option_verbose)
+		{
+		    print "$0: package $package_name skipped, not selected by --package-tags\n";
+		}
+
+		next;
+	    }
 	}
 
 	# loop over all installation operations
@@ -1053,6 +1088,7 @@ sub read_cmd_line
 		     "install!" => \$option_install,
 		     "installed-versions!" => \$option_installed_versions,
 		     "keep-going!" => \$option_keep_going,
+		     "package-tags=s" => $option_package_tags,
 		     "pkg-deb" => \$option_pkg_deb,
 		     "pkg-deb-dir=s" => \$option_pkg_deb_dir,
 		     "pkg-rpm" => \$option_pkg_rpm,
@@ -1162,6 +1198,7 @@ sub read_cmd_line
 	   "install!" => $option_install,
 	   "installed-versions!" => $option_installed_versions,
 	   "keep-going!" => $option_keep_going,
+	   "package-tags=s" => $option_package_tags,
 	   "pkg-deb!" => $option_pkg_deb,
 	   "pkg-deb-dir=s" => $option_pkg_deb_dir,
 	   "pkg-rpm!" => $option_pkg_rpm,
@@ -4433,6 +4470,7 @@ options related to operation execution profile:
     --install                install packages.
     --installed-versions     print the installed version of each software package.
     --keep-going             keep going in case of non-fatal errors (ala make -k).
+    --package-tags           select packages based on the given tag(s).
     --pkg-deb                build debian packages for each software component.
     --pkg-deb-dir            Directory to place debian packages after a debian build.
     --pkg-rpm                build RPM packages for each software component.
@@ -4555,6 +4593,7 @@ options related to operation execution profile:
     --install                install packages.
     --installed-versions     print the installed version of each software package.
     --keep-going             keep going in case of non-fatal errors (ala make -k).
+    --package-tags           select packages based on the given tag(s).
     --pkg-deb                build debian packages for each software component.
     --pkg-deb-dir            Directory to place debian packages after a debian build.
     --pkg-rpm                build RPM packages for each software component.
@@ -4661,6 +4700,30 @@ options related to behavior of external applications:
 	       }
 	       grep
 	       {
+		   my $selected = 'by default';
+
+		   if (@$option_package_tags)
+		   {
+		       $selected = 0;
+
+		       my $package_tags = $all_packages->{$_}->{tags} || [];
+
+		       foreach my $package_tag (@$package_tags)
+		       {
+			   foreach my $option_package_tag (@$option_package_tags)
+			   {
+			       if ($package_tag eq $option_package_tag)
+			       {
+				   $selected = $package_tag;
+			       }
+			   }
+		       }
+		   }
+
+		   $selected;
+	       }
+	       grep
+	       {
 		   $_ =~ /$option_regex_selector/i
 	       }
 	       keys %$all_packages
@@ -4687,6 +4750,30 @@ options related to behavior of external applications:
 		   grep
 		   {
 		       not $all_packages->{$_}->{disabled}
+		   }
+		   grep
+		   {
+		       my $selected = 'by default';
+
+		       if (@$option_package_tags)
+		       {
+			   $selected = 0;
+
+			   my $package_tags = $all_packages->{$_}->{tags} || [];
+
+			   foreach my $package_tag (@$package_tags)
+			   {
+			       foreach my $option_package_tag (@$option_package_tags)
+			       {
+				   if ($package_tag eq $option_package_tag)
+				   {
+				       $selected = $package_tag;
+				   }
+			       }
+			   }
+		       }
+
+		       $selected;
 		   }
 		   grep
 		   {
@@ -4723,6 +4810,7 @@ options related to behavior of external applications:
 		       repository_name => $repository_name,
 # 		       repository_port_number => $repository_port_number,
 		       repository_server => $repository_server . ":" . $repository_port_number,
+		       tags => $all_packages->{$_}->{tags},
 		   };
 	       }
 	       sort
@@ -4732,6 +4820,30 @@ options related to behavior of external applications:
 	       grep
 	       {
 		   not $all_packages->{$_}->{disabled}
+	       }
+	       grep
+	       {
+		   my $selected = 'by default';
+
+		   if (@$option_package_tags)
+		   {
+		       $selected = 0;
+
+		       my $package_tags = $all_packages->{$_}->{tags} || [];
+
+		       foreach my $package_tag (@$package_tags)
+		       {
+			   foreach my $option_package_tag (@$option_package_tags)
+			   {
+			       if ($package_tag eq $option_package_tag)
+			       {
+				   $selected = $package_tag;
+			       }
+			   }
+		       }
+		   }
+
+		   $selected;
 	       }
 	       grep
 	       {

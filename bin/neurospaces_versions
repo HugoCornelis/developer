@@ -24,6 +24,7 @@ $SIG{__DIE__}
 my $option_developer = 1;
 my $option_disable;
 my $option_enable;
+my $option_package_tags = [];
 my $option_regex_selector;
 my $option_verbose;
 
@@ -36,13 +37,14 @@ sub main
 
     # print out version information
 
-    my $verbose_options = defined $option_verbose ? "--verbose " x $option_verbose : '';
     my $developer_options = defined $option_developer ? "--developer " x $option_developer : '';
-    my $regex_options = defined $option_regex_selector ? "--regex '$option_regex_selector' " : '';
-    my $enable_options = defined $option_enable ? "--enable $option_enable " : '';
     my $disable_options = defined $option_disable ? "--disable '$option_disable' " : '';
+    my $enable_options = defined $option_enable ? "--enable $option_enable " : '';
+    my $package_tags_options = @$option_package_tags ? join ' ', (map { "--package-tags $_" } @$option_package_tags) : '';
+    my $regex_options = defined $option_regex_selector ? "--regex '$option_regex_selector' " : '';
+    my $verbose_options = defined $option_verbose ? "--verbose " x $option_verbose : '';
 
-    system "neurospaces_build $verbose_options $developer_options $regex_options $enable_options $disable_options --no-configure --no-compile --no-install";
+    system "neurospaces_build $verbose_options $developer_options $regex_options $enable_options $disable_options --no-configure --no-compile --no-install $package_tags_options";
 }
 
 
@@ -58,6 +60,7 @@ sub read_cmd_line
 	     "disable=s" => \$option_disable,
 	     "enable=s" => \$option_enable,
 	     "help!" => \$option_help,
+	     "package-tags=s" => $option_package_tags,
 	     "regex-selector=s" => \$option_regex_selector,
 	     "version" => \$option_version,
 	     "v|verbose+" => \$option_verbose,
@@ -85,6 +88,7 @@ options:
     --disable            disable these packages (regex).
     --enable             enable these packages (regex).
     --help               print usage information.
+    --package-tags       select the packages with the given tag(s).
     --regex-selector     select these packages (regex).
     --verbose            set verbosity level.
     --version            give version information.

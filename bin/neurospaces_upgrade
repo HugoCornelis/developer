@@ -25,9 +25,10 @@ my $option_configure = 1;
 my $option_developer = 1;
 my $option_disable;
 my $option_enable;
+my $option_mac_universal;
+my $option_package_tags = [];
 my $option_regex_selector;
 my $option_repo_pull = 'default';
-my $option_mac_universal;
 my $option_verbose;
 
 {
@@ -39,6 +40,7 @@ my $option_verbose;
 	     "developer!" => \$option_developer,
 	     "disable=s" => \$option_disable,
 	     "enable=s" => \$option_enable,
+	     "package-tags=s" => $option_package_tags,
 	     "regex-selector=s" => \$option_regex_selector,
 	     "repo-pull=s" => \$option_repo_pull,
 	     "universal!" => \$option_mac_universal,
@@ -53,34 +55,35 @@ my $option_verbose;
 
 my $clean_options = defined $option_clean ? "--clean " x $option_clean : '';
 my $configure_options = $option_configure ? "--configure " x $option_configure : '--no-configure';
-my $verbose_options = defined $option_verbose ? "--verbose " x $option_verbose : '';
 my $developer_options = defined $option_developer ? "--developer " x $option_developer : '';
-my $regex_options = defined $option_regex_selector ? "--regex '$option_regex_selector' " : '';
-my $enable_options = defined $option_enable ? "--enable $option_enable " : '';
 my $disable_options = defined $option_disable ? "--disable '$option_disable' " : '';
+my $enable_options = defined $option_enable ? "--enable $option_enable " : '';
 my $mac_options = defined $option_mac_universal ? "--universal" : '';
+my $package_tags_options = @$option_package_tags ? join ' ', (map { "--package-tags $_" } @$option_package_tags) : '';
+my $regex_options = defined $option_regex_selector ? "--regex '$option_regex_selector' " : '';
+my $verbose_options = defined $option_verbose ? "--verbose " x $option_verbose : '';
 
 # uninstall: must not be run with configure because that may attempt to uninstall newly added files.
 
-system "neurospaces_dev_uninstall $clean_options $mac_options $verbose_options $developer_options $regex_options $enable_options $disable_options";
+system "neurospaces_dev_uninstall $clean_options $mac_options $verbose_options $developer_options $regex_options $enable_options $disable_options $package_tags_options";
 
 # note: the following three invocations are copied from neurospaces_uninstall, neurospaces_pull, neurospaces_install, the subs are copied from neurospaces_cron
 
 # pull new code to repos
 
-system "neurospaces_build --repo-pull $option_repo_pull --no-installed-versions --no-configure --no-install --no-compile $verbose_options $developer_options $regex_options $enable_options $disable_options";
+system "neurospaces_build --repo-pull $option_repo_pull --no-installed-versions --no-configure --no-install --no-compile $verbose_options $developer_options $regex_options $enable_options $disable_options $package_tags_options";
 
 # create directories for new packages
 
-system "neurospaces_build --no-configure --no-compile --no-install --no-installed-versions $verbose_options $developer_options $regex_options $enable_options $disable_options --directories-create";
+system "neurospaces_build --no-configure --no-compile --no-install --no-installed-versions $verbose_options $developer_options $regex_options $enable_options $disable_options --directories-create $package_tags_options";
 
 # checkout from repos to workspaces
 
-system "neurospaces_build --no-configure --no-install --no-compile --repo-co --no-installed-versions $verbose_options $developer_options $regex_options $enable_options $disable_options";
+system "neurospaces_build --no-configure --no-install --no-compile --repo-co --no-installed-versions $verbose_options $developer_options $regex_options $enable_options $disable_options $package_tags_options";
 
 # optional clean, optional configure, compile, install
 
-system "neurospaces_build $clean_options $configure_options $mac_options --no-installed-versions $verbose_options $developer_options $regex_options $enable_options $disable_options";
+system "neurospaces_build $clean_options $configure_options $mac_options --no-installed-versions $verbose_options $developer_options $regex_options $enable_options $disable_options $package_tags_options";
 
 
 sub install_developer

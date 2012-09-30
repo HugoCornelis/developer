@@ -15,6 +15,7 @@ my $option_developer = 1;
 my $option_disable;
 my $option_distclean;
 my $option_enable;
+my $option_package_tags = [];
 my $option_regex_selector;
 my $option_verbose;
 
@@ -26,6 +27,7 @@ my $option_verbose;
 	     "disable=s" => \$option_disable,
 	     "distclean!" => \$option_distclean,
 	     "enable=s" => \$option_enable,
+	     "package-tags=s" => $option_package_tags,
 	     "regex-selector=s" => \$option_regex_selector,
 	     "v|verbose+" => \$option_verbose,
 	    );
@@ -36,13 +38,14 @@ my $option_verbose;
     }
 }
 
-my $distclean_options = defined $option_distclean ? "--distclean " : '--clean';
-my $verbose_options = defined $option_verbose ? "--verbose " x $option_verbose : '';
 my $developer_options = defined $option_developer ? "--developer " x $option_developer : '';
-my $regex_options = defined $option_regex_selector ? "--regex '$option_regex_selector' " : '';
-my $enable_options = defined $option_enable ? "--enable $option_enable " : '';
 my $disable_options = defined $option_disable ? "--disable '$option_disable' " : '';
+my $distclean_options = defined $option_distclean ? "--distclean " : '--clean';
+my $enable_options = defined $option_enable ? "--enable $option_enable " : '';
+my $package_tags_options = @$option_package_tags ? join ' ', (map { "--package-tags $_" } @$option_package_tags) : '';
+my $regex_options = defined $option_regex_selector ? "--regex '$option_regex_selector' " : '';
+my $verbose_options = defined $option_verbose ? "--verbose " x $option_verbose : '';
 
-system "neurospaces_build $distclean_options --no-configure --no-compile --no-install --no-installed-versions $verbose_options $developer_options $regex_options $enable_options $disable_options";
+system "neurospaces_build $distclean_options --no-configure --no-compile --no-install --no-installed-versions $verbose_options $developer_options $regex_options $enable_options $disable_options $package_tags_options";
 
 

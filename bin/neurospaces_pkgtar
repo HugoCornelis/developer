@@ -14,15 +14,16 @@ use YAML;
 my $option_clean;
 my $option_configure;
 my $option_developer = 1;
-my $option_distclean;
 my $option_dir;
 my $option_disable;
+my $option_distclean;
 my $option_enable;
 my $option_mac_universal;
+my $option_package_tags = [];
 my $option_regex_selector;
 my $option_release_tag;
-my $option_version_tag;
 my $option_verbose;
+my $option_version_tag;
 
 {
     my $result
@@ -31,15 +32,16 @@ my $option_verbose;
 	     "clean!" => \$option_clean,
 	     "configure!" => \$option_configure,
 	     "developer!" => \$option_developer,
-	     "distclean!" => \$option_distclean,
- 	     "dir=s" => \$option_dir,
 	     "disable=s" => \$option_disable,
+	     "distclean!" => \$option_distclean,
 	     "enable=s" => \$option_enable,
+	     "package-tags=s" => $option_package_tags,
 	     "regex-selector=s" => \$option_regex_selector,
 	     "release-tag=s" => \$option_release_tag,
 	     "universal!" => \$option_mac_universal,
 	     "version-tag=s" => \$option_version_tag,
 	     "v|verbose+" => \$option_verbose,
+ 	     "dir=s" => \$option_dir,
 	    );
 
     if (!$result)
@@ -76,18 +78,19 @@ my $option_verbose;
 }
 
 my $clean_options = defined $option_clean ? "--clean " x $option_clean : '';
-my $distclean_options = defined $option_distclean ? "--distclean " x $option_distclean : '';
-my $dir_options = defined $option_dir ? "--pkg-tar-dir $option_dir " : "";
 my $configure_options = $option_configure ? "--configure " x $option_configure : '--no-configure';
-my $version_options = defined $option_version_tag ? "--version-tag  '$option_version_tag' " : '';
+my $developer_options = defined $option_developer ? "--developer " x $option_developer : '';
+my $dir_options = defined $option_dir ? "--pkg-tar-dir $option_dir " : "";
+my $disable_options = defined $option_disable ? "--disable '$option_disable' " : '';
+my $distclean_options = defined $option_distclean ? "--distclean " x $option_distclean : '';
+my $enable_options = defined $option_enable ? "--enable $option_enable " : '';
+my $mac_options = defined $option_mac_universal ? "--universal" : '';
+my $package_tags_options = @$option_package_tags ? join ' ', (map { "--package-tags $_" } @$option_package_tags) : '';
+my $regex_options = defined $option_regex_selector ? "--regex '$option_regex_selector' " : '';
 my $release_options = defined $option_release_tag ? "--release-tag '$option_release_tag' " : '';
 my $verbose_options = defined $option_verbose ? "--verbose " x $option_verbose : '';
-my $developer_options = defined $option_developer ? "--developer " x $option_developer : '';
-my $regex_options = defined $option_regex_selector ? "--regex '$option_regex_selector' " : '';
-my $enable_options = defined $option_enable ? "--enable $option_enable " : '';
-my $disable_options = defined $option_disable ? "--disable '$option_disable' " : '';
-my $mac_options = defined $option_mac_universal ? "--universal" : '';
+my $version_options = defined $option_version_tag ? "--version-tag  '$option_version_tag' " : '';
 
-system "neurospaces_build --pkg-tar $clean_options $dir_options $distclean_options $configure_options $mac_options --no-configure --no-compile --no-install --no-installed-versions $verbose_options $developer_options $version_options $release_options $regex_options $enable_options $disable_options";
+system "neurospaces_build --pkg-tar $clean_options $dir_options $distclean_options $configure_options $mac_options --no-configure --no-compile --no-install --no-installed-versions $verbose_options $developer_options $version_options $release_options $regex_options $enable_options $disable_options $package_tags_options";
 
 
