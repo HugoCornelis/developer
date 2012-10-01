@@ -479,7 +479,9 @@ satisfying one or more of the selected tags";
 
 		 print "$command\n";
 
-		 my $output = `$command >/tmp/output 2>&1 &`;
+		 system "$command";
+
+# 		 my $output = `$command >/tmp/output 2>&1 &`;
 
 		 if ($@)
 		 {
@@ -491,8 +493,6 @@ satisfying one or more of the selected tags";
 		 {
 		     print STDOUT "$0: *** Ok\n";
 		 }
-
-		 system "tail -f /tmp/output &";
 	     },
  	     $operation,
 	    );
@@ -511,6 +511,8 @@ satisfying one or more of the selected tags";
     $window->show_all();
 
     repositories_list();
+
+#     system "touch /tmp/output && tail -f /tmp/output &";
 
     Gtk2->main();
 }
