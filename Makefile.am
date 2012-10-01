@@ -19,6 +19,7 @@ SUBDIRS = perl python
 dist_bin_SCRIPTS = \
 	bin/mcad2doxy \
 	bin/mtn-ancestors \
+	bin/neurospaces-manager-gui \
 	bin/neurospaces_build \
 	bin/neurospaces_check \
 	bin/neurospaces_clean \
@@ -57,7 +58,6 @@ dist_bin_SCRIPTS = \
 	bin/neurospaces_upgrade \
 	bin/neurospaces_versions \
 	bin/neurospaces_website_prepare \
-	bin/ns-gui \
 	bin/nspkg-deb \
 	bin/nspkg-osx \
 	bin/nspkg-rpm \
