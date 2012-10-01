@@ -297,7 +297,7 @@ sub window_create
 
     $window->set_title("Neurospaces Developer Management Console");
 
-    $window->set_default_size(800, 300);
+    $window->set_default_size(800, 500);
 
     # When the window is given the "delete_event" signal (this is given
     # by the window manager, usually by the "close" option, or on the
