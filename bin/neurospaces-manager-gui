@@ -297,7 +297,7 @@ sub window_create
 
     $window->set_title("Neurospaces Developer Management Console");
 
-    $window->set_default_size(800, 500);
+    $window->set_default_size(800, 550);
 
     # When the window is given the "delete_event" signal (this is given
     # by the window manager, usually by the "close" option, or on the
@@ -423,6 +423,54 @@ satisfying one or more of the selected tags";
 	 cursor_changed => sub { repository_list_cursor_changed(@_); },
 	);
 
+    my $repositories_all_button = Gtk2::Button->new("Select all");
+
+    $repositories_all_button->signal_connect
+	(
+	 clicked =>
+	 sub
+	 {
+	     my $self = shift;
+
+	     my $operation = shift;
+
+	     my $selection = $gtk2_repository_list->get_selection();
+
+	     $selection->select_all();
+	 },
+	 'all',
+	);
+
+    my $tooltip_repositories_all = "select all repositories";
+
+    $tooltips->set_tip($repositories_all_button, $tooltip_repositories_all);
+
+    $vbox_repositories->pack_start($repositories_all_button, 0, 1, 0);
+
+    my $repositories_none_button = Gtk2::Button->new("Unselect all");
+
+    $repositories_none_button->signal_connect
+	(
+	 clicked =>
+	 sub
+	 {
+	     my $self = shift;
+
+	     my $operation = shift;
+
+	     my $selection = $gtk2_repository_list->get_selection();
+
+	     $selection->unselect_all();
+	 },
+	 'none',
+	);
+
+    my $tooltip_repositories_none = "unselect all repositories";
+
+    $tooltips->set_tip($repositories_none_button, $tooltip_repositories_none);
+
+    $vbox_repositories->pack_start($repositories_none_button, 0, 1, 0);
+
     # right from the available repositories: command buttons
 
     my $vbox_operations = Gtk2::VBox->new (0, 6);
@@ -439,6 +487,8 @@ satisfying one or more of the selected tags";
 
     foreach my $operation (
 			 qw(
+			       repositories
+			       status
 			       upgrade
 			       pull
 			       sync
