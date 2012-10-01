@@ -20,6 +20,7 @@ use YAML;
 our $option_verbose = '';
 
 our $gtk2_repository_list;
+our $gtk2_tb_repository_information;
 our $tooltips = Gtk2::Tooltips->new();
 our $repository_tags;
 
@@ -94,7 +95,7 @@ sub main
 	   @$repository_tags,
 	  };
 
-    window_create();
+    window_main_create();
 
 }
 
@@ -157,7 +158,7 @@ sub repositories_list
     }
     else
     {
-	push @$active_tags, "ZZZ";
+	push @$active_tags, "ZZZZZZZZ";
     }
 
     my $command = "neurospaces_repositories " . (join ' ', map  { '--package-tags "' . $_ . '"' } @$active_tags);
@@ -202,45 +203,25 @@ sub repository_list_cursor_changed
 {
     my ($widget) = @_;
 
-    my $cursor = $widget->get_cursor();
+#     my $cursor = $widget->get_cursor();
 
-    my $selection = $widget->get_selection();
+    my ($path, $focus_column) = $widget->get_cursor();
 
-    my $rows = [ $selection->get_selected_rows(), ];
-
-    #! index '0' means first selected row, we select one row at most...
-
-    my $row = $rows->[0];
-
-    if ($row)
+    if ($path)
     {
-	my $indices = [ $row->get_indices(), ];
+	my $indices = [ $path->get_indices(), ];
 
-	#! index '0', see above...
+	my $package_names = [ map { $gtk2_repository_list->{data}->[$_]->[0], } @$indices, ];
 
-	my $index = $indices->[0];
+	my $package_name = $package_names->[0];
 
-# 	my $selected = $widget->{data}->[$index]->[$self->{serial_column}];
+	my $contents = "Current package information: $package_name\n\n";
 
-# 	my $current = $self->{this} + $selected;
+	my $status = `neurospaces_status $package_name`;
 
-# 	print "Parameters for symbol $current\n";
+	$contents .= $status;
 
-# 	my $current_symbol = Neurospaces::GUI::Components::Node::factory( { serial => $current, studio => $self->{studio}, }, );
-
-# 	print YAML::Dump( { current_symbol => $current_symbol, }, );
-
-# 	my $specific_parameters = $current_symbol->get_specific_parameters($current);
-
-# 	my $textbuffer_specific_parameters = $self->{gtk2_textbuffer_specific_parameters};
-
-# 	$textbuffer_specific_parameters->set_text(YAML::Dump( { 'specific parameters' => $specific_parameters, }, ));
-
-# 	my $parameters = $self->get_parameters($current);
-
-# 	my $textbuffer_parameters = $self->{gtk2_textbuffer_parameters};
-
-# 	$textbuffer_parameters->set_text(YAML::Dump($parameters));
+	$gtk2_tb_repository_information->set_text($contents);
     }
 }
 
@@ -251,15 +232,9 @@ sub repository_list_row_activated
 
     my $row_ref = $widget->get_row_data_from_path($path);
 
-#     my $selected = $row_ref->[$self->{serial_column}];
+    my $package_name = $row_ref->[0];
 
-#     my $current = $self->{this} + $selected;
-
-#     print "Exploring symbol $current\n";
-
-#     my $child = Neurospaces::GUI::Components::Node::factory({ serial => $current, studio => $self->{studio}, }, );
-
-#     $child->explore();
+    window_repository_create($package_name);
 }
 
 
@@ -291,13 +266,13 @@ sub version
 }
 
 
-sub window_create
+sub window_main_create
 {
     my $window = Gtk2::Window->new('toplevel');
 
     $window->set_title("Neurospaces Developer Management Console");
 
-    $window->set_default_size(800, 550);
+    $window->set_default_size(1000, 550);
 
     # When the window is given the "delete_event" signal (this is given
     # by the window manager, usually by the "close" option, or on the
@@ -395,11 +370,13 @@ satisfying one or more of the selected tags";
 
     $vbox_repositories->pack_start($label_repositories, 0, 1, 0);
 
-    my $list_scroller = Gtk2::ScrolledWindow->new();
+    my $scroller_repository_list = Gtk2::ScrolledWindow->new();
 
-    $list_scroller->set_policy(qw/automatic automatic/);
+    $scroller_repository_list->set_size_request(250, 100);
 
-    $vbox_repositories->pack_start($list_scroller, 1, 1, 0);
+    $scroller_repository_list->set_policy(qw/automatic automatic/);
+
+    $vbox_repositories->pack_start($scroller_repository_list, 1, 1, 0);
 
     my $list
 	= Gtk2::SimpleList->new
@@ -411,7 +388,7 @@ satisfying one or more of the selected tags";
 
     $list->get_selection()->set_mode('extended');
 
-    $list_scroller->add($list);
+    $scroller_repository_list->add($list);
 
     $list->signal_connect
 	(
@@ -471,7 +448,29 @@ satisfying one or more of the selected tags";
 
     $vbox_repositories->pack_start($repositories_none_button, 0, 1, 0);
 
-    # right from the available repositories: command buttons
+    # right from the available repositories: repository information
+
+    my $scroller_repository_information = Gtk2::ScrolledWindow->new();
+
+    $scroller_repository_information->set_size_request(550, 500);
+
+    $scroller_repository_information->set_policy (qw/automatic automatic/);
+
+    $hbox->pack_start($scroller_repository_information, 0, 1, 0);
+
+    my $tb_repository_information = Gtk2::TextBuffer->new();
+
+    $gtk2_tb_repository_information = $tb_repository_information;
+
+    my $tv_repository_information = Gtk2::TextView->new();
+
+    $tv_repository_information->set_editable(FALSE);
+
+    $tv_repository_information->set_buffer($tb_repository_information);
+
+    $scroller_repository_information->add($tv_repository_information);
+
+    # right from the repository information: command buttons
 
     my $vbox_operations = Gtk2::VBox->new (0, 6);
 
@@ -486,21 +485,21 @@ satisfying one or more of the selected tags";
     $vbox_operations->pack_start($operations_label, 0, 1, 0);
 
     foreach my $operation (
-			 qw(
-			       repositories
-			       status
-			       upgrade
-			       pull
-			       sync
-			       clean
-			       update
-			       configure
-			       install
-			       check
-			       dev_uninstall
-			       serve
-			 )
-			)
+			   qw(
+				 repositories
+				 status
+				 upgrade
+				 pull
+				 sync
+				 clean
+				 update
+				 configure
+				 install
+				 check
+				 dev_uninstall
+				 serve
+			    )
+			  )
     {
 	my $button = Gtk2::Button->new($operation);
 
@@ -565,6 +564,46 @@ satisfying one or more of the selected tags";
 #     system "touch /tmp/output && tail -f /tmp/output &";
 
     Gtk2->main();
+}
+
+
+sub window_repository_create
+{
+    my $package_name = shift;
+
+    my $window = Gtk2::Window->new('toplevel');
+
+    $window->set_title("Neurospaces Developer Management Console: package $package_name");
+
+    $window->set_default_size(800, 550);
+
+    # When the window is given the "delete_event" signal (this is given
+    # by the window manager, usually by the "close" option, or on the
+    # titlebar), we ask it to call the delete_event () functio
+    # as defined above. No data is passed to the callback function.
+    $window->signal_connect
+	(
+	 delete_event =>
+	 sub
+	 {
+	     $window->destroy();
+	 },
+	);
+
+    # Sets the border width of the window.
+    $window->set_border_width(10);
+
+    my $hbox = Gtk2::HBox->new();
+
+    $window->add($hbox);
+
+    # left: tag check boxes
+
+    my $vbox_tags = Gtk2::VBox->new (0, 6);
+
+    $hbox->pack_start($vbox_tags, 0, 1, 0);
+
+    $window->show_all();
 }
 
 
