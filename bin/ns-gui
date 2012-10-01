@@ -439,12 +439,16 @@ satisfying one or more of the selected tags";
 
     foreach my $operation (
 			 qw(
-			       sync
-			       pull
 			       upgrade
-			       install
+			       pull
+			       sync
+			       clean
+			       update
 			       configure
+			       install
 			       check
+			       dev_uninstall
+			       serve
 			 )
 			)
     {
@@ -467,11 +471,28 @@ satisfying one or more of the selected tags";
 
 		 my $packages = [ map { $gtk2_repository_list->{data}->[$_]->[0], } @$indices, ];
 
-		 use Data::Dumper;
+# 		 use Data::Dumper;
 
-		 print Dumper($packages);
+# 		 print Dumper($packages);
 
-		 print "operation neurospaces_$operation " . (join ' ', @$packages) . "\n";
+		 my $command = "neurospaces_$operation " . (join ' ', @$packages) . "\n";
+
+		 print "$command\n";
+
+		 my $output = `$command >/tmp/output 2>&1 &`;
+
+		 if ($@)
+		 {
+		     print STDERR "$0: *** Error: $@\n";
+
+		     print STDOUT "$0: *** Error: $@\n";
+		 }
+		 else
+		 {
+		     print STDOUT "$0: *** Ok\n";
+		 }
+
+		 system "tail -f /tmp/output &";
 	     },
  	     $operation,
 	    );
