@@ -195,7 +195,6 @@ sub repositories_list
 		];
     }
 
-    $window->show_all();
 }
 
 
