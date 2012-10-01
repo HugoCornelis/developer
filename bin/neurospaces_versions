@@ -44,7 +44,7 @@ sub main
     my $regex_options = defined $option_regex_selector ? "--regex '$option_regex_selector' " : '';
     my $verbose_options = defined $option_verbose ? "--verbose " x $option_verbose : '';
 
-    system "neurospaces_build $verbose_options $developer_options $regex_options $enable_options $disable_options --no-configure --no-compile --no-install $package_tags_options";
+    system "neurospaces_build $verbose_options $developer_options $regex_options $enable_options $disable_options --no-configure --no-compile --no-install $package_tags_options " . (join ' ', map { "'$_'" } @ARGV);
 }
 
 

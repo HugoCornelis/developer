@@ -65,25 +65,25 @@ my $verbose_options = defined $option_verbose ? "--verbose " x $option_verbose :
 
 # uninstall: must not be run with configure because that may attempt to uninstall newly added files.
 
-system "neurospaces_dev_uninstall $clean_options $mac_options $verbose_options $developer_options $regex_options $enable_options $disable_options $package_tags_options";
+system "neurospaces_dev_uninstall $clean_options $mac_options $verbose_options $developer_options $regex_options $enable_options $disable_options $package_tags_options " . (join ' ', map { "'$_'" } @ARGV);
 
 # note: the following three invocations are copied from neurospaces_uninstall, neurospaces_pull, neurospaces_install, the subs are copied from neurospaces_cron
 
 # pull new code to repos
 
-system "neurospaces_build --repo-pull $option_repo_pull --no-installed-versions --no-configure --no-install --no-compile $verbose_options $developer_options $regex_options $enable_options $disable_options $package_tags_options";
+system "neurospaces_build --repo-pull $option_repo_pull --no-installed-versions --no-configure --no-install --no-compile $verbose_options $developer_options $regex_options $enable_options $disable_options $package_tags_options " . (join ' ', map { "'$_'" } @ARGV);
 
 # create directories for new packages
 
-system "neurospaces_build --no-configure --no-compile --no-install --no-installed-versions $verbose_options $developer_options $regex_options $enable_options $disable_options --directories-create $package_tags_options";
+system "neurospaces_build --no-configure --no-compile --no-install --no-installed-versions $verbose_options $developer_options $regex_options $enable_options $disable_options --directories-create $package_tags_options " . (join ' ', map { "'$_'" } @ARGV);
 
 # checkout from repos to workspaces
 
-system "neurospaces_build --no-configure --no-install --no-compile --repo-co --no-installed-versions $verbose_options $developer_options $regex_options $enable_options $disable_options $package_tags_options";
+system "neurospaces_build --no-configure --no-install --no-compile --repo-co --no-installed-versions $verbose_options $developer_options $regex_options $enable_options $disable_options $package_tags_options " . (join ' ', map { "'$_'" } @ARGV);
 
 # optional clean, optional configure, compile, install
 
-system "neurospaces_build $clean_options $configure_options $mac_options --no-installed-versions $verbose_options $developer_options $regex_options $enable_options $disable_options $package_tags_options";
+system "neurospaces_build $clean_options $configure_options $mac_options --no-installed-versions $verbose_options $developer_options $regex_options $enable_options $disable_options $package_tags_options " . (join ' ', map { "'$_'" } @ARGV);
 
 
 sub install_developer

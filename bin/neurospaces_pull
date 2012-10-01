@@ -45,6 +45,6 @@ my $package_tags_options = @$option_package_tags ? join ' ', (map { "--package-t
 my $regex_options = defined $option_regex_selector ? "--regex '$option_regex_selector' " : '';
 my $verbose_options = defined $option_verbose ? "--verbose " x $option_verbose : '';
 
-system "neurospaces_build --repo-pull $option_repo_pull --no-installed-versions --no-configure --no-install --no-compile $verbose_options $developer_options $regex_options $enable_options $disable_options $package_tags_options";
+system "neurospaces_build --repo-pull $option_repo_pull --no-installed-versions --no-configure --no-install --no-compile $verbose_options $developer_options $regex_options $enable_options $disable_options $package_tags_options " . (join ' ', map { "'$_'" } @ARGV);
 
 

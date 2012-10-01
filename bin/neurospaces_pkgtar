@@ -91,6 +91,6 @@ my $release_options = defined $option_release_tag ? "--release-tag '$option_rele
 my $verbose_options = defined $option_verbose ? "--verbose " x $option_verbose : '';
 my $version_options = defined $option_version_tag ? "--version-tag  '$option_version_tag' " : '';
 
-system "neurospaces_build --pkg-tar $clean_options $dir_options $distclean_options $configure_options $mac_options --no-configure --no-compile --no-install --no-installed-versions $verbose_options $developer_options $version_options $release_options $regex_options $enable_options $disable_options $package_tags_options";
+system "neurospaces_build --pkg-tar $clean_options $dir_options $distclean_options $configure_options $mac_options --no-configure --no-compile --no-install --no-installed-versions $verbose_options $developer_options $version_options $release_options $regex_options $enable_options $disable_options $package_tags_options " . (join ' ', map { "'$_'" } @ARGV);
 
 
