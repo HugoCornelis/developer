@@ -184,7 +184,7 @@ sub repositories_list
 
     $repositories = [ @{$repositories->[1]->{repositories}}, ];
 
-#     $gtk2_repository_list->{data} = [];
+    @{$gtk2_repository_list->{data}} = ();
 
     foreach my $repository (@$repositories)
     {
@@ -307,8 +307,6 @@ sub window_create
 	$vbox->pack_start($checkbox, 0, 1, 0);
     }
 
-    repositories_list();
-
     # aside the tag checkboxes: available repositories
 
     my $list_scroller = Gtk2::ScrolledWindow->new();
@@ -346,6 +344,8 @@ sub window_create
     $tooltips->enable();
 
     $window->show_all();
+
+    repositories_list();
 
     Gtk2->main();
 }
