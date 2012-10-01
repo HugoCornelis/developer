@@ -19,12 +19,29 @@ use YAML;
 
 our $option_verbose = '';
 
+our $gtk2_repository_list;
 our $tooltips = Gtk2::Tooltips->new();
-
 our $repository_tags;
 
-
 sub unique(@);
+
+
+$SIG{'__DIE__'}
+    = sub
+      {
+	  use Carp;
+
+	  print STDERR Carp::longmess(@_);
+
+	  exit 1;
+      };
+
+
+$SIG{'INT'}
+    = sub
+      {
+	  exit 1;
+      };
 
 
 sub main
@@ -67,6 +84,15 @@ sub main
     }
 
     $repository_tags = [ unique sort @$tags, ];
+
+    $repository_tags
+	= {
+	   map
+	   {
+	       $_ => {},
+	   }
+	   @$repository_tags,
+	  };
 
     window_create();
 
@@ -111,6 +137,65 @@ options :
 
 	exit 1;
     }
+}
+
+
+sub repositories_list
+{
+    my $active_tags = [];
+
+    foreach my $repository_tag (keys %$repository_tags)
+    {
+	if ($repository_tags->{$repository_tag}->{checkbox}->get_active())
+	{
+	    push @$active_tags, $repository_tag;
+	}
+    }
+
+    if (scalar @$active_tags)
+    {
+    }
+    else
+    {
+	push @$active_tags, "ZZZ";
+    }
+
+    my $command = "neurospaces_repositories " . (join ' ', map  { '--package-tags "' . $_ . '"' } @$active_tags);
+
+    print "$command\n";
+
+    my $repositories_text = `$command`;
+
+    if ($@)
+    {
+	print STDERR "$0: *** Error: cannot find package information, does the 'neurospaces_repositories' command work correctly?";
+
+	exit 1;
+
+    }
+
+#     use Data::Dumper;
+
+#     print Dumper($repositories_text);
+
+    my $repositories = YAML::Load($repositories_text);
+
+    $repositories = [ %$repositories, ];
+
+    $repositories = [ @{$repositories->[1]->{repositories}}, ];
+
+#     $gtk2_repository_list->{data} = [];
+
+    foreach my $repository (@$repositories)
+    {
+	push
+	    @{$gtk2_repository_list->{data}},
+		[
+		 $repository->{package},
+		];
+    }
+
+    $window->show_all();
 }
 
 
@@ -184,9 +269,37 @@ sub window_create
 
     $hbox->pack_start($vbox, 0, 1, 0);
 
-    foreach my $tag (sort @$repository_tags)
+    foreach my $tag (sort keys %$repository_tags)
     {
 	my $checkbox = Gtk2::CheckButton->new($tag);
+
+# 	$checkbox->signal_connect
+# 	    (
+# 	     clicked =>
+# 	     sub
+# 	     {
+# 		 my $self = shift;
+
+# 		 print "relisting repos\n";
+# 	     },
+# 	     $checkbox,
+# 	    );
+
+	$checkbox->set_active(1);
+
+	$checkbox->signal_connect
+	    (
+	     toggled =>
+	     sub
+	     {
+		 my $self = shift;
+
+		 repositories_list();
+	     },
+	     $checkbox,
+	    );
+
+	$repository_tags->{$tag}->{checkbox} = $checkbox;
 
 	my $tooltip = "list all repositories with tag $tag";
 
@@ -194,6 +307,42 @@ sub window_create
 
 	$vbox->pack_start($checkbox, 0, 1, 0);
     }
+
+    repositories_list();
+
+    # aside the tag checkboxes: available repositories
+
+    my $list_scroller = Gtk2::ScrolledWindow->new();
+
+    $list_scroller->set_policy (qw/automatic automatic/);
+
+    $hbox->pack_start ($list_scroller, 1, 1, 0);
+
+    my $list
+	= Gtk2::SimpleList->new
+	    (
+	     'Name' => 'text',
+	    );
+
+    $gtk2_repository_list = $list;
+
+    $list->get_selection()->set_mode('single');
+
+    $list_scroller->add($list);
+
+#     $list->signal_connect
+# 	(
+# 	 row_activated => sub { $self->signal_refiner(@_); },
+# 	);
+
+#     my $textbuffer_parameters = $self->{gtk2_textbuffer_parameters};
+
+#     $list->signal_connect
+# 	(
+# 	 cursor_changed => sub { $self->signal_cursor_changed(@_); },
+# 	);
+
+    # global initialization
 
     $tooltips->enable();
 

@@ -41,7 +41,7 @@ my $option_verbose;
 my $developer_options = defined $option_developer ? "--developer " x $option_developer : '';
 my $disable_options = defined $option_disable ? "--disable '$option_disable' " : '';
 my $enable_options = defined $option_enable ? "--enable $option_enable " : '';
-my $package_tags_options = @$option_package_tags ? join ' ', (map { "--package-tags $_" } @$option_package_tags) : '';
+my $package_tags_options = @$option_package_tags ? join ' ', (map { "--package-tags '$_'" } @$option_package_tags) : '';
 my $regex_options = defined $option_regex_selector ? "--regex '$option_regex_selector' " : '';
 my $upstream_version_options = defined $option_upstream_version ? "--upstream-version $option_upstream_version " : '';
 my $verbose_options = defined $option_verbose ? "--verbose " x $option_verbose : '';
