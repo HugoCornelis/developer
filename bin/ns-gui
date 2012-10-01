@@ -1,0 +1,208 @@
+#!/usr/bin/perl -w
+#!/usr/bin/perl -d:ptkdb -w
+#
+
+
+use strict;
+
+
+use Getopt::Long;
+
+use Glib qw/TRUE FALSE/;
+
+use Gtk2 '-init';
+use Gtk2::Helper;
+use Gtk2::SimpleList;
+
+use YAML;
+
+
+our $option_verbose = '';
+
+our $tooltips = Gtk2::Tooltips->new();
+
+our $repository_tags;
+
+
+sub unique(@);
+
+
+sub main
+{
+    read_cmd_line();
+
+    my $packages_text = `neurospaces_packages`;
+
+    if ($@)
+    {
+	print STDERR "$0: *** Error: cannot find package information, does the 'neurospaces_packages' command work correctly?";
+
+	exit 1;
+
+    }
+
+    my $packages = YAML::Load($packages_text);
+
+    my $repositories_text = `neurospaces_repositories`;
+
+    if ($@)
+    {
+	print STDERR "$0: *** Error: cannot find package information, does the 'neurospaces_repositories' command work correctly?";
+
+	exit 1;
+
+    }
+
+    my $repositories = YAML::Load($repositories_text);
+
+    $repositories = [ %$repositories, ];
+
+    $repositories = [ @{$repositories->[1]->{repositories}}, ];
+
+    my $tags = [];
+
+    foreach my $repository (@$repositories)
+    {
+	$tags = [ @$tags, @{$repository->{tags} || []}, ];
+    }
+
+    $repository_tags = [ unique sort @$tags, ];
+
+    window_create();
+
+}
+
+
+sub read_cmd_line
+{
+    my $option_help;
+    my $option_version;
+
+    my $result
+	= GetOptions
+	    (
+	     "help!" => \$option_help,
+	     "v|verbose+" => \$option_verbose,
+	     "version" => \$option_version,
+	    );
+
+    if ($option_version)
+    {
+	my $version = version();
+
+	print $version . "\n";
+
+	exit 1;
+    }
+
+    if ($option_help || @ARGV ne 0)
+    {
+	print
+	    "
+$0 <options>
+
+$0: GUI frontend to the scripts of the Neurospaces developer package.
+
+options :
+    --help                   print usage information.
+    --verbose                set verbosity level.
+    --version                give version information.
+";
+
+	exit 1;
+    }
+}
+
+
+sub unique(@)
+{
+    return unless defined wantarray;  # void context, do nothing
+
+    my $array = [ sort @_, ];
+
+    my $hash
+	= {
+	   map
+	   {
+	       $_ => 1,
+	   }
+	   @$array,
+	  };
+
+    return (keys %$hash);
+}
+
+
+sub version
+{
+    # $Format: "    my $version=\"${package}-${label}\";"$
+    my $version="ns-gui-alpha";
+
+    return $version;
+}
+
+
+sub window_create
+{
+    my $window = Gtk2::Window->new('toplevel');
+
+    $window->set_title("Neurospaces Developer Management Console");
+
+    $window->set_default_size(800, 300);
+
+    # When the window is given the "delete_event" signal (this is given
+    # by the window manager, usually by the "close" option, or on the
+    # titlebar), we ask it to call the delete_event () functio
+    # as defined above. No data is passed to the callback function.
+    $window->signal_connect
+	(
+	 delete_event =>
+	 sub
+	 {
+	     $window->destroy();
+
+	     Gtk2->main_quit();
+	 },
+	);
+
+#     # Here we connect the "destroy" event to a signal handler.
+#     # This event occurs when we call Gtk2::Widget::destroy on the window,
+#     # or if we return FALSE in the "delete_event" callback. Perl supports
+#     # anonymous subs, so we can use one of them for one line callbacks.
+#     $window->signal_connect(destroy => sub { Gtk2->main_quit(); });
+
+    # Sets the border width of the window.
+    $window->set_border_width(10);
+
+    my $hbox = Gtk2::HBox->new();
+
+    $window->add($hbox);
+
+    # left: tag check boxes
+
+    my $vbox = Gtk2::VBox->new (0, 6);
+
+    $hbox->pack_start($vbox, 0, 1, 0);
+
+    foreach my $tag (sort @$repository_tags)
+    {
+	my $checkbox = Gtk2::CheckButton->new($tag);
+
+	my $tooltip = "list all repositories with tag $tag";
+
+	$tooltips->set_tip($checkbox, $tooltip);
+
+	$vbox->pack_start($checkbox, 0, 1, 0);
+    }
+
+    $tooltips->enable();
+
+    $window->show_all();
+
+    Gtk2->main();
+}
+
+
+main();
+
+

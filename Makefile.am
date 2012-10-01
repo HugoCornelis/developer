@@ -57,6 +57,7 @@ dist_bin_SCRIPTS = \
 	bin/neurospaces_upgrade \
 	bin/neurospaces_versions \
 	bin/neurospaces_website_prepare \
+	bin/ns-gui \
 	bin/nspkg-deb \
 	bin/nspkg-osx \
 	bin/nspkg-rpm \
