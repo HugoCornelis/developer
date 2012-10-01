@@ -198,6 +198,71 @@ sub repositories_list
 }
 
 
+sub repository_list_cursor_changed
+{
+    my ($widget) = @_;
+
+    my $cursor = $widget->get_cursor();
+
+    my $selection = $widget->get_selection();
+
+    my $rows = [ $selection->get_selected_rows(), ];
+
+    #! index '0' means first selected row, we select one row at most...
+
+    my $row = $rows->[0];
+
+    if ($row)
+    {
+	my $indices = [ $row->get_indices(), ];
+
+	#! index '0', see above...
+
+	my $index = $indices->[0];
+
+# 	my $selected = $widget->{data}->[$index]->[$self->{serial_column}];
+
+# 	my $current = $self->{this} + $selected;
+
+# 	print "Parameters for symbol $current\n";
+
+# 	my $current_symbol = Neurospaces::GUI::Components::Node::factory( { serial => $current, studio => $self->{studio}, }, );
+
+# 	print YAML::Dump( { current_symbol => $current_symbol, }, );
+
+# 	my $specific_parameters = $current_symbol->get_specific_parameters($current);
+
+# 	my $textbuffer_specific_parameters = $self->{gtk2_textbuffer_specific_parameters};
+
+# 	$textbuffer_specific_parameters->set_text(YAML::Dump( { 'specific parameters' => $specific_parameters, }, ));
+
+# 	my $parameters = $self->get_parameters($current);
+
+# 	my $textbuffer_parameters = $self->{gtk2_textbuffer_parameters};
+
+# 	$textbuffer_parameters->set_text(YAML::Dump($parameters));
+    }
+}
+
+
+sub repository_list_row_activated
+{
+    my ($widget, $path, $column) = @_;
+
+    my $row_ref = $widget->get_row_data_from_path($path);
+
+#     my $selected = $row_ref->[$self->{serial_column}];
+
+#     my $current = $self->{this} + $selected;
+
+#     print "Exploring symbol $current\n";
+
+#     my $child = Neurospaces::GUI::Components::Node::factory({ serial => $current, studio => $self->{studio}, }, );
+
+#     $child->explore();
+}
+
+
 sub unique(@)
 {
     return unless defined wantarray;  # void context, do nothing
@@ -264,9 +329,17 @@ sub window_create
 
     # left: tag check boxes
 
-    my $vbox = Gtk2::VBox->new (0, 6);
+    my $vbox_tags = Gtk2::VBox->new (0, 6);
 
-    $hbox->pack_start($vbox, 0, 1, 0);
+    $hbox->pack_start($vbox_tags, 0, 1, 0);
+
+    my $label_tags = Gtk2::Label->new("Available Tags");
+
+    my $tooltip_tags = "tags found on your system";
+
+    $tooltips->set_tip($label_tags, $tooltip_tags);
+
+    $vbox_tags->pack_start($label_tags, 0, 1, 0);
 
     foreach my $tag (sort keys %$repository_tags)
     {
@@ -300,20 +373,33 @@ sub window_create
 
 	$repository_tags->{$tag}->{checkbox} = $checkbox;
 
-	my $tooltip = "list all repositories with tag $tag";
+	my $tooltip = "include all repositories with tag $tag";
 
 	$tooltips->set_tip($checkbox, $tooltip);
 
-	$vbox->pack_start($checkbox, 0, 1, 0);
+	$vbox_tags->pack_start($checkbox, 0, 1, 0);
     }
 
     # aside the tag checkboxes: available repositories
 
+    my $vbox_repositories = Gtk2::VBox->new(0, 6);
+
+    $hbox->pack_start($vbox_repositories, 1, 1, 0);
+
+    my $label_repositories = Gtk2::Label->new("Available Repositories");
+
+    my $tooltip_repositories = "repositories found on your system
+satisfying one or more of the selected tags";
+
+    $tooltips->set_tip($label_repositories, $tooltip_repositories);
+
+    $vbox_repositories->pack_start($label_repositories, 0, 1, 0);
+
     my $list_scroller = Gtk2::ScrolledWindow->new();
 
-    $list_scroller->set_policy (qw/automatic automatic/);
+    $list_scroller->set_policy(qw/automatic automatic/);
 
-    $hbox->pack_start ($list_scroller, 1, 1, 0);
+    $vbox_repositories->pack_start($list_scroller, 1, 1, 0);
 
     my $list
 	= Gtk2::SimpleList->new
@@ -323,21 +409,67 @@ sub window_create
 
     $gtk2_repository_list = $list;
 
-    $list->get_selection()->set_mode('single');
+    $list->get_selection()->set_mode('extended');
 
     $list_scroller->add($list);
 
-#     $list->signal_connect
-# 	(
-# 	 row_activated => sub { $self->signal_refiner(@_); },
-# 	);
+    $list->signal_connect
+	(
+	 row_activated => sub { repository_list_row_activated(@_); },
+	);
 
-#     my $textbuffer_parameters = $self->{gtk2_textbuffer_parameters};
+    $list->signal_connect
+	(
+	 cursor_changed => sub { repository_list_cursor_changed(@_); },
+	);
 
-#     $list->signal_connect
-# 	(
-# 	 cursor_changed => sub { $self->signal_cursor_changed(@_); },
-# 	);
+    # right from the available repositories: command buttons
+
+    my $vbox_operations = Gtk2::VBox->new (0, 6);
+
+    $hbox->pack_start($vbox_operations, 0, 1, 0);
+
+    my $operations_label = Gtk2::Label->new("Operations");
+
+    my $tooltip = "run operations on selected packages";
+
+    $tooltips->set_tip($operations_label, $tooltip);
+
+    $vbox_operations->pack_start($operations_label, 0, 1, 0);
+
+    foreach my $operation (
+			 qw(
+			       sync
+			       pull
+			       upgrade
+			       install
+			       configure
+			       check
+			 )
+			)
+    {
+	my $button = Gtk2::Button->new($operation);
+
+	$button->signal_connect
+	    (
+	     clicked =>
+	     sub
+	     {
+		 my $self = shift;
+
+		 my $operation = shift;
+
+		 print "operation neurospaces_$operation\n";
+	     },
+ 	     $operation,
+	    );
+
+	my $tooltip = "run operation neurospaces_$operation";
+
+	$tooltips->set_tip($button, $tooltip);
+
+	$vbox_operations->pack_start($button, 0, 1, 0);
+    }
 
     # global initialization
 
