@@ -459,7 +459,19 @@ satisfying one or more of the selected tags";
 
 		 my $operation = shift;
 
-		 print "operation neurospaces_$operation\n";
+		 my $selection = $gtk2_repository_list->get_selection();
+
+		 my $rows = [ $selection->get_selected_rows(), ];
+
+		 my $indices = [ map { $_->get_indices(), } @$rows, ];
+
+		 my $packages = [ map { $gtk2_repository_list->{data}->[$_]->[0], } @$indices, ];
+
+		 use Data::Dumper;
+
+		 print Dumper($packages);
+
+		 print "operation neurospaces_$operation " . (join ' ', @$packages) . "\n";
 	     },
  	     $operation,
 	    );
