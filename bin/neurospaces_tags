@@ -1,0 +1,112 @@
+#!/usr/bin/perl -w
+#!/usr/bin/perl -d:ptkdb -w
+#
+
+
+use strict;
+
+
+use Getopt::Long;
+
+use YAML;
+
+
+my $option_developer = 1;
+my $option_disable;
+my $option_enable;
+my $option_package_tags = [];
+my $option_regex_selector;
+my $option_verbose;
+
+sub unique(@);
+
+sub main
+{
+    {
+	my $result
+	    = GetOptions
+		(
+		 "developer!" => \$option_developer,
+		 "disable=s" => \$option_disable,
+		 "enable=s" => \$option_enable,
+		 "package-tags=s" => $option_package_tags,
+		 "regex-selector=s" => \$option_regex_selector,
+		 "v|verbose+" => \$option_verbose,
+		);
+
+	if (!$result)
+	{
+	    die "$0: *** Error: Error in option processing";
+	}
+    }
+
+    my $developer_options = defined $option_developer ? "--developer " x $option_developer : '';
+    my $disable_options = defined $option_disable ? "--disable '$option_disable' " : '';
+    my $enable_options = defined $option_enable ? "--enable $option_enable " : '';
+    my $package_tags_options = @$option_package_tags ? join ' ', (map { "--package-tags '$_'" } @$option_package_tags) : '';
+    my $regex_options = defined $option_regex_selector ? "--regex '$option_regex_selector' " : '';
+    my $verbose_options = defined $option_verbose ? "--verbose " x $option_verbose : '';
+
+    my $packages_command = "neurospaces_repositories $regex_options $enable_options $disable_options $package_tags_options " . (join ' ', map { "'$_'" } @ARGV);
+
+    my $packages_text = `$packages_command`;
+
+    if ($@)
+    {
+	print STDERR "$0: *** Error: cannot find package information, does the 'neurospaces_repositories' command work correctly?";
+
+	exit 1;
+
+    }
+
+    my $packages = YAML::Load($packages_text);
+
+    $packages = [ %$packages, ];
+
+    $packages = [ @{$packages->[1]->{repositories}}, ];
+
+    my $tags = [];
+
+    foreach my $package (@$packages)
+    {
+	$tags = [ @$tags, @{$package->{tags} || []}, ];
+    }
+
+    my $packages_tags = [ unique sort @$tags, ];
+
+#     $packages_tags
+# 	= {
+# 	   map
+# 	   {
+# 	       $_ => {},
+# 	   }
+# 	   @$packages_tags,
+# 	  };
+
+    print YAML::Dump( { $0 => { packages_tags => $packages_tags, }, }, );
+
+}
+
+
+sub unique(@)
+{
+    return unless defined wantarray;  # void context, do nothing
+
+    my $array = [ sort @_, ];
+
+    my $hash
+	= {
+	   map
+	   {
+	       $_ => 1,
+	   }
+	   @$array,
+	  };
+
+    return (keys %$hash);
+}
+
+
+main();
+
+

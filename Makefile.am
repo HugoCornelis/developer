@@ -52,6 +52,7 @@ dist_bin_SCRIPTS = \
 	bin/neurospaces_setup \
 	bin/neurospaces_status \
 	bin/neurospaces_sync \
+	bin/neurospaces_tags \
 	bin/neurospaces_tools_propagate \
 	bin/neurospaces_uninstall \
 	bin/neurospaces_update \
