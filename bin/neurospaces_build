@@ -4851,6 +4851,27 @@ options related to behavior of external applications:
 	       }
 	       grep
 	       {
+		   # when packages are explicitly listed on the command line, only select those and exclude all the other ones
+
+		   my $selected = 1;
+
+		   if (@ARGV)
+		   {
+		       $selected = 0;
+
+		       foreach my $argument (@ARGV)
+		       {
+			   if ($_ eq $argument)
+			   {
+			       $selected = $_;
+			   }
+		       }
+		   }
+
+		   $selected;
+	       }
+	       grep
+	       {
 		   my $selected = 'by default';
 
 		   if (@$option_package_tags)

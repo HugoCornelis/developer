@@ -19,10 +19,10 @@ use YAML;
 
 our $option_verbose = '';
 
-our $gtk2_repository_list;
-our $gtk2_tb_repository_information;
+our $gtk2_package_list;
+our $gtk2_tb_package_information;
 our $tooltips = Gtk2::Tooltips->new();
-our $repository_tags;
+our $packages_tags;
 
 sub unique(@);
 
@@ -49,19 +49,19 @@ sub main
 {
     read_cmd_line();
 
-    my $packages_text = `neurospaces_packages`;
+#     my $packages_text = `neurospaces_packages`;
 
-    if ($@)
-    {
-	print STDERR "$0: *** Error: cannot find package information, does the 'neurospaces_packages' command work correctly?";
+#     if ($@)
+#     {
+# 	print STDERR "$0: *** Error: cannot find package information, does the 'neurospaces_packages' command work correctly?";
 
-	exit 1;
+# 	exit 1;
 
-    }
+#     }
 
-    my $packages = YAML::Load($packages_text);
+#     my $packages = YAML::Load($packages_text);
 
-    my $repositories_text = `neurospaces_repositories`;
+    my $packages_text = `neurospaces_repositories`;
 
     if ($@)
     {
@@ -71,28 +71,28 @@ sub main
 
     }
 
-    my $repositories = YAML::Load($repositories_text);
+    my $packages = YAML::Load($packages_text);
 
-    $repositories = [ %$repositories, ];
+    $packages = [ %$packages, ];
 
-    $repositories = [ @{$repositories->[1]->{repositories}}, ];
+    $packages = [ @{$packages->[1]->{repositories}}, ];
 
     my $tags = [];
 
-    foreach my $repository (@$repositories)
+    foreach my $package (@$packages)
     {
-	$tags = [ @$tags, @{$repository->{tags} || []}, ];
+	$tags = [ @$tags, @{$package->{tags} || []}, ];
     }
 
-    $repository_tags = [ unique sort @$tags, ];
+    $packages_tags = [ unique sort @$tags, ];
 
-    $repository_tags
+    $packages_tags
 	= {
 	   map
 	   {
 	       $_ => {},
 	   }
-	   @$repository_tags,
+	   @$packages_tags,
 	  };
 
     window_main_create();
@@ -141,15 +141,15 @@ options :
 }
 
 
-sub repositories_list
+sub packages_list
 {
     my $active_tags = [];
 
-    foreach my $repository_tag (keys %$repository_tags)
+    foreach my $package_tag (keys %$packages_tags)
     {
-	if ($repository_tags->{$repository_tag}->{checkbox}->get_active())
+	if ($packages_tags->{$package_tag}->{checkbox}->get_active())
 	{
-	    push @$active_tags, $repository_tag;
+	    push @$active_tags, $package_tag;
 	}
     }
 
@@ -165,7 +165,7 @@ sub repositories_list
 
     print "$command\n";
 
-    my $repositories_text = `$command`;
+    my $packages_text = `$command`;
 
     if ($@)
     {
@@ -177,29 +177,29 @@ sub repositories_list
 
 #     use Data::Dumper;
 
-#     print Dumper($repositories_text);
+#     print Dumper($packages_text);
 
-    my $repositories = YAML::Load($repositories_text);
+    my $packages = YAML::Load($packages_text);
 
-    $repositories = [ %$repositories, ];
+    $packages = [ %$packages, ];
 
-    $repositories = [ @{$repositories->[1]->{repositories}}, ];
+    $packages = [ @{$packages->[1]->{repositories}}, ];
 
-    @{$gtk2_repository_list->{data}} = ();
+    @{$gtk2_package_list->{data}} = ();
 
-    foreach my $repository (@$repositories)
+    foreach my $package (@$packages)
     {
 	push
-	    @{$gtk2_repository_list->{data}},
+	    @{$gtk2_package_list->{data}},
 		[
-		 $repository->{package},
+		 $package->{package},
 		];
     }
 
 }
 
 
-sub repository_list_cursor_changed
+sub package_list_cursor_changed
 {
     my ($widget) = @_;
 
@@ -211,22 +211,24 @@ sub repository_list_cursor_changed
     {
 	my $indices = [ $path->get_indices(), ];
 
-	my $package_names = [ map { $gtk2_repository_list->{data}->[$_]->[0], } @$indices, ];
+	my $package_names = [ map { $gtk2_package_list->{data}->[$_]->[0], } @$indices, ];
 
 	my $package_name = $package_names->[0];
 
-	my $contents = "Current package information: $package_name\n\n";
+	my $contents = "Selected package information: $package_name\n";
 
-	my $status = `neurospaces_status $package_name`;
+	my $repository = `neurospaces_repositories '$package_name'`;
 
-	$contents .= $status;
+	my $status = `neurospaces_status '$package_name'`;
 
-	$gtk2_tb_repository_information->set_text($contents);
+	$contents .= join "\n", $repository, $status;
+
+	$gtk2_tb_package_information->set_text($contents);
     }
 }
 
 
-sub repository_list_row_activated
+sub package_list_row_activated
 {
     my ($widget, $path, $column) = @_;
 
@@ -234,7 +236,7 @@ sub repository_list_row_activated
 
     my $package_name = $row_ref->[0];
 
-    window_repository_create($package_name);
+    window_package_create($package_name);
 }
 
 
@@ -308,7 +310,7 @@ sub window_main_create
 
     $hbox->pack_start($vbox_tags, 0, 1, 0);
 
-    my $label_tags = Gtk2::Label->new("Available Tags");
+    my $label_tags = Gtk2::Label->new("Available Package Tags");
 
     my $tooltip_tags = "tags found on your system";
 
@@ -316,7 +318,7 @@ sub window_main_create
 
     $vbox_tags->pack_start($label_tags, 0, 1, 0);
 
-    foreach my $tag (sort keys %$repository_tags)
+    foreach my $tag (sort keys %$packages_tags)
     {
 	my $checkbox = Gtk2::CheckButton->new($tag);
 
@@ -341,42 +343,42 @@ sub window_main_create
 	     {
 		 my $self = shift;
 
-		 repositories_list();
+		 packages_list();
 	     },
 	     $checkbox,
 	    );
 
-	$repository_tags->{$tag}->{checkbox} = $checkbox;
+	$packages_tags->{$tag}->{checkbox} = $checkbox;
 
-	my $tooltip = "include all repositories with tag $tag";
+	my $tooltip = "include all packages with tag $tag";
 
 	$tooltips->set_tip($checkbox, $tooltip);
 
 	$vbox_tags->pack_start($checkbox, 0, 1, 0);
     }
 
-    # aside the tag checkboxes: available repositories
+    # aside the tag checkboxes: available packages
 
-    my $vbox_repositories = Gtk2::VBox->new(0, 6);
+    my $vbox_packages = Gtk2::VBox->new(0, 6);
 
-    $hbox->pack_start($vbox_repositories, 1, 1, 0);
+    $hbox->pack_start($vbox_packages, 1, 1, 0);
 
-    my $label_repositories = Gtk2::Label->new("Available Repositories");
+    my $label_packages = Gtk2::Label->new("Available Packages");
 
-    my $tooltip_repositories = "repositories found on your system
+    my $tooltip_packages = "packages found on your system
 satisfying one or more of the selected tags";
 
-    $tooltips->set_tip($label_repositories, $tooltip_repositories);
+    $tooltips->set_tip($label_packages, $tooltip_packages);
 
-    $vbox_repositories->pack_start($label_repositories, 0, 1, 0);
+    $vbox_packages->pack_start($label_packages, 0, 1, 0);
 
-    my $scroller_repository_list = Gtk2::ScrolledWindow->new();
+    my $scroller_package_list = Gtk2::ScrolledWindow->new();
 
-    $scroller_repository_list->set_size_request(250, 100);
+    $scroller_package_list->set_size_request(250, 100);
 
-    $scroller_repository_list->set_policy(qw/automatic automatic/);
+    $scroller_package_list->set_policy(qw/automatic automatic/);
 
-    $vbox_repositories->pack_start($scroller_repository_list, 1, 1, 0);
+    $vbox_packages->pack_start($scroller_package_list, 1, 1, 0);
 
     my $list
 	= Gtk2::SimpleList->new
@@ -384,25 +386,25 @@ satisfying one or more of the selected tags";
 	     'Name' => 'text',
 	    );
 
-    $gtk2_repository_list = $list;
+    $gtk2_package_list = $list;
 
     $list->get_selection()->set_mode('extended');
 
-    $scroller_repository_list->add($list);
+    $scroller_package_list->add($list);
 
     $list->signal_connect
 	(
-	 row_activated => sub { repository_list_row_activated(@_); },
+	 row_activated => sub { package_list_row_activated(@_); },
 	);
 
     $list->signal_connect
 	(
-	 cursor_changed => sub { repository_list_cursor_changed(@_); },
+	 cursor_changed => sub { package_list_cursor_changed(@_); },
 	);
 
-    my $repositories_all_button = Gtk2::Button->new("Select all");
+    my $packages_all_button = Gtk2::Button->new("Select all");
 
-    $repositories_all_button->signal_connect
+    $packages_all_button->signal_connect
 	(
 	 clicked =>
 	 sub
@@ -411,22 +413,22 @@ satisfying one or more of the selected tags";
 
 	     my $operation = shift;
 
-	     my $selection = $gtk2_repository_list->get_selection();
+	     my $selection = $gtk2_package_list->get_selection();
 
 	     $selection->select_all();
 	 },
 	 'all',
 	);
 
-    my $tooltip_repositories_all = "select all repositories";
+    my $tooltip_packages_all = "select all packages";
 
-    $tooltips->set_tip($repositories_all_button, $tooltip_repositories_all);
+    $tooltips->set_tip($packages_all_button, $tooltip_packages_all);
 
-    $vbox_repositories->pack_start($repositories_all_button, 0, 1, 0);
+    $vbox_packages->pack_start($packages_all_button, 0, 1, 0);
 
-    my $repositories_none_button = Gtk2::Button->new("Unselect all");
+    my $packages_none_button = Gtk2::Button->new("Unselect all");
 
-    $repositories_none_button->signal_connect
+    $packages_none_button->signal_connect
 	(
 	 clicked =>
 	 sub
@@ -435,48 +437,60 @@ satisfying one or more of the selected tags";
 
 	     my $operation = shift;
 
-	     my $selection = $gtk2_repository_list->get_selection();
+	     my $selection = $gtk2_package_list->get_selection();
 
 	     $selection->unselect_all();
 	 },
 	 'none',
 	);
 
-    my $tooltip_repositories_none = "unselect all repositories";
+    my $tooltip_packages_none = "unselect all packages";
 
-    $tooltips->set_tip($repositories_none_button, $tooltip_repositories_none);
+    $tooltips->set_tip($packages_none_button, $tooltip_packages_none);
 
-    $vbox_repositories->pack_start($repositories_none_button, 0, 1, 0);
+    $vbox_packages->pack_start($packages_none_button, 0, 1, 0);
 
-    # right from the available repositories: repository information
+    # right from the available packages: package information
 
-    my $scroller_repository_information = Gtk2::ScrolledWindow->new();
+    my $vbox_package_information = Gtk2::VBox->new (0, 6);
 
-    $scroller_repository_information->set_size_request(550, 500);
+    $hbox->pack_start($vbox_package_information, 0, 1, 0);
 
-    $scroller_repository_information->set_policy (qw/automatic automatic/);
+    my $package_information_label = Gtk2::Label->new("Package Information");
 
-    $hbox->pack_start($scroller_repository_information, 0, 1, 0);
+    my $tooltip_label = "information of a single selected package";
 
-    my $tb_repository_information = Gtk2::TextBuffer->new();
+    $tooltips->set_tip($package_information_label, $tooltip_label);
 
-    $gtk2_tb_repository_information = $tb_repository_information;
+    $vbox_package_information->pack_start($package_information_label, 0, 1, 0);
 
-    my $tv_repository_information = Gtk2::TextView->new();
+    my $scroller_package_information = Gtk2::ScrolledWindow->new();
 
-    $tv_repository_information->set_editable(FALSE);
+    $scroller_package_information->set_size_request(550, 500);
 
-    $tv_repository_information->set_buffer($tb_repository_information);
+    $scroller_package_information->set_policy (qw/automatic automatic/);
 
-    $scroller_repository_information->add($tv_repository_information);
+    $vbox_package_information->pack_start($scroller_package_information, 0, 1, 0);
 
-    # right from the repository information: command buttons
+    my $tb_package_information = Gtk2::TextBuffer->new();
+
+    $gtk2_tb_package_information = $tb_package_information;
+
+    my $tv_package_information = Gtk2::TextView->new();
+
+    $tv_package_information->set_editable(FALSE);
+
+    $tv_package_information->set_buffer($tb_package_information);
+
+    $scroller_package_information->add($tv_package_information);
+
+    # right from the package information: command buttons
 
     my $vbox_operations = Gtk2::VBox->new (0, 6);
 
     $hbox->pack_start($vbox_operations, 0, 1, 0);
 
-    my $operations_label = Gtk2::Label->new("Operations");
+    my $operations_label = Gtk2::Label->new("Package Operations");
 
     my $tooltip = "run operations on selected packages";
 
@@ -512,13 +526,13 @@ satisfying one or more of the selected tags";
 
 		 my $operation = shift;
 
-		 my $selection = $gtk2_repository_list->get_selection();
+		 my $selection = $gtk2_package_list->get_selection();
 
 		 my $rows = [ $selection->get_selected_rows(), ];
 
 		 my $indices = [ map { $_->get_indices(), } @$rows, ];
 
-		 my $packages = [ map { $gtk2_repository_list->{data}->[$_]->[0], } @$indices, ];
+		 my $packages = [ map { $gtk2_package_list->{data}->[$_]->[0], } @$indices, ];
 
 # 		 use Data::Dumper;
 
@@ -559,7 +573,7 @@ satisfying one or more of the selected tags";
 
     $window->show_all();
 
-    repositories_list();
+    packages_list();
 
 #     system "touch /tmp/output && tail -f /tmp/output &";
 
@@ -567,7 +581,7 @@ satisfying one or more of the selected tags";
 }
 
 
-sub window_repository_create
+sub window_package_create
 {
     my $package_name = shift;
 
