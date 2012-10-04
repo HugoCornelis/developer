@@ -113,16 +113,16 @@ if (-f '/etc/neurospaces/developer/build.yml')
 
 my $personal_build_configuration;
 
-if (-f $ENV{HOME} . '/etc/neurospaces/developer/build.yml')
+if (-f $ENV{HOME} . '/.neurospaces/developer/build.yml')
 {
     eval
     {
-	$personal_build_configuration = YAML::LoadFile($ENV{HOME} . '/etc/neurospaces/developer/build.yml');
+	$personal_build_configuration = YAML::LoadFile($ENV{HOME} . '/.neurospaces/developer/build.yml');
     };
 
     if ($@)
     {
-	die "$0: *** Error: reading file $ENV{HOME}/etc/neurospaces/developer/build.yml ($@)";
+	die "$0: *** Error: reading file $ENV{HOME}/.neurospaces/developer/build.yml ($@)";
     }
 }
 
