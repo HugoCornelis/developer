@@ -17,6 +17,17 @@ use Gtk2::SimpleList;
 use YAML;
 
 
+$0 =~ m(.*/(.*));
+
+my $program_name = $1;
+
+$program_name =~ m((.*)[_-](.*));
+
+my $documentation_set_name = $1;
+my $root_operation_name = $2;
+
+my $role = 'empty';
+
 our $option_verbose = '';
 
 our $gtk2_package_list;
@@ -137,6 +148,22 @@ options :
 ";
 
 	exit 1;
+    }
+
+    print "Your documentation_set_name is $documentation_set_name\n";
+
+    if ($documentation_set_name ne 'neurospaces-manager')
+    {
+	$role = 'content_developer';
+    }
+    else
+    {
+	$role = 'software_developer';
+    }
+
+    if ($option_verbose)
+    {
+	print "Your role is $role\n";
     }
 }
 
@@ -498,69 +525,239 @@ satisfying one or more of the selected tags";
 
     $vbox_operations->pack_start($operations_label, 0, 1, 0);
 
-    foreach my $operation (
-			   qw(
-				 repositories
-				 status
-				 upgrade
-				 pull
-				 sync
-				 clean
-				 update
-				 configure
-				 install
-				 check
-				 dev_uninstall
-				 serve
-			    )
-			  )
+    my $operations
+	= [
+	   {
+	    name => 'repositories',
+	    targets => {
+			content_developer => 1,
+			content_user => 0,
+			software_developer => 1,
+		       },
+	   },
+	   {
+	    name => 'status',
+	    targets => {
+			content_developer => 1,
+			content_user => 0,
+			software_developer => 1,
+		       },
+	   },
+	   {
+	    name => 'upgrade',
+	    targets => {
+			content_developer => 1,
+			content_user => 1,
+			software_developer => 1,
+		       },
+	   },
+	   {
+	    name => 'pull',
+	    targets => {
+			content_developer => 0,
+			content_user => 0,
+			software_developer => 1,
+		       },
+	   },
+	   {
+	    name => 'sync',
+	    targets => {
+			content_developer => 0,
+			content_user => 0,
+			software_developer => 1,
+		       },
+	   },
+	   {
+	    clicked => 'content',
+	    name => 'content_sync',
+	    targets => {
+			content_developer => 1,
+			content_user => 0,
+			software_developer => 1,
+		       },
+	   },
+	   {
+	    name => 'clean',
+	    targets => {
+			content_developer => 0,
+			content_user => 0,
+			software_developer => 1,
+		       },
+	   },
+	   {
+	    name => 'update',
+	    targets => {
+			content_developer => 0,
+			content_user => 0,
+			software_developer => 1,
+		       },
+	   },
+	   {
+	    name => 'configure',
+	    targets => {
+			content_developer => 0,
+			content_user => 0,
+			software_developer => 1,
+		       },
+	   },
+	   {
+	    name => 'install',
+	    targets => {
+			content_developer => 0,
+			content_user => 0,
+			software_developer => 1,
+		       },
+	   },
+	   {
+	    name => 'check',
+	    targets => {
+			content_developer => 0,
+			content_user => 1,
+			software_developer => 1,
+		       },
+	   },
+	   {
+	    clicked => 'content',
+	    name => 'content_check',
+	    targets => {
+			content_developer => 1,
+			content_user => 0,
+			software_developer => 1,
+		       },
+	   },
+	   {
+	    name => 'dev_uninstall',
+	    targets => {
+			content_developer => 1,
+			content_user => 1,
+			software_developer => 1,
+		       },
+	   },
+	   {
+	    name => 'serve',
+	    targets => {
+			content_developer => 1,
+			content_user => 0,
+			software_developer => 1,
+		       },
+	   },
+	  ];
+
+    my $clicked_content =
+	sub
+	{
+	    my $self = shift;
+
+	    my $operation_name = shift;
+
+	    $operation_name =~ /(.*)_(.*)/;
+
+	    $operation_name = $2;
+
+	    my $selection = $gtk2_package_list->get_selection();
+
+	    my $rows = [ $selection->get_selected_rows(), ];
+
+	    my $indices = [ map { $_->get_indices(), } @$rows, ];
+
+	    my $packages = [ map { $gtk2_package_list->{data}->[$_]->[0], } @$indices, ];
+
+	    foreach my $package_name (@$packages)
+	    {
+		my $path = "/usr/local/bin";
+
+		my $command = $path . "/$package_name-$operation_name";
+
+		if (-x $command)
+		{
+		    print "$command\n";
+
+		    system "$command";
+
+		    # 		 my $output = `$command >/tmp/output 2>&1 &`;
+
+		    if ($@)
+		    {
+			print STDERR "$0: *** Error: $@\n";
+
+			print STDOUT "$0: *** Error: $@\n";
+		    }
+		    else
+		    {
+			print STDOUT "$0: *** Ok\n";
+		    }
+		}
+		else
+		{
+		    print STDERR "$0: *** Warning: $command not found or not executable\n";
+		}
+	    }
+	};
+
+    my $clicked_default =
+	sub
+	{
+	    my $self = shift;
+
+	    my $operation_name = shift;
+
+	    my $selection = $gtk2_package_list->get_selection();
+
+	    my $rows = [ $selection->get_selected_rows(), ];
+
+	    my $indices = [ map { $_->get_indices(), } @$rows, ];
+
+	    my $packages = [ map { $gtk2_package_list->{data}->[$_]->[0], } @$indices, ];
+
+	    # 		 use Data::Dumper;
+
+	    # 		 print Dumper($packages);
+
+	    my $command = "neurospaces_$operation_name " . (join ' ', @$packages) . "\n";
+
+	    print "$command\n";
+
+	    system "$command";
+
+	    # 		 my $output = `$command >/tmp/output 2>&1 &`;
+
+	    if ($@)
+	    {
+		print STDERR "$0: *** Error: $@\n";
+
+		print STDOUT "$0: *** Error: $@\n";
+	    }
+	    else
+	    {
+		print STDOUT "$0: *** Ok\n";
+	    }
+	};
+
+    foreach my $operation (@$operations)
     {
-	my $button = Gtk2::Button->new($operation);
+	if (not $operation->{targets}->{$role})
+	{
+	    next;
+	}
+
+	my $operation_name = $operation->{name};
+
+	my $button = Gtk2::Button->new($operation_name);
+
+	my $clicked = $operation->{clicked} || $clicked_default;
+
+	if ($clicked eq 'content')
+	{
+	    $clicked = $clicked_content;
+	}
 
 	$button->signal_connect
 	    (
-	     clicked =>
-	     sub
-	     {
-		 my $self = shift;
-
-		 my $operation = shift;
-
-		 my $selection = $gtk2_package_list->get_selection();
-
-		 my $rows = [ $selection->get_selected_rows(), ];
-
-		 my $indices = [ map { $_->get_indices(), } @$rows, ];
-
-		 my $packages = [ map { $gtk2_package_list->{data}->[$_]->[0], } @$indices, ];
-
-# 		 use Data::Dumper;
-
-# 		 print Dumper($packages);
-
-		 my $command = "neurospaces_$operation " . (join ' ', @$packages) . "\n";
-
-		 print "$command\n";
-
-		 system "$command";
-
-# 		 my $output = `$command >/tmp/output 2>&1 &`;
-
-		 if ($@)
-		 {
-		     print STDERR "$0: *** Error: $@\n";
-
-		     print STDOUT "$0: *** Error: $@\n";
-		 }
-		 else
-		 {
-		     print STDOUT "$0: *** Ok\n";
-		 }
-	     },
- 	     $operation,
+	     clicked => $clicked,
+ 	     $operation_name,
 	    );
 
-	my $tooltip = "run operation neurospaces_$operation";
+	my $tooltip = "run operation neurospaces_$operation_name";
 
 	$tooltips->set_tip($button, $tooltip);
 
