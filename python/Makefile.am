@@ -22,10 +22,12 @@ EXTRA_DIST = \
 setup: setup.py
 	$(PYTHON) setup.py build
 	$(PYTHON) setup.py build_py
+	$(PYTHON) setup.py bdist
 
 
 install-exec-hook:
-	$(PYTHON) setup.py install
+	echo "No install"
+#	$(PYTHON) setup.py install
 
 uninstall-hook:
 	$(PYTHON) uninstall.py
