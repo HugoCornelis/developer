@@ -6,6 +6,8 @@
 use strict;
 
 
+use Data::Utilities;
+
 use Getopt::Long;
 
 use YAML;
@@ -92,9 +94,9 @@ my $option_environment = [];
 my $all_operations = [];
 
 
-my $whole_build_configuration;
-
 use YAML;
+
+my $whole_build_configuration;
 
 if (-f '/etc/neurospaces/developer/build.yml')
 {
@@ -106,6 +108,21 @@ if (-f '/etc/neurospaces/developer/build.yml')
     if ($@)
     {
 	die "$0: *** Error: reading file /etc/neurospaces/developer/build.yml ($@)";
+    }
+}
+
+my $personal_build_configuration;
+
+if (-f $ENV{HOME} . '/.neurospaces/developer/build.yml')
+{
+    eval
+    {
+	$personal_build_configuration = YAML::LoadFile($ENV{HOME} . '/.neurospaces/developer/build.yml');
+    };
+
+    if ($@)
+    {
+	die "$0: *** Error: reading file $ENV{HOME}/.neurospaces/developer/build.yml ($@)";
     }
 }
 
@@ -4365,9 +4382,14 @@ sub read_cmd_line
     {
 	# merge
 
-	require Data::Utilities;
-
 	my $merged_packages = Data::Merger::merger($all_packages, $whole_build_configuration->{all_packages});
+    }
+
+    # if there is a personal package configuration
+
+    if ($personal_build_configuration)
+    {
+	my $merged_packages = Data::Merger::merger($all_packages, $personal_build_configuration->{all_packages});
     }
 
     # check validity of the package configuration
