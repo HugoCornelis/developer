@@ -120,15 +120,29 @@ neurospaces_cpan_modules:
 	( cd cpan ; ./cpan_install *.gz )
 	touch $(top_srcdir)/neurospaces_cpan_modules
 
+test: check
+
+#TESTS = $(srcdir)/tests/neurospaces_harness
+
 html-upload-prepare:
+	rm -fr html/htdocs/neurospaces_project/$(PACKAGE)
+	mkdir -p html/htdocs/neurospaces_project/$(PACKAGE)
+# $Format: "	( cd tests && ./tests_2_html --header '<img src=\"ns-main-logo-dark2-notext-32x32.jpg\" alt=\"Main Neurospaces logo\"> ${package}, ${label}, ${email} <hr>' --introduction introduction.html )" $
+	( cd tests && ./tests_2_html --header '<img src="ns-main-logo-dark2-notext-32x32.jpg" alt="Main Neurospaces logo"> neurospaces 0.1675 Thu, 27 Dec 2007 15:58:18 -0600 hugo<hr>' --introduction introduction.html )
 
 #t perhaps also add a target to check the syntax of all the html ?
 
 html-upload: html-upload-prepare
 
-test: check
+website-clean:
 
-#TESTS = $(srcdir)/tests/neurospaces_harness
+website-prepare:
+
+website-prepare-local:
+
+website-upload: website-clean website-prepare html-upload
+
+webcheck:
 
 docs-level1:
 
