@@ -1,6 +1,7 @@
 .changes$
 .dsc$
 .pkg$
+MANIFEST$
 Makefile$
 Makefile\.in$
 \.deb$
@@ -24,7 +25,6 @@ Makefile\.in$
 ^cpan/Text-Glob-0.08
 ^cpan_modules$
 ^developer-.*tar.gz$
-egg-info$
 ^gui-
 ^installed
 ^installer-.*.tar.gz$
@@ -35,5 +35,5 @@ egg-info$
 _BUILD$
 build$
 dist$
+egg-info$
 html$
-MANIFEST$
