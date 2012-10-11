@@ -6,8 +6,10 @@ Makefile\.in$
 \.deb$
 \.log$
 ^aclocal\.m4$
+^config.guess$
 ^config.log$
 ^config.status$
+^config.sub$
 ^configure$
 ^cpan/Clone-0.31
 ^cpan/Data-Utilities-0.04
