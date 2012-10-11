@@ -106,7 +106,7 @@ sub try_to
 	}
 	else
 	{
-	    report_error($command, $?);
+# 	    report_error($command, $?);
 
 	    die "$0: $command returned $?";
 	}
