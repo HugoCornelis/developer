@@ -384,6 +384,64 @@ sub window_main_create
 	$vbox_tags->pack_start($checkbox, 0, 1, 0);
     }
 
+    my $tags_all_button = Gtk2::Button->new("Select all");
+
+    $tags_all_button->signal_connect
+	(
+	 clicked =>
+	 sub
+	 {
+	     my $self = shift;
+
+	     my $operation = shift;
+
+	     foreach my $tag_name (sort keys %$packages_tags)
+	     {
+		 my $tag = $packages_tags->{$tag_name};
+
+		 my $checkbox = $tag->{checkbox};
+
+		 $checkbox->set_active(1);
+	     }
+	 },
+	 'all',
+	);
+
+    my $tooltip_tags_all = "select all tags";
+
+    $tooltips->set_tip($tags_all_button, $tooltip_tags_all);
+
+    $vbox_tags->pack_start($tags_all_button, 0, 1, 0);
+
+    my $tags_none_button = Gtk2::Button->new("Unselect all");
+
+    $tags_none_button->signal_connect
+	(
+	 clicked =>
+	 sub
+	 {
+	     my $self = shift;
+
+	     my $operation = shift;
+
+	     foreach my $tag_name (sort keys %$packages_tags)
+	     {
+		 my $tag = $packages_tags->{$tag_name};
+
+		 my $checkbox = $tag->{checkbox};
+
+		 $checkbox->set_active(0);
+	     }
+	 },
+	 'none',
+	);
+
+    my $tooltip_tags_none = "unselect all packages";
+
+    $tooltips->set_tip($tags_none_button, $tooltip_tags_none);
+
+    $vbox_tags->pack_start($tags_none_button, 0, 1, 0);
+
     # aside the tag checkboxes: available packages
 
     my $vbox_packages = Gtk2::VBox->new(0, 6);
