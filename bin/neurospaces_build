@@ -276,6 +276,7 @@ my $all_packages
 		     disabled => 0, # disabled => 1,
 		     order => 0,
 		     tags => [
+			      'genesis3',
 			      'neurospaces',
 			     ],
 		     version_control => {
@@ -300,6 +301,7 @@ my $all_packages
 					   },
 			     order => 1,
 			     tags => [
+				      'genesis3',
 				      'neurospaces',
 				     ],
 			     version_control => {
