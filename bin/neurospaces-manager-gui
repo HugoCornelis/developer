@@ -337,52 +337,13 @@ sub window_main_create
 
     $hbox->pack_start($vbox_tags, 0, 1, 0);
 
-    my $label_tags = Gtk2::Label->new("Available Package Tags");
+    my $label_tags = Gtk2::Label->new("Locally Available Package Tags");
 
-    my $tooltip_tags = "tags found on your system";
+    my $tooltip_tags = "These are tags found on your local system";
 
     $tooltips->set_tip($label_tags, $tooltip_tags);
 
     $vbox_tags->pack_start($label_tags, 0, 1, 0);
-
-    foreach my $tag (sort keys %$packages_tags)
-    {
-	my $checkbox = Gtk2::CheckButton->new($tag);
-
-# 	$checkbox->signal_connect
-# 	    (
-# 	     clicked =>
-# 	     sub
-# 	     {
-# 		 my $self = shift;
-
-# 		 print "relisting repos\n";
-# 	     },
-# 	     $checkbox,
-# 	    );
-
-	$checkbox->set_active(1);
-
-	$checkbox->signal_connect
-	    (
-	     toggled =>
-	     sub
-	     {
-		 my $self = shift;
-
-		 packages_list();
-	     },
-	     $checkbox,
-	    );
-
-	$packages_tags->{$tag}->{checkbox} = $checkbox;
-
-	my $tooltip = "include all packages with tag $tag";
-
-	$tooltips->set_tip($checkbox, $tooltip);
-
-	$vbox_tags->pack_start($checkbox, 0, 1, 0);
-    }
 
     my $tags_all_button = Gtk2::Button->new("Select all");
 
@@ -442,50 +403,59 @@ sub window_main_create
 
     $vbox_tags->pack_start($tags_none_button, 0, 1, 0);
 
+    foreach my $tag (sort keys %$packages_tags)
+    {
+	my $checkbox = Gtk2::CheckButton->new($tag);
+
+# 	$checkbox->signal_connect
+# 	    (
+# 	     clicked =>
+# 	     sub
+# 	     {
+# 		 my $self = shift;
+
+# 		 print "relisting repos\n";
+# 	     },
+# 	     $checkbox,
+# 	    );
+
+	$checkbox->set_active(1);
+
+	$checkbox->signal_connect
+	    (
+	     toggled =>
+	     sub
+	     {
+		 my $self = shift;
+
+		 packages_list();
+	     },
+	     $checkbox,
+	    );
+
+	$packages_tags->{$tag}->{checkbox} = $checkbox;
+
+	my $tooltip = "include all packages with tag $tag";
+
+	$tooltips->set_tip($checkbox, $tooltip);
+
+	$vbox_tags->pack_start($checkbox, 0, 1, 0);
+    }
+
     # aside the tag checkboxes: available packages
 
     my $vbox_packages = Gtk2::VBox->new(0, 6);
 
     $hbox->pack_start($vbox_packages, 1, 1, 0);
 
-    my $label_packages = Gtk2::Label->new("Available Packages");
+    my $label_packages = Gtk2::Label->new("Locally Available Packages");
 
-    my $tooltip_packages = "packages found on your system
+    my $tooltip_packages = "these are the packages found on your system
 satisfying one or more of the selected tags";
 
     $tooltips->set_tip($label_packages, $tooltip_packages);
 
     $vbox_packages->pack_start($label_packages, 0, 1, 0);
-
-    my $scroller_package_list = Gtk2::ScrolledWindow->new();
-
-    $scroller_package_list->set_size_request(250, 100);
-
-    $scroller_package_list->set_policy(qw/automatic automatic/);
-
-    $vbox_packages->pack_start($scroller_package_list, 1, 1, 0);
-
-    my $list
-	= Gtk2::SimpleList->new
-	    (
-	     'Name' => 'text',
-	    );
-
-    $gtk2_package_list = $list;
-
-    $list->get_selection()->set_mode('extended');
-
-    $scroller_package_list->add($list);
-
-    $list->signal_connect
-	(
-	 row_activated => sub { package_list_row_activated(@_); },
-	);
-
-    $list->signal_connect
-	(
-	 cursor_changed => sub { package_list_cursor_changed(@_); },
-	);
 
     my $packages_all_button = Gtk2::Button->new("Select all");
 
@@ -534,6 +504,36 @@ satisfying one or more of the selected tags";
     $tooltips->set_tip($packages_none_button, $tooltip_packages_none);
 
     $vbox_packages->pack_start($packages_none_button, 0, 1, 0);
+
+    my $scroller_package_list = Gtk2::ScrolledWindow->new();
+
+    $scroller_package_list->set_size_request(250, 100);
+
+    $scroller_package_list->set_policy(qw/automatic automatic/);
+
+    $vbox_packages->pack_start($scroller_package_list, 1, 1, 0);
+
+    my $list
+	= Gtk2::SimpleList->new
+	    (
+	     'Name' => 'text',
+	    );
+
+    $gtk2_package_list = $list;
+
+    $list->get_selection()->set_mode('extended');
+
+    $scroller_package_list->add($list);
+
+    $list->signal_connect
+	(
+	 row_activated => sub { package_list_row_activated(@_); },
+	);
+
+    $list->signal_connect
+	(
+	 cursor_changed => sub { package_list_cursor_changed(@_); },
+	);
 
     # right from the available packages: package information
 
