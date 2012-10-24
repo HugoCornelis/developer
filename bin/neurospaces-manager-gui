@@ -13,7 +13,7 @@ use Neurospaces::Developer;
 use YAML;
 
 
-our $option_verbose = '';
+our $option_verbose = 0;
 
 our $packages_tags;
 
@@ -87,9 +87,9 @@ options :
 
     if ($option_verbose)
     {
-	print "Your documentation_set_name is $Neurospaces::Developer::documentation_set_name\n";
+# 	print "Your documentation_set_name is $Neurospaces::Developer::Manager::documentation_set_name\n";
 
-	print "Your role is $Neurospaces::Developer::assigned_role\n";
+	print "Your role is $Neurospaces::Developer::Manager::assigned_role\n";
     }
 }
 
