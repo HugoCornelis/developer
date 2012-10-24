@@ -333,17 +333,23 @@ sub window_main_create
 
     # left: tag check boxes
 
-    my $vbox_tags = Gtk2::VBox->new (0, 6);
+    my $tooltip_tags = "These are tags found on your local system";
 
-    $hbox->pack_start($vbox_tags, 0, 1, 0);
+    my $vframe_tags = Gtk2::Frame->new("Locally Available Package Tags");
+
+    $tooltips->set_tip($vframe_tags, $tooltip_tags);
+
+    $hbox->pack_start($vframe_tags, 0, 1, 0);
+
+    my $vbox_tags = Gtk2::VBox->new(0, 6);
+
+    $vframe_tags->add($vbox_tags);
 
     my $label_tags = Gtk2::Label->new("Locally Available Package Tags");
 
-    my $tooltip_tags = "These are tags found on your local system";
-
     $tooltips->set_tip($label_tags, $tooltip_tags);
 
-    $vbox_tags->pack_start($label_tags, 0, 1, 0);
+#     $vbox_tags->pack_start($label_tags, 0, 1, 0);
 
     my $tags_all_button = Gtk2::Button->new("Select all");
 
@@ -444,18 +450,24 @@ sub window_main_create
 
     # aside the tag checkboxes: available packages
 
-    my $vbox_packages = Gtk2::VBox->new(0, 6);
-
-    $hbox->pack_start($vbox_packages, 1, 1, 0);
-
-    my $label_packages = Gtk2::Label->new("Locally Available Packages");
-
     my $tooltip_packages = "these are the packages found on your system
 satisfying one or more of the selected tags";
 
-    $tooltips->set_tip($label_packages, $tooltip_packages);
+    my $vframe_packages = Gtk2::Frame->new("Locally Available Packages");
 
-    $vbox_packages->pack_start($label_packages, 0, 1, 0);
+    $tooltips->set_tip($vframe_packages, $tooltip_packages);
+
+    $hbox->pack_start($vframe_packages, 1, 1, 0);
+
+    my $vbox_packages = Gtk2::VBox->new(0, 6);
+
+    $vframe_packages->add($vbox_packages);
+
+    my $label_packages = Gtk2::Label->new("Locally Available Packages");
+
+#     $tooltips->set_tip($label_packages, $tooltip_packages);
+
+#     $vbox_packages->pack_start($label_packages, 0, 1, 0);
 
     my $packages_all_button = Gtk2::Button->new("Select all");
 
@@ -537,7 +549,7 @@ satisfying one or more of the selected tags";
 
     # right from the available packages: package information
 
-    my $vbox_package_information = Gtk2::VBox->new (0, 6);
+    my $vbox_package_information = Gtk2::VBox->new(0, 6);
 
     $hbox->pack_start($vbox_package_information, 0, 1, 0);
 
@@ -571,7 +583,7 @@ satisfying one or more of the selected tags";
 
     # right from the package information: command buttons
 
-    my $vbox_operations = Gtk2::VBox->new (0, 6);
+    my $vbox_operations = Gtk2::VBox->new(0, 6);
 
     $hbox->pack_start($vbox_operations, 0, 1, 0);
 
@@ -868,7 +880,7 @@ sub window_package_create
 
     # left: tag check boxes
 
-    my $vbox_tags = Gtk2::VBox->new (0, 6);
+    my $vbox_tags = Gtk2::VBox->new(0, 6);
 
     $hbox->pack_start($vbox_tags, 0, 1, 0);
 
