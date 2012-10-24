@@ -97,7 +97,7 @@ options :
 sub version
 {
     # $Format: "    my $version=\"${package}-${label}\";"$
-    my $version="ns-gui-alpha";
+    my $version="developer-alpha";
 
     return $version;
 }
