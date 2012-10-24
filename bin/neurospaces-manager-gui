@@ -85,12 +85,12 @@ options :
 	exit 1;
     }
 
-#     print "Your documentation_set_name is $documentation_set_name\n";
+    if ($option_verbose)
+    {
+	print "Your documentation_set_name is $Neurospaces::Developer::documentation_set_name\n";
 
-#     if ($option_verbose)
-#     {
-# 	print "Your role is $role\n";
-#     }
+	print "Your role is $Neurospaces::Developer::assigned_role\n";
+    }
 }
 
 
