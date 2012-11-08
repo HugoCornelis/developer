@@ -12,8 +12,8 @@ use YAML;
 
 
 my $option_component_names = [];
-my $option_content_set;
 my $option_documentation_set;
+my $option_heterarch_set;
 my $option_repository;
 my $option_repository_port;
 my $option_verbose;
@@ -194,17 +194,17 @@ sub main
 
 	}
 
-	# if this is a content set
+	# if this is a heterarch set
 
-	if ($option_content_set)
+	if ($option_heterarch_set)
 	{
 	    # copy new document
 
-	    system "cp -a '$ENV{HOME}/neurospaces_project/content-framework/source/snapshots/0/NewDocument' '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/NewDocument'";
+	    system "cp -a '$ENV{HOME}/neurospaces_project/heterarch/source/snapshots/0/NewDocument' '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/NewDocument'";
 
 	    # copy makefile template that installs the documentation build scripts
 
-	    system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/Makefile.content-framework.template' '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/Makefile.am'";
+	    system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/Makefile.heterarch.template' '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/Makefile.am'";
 
 	    system "perl -e 's/__component_name__/$component_name/sg' -pi '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/Makefile.am'";
 
@@ -234,7 +234,7 @@ sub read_cmd_line
 	    (
 	     "help" => \$option_help,
 	     "component-name=s" => $option_component_names,
-	     "content-set!" => \$option_content_set,
+	     "heterarch-set!" => \$option_heterarch_set,
 	     "documentation-set!" => \$option_documentation_set,
 	     "repository!" => \$option_repository,
 	     "repository-port=s" => \$option_repository_port,
@@ -250,10 +250,10 @@ sub read_cmd_line
 $0: create new neurospaces component source trees.
 
 options:
-    --help               print usage information.
     --component-name     set component name to create, may be used one or more times.
-    --content-set        create the new components as content-framework sets.
     --documentation-set  create the new components as documentation sets.
+    --help               print usage information.
+    --heterarch-set      create the new components as heterarch sets.
     --repository         create the component repository if it does not exist yet.  This requires the component to be configured.
     --repository-port    use the given port number to configure the new component.
     --verbose            set verbosity level.

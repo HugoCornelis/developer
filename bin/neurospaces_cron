@@ -814,7 +814,7 @@ sub parse_config_file
     print "Done Parsing $config_file:\n";
 }
 
-# also look at the content-framework cron script.
+# also look at the heterarch cron script.
 
 sub produce_email_text
 {
