@@ -3472,7 +3472,7 @@ sub read_cmd_line
 		#t MERCURAL commit
 		# hg commit
 
-		my $branch_name
+		$branch_name
 		    = (exists $package_information->{package}->{version_control}->{branch_name}
 		       ? $package_information->{package}->{version_control}->{branch_name}
 		       : $package_name);
@@ -3506,7 +3506,7 @@ sub read_cmd_line
 
 		my @update_args;
 
-		my $branch_name
+		$branch_name
 		    = (exists $package_information->{package}->{version_control}->{branch_name}
 		       ? $package_information->{package}->{version_control}->{branch_name}
 		       : $package_name);

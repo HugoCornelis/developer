@@ -1,42 +1,24 @@
 $files = {
-           '_<bin/neurospaces_build' => [
-                                          {
-                                            'expr' => undef,
-                                            'value' => '1',
-                                            'text' => '		my $pid
+           '_<./neurospaces_build' => [
+                                        {
+                                          'expr' => undef,
+                                          'value' => '1',
+                                          'text' => 'main();
 ',
-                                            'fname' => 'bin/neurospaces_build',
-                                            'type' => 'user',
-                                            'line' => '1310'
-                                          },
-                                          {
-                                            'expr' => undef,
-                                            'value' => '1',
-                                            'text' => '	if ($package->{disabled})
+                                          'fname' => './neurospaces_build',
+                                          'type' => 'user',
+                                          'line' => '5249'
+                                        },
+                                        {
+                                          'expr' => undef,
+                                          'value' => '1',
+                                          'text' => '	foreach my $all_operation (@$all_operations)
 ',
-                                            'fname' => 'bin/neurospaces_build',
-                                            'type' => 'user',
-                                            'line' => 579
-                                          },
-                                          {
-                                            'expr' => undef,
-                                            'value' => '1',
-                                            'text' => '	    if ($option_uninstall)
-',
-                                            'fname' => 'bin/neurospaces_build',
-                                            'type' => 'user',
-                                            'line' => 611
-                                          },
-                                          {
-                                            'expr' => undef,
-                                            'value' => '1',
-                                            'text' => 'main();
-',
-                                            'fname' => 'bin/neurospaces_build',
-                                            'type' => 'user',
-                                            'line' => 4344
-                                          }
-                                        ]
+                                          'fname' => './neurospaces_build',
+                                          'type' => 'user',
+                                          'line' => '784'
+                                        }
+                                      ]
          };
 $expr_list = [
                {
@@ -49,6 +31,10 @@ $expr_list = [
                },
                {
                  'expr' => '$description',
+                 'depth' => -1
+               },
+               {
+                 'expr' => '$package',
                  'depth' => -1
                }
              ];
