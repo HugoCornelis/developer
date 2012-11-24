@@ -915,9 +915,7 @@ sub all_operations_execute
 
 			# add options specific to this operation and package
 
-			#! so here the model container gets configured with --delete-operation
-
-			#t also need separation between debug and release overhere
+			# here we implement the separation between debug and release
 
 			my $package_options = [];
 
@@ -925,7 +923,7 @@ sub all_operations_execute
 			    @$package_options,
 				@{$package->{$operation->[0]} || []};
 
-			# make difference between options specific for release and debug builds
+			# if the command is listed as having specific options
 
 			if ($package->{operations}->{$operation->[0]})
 			{
@@ -933,12 +931,11 @@ sub all_operations_execute
 
 			    my $text = $operation->[0];
 
-			    $text =~ s(\.)()g;
-			    $text =~ s(/)()g;
+			    $text =~ s(\./)();
 
 			    $text = "\$option_" . $text . "_type";
 
-			    # get the build type from the options
+			    # get the value of the specific options (fi the build type)
 
 			    my $type = eval $text;
 
