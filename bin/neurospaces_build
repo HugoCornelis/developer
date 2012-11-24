@@ -4427,7 +4427,9 @@ sub read_cmd_line
 	{
 	    # set default
 
-	    $first_package->{directory} = $ENV{HOME} . "/neurospaces_project/$first_package_name/source/snapshots/0";
+	    my $configurator_branch = '0';
+
+	    $first_package->{directory} = $ENV{HOME} . "/neurospaces_project/$first_package_name/source/snapshots/$configurator_branch";
 
 	    $first_package->{directory} =~ s(//)(/)g;
 	}
