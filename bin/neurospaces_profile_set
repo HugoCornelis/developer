@@ -80,10 +80,6 @@ sub main
 
     try_to("neurospaces_pull configurator --enable configurator");
 
-#     try_to("cd ~/neurospaces_project/configurator/source/snapshots/0/ ; mtn pull 0");
-
-#     try_to("service cron stop && service neurospaces-servers stop");
-
     if ($global_profile_configuration->{profile}->{runs_cron})
     {
 	try_to("service cron stop");
@@ -94,7 +90,7 @@ sub main
 	try_to("service neurospaces-servers stop");
     }
 
-    try_to("neurospaces_upgrade configurator");
+#     try_to("neurospaces_upgrade configurator");
 
     # go through all profiles to add
 
@@ -124,30 +120,78 @@ sub main
 	delete $global_profile_configuration->{profile}->{configured_branches}->{$profile_name};
     }
 
-    # loop through all configured profiles
+    # loop through all the profiles configured in the neurospaces profile configuration
 
     my $configured_branches = $global_profile_configuration->{profile}->{configured_branches};
 
+    # collect all the information of the repositories that need to be installed.
+    # server machine: all of them included unconditionally
+    # developer machine: only 'lead' repositories and managed repositories.
+
+    # begin with an empty configured_profile (note: starting with an
+    # empty profile allows to remove entries from an existing
+    # configuration).
+
+    my $configured_profile = {};
+
     foreach my $configured_branch (keys %$configured_branches)
     {
-	#t collect all the information of the repositories that need to be installed.
+	# check out the configured_branch of the configurator.
 
-	#t server machine: all of them included unconditionally
+	try_to("cd ~/neurospaces_project/configurator/source/snapshots/0/ ; mtn pull '$configured_branch'");
 
-	#t developer machine: only 'lead' repositories and managed repositories.
+	# find all configuration files
 
-	#t  check out the configured_branch of the configurator.
-	#t  collect information from its '/etc/neurospaces' configuration.
+	my $configuration_files
+	    = [
+	       map
+	       {
+		   chomp; $_;
+	       }
+	       sort
+	       `cd ~/neurospaces_project/configurator/source/snapshots/0/ && find etc/ -type f`,
+	      ];
 
+	# collect information from its '/etc/neurospaces' configuration.
+
+	foreach my $configuration_file (@$configuration_files)
+	{
+	    # skip non yaml files
+
+	    if ($configuration_file ~! /\.yml$/)
+	    {
+		print STDERR "$0: *** Warning: skipping a configuration file without .yml extension ($configuration_file)\n";
+
+		next;
+	    }
+
+	    # read the configuration file
+
+	    my $configuration = YAML::LoadFile($configuration_file);
+
+	    # merge the read configuration of this file
+
+	    my $merged_configuration = Data::Merger::merger($configured_profile, { $configuration_file => $configuration }, );
+	}
     }
 
-    #t install the collected information to the '/etc/neurospaces' configuration.
+    # install the collected information to the '/etc/neurospaces' configuration.
 
-    #t upgrade the neurospaces packages
+    # loop over all the merged configuration files
 
-    # system "neurospaces_upgrade"
+    foreach my $configuration_filename (keys %$configured_profile)
+    {
+	# write the configuration to the configuration file: note that
+	# this may require elevated permissions
 
-#     try_to("service cron start && service neurospaces-servers start");
+	my $configuration = $configured_profile->{$configuration_filename};
+
+	YAML::DumpFile("/$configuration_filename", $configuration);
+    }
+
+    # upgrade the neurospaces packages
+
+    system "neurospaces_upgrade"
 
     if ($global_profile_configuration->{profile}->{runs_cron})
     {
