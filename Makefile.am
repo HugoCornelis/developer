@@ -43,6 +43,7 @@ dist_bin_SCRIPTS = \
 	bin/neurospaces_pkgdeb \
 	bin/neurospaces_pkgrpm \
 	bin/neurospaces_pkgtar \
+	bin/neurospaces_profile_set \
 	bin/neurospaces_pull \
 	bin/neurospaces_push \
 	bin/neurospaces_repo_keys \

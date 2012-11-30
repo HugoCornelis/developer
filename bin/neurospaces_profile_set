@@ -1,0 +1,282 @@
+#!/usr/bin/perl
+#!/usr/bin/perl -w -d:ptkdb
+#
+
+
+use strict;
+
+
+use Data::Utilities;
+
+use Getopt::Long;
+
+use YAML;
+
+
+$SIG{'__DIE__'}
+    = sub
+      {
+	  use Carp;
+
+	  print STDERR Carp::longmess(@_);
+
+	  exit 1;
+      };
+
+
+$SIG{'INT'}
+    = sub
+      {
+	  use Carp;
+
+	  print STDERR Carp::longmess(@_);
+
+	  exit 1;
+      };
+
+
+# options
+
+my $option_client;
+my $option_output_filename = "/tmp/neurospaces_profile.log";
+my $option_profile_add = [];
+my $option_profile_directory = "/etc/neurospaces/";
+my $option_profile_remove = [];
+my $option_verbose = 0;
+
+
+my $global_profile_configuration;
+
+my $default_developer_profile_configuration
+    = YAML::Load('
+---
+profile:
+  serves_repos: 0
+  runs_cron: 0
+  configured_branches:
+    genesis3: 1
+');
+
+my $default_server_profile_configuration
+    = YAML::Load('
+---
+profile:
+  serves_repos: 1
+  runs_cron: 1
+  configured_branches:
+    genesis3: 1
+');
+
+
+sub main
+{
+    # read command line
+
+    read_cmd_line();
+
+    # upgrade the configurator package -- note that the selected branch is preserved
+
+    try_to("neurospaces_create_directories configurator --enable configurator");
+
+    try_to("neurospaces_pull configurator --enable configurator");
+
+#     try_to("cd ~/neurospaces_project/configurator/source/snapshots/0/ ; mtn pull 0");
+
+#     try_to("service cron stop && service neurospaces-servers stop");
+
+    if ($global_profile_configuration->{profile}->{runs_cron})
+    {
+	try_to("service cron stop");
+    }
+
+    if ($global_profile_configuration->{profile}->{serves_repos})
+    {
+	try_to("service neurospaces-servers stop");
+    }
+
+    try_to("neurospaces_upgrade configurator");
+
+    # go through all profiles to add
+
+    foreach my $profile_name (@$option_profile_add)
+    {
+	# add the profile
+
+	if ($option_verbose)
+	{
+	    print "$0: *** Adding profile $profile_name\n";
+	}
+
+	$global_profile_configuration->{profile}->{configured_branches}->{$profile_name} = "from $0";
+    }
+
+    # go through all profiles to remove
+
+    foreach my $profile_name (@$option_profile_remove)
+    {
+	# remove the profile
+
+	if ($option_verbose)
+	{
+	    print "$0: *** Removing profile $profile_name\n";
+	}
+
+	delete $global_profile_configuration->{profile}->{configured_branches}->{$profile_name};
+    }
+
+    # loop through all configured profiles
+
+    my $configured_branches = $global_profile_configuration->{profile}->{configured_branches};
+
+    foreach my $configured_branch (keys %$configured_branches)
+    {
+	#t collect all the information of the repositories that need to be installed.
+
+	#t server machine: all of them included unconditionally
+
+	#t developer machine: only 'lead' repositories and managed repositories.
+
+	#t  check out the configured_branch of the configurator.
+	#t  collect information from its '/etc/neurospaces' configuration.
+
+    }
+
+    #t install the collected information to the '/etc/neurospaces' configuration.
+
+    #t upgrade the neurospaces packages
+
+    # system "neurospaces_upgrade"
+
+#     try_to("service cron start && service neurospaces-servers start");
+
+    if ($global_profile_configuration->{profile}->{runs_cron})
+    {
+	try_to("service cron start");
+    }
+
+    if ($global_profile_configuration->{profile}->{serves_repos})
+    {
+	try_to("service neurospaces-servers start");
+    }
+
+}
+
+
+sub read_cmd_line
+{
+    my $option_help = 0;
+    my $option_version;
+
+    my $result
+	= GetOptions
+	    (
+	     "client!" => \$option_client,
+	     "help!" => \$option_help,
+	     "profile-add=s" => $option_profile_add,
+	     "profile-directory=s" => \$option_profile_directory,
+	     "profile-remove=s" => $option_profile_remove,
+	     "verbose+" => \$option_verbose,
+	     "version" => \$option_version,
+	    );
+
+    if (!$result)
+    {
+	die "$0: *** Error: Error in option processing";
+    }
+
+    if ($option_version)
+    {
+	my $version = version();
+
+	print $version . "\n";
+
+	exit 1;
+    }
+
+    # reporting options
+
+    if ($option_help)
+    {
+	$0 =~ m(.*/(.*));
+
+	my $program_name = $1;
+
+	print
+	    "
+
+$program_name: configure a Neurospaces based target PC with a profile.
+The profiles with those names will be merged and installed.
+
+    --client                 configure as a client.
+    --help                   print usage information.
+    --profile-add            add this profile to the local machine, may be given multiple times.
+    --profile-directory      the directory where to read and write profile information.
+    --profile-remove         remove this profile from the local machine, may be given multiple times.
+    --version                print version information.
+    --v|verbose              tell what is being done, specify multiple times to get more feedback.
+";
+
+	exit 1;
+    }
+
+    my $profile_configuration_file = $option_profile_directory . "/profile.yml";
+
+    if (-f $profile_configuration_file)
+    {
+# 	eval
+# 	{
+	    $global_profile_configuration = YAML::LoadFile($profile_configuration_file);
+# 	};
+    }
+    else
+    {
+	$global_profile_configuration = $default_developer_profile_configuration;
+    }
+}
+
+
+sub try_to
+{
+    my $command = shift;
+
+    my $allow_fail = shift;
+
+    if ($option_verbose)
+    {
+	print "---\n";
+	print "$0: trying to $command\n";
+    }
+
+    my $output_path = $option_output_filename;
+
+    #! $command executed in a subshell such that redirection applies
+    #! to all commands.
+
+    system "( $command ) >>$output_path 2>&1";
+
+    if ($?)
+    {
+	if ($allow_fail)
+	{
+	    system "echo >>$output_path 2>&1 $0: *** Error: $command, $?\n";
+	}
+	else
+	{
+	    die "$0: *** Error: $command, $?";
+	}
+    }
+}
+
+
+sub version
+{
+    # $Format: "    my $version=\"${package}-${label}\";"$
+    my $version="developer-alpha";
+
+    return $version;
+}
+
+
+main();
+
+

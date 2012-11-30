@@ -176,18 +176,22 @@ my $all_packages
 					 #server => '91.183.94.6',
 					},
 		    },
-       configuration => {
-			 dependencies => {
-					 },
-			 description => 'common configurations of NS / G-3',
-			 directory => "$ENV{HOME}/neurospaces_project/configuration",
-			 disabled => 1,
-			 order => 27,
-			 tags => [
-				  'neurospaces',
-				 ],
-			 version_script => 0,
-			},
+       configurator => {
+			dependencies => {
+					},
+			description => 'common configurations of the Neurospaces tool chain',
+			disabled => 'the Configurator must always be disabled',
+			order => 0.5,
+			tags => [
+				 'neurospaces',
+				],
+			version_control => {
+					    branch_name => 0,
+					    port_number => 4707,
+					    server => '91.183.94.6',
+					   },
+			version_script => 0,
+		       },
        dash => {
 		dependencies => {
 				},
@@ -1009,77 +1013,74 @@ sub all_operations_execute
 # returns them in an array for executing via operation_execute.
 # The argument for the make target is use to ensure that the
 # code can be used for packaging tars, rpms and debs.
+
 sub parse_release_tags
 {
+    my $make_target = shift;
+    my $major;
+    my $minor;
+    my $micro;
+    my $label;
+    my $email;
 
-  my $make_target = shift;
-  my $major;
-  my $minor;
-  my $micro;
-  my $label;
-  my $email;
+    my $command;
 
-  my $command;
-  
-  push(@$command, 'release-expand');
+    push @$command, 'release-expand';
 
-  if($option_version_tag)
-  {
-      my @ver = split(/\./,$option_version_tag);
-      
-      $major = $ver[0];
-      $minor = $ver[1];
-      
-      push(@$command, '--major');
-      push(@$command, $major);
-      push(@$command, '--minor');
-      push(@$command, $minor);
-
-      if($#ver == 2)
-      {
-	$micro = $ver[2];
-
-	push(@$command, '--micro');
-	push(@$command, $micro);
-
-      }
-
-  }
-  else
-  {
-
-    if($option_version_major)
+    if ($option_version_tag)
     {
-      push(@$command, '--major');
-      push(@$command, $option_version_major);
+	my @ver = split(/\./, $option_version_tag);
+
+	$major = $ver[0];
+	$minor = $ver[1];
+
+	push @$command, '--major';
+	push @$command, $major;
+	push @$command, '--minor';
+	push @$command, $minor;
+
+	if ($#ver == 2)
+	{
+	    $micro = $ver[2];
+
+	    push @$command, '--micro';
+	    push @$command, $micro;
+	}
+    }
+    else
+    {
+	if ($option_version_major)
+	{
+	    push @$command, '--major';
+	    push @$command, $option_version_major;
+	}
+
+	if ($option_version_minor)
+	{
+	    push @$command, '--minor';
+	    push @$command, $option_version_minor;
+	}
+
+	if ($option_version_micro)
+	{
+	    push @$command, '--micro';
+	    push @$command, $option_version_micro;
+	}
     }
 
-    if($option_version_minor)
+    if ($option_release_tag)
     {
-      push(@$command, '--minor');
-      push(@$command, $option_version_minor);
+	push @$command, '--label';
+	push @$command, $option_release_tag;
     }
 
-    if($option_version_micro)
-    {
-      push(@$command, '--micro');
-      push(@$command, $option_version_micro);
-    }
+    push @$command, '&&';
+    push @$command, 'make';
+    push @$command, $make_target;
 
-  }
-
-  if($option_release_tag)
-  {
-    push(@$command, '--label');
-    push(@$command, $option_release_tag);
-  }
-
-  push(@$command, '&&');
-  push(@$command, 'make');
-  push(@$command, $make_target);
-  
-  return $command;
+    return $command;
 }
+
 
 sub read_cmd_line
 {
@@ -1094,87 +1095,88 @@ sub read_cmd_line
     my $option_version;
 
     my $result
-	= GetOptions(
-		     # options related to operation mode selection:
+	= GetOptions
+	    (
+	     # options related to operation mode selection:
 
-		     "client!" => \$option_client,
-		     "developer!" => \$option_developer,
+	     "client!" => \$option_client,
+	     "developer!" => \$option_developer,
 
-		     # operation execution profile: default is configure, compile and install
+	     # operation execution profile: default is configure, compile and install
 
-		     "certification-report!" => \$option_certification_report,
-		     "check!" => \$option_check,
-		     "clean!" => \$option_clean,
-		     "compile!" => \$option_compile,
-		     "configure!" => \$option_configure,
-		     "configure-with-prefix!" => \$option_configure_with_prefix,
-		     "configure-type=s" => \$option_configure_type,
-		     "countcode=s" => \$option_countcode,
-		     "directories-create!" => \$option_directories_create,
-		     "disable=s" => \$option_disable,
-		     "dist!" => \$option_dist,
-		     "distcheck!" => \$option_distcheck,
-		     "distclean!" => \$option_distclean,
-		     "dist-dir=s" => $option_dist_dir,
-		     "distkeywords!" => \$option_distkeywords,
-		     "docs!" => \$option_docs,
-		     "dry-run!" => \$option_dry_run,
-		     "enable=s" => \$option_enable,
-		     "help!" => \$option_help,
-		     "help-all!" => \$option_help_all,
-		     "help-build-order!" => \$option_help_build_order,
-		     "help-operations!" => \$option_help_operations,
-		     "help-packages!" => \$option_help_packages,
-		     "help-repositories!" => \$option_help_repositories,
-		     "install!" => \$option_install,
-		     "installed-versions!" => \$option_installed_versions,
-		     "keep-going!" => \$option_keep_going,
-		     "package-tags=s" => $option_package_tags,
-		     "pkg-deb" => \$option_pkg_deb,
-		     "pkg-deb-dir=s" => \$option_pkg_deb_dir,
-		     "pkg-rpm" => \$option_pkg_rpm,
-		     "pkg-rpm-dir=s" => \$option_pkg_rpm_dir,
-		     "pkg-tar" => \$option_pkg_tar,
-		     "pkg-tar-dir=s" => \$option_pkg_tar_dir,
-		     "regex-selector=s" => \$option_regex_selector,
-		     "release-tag=s" => \$option_release_tag,
-		     "repo-ci=s" => \$option_repo_ci,
-		     "repo-clone=s" => \$option_repo_clone,
-		     "repo-co!" => \$option_repo_co,
-		     "repo-init!" => \$option_repo_init,
-		     "repo-keys!" => \$option_repo_keys,
-		     "repo-migrate!" => \$option_repo_migrate,
-		     "repo-history!" => \$option_repo_history,
-		     "repo-history-last=i" => \$option_repo_history_last,
-		     "repo-pull=s" => \$option_repo_pull,
-		     "repo-push=s" => \$option_repo_push,
-		     "repo-revert!" => \$option_repo_revert,
-		     "repo-serve!" => \$option_repo_serve,
-		     "repo-setup!" => \$option_repo_setup,
-		     "repo-status!" => \$option_repo_status,
-		     "repo-sync=s" => \$option_repo_sync,
-		     "tag=s" => \$option_tag,
-		     "uninstall!" => \$option_uninstall,
-		     "universal!" => \$option_mac_universal,
-		     "upload-server=s" => \$option_upload_server,
-		     "upstream-version=s" => \$option_upstream_version,
-		     "verbose+" => \$option_verbose,
-		     "version" => \$option_version,
-		     "version-tag=s" => \$option_version_tag,
-		     "website-prepare!" => \$option_website_prepare,
-		     "website-upload!" => \$option_website_upload,
+	     "certification-report!" => \$option_certification_report,
+	     "check!" => \$option_check,
+	     "clean!" => \$option_clean,
+	     "compile!" => \$option_compile,
+	     "configure!" => \$option_configure,
+	     "configure-with-prefix!" => \$option_configure_with_prefix,
+	     "configure-type=s" => \$option_configure_type,
+	     "countcode=s" => \$option_countcode,
+	     "directories-create!" => \$option_directories_create,
+	     "disable=s" => \$option_disable,
+	     "dist!" => \$option_dist,
+	     "distcheck!" => \$option_distcheck,
+	     "distclean!" => \$option_distclean,
+	     "dist-dir=s" => $option_dist_dir,
+	     "distkeywords!" => \$option_distkeywords,
+	     "docs!" => \$option_docs,
+	     "dry-run!" => \$option_dry_run,
+	     "enable=s" => \$option_enable,
+	     "help!" => \$option_help,
+	     "help-all!" => \$option_help_all,
+	     "help-build-order!" => \$option_help_build_order,
+	     "help-operations!" => \$option_help_operations,
+	     "help-packages!" => \$option_help_packages,
+	     "help-repositories!" => \$option_help_repositories,
+	     "install!" => \$option_install,
+	     "installed-versions!" => \$option_installed_versions,
+	     "keep-going!" => \$option_keep_going,
+	     "package-tags=s" => $option_package_tags,
+	     "pkg-deb" => \$option_pkg_deb,
+	     "pkg-deb-dir=s" => \$option_pkg_deb_dir,
+	     "pkg-rpm" => \$option_pkg_rpm,
+	     "pkg-rpm-dir=s" => \$option_pkg_rpm_dir,
+	     "pkg-tar" => \$option_pkg_tar,
+	     "pkg-tar-dir=s" => \$option_pkg_tar_dir,
+	     "regex-selector=s" => \$option_regex_selector,
+	     "release-tag=s" => \$option_release_tag,
+	     "repo-ci=s" => \$option_repo_ci,
+	     "repo-clone=s" => \$option_repo_clone,
+	     "repo-co!" => \$option_repo_co,
+	     "repo-init!" => \$option_repo_init,
+	     "repo-keys!" => \$option_repo_keys,
+	     "repo-migrate!" => \$option_repo_migrate,
+	     "repo-history!" => \$option_repo_history,
+	     "repo-history-last=i" => \$option_repo_history_last,
+	     "repo-pull=s" => \$option_repo_pull,
+	     "repo-push=s" => \$option_repo_push,
+	     "repo-revert!" => \$option_repo_revert,
+	     "repo-serve!" => \$option_repo_serve,
+	     "repo-setup!" => \$option_repo_setup,
+	     "repo-status!" => \$option_repo_status,
+	     "repo-sync=s" => \$option_repo_sync,
+	     "tag=s" => \$option_tag,
+	     "uninstall!" => \$option_uninstall,
+	     "universal!" => \$option_mac_universal,
+	     "upload-server=s" => \$option_upload_server,
+	     "upstream-version=s" => \$option_upstream_version,
+	     "verbose+" => \$option_verbose,
+	     "version" => \$option_version,
+	     "version-tag=s" => \$option_version_tag,
+	     "website-prepare!" => \$option_website_prepare,
+	     "website-upload!" => \$option_website_upload,
 
-		     # options related to installation on a client machine
+	     # options related to installation on a client machine
 
-		     "download-server=s" => \$option_download_server,
-		     "src-tag=s" => \$option_src_tag,
-		     "src-dir=s" => \$option_src_dir,
-		     "unpack!" => \$option_unpack,
+	     "download-server=s" => \$option_download_server,
+	     "src-tag=s" => \$option_src_tag,
+	     "src-dir=s" => \$option_src_dir,
+	     "unpack!" => \$option_unpack,
 
-		     # options related to behavior of external applications
+	     # options related to behavior of external applications
 
-		     "environment=s" => $option_environment,
-		    );
+	     "environment=s" => $option_environment,
+	    );
 
     if (!$result)
     {
@@ -4545,7 +4547,7 @@ options related to operation execution profile:
     --uninstall              uninstall packages, cannot be combined with installation options.
     --universal              sets flags for building universal binaries on Mac OS X.
     --upload-server          enable uploading packages to this server (e.g. https://frs.sourceforge.net/uploads).
-    --version                give version information.
+    --version                print version information.
     --version-tag            The software version for a source code distribution release.
     --v|verbose              tell what is being done, specify multiple times to get more feedback.
     --website-prepare        prepare the website on your developer machine.

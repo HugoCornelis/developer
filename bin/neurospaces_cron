@@ -49,11 +49,11 @@ sub check_and_prepare
 
     rotate_logs();
 
-    try_to("echo '$0' started at", 1);
+    try_to("echo '$0' started at", 0);
 
-    try_to("date", 1);
+    try_to("date", 0);
 
-    try_to("mkdir -p $developer_directory", 1);
+    try_to("mkdir -p $developer_directory", 0);
 
     chdir($developer_directory);
 
@@ -61,7 +61,7 @@ sub check_and_prepare
 
     #t wrong assumption
 
-    try_to("mtn co --db ~/neurospaces_project/MTN/developer.mtn --branch 0 .", 1, 1);
+    try_to("mtn co --db ~/neurospaces_project/MTN/developer.mtn --branch 0 .", 0, 1);
 
     # install the developer
 
@@ -132,7 +132,7 @@ sub check_user_id
 	# The user definition should come from the configuration file.
 	#
 
-	try_to("echo Proceeding as user: $user\n");
+	try_to("echo Proceeding as user: $user\n", 1);
     }
 
 #--- Commenting this out while using the slimmer code
@@ -204,9 +204,9 @@ sub cleanup_and_finalize
 	system "rm -rf $_";
     }
 
-    try_to("echo $0: done with cleanup.\n", 1);
+    try_to("echo $0: done with cleanup.\n", 0);
 
-    try_to("date", 1);
+    try_to("date", 0);
 }
 
 
@@ -294,7 +294,7 @@ sub install_developer
 {
     chdir($developer_directory);
 
-    try_to("./autogen.sh && ./configure && make && sudo make install");
+    try_to("./autogen.sh && ./configure && make && sudo make install", 1);
 }
 
 
@@ -366,38 +366,38 @@ sub main
 
     # prepare an initial directory layout
 
-    try_to("neurospaces_create_directories");
+    try_to("neurospaces_create_directories", 1);
 
-    try_to("neurospaces_status");
+    try_to("neurospaces_status", 1);
 
     # note that because neurospaces_upgrade is often used by regular
     # users, it must come first.
 
-    try_to("neurospaces_upgrade");
+    try_to("neurospaces_upgrade", 1);
 
     # pull code from the repositories
 
     unless ($option_no_pull)
     {
-	try_to("neurospaces_pull");
+	try_to("neurospaces_pull", 1);
     }
 
-    try_to("neurospaces_configure");
+    try_to("neurospaces_configure", 1);
 
     # uninstall what was installed
 
     unless ($option_no_install)
     {
-	try_to("neurospaces_uninstall");
+	try_to("neurospaces_uninstall", 1);
 
 	install_developer();
     }
 
     # update the source code in the workspaces, remove previous build
 
-    try_to("neurospaces_update");
+    try_to("neurospaces_update", 1);
 
-    try_to("neurospaces_clean");
+    try_to("neurospaces_clean", 1);
 
     # loop over all the configurations we want to test
 
@@ -423,17 +423,17 @@ sub main
 	    $configure_command .= " --universal";
         }
 
-	try_to($configure_command);
+	try_to($configure_command, 1);
 
 	unless ($option_no_install)
 	{
 	    # install without check
 
-	    try_to("neurospaces_install");
+	    try_to("neurospaces_install", 1);
 
 	    # uninstall again
 
-	    try_to("neurospaces_uninstall");
+	    try_to("neurospaces_uninstall", 1);
 
 	    install_developer();
 	}
@@ -442,7 +442,7 @@ sub main
 
 	unless ($option_no_check)
 	{
-	    try_to("neurospaces_check");
+	    try_to("neurospaces_check", 1);
 	}
 
 	# If we set a valid pkgdeb directory to 
@@ -473,14 +473,14 @@ sub main
 
 	unless ($option_no_uninstall)
 	{
-	   try_to("neurospaces_uninstall");
+	   try_to("neurospaces_uninstall", 1);
 	}		
 
 	install_developer();
 
 	# clean out previous build
 
-	try_to("neurospaces_clean");
+	try_to("neurospaces_clean", 1);
 
 	#t now download from sourceforge, configurator defines what release to download
 
@@ -492,7 +492,7 @@ sub main
 
     if ( (defined $configuration->{DOXYGENOUTPUT}) || (defined $configuration->{REGTESTOUTPUT}) )
     {
-	try_to("neurospaces_docs");
+	try_to("neurospaces_docs", 1);
 
 	copy_docs();
     }
@@ -501,7 +501,7 @@ sub main
 
 #     my $release_label = time();
 
-#     try_to("neurospaces_dist --tag $release_label-0");
+#     try_to("neurospaces_dist --tag $release_label-0", 1);
 
     unless ($option_no_check)
     {
@@ -517,7 +517,7 @@ sub main
     # Performs a distclean in all source directories
     # so as to remove automake generated files like config.status
 
-    try_to("neurospaces_clean --distclean");
+    try_to("neurospaces_clean --distclean", 1);
 
     my $status_message = produce_email_text();
 
@@ -525,7 +525,7 @@ sub main
 
     #t remove the entire neurospaces_project directory ?
 
-#     try_to("rm -fr $ENV{HOME}/neurospaces_project");
+#     try_to("rm -fr $ENV{HOME}/neurospaces_project", 1);
 }
 
 
@@ -541,11 +541,11 @@ sub build_deb
 
     $mon++;
 
-    try_to("neurospaces_pkgdeb --dir $deb_tmp --release-tag '$mon.$mday.$year'");
+    try_to("neurospaces_pkgdeb --dir $deb_tmp --release-tag '$mon.$mday.$year'", 1);
 
     # always end a dist build with a revert
 
-    try_to("neurospaces_revert");
+    try_to("neurospaces_revert", 1);
 
     if ($option_deb_directory)
     {
@@ -571,11 +571,11 @@ sub build_dist
 
     $mon++;
 
-    try_to("neurospaces_pkgtar --dir $option_srcdist_directory --release-tag '$mon.$mday.$year'");
+    try_to("neurospaces_pkgtar --dir $option_srcdist_directory --release-tag '$mon.$mday.$year'", 1);
 
     # always end a dist build with a revert
 
-    try_to("neurospaces_revert");
+    try_to("neurospaces_revert", 1);
 }
 
 
@@ -587,11 +587,11 @@ sub build_rpm
 
     $mon++;
 
-    try_to("neurospaces_pkgrpm --dir $rpm_tmp --release-tag '$mon.$mday.$year'");
+    try_to("neurospaces_pkgrpm --dir $rpm_tmp --release-tag '$mon.$mday.$year'", 1);
 
     # always end a dist build with a revert
 
-    try_to("neurospaces_revert");
+    try_to("neurospaces_revert", 1);
 
     if ($option_rpm_directory)
     {
@@ -820,7 +820,7 @@ sub produce_email_text
 {
     my $outputfile = $option_output_directory . "/" . $output_filename;
 
-    #   try_to("echo testing command line grep -B 10 die $outputfile", 1);
+    #   try_to("echo testing command line grep -B 10 die $outputfile", 0);
 
     my $status_message = "";
     my $errorcounts = `cat $outputfile | grep 'error_count'`;
@@ -937,11 +937,11 @@ sub try_to
 {
     my $command = shift;
 
-    my $no_verbose = shift;
+    my $verbose = shift;
 
     my $allow_fail = shift;
 
-    if (!$no_verbose)
+    if ($verbose)
     {
 	print "---\n";
 	print "$0: trying to $command\n";
@@ -1049,6 +1049,7 @@ sub rotate_logs
 #
 # args ($subject,$message)
 #
+
 sub try_to_mail
 {
     my $subject = shift;
