@@ -80,6 +80,8 @@ sub main
 
     try_to("neurospaces_pull configurator --enable configurator");
 
+    # stop services
+
     if ($global_profile_configuration->{profile}->{runs_cron})
     {
 	try_to("service cron stop");
@@ -169,6 +171,8 @@ sub main
 
 	    my $configuration = YAML::LoadFile($configuration_file);
 
+	    #t filter out what is only needed for the local PC: server machine or developer machine?
+
 	    # merge the read configuration of this file
 
 	    my $merged_configuration = Data::Merger::merger($configured_profile, { $configuration_file => $configuration }, );
@@ -191,7 +195,9 @@ sub main
 
     # upgrade the neurospaces packages
 
-    system "neurospaces_upgrade"
+    system "neurospaces_upgrade";
+
+    # restart the services
 
     if ($global_profile_configuration->{profile}->{runs_cron})
     {
