@@ -10,6 +10,8 @@ use Data::Utilities;
 
 use Getopt::Long;
 
+use Neurospaces::Developer;
+
 use YAML;
 
 
@@ -68,13 +70,77 @@ profile:
 ');
 
 
+sub configuration_filter
+{
+    my $configured_profile_snippet = shift;
+
+    # loop over all the given configuration snippets
+
+    foreach my $configuration_filename (keys %$configured_profile_snippet)
+    {
+	# if this is a well-known filename
+
+	if ($configuration_filename eq 'etc/neurospaces/developer/build.yml')
+	{
+	    # default: we don't remove anything
+
+	    my $packages_to_be_removed = {};
+
+	    # loop over all the packages in this configuration
+
+	    my $build = $configured_profile->{$configuration_filename};
+
+	    my $all_packages = $build->{all_packages};
+
+	    foreach my $package_name (keys %$all_packages)
+	    {
+		my $package = $all_packages->{$package_name};
+
+		# if this package is not a leader
+
+		if ((not exists $package->{leader})
+		    or (not $package->{leader}))
+		{
+		    # if we are not a server
+
+		    if (not $global_profile_configuration->{profile}->{serves_repos})
+# 		    if ($option_client)
+		    {
+			# filter the package by marking it as to be removed
+
+			# note: leaves room for marking with 'disable' as alternative to 'remove'.
+
+			$packages_to_be_removed->{$package_name} = 'remove';
+		    }
+		}
+	    }
+
+	    # loop over all the packages to be removed
+
+	    foreach my $package_name_to_be_removed (keys %$packages_to_be_removed)
+	    {
+		# remove the package from the configuration
+
+		if ($packages_to_be_removed->{$package_name_to_be_removed} eq 'remove')
+		{
+		    delete $all_packages->{$package_name_to_be_removed};
+		}
+	    }
+
+	}
+    }
+}
+
+
 sub main
 {
     # read command line
 
     read_cmd_line();
 
-    # upgrade the configurator package -- note that the selected branch is preserved
+    # upgrade the configurator package -- note that if the workspace
+    # is already there, the selected branch is preserved, if the
+    # workspace is not there yet, it will be created.
 
     try_to("neurospaces_create_directories configurator --enable configurator");
 
@@ -91,6 +157,10 @@ sub main
     {
 	try_to("service neurospaces-servers stop");
     }
+
+    # uninstall the previous installed packages
+
+    try_to("neurospaces_dev_uninstall");
 
 #     try_to("neurospaces_upgrade configurator");
 
@@ -126,6 +196,26 @@ sub main
 
     my $configured_branches = $global_profile_configuration->{profile}->{configured_branches};
 
+    # use the server that is listed by neurospaces_repositories for the configurator package
+
+    my $all_repositories = Neurospaces::Developer::packages();
+
+    my $configurator_repository
+	= [
+	   grep
+	   {
+	       $_->{package} eq 'configurator';
+	   }
+	   @$all_repositories,
+	  ];
+
+    if (scalar @$configurator_repository ne 1)
+    {
+	die "$0: *** Error: ambiguous repository configuration for the Configurator package";
+    }
+
+    $configurator_repository = $configurator_repository->[0];
+
     # collect all the information of the repositories that need to be installed.
     # server machine: all of them included unconditionally
     # developer machine: only 'lead' repositories and managed repositories.
@@ -138,9 +228,13 @@ sub main
 
     foreach my $configured_branch (keys %$configured_branches)
     {
-	# check out the configured_branch of the configurator.
+	# pull the configured_branch of the configurator.
 
-	try_to("cd ~/neurospaces_project/configurator/source/snapshots/0/ ; mtn pull '$configured_branch'");
+	try_to("cd ~/neurospaces_project/configurator/source/snapshots/0/ ; mtn pull $configurator_repository->{repository_server} '$configured_branch'");
+
+	# update the workspace for this branch
+
+	try_to("cd ~/neurospaces_project/configurator/source/snapshots/0/ ; mtn update --branch '$configured_branch'");
 
 	# find all configuration files
 
@@ -154,7 +248,7 @@ sub main
 	       `cd ~/neurospaces_project/configurator/source/snapshots/0/ && find etc/ -type f`,
 	      ];
 
-	# collect information from its '/etc/neurospaces' configuration.
+	# collect information from its 'etc/neurospaces' configuration.
 
 	foreach my $configuration_file (@$configuration_files)
 	{
@@ -162,7 +256,7 @@ sub main
 
 	    if ($configuration_file ~! /\.yml$/)
 	    {
-		print STDERR "$0: *** Warning: skipping a configuration file without .yml extension ($configuration_file)\n";
+		print STDERR "$0: *** Warning: in configured_branch $configured_branch: skipping a configuration file without .yml extension ($configuration_file)\n";
 
 		next;
 	    }
@@ -171,11 +265,15 @@ sub main
 
 	    my $configuration = YAML::LoadFile($configuration_file);
 
-	    #t filter out what is only needed for the local PC: server machine or developer machine?
+	    my $configured_profile_snippet = { $configuration_file => $configuration };
+
+	    # filter out what is only needed for the local PC: server machine or developer machine?
+
+	    configuration_filter($configured_profile_snippet);
 
 	    # merge the configuration in this file with the global configured profile
 
-	    my $merged_configuration = Data::Merger::merger($configured_profile, { $configuration_file => $configuration }, );
+	    my $merged_configuration = Data::Merger::merger($configured_profile, $configured_profile_snippet, );
 	}
     }
 
@@ -289,9 +387,13 @@ sub try_to
 {
     my $command = shift;
 
-    my $allow_fail = shift;
+    my $options = shift;
 
-    if ($option_verbose)
+    my $allow_fail = $options->{allow_fail};
+
+    my $verbose = $options->{verbose};
+
+    if ($verbose)
     {
 	print "---\n";
 	print "$0: trying to $command\n";
