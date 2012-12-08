@@ -207,9 +207,9 @@ my $all_packages
        geometry => {
 		    dependencies => {
 				    },
-		    description => 'a collection of algorithms of computational geometry useful for the conversion of EM image stacks ao.',
+		    description => 'a collection of algorithms in computational geometry useful for the conversion of EM image stacks ao.',
 		    directory => "$ENV{HOME}/neurospaces_project/geometry/source/snapshots/0",
-		    disabled => 1,
+		    disabled => 'far from finished.',
 		    order => 4,
 		    tags => [
 			     'genesis3',
@@ -388,7 +388,7 @@ my $all_packages
 					     },
 			     description => 'inspect and compare simulation output',
 			     directory => "$ENV{HOME}/neurospaces_project/project-browser/source/snapshots/0",
-			     disabled => 1,
+			     disabled => 'parts working, only for experts who are familiar with the Sesa internals',
 			     order => 7,
 			     tags => [
 				      'neurospaces',
