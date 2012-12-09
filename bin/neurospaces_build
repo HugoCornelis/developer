@@ -290,7 +290,7 @@ my $all_packages
 		     version_script => 'neurospaces_build --version',
 		    },
        'model-container' => {
-			     description => 'solver-independent model storage',
+			     description => 'backend independent model storage',
 			     directory => "$ENV{HOME}/neurospaces_project/model-container/source/snapshots/0",
 			     disabled => 0,
 			     operations => {
