@@ -56,8 +56,8 @@ my $default_developer_profile_configuration
 profile:
   serves_repos: 0
   runs_cron: 0
-  configured_branches:
-    genesis3: 1
+  configured_tags:
+    genesis3: developer
 ');
 
 my $default_server_profile_configuration
@@ -66,8 +66,8 @@ my $default_server_profile_configuration
 profile:
   serves_repos: 1
   runs_cron: 1
-  configured_branches:
-    genesis3: 1
+  configured_tags:
+    genesis3: server
 ');
 
 
@@ -143,9 +143,9 @@ sub main
     # is already there, the selected branch is preserved, if the
     # workspace is not there yet, it will be created.
 
-    try_to("neurospaces_create_directories configurator --enable configurator");
+    try_to("neurospaces_create_directories --enable configurator configurator");
 
-    try_to("neurospaces_pull configurator --enable configurator");
+    try_to("neurospaces_pull --enable configurator configurator");
 
     # stop services
 
@@ -176,7 +176,7 @@ sub main
 	    print "$0: *** Adding profile $profile_name\n";
 	}
 
-	$global_profile_configuration->{profile}->{configured_branches}->{$profile_name} = "from $0";
+	$global_profile_configuration->{profile}->{configured_tags}->{$profile_name} = "from $0";
     }
 
     # go through all profiles to remove
@@ -190,12 +190,12 @@ sub main
 	    print "$0: *** Removing profile $profile_name\n";
 	}
 
-	delete $global_profile_configuration->{profile}->{configured_branches}->{$profile_name};
+	delete $global_profile_configuration->{profile}->{configured_tags}->{$profile_name};
     }
 
     # loop through all the profiles configured in the neurospaces profile configuration
 
-    my $configured_branches = $global_profile_configuration->{profile}->{configured_branches};
+    my $configured_tags = $global_profile_configuration->{profile}->{configured_tags};
 
     # use the server that is listed by neurospaces_repositories for the configurator package
 
@@ -227,15 +227,73 @@ sub main
 
     my $configured_profile = {};
 
-    foreach my $configured_branch (keys %$configured_branches)
+    my $multiple_configurator_branches = 0;
+
+    # if we are using different branches of the configurator package
+
+    if ($multiple_configurator_branches)
     {
-	# pull the configured_branch of the configurator.
+	foreach my $configured_tag (keys %$configured_tags)
+	{
+	    # pull the configured_tag of the configurator.
 
-	try_to("cd ~/neurospaces_project/configurator/source/snapshots/0/ ; mtn pull $configurator_repository->{repository_server} '$configured_branch'");
+	    try_to("cd ~/neurospaces_project/configurator/source/snapshots/0/ ; mtn pull $configurator_repository->{repository_server} '$configured_tag'");
 
-	# update the workspace for this branch
+	    # update the workspace for this branch
 
-	try_to("cd ~/neurospaces_project/configurator/source/snapshots/0/ ; mtn update --branch '$configured_branch'");
+	    try_to("cd ~/neurospaces_project/configurator/source/snapshots/0/ ; mtn update --branch '$configured_tag'");
+
+	    # find all configuration files
+
+	    my $configuration_files
+		= [
+		   map
+		   {
+		       chomp; $_;
+		   }
+		   sort
+		   `cd ~/neurospaces_project/configurator/source/snapshots/0/ && find etc/ -type f`,
+		  ];
+
+	    # collect information from its 'etc/neurospaces' configuration.
+
+	    foreach my $configuration_file (@$configuration_files)
+	    {
+		# skip non yaml files
+
+		if ($configuration_file ~! /\.yml$/)
+		{
+		    print STDERR "$0: *** Warning: in configured_tag $configured_tag: skipping a configuration file without .yml extension ($configuration_file)\n";
+
+		    next;
+		}
+
+		# read the configuration file
+
+		my $configuration = YAML::LoadFile("$ENV{HOME}/neurospaces_project/configurator/source/snapshots/0/" . $configuration_file);
+
+		my $configured_profile_snippet = { $configuration_file => $configuration };
+
+		# filter out what is only needed for the local PC: server machine or developer machine?
+
+		configuration_filter($configured_profile_snippet);
+
+		# merge the configuration in this file with the global configured profile
+
+		my $merged_configuration = Data::Merger::merger($configured_profile, $configured_profile_snippet, );
+	    }
+	}
+    }
+
+    # else we are using only one branch of the configurator package
+
+    # note: if using a global branch, that branch must contain and serve all files.
+
+    else
+    {
+	# update the configurator workspace
+
+	try_to("neurospaces_update --enable configurator configurator");
 
 	# find all configuration files
 
@@ -249,7 +307,7 @@ sub main
 	       `cd ~/neurospaces_project/configurator/source/snapshots/0/ && find etc/ -type f`,
 	      ];
 
-	# collect information from its 'etc/neurospaces' configuration.
+	# loop over all the found configuration_files
 
 	foreach my $configuration_file (@$configuration_files)
 	{
@@ -257,14 +315,14 @@ sub main
 
 	    if ($configuration_file ~! /\.yml$/)
 	    {
-		print STDERR "$0: *** Warning: in configured_branch $configured_branch: skipping a configuration file without .yml extension ($configuration_file)\n";
+		print STDERR "$0: *** Warning: skipping a configuration file without .yml extension ($configuration_file)\n";
 
 		next;
 	    }
 
 	    # read the configuration file
 
-	    my $configuration = YAML::LoadFile($configuration_file);
+	    my $configuration = YAML::LoadFile("$ENV{HOME}/neurospaces_project/configurator/source/snapshots/0/" . $configuration_file);
 
 	    my $configured_profile_snippet = { $configuration_file => $configuration };
 
@@ -294,7 +352,7 @@ sub main
 
     # upgrade the neurospaces packages
 
-    system "neurospaces_upgrade";
+    try_to("neurospaces_upgrade");
 
     # restart the services
 
