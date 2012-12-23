@@ -8,6 +8,8 @@ use strict;
 
 use Getopt::Long;
 
+use Neurospaces::Developer;
+
 use YAML;
 
 
@@ -97,15 +99,30 @@ sub main
 		print "$0: creating configuration for $component_name based on the given option_repository_port $option_repository_port\n";
 	    }
 
+	    my $all_packages = $Neurospaces::Developer::Configurator::default_packages;
+
+	    $all_packages->{$component_name}
+		= {
+		   order => 101,
+		   version_control => {
+				       port_number => $option_repository_port,
+				      },
+		  };
+
+	    my $error = Neurospaces::Developer::Configurator::packages_validate($all_packages);
+
+	    if (defined $error)
+	    {
+		die "$0: *** Error: $error";
+	    }
+
 	    my $build_database_filename = "/etc/neurospaces/developer/build.yml";
 
 	    use YAML;
 
 	    my $build_database = YAML::LoadFile($build_database_filename);
 
-	    my $all_packages = $build_database->{all_packages};
-
-	    $all_packages->{$component_name}
+	    $build_database->{all_packages}->{$component_name}
 		= {
 		   order => 101,
 		   version_control => {
