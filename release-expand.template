@@ -25,7 +25,7 @@ my $config
 		  major => '0',
 		  minor => '0',
 		  micro => '0',
-		  monotone_id => `mtn automate get_current_revision_id | perl -pe 's/\n//g'`,
+		  monotone_id => `(test -d _MTN && ((mtn automate get_current_revision_id | perl -pe 's/\n//g') && false) || echo '_MTN not found')`,
 		  component => '__component_name__',
 		 },
       };
