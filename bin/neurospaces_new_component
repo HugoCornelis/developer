@@ -99,6 +99,8 @@ sub main
 		print "$0: creating configuration for $component_name based on the given option_repository_port $option_repository_port\n";
 	    }
 
+	    # first use the standard developer APIs to check if this configuration is valid
+
 	    my $all_packages = $Neurospaces::Developer::Configurator::default_packages;
 
 	    $all_packages->{$component_name}
@@ -115,6 +117,8 @@ sub main
 	    {
 		die "$0: *** Error: $error";
 	    }
+
+	    # if it is valid, write the new configuration to the global configuration file
 
 	    my $build_database_filename = "/etc/neurospaces/developer/build.yml";
 
