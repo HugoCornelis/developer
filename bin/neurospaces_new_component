@@ -16,7 +16,7 @@ use YAML;
 my $option_component_names = [];
 my $option_documentation_set;
 my $option_heterarch_set;
-my $option_repository;
+my $option_package_tags = [];
 my $option_repository_server;
 my $option_verbose;
 
@@ -140,6 +140,7 @@ sub main
 
 	    $build_database->{all_packages}->{$component_name}
 		= {
+		   (scalar @$option_package_tags ? (tags => $option_package_tags) : ()),
 		   version_control => {
 				       port_number => $repository_port,
 				       server => $repository_server,
@@ -148,21 +149,6 @@ sub main
 
 	    YAML::DumpFile($build_database_filename, $build_database);
 	}
-
-# 	# if a repository should be created
-
-# 	if ($option_repository)
-# 	{
-# 	    # create the repository
-
-# 	    if ($option_verbose)
-# 	    {
-# 		print "$0: creating repository for $component_name based on the existing configuration\n";
-# 	    }
-
-# 	    system "neurospaces_init '$component_name'"
-
-# 	}
 
 	if ($option_verbose)
 	{
@@ -322,7 +308,7 @@ sub read_cmd_line
 	     "documentation-set!" => \$option_documentation_set,
 	     "help" => \$option_help,
 	     "heterarch-set!" => \$option_heterarch_set,
-	     "repository!" => \$option_repository,
+	     "package-tags=s" => $option_package_tags,
 	     "repository-server=s" => \$option_repository_server,
 	     "v|verbose+" => \$option_verbose,
 	    );
@@ -340,7 +326,7 @@ options:
     --documentation-set  create the new components as documentation sets.
     --help               print usage information.
     --heterarch-set      create the new components as heterarch sets.
-    --repository         create the component repository if it does not exist yet.  This requires the component to be configured.
+    --package-tags       add this package tag to each new component configuration (may be given multiple times).
     --repository-server  use the given server to configure the new component (eg. repo-genesis3.cbi.utsa.edu:4696).
     --verbose            set verbosity level.
 ";
