@@ -17,7 +17,7 @@ my $option_component_names = [];
 my $option_documentation_set;
 my $option_heterarch_set;
 my $option_repository;
-my $option_repository_port;
+my $option_repository_server;
 my $option_verbose;
 
 
@@ -88,15 +88,26 @@ sub main
 	    next;
 	}
 
-	# if the repository port number was set
+	# if the repository server and port was set
 
-	if ($option_repository_port)
+	if ($option_repository_server)
 	{
-	    # configure the new component with the given port and make the new component available to the developer tools.
+	    # configure the new component with the given server and port and make the new component available to the developer tools.
 
 	    if ($option_verbose)
 	    {
-		print "$0: creating configuration for $component_name based on the given option_repository_port $option_repository_port\n";
+		print "$0: creating configuration for $component_name based on the given option_repository_server $option_repository_server\n";
+	    }
+
+	    $option_repository_server =~ /(.+):(.+)/;
+
+	    my $repository_port = $2;
+	    my $repository_server = $1;
+
+	    if (! defined $repository_port
+		or ! defined $repository_server)
+	    {
+		die "$0: *** Error: for component $component_name: repository_server or repository_port is not defined";
 	    }
 
 	    # first use the standard developer APIs to check if this configuration is valid
@@ -105,9 +116,10 @@ sub main
 
 	    $all_packages->{$component_name}
 		= {
-		   order => 101,
+		   ($option_heterarch_set ? (dependencies => { heterarch => 'configured using $0', }) : ()),
 		   version_control => {
-				       port_number => $option_repository_port,
+				       port_number => $repository_port,
+				       server => $repository_server,
 				      },
 		  };
 
@@ -115,7 +127,7 @@ sub main
 
 	    if (defined $error)
 	    {
-		die "$0: *** Error: $error";
+		die "$0: *** Error: for component $component_name: $error";
 	    }
 
 	    # if it is valid, write the new configuration to the global configuration file
@@ -128,9 +140,9 @@ sub main
 
 	    $build_database->{all_packages}->{$component_name}
 		= {
-		   order => 101,
 		   version_control => {
-				       port_number => $option_repository_port,
+				       port_number => $repository_port,
+				       server => $repository_server,
 				      },
 		  };
 
@@ -306,12 +318,12 @@ sub read_cmd_line
     my $result
 	= GetOptions
 	    (
-	     "help" => \$option_help,
 	     "component-name=s" => $option_component_names,
-	     "heterarch-set!" => \$option_heterarch_set,
 	     "documentation-set!" => \$option_documentation_set,
+	     "help" => \$option_help,
+	     "heterarch-set!" => \$option_heterarch_set,
 	     "repository!" => \$option_repository,
-	     "repository-port=s" => \$option_repository_port,
+	     "repository-server=s" => \$option_repository_server,
 	     "v|verbose+" => \$option_verbose,
 	    );
 
@@ -329,7 +341,7 @@ options:
     --help               print usage information.
     --heterarch-set      create the new components as heterarch sets.
     --repository         create the component repository if it does not exist yet.  This requires the component to be configured.
-    --repository-port    use the given port number to configure the new component.
+    --repository-server  use the given server to configure the new component (eg. repo-genesis3.cbi.utsa.edu:4696).
     --verbose            set verbosity level.
 ";
 
