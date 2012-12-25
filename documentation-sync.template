@@ -23,7 +23,7 @@ if ($?)
     die "$0: *** Error: __component_name__-check concludes there is something wrong with your documentation workspace.";
 }
 
-system "neurospaces_sync --enable __component_name__ --regex __component_name__ --verbose";
+system "neurospaces_sync --enable __component_name__ __component_name__ --verbose";
 
 if ($?)
 {
@@ -31,7 +31,7 @@ if ($?)
 }
 else
 {
-    system "neurospaces_update --enable __component_name__ --regex __component_name__ --verbose";
+    system "neurospaces_update --enable __component_name__ __component_name__ --verbose";
 }
 
 
