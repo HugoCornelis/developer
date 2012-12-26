@@ -9,6 +9,7 @@ use strict;
 use Getopt::Long;
 
 use Neurospaces::Developer;
+use Neurospaces::Developer::Manager::GUI;
 
 use YAML;
 
