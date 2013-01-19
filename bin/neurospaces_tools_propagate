@@ -8,8 +8,6 @@ use strict;
 
 use Getopt::Long;
 
-use Neurospaces::Developer;
-
 use YAML;
 
 
@@ -18,7 +16,39 @@ my $option_regex = '.*';
 my $option_verbose;
 
 
-my $all_packages = $Neurospaces::Developer::Configurator::default_packages;
+my $all_packages;
+
+{
+    local $/;
+
+    $all_packages = Load(`neurospaces_packages`);
+
+    # remove key, extract value
+
+    $all_packages = [ %$all_packages, ];
+
+    $all_packages = $all_packages->[1];
+
+#     # remove key, extract value
+
+#     $all_packages = [ %$all_packages, ];
+
+#     $all_packages = $all_packages->[1];
+
+    # convert to hash for ease of use
+
+    $all_packages
+	= {
+	   map
+	   {
+	       $_ => 1,
+	   }
+	   @$all_packages,
+	  };
+
+#     print Dump($all_packages);
+}
+
 
 my $all_tools
     = {
@@ -96,7 +126,7 @@ sub propagate
 
 	if (!$option_dry_run)
 	{
-	    system "cp ~/neurospaces_project/$source_package/source/snapshots/0/$tool_name ~/neurospaces_project/$target_package/source/snapshots/0/$tool_name";
+	    `cp ~/neurospaces_project/$source_package/source/snapshots/0/$tool_name ~/neurospaces_project/$target_package/source/snapshots/0/$tool_name`;
 	}
     }
 }
