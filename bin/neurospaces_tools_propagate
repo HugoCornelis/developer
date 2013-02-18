@@ -26,10 +26,10 @@ my $all_tools
 # 				       description => "Searches test specifications and executes them.",
 # 				       source_package => 'model-container',
 # 				      },
-       "tests/tests_2_html" => {
-				description => "Converts test specifications to html.",
-				source_package => 'model-container',
-			       },
+#        "tests/tests_2_html" => {
+# 				description => "Converts test specifications to html.",
+# 				source_package => 'model-container',
+# 			       },
       };
 
 
