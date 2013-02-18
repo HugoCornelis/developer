@@ -175,8 +175,6 @@ sub main
 
 	system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/python/neurospaces/__cbi__.py' '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/python/neurospaces'";
 
-	system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/tests/tests_2_html' '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/tests'";
-
 	system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/tests/introduction.template' '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/tests/introduction.html'";
 
 	system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/install/rpm/developer.spec' '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/install/rpm/$component_name.spec'";

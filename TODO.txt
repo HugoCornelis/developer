@@ -81,8 +81,6 @@ test-dist, etc.
 ** test framework
 although it would be handy to have the test utilities in each package
 too.
-*** tests/neurospaces_harness
-*** tests/tests_2_html
 *** tests/command_extractor
 
 ** perl
