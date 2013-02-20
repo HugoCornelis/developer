@@ -1,11 +1,12 @@
-.changes$
-.dsc$
-.pkg$
 MANIFEST$
 Makefile$
 Makefile\.in$
+\.changes$
 \.deb$
+\.dsc$
+\.html$
 \.log$
+\.pkg$
 ^aclocal\.m4$
 ^config.guess$
 ^config.log$
@@ -36,4 +37,3 @@ _BUILD$
 build$
 dist$
 egg-info$
-html$
