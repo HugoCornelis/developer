@@ -45,6 +45,7 @@ my $option_regex_selector = ".*";
 my $option_repo_ci = 0;
 my $option_repo_clone = 0;
 my $option_repo_co = 0;
+my $option_repo_diff = 0;
 my $option_repo_history = 0;
 my $option_repo_history_last = 2;
 my $option_repo_init = 0;
@@ -734,6 +735,7 @@ sub read_cmd_line
 	     "repo-ci=s" => \$option_repo_ci,
 	     "repo-clone=s" => \$option_repo_clone,
 	     "repo-co!" => \$option_repo_co,
+	     "repo-diff!" => \$option_repo_diff,
 	     "repo-init!" => \$option_repo_init,
 	     "repo-keys!" => \$option_repo_keys,
 	     "repo-migrate!" => \$option_repo_migrate,
@@ -844,6 +846,7 @@ sub read_cmd_line
 	   "repo-ci=s" => $option_repo_ci,
 	   "repo-clone=s" => $option_repo_clone,
 	   "repo-co!" => $option_repo_co,
+	   "repo-diff!" => $option_repo_diff,
 	   "repo-init!" => $option_repo_init,
 	   "repo-keys!" => $option_repo_keys,
 	   "repo-migrate!" => $option_repo_migrate,
@@ -2009,6 +2012,119 @@ sub read_cmd_line
 		}
 
 	    },
+	   },
+	   {
+	    condition => $option_repo_diff,
+	    description => "show workspace differences against the local repository",
+	    operation =>
+	    sub
+	    {
+		my $package_information = shift;
+
+		# get specific arguments
+
+		my $description = $package_information->{description};
+
+		my $directory = $package_information->{directory};
+
+		my $operations = $package_information->{operations};
+
+		my $package_name = $package_information->{package_name};
+
+		#t where does this default value come from?  Cannot work correctly?
+
+		my $repository_name
+		    = $package_information->{package}->{version_control}->{repository}
+			|| $directory . '/' . $package_name . '/' . 'mtn';
+
+		my $port_number = $package_information->{package}->{version_control}->{port_number};
+
+		# print header
+
+		my $text = "$0: *** package $package_name";
+
+		print "\n\n" . ("-" x length $text) . "\n$text\n";
+
+# 		# if not enough information for comparing
+
+# 		if (not -f $repository_name and not -d $repository_name)
+# 		{
+# 		    die "$0: *** Error: cannot compare with repository, repository_name not set";
+# 		}
+
+# 		if (not $port_number and $repository_name =~ m/^.*\.mtn$/)
+# 		{
+# 		    die "$0: *** Error: cannot compare with repository, port_number not set";
+# 		}
+
+		# change the directory
+
+		my $success = chdir $directory;
+
+		if (!$success)
+		{
+		    die "$0: *** Error: package $package_name cannot change from directory to directory ($directory): $!";
+		}
+
+		# construct a default set with information commands
+
+		my $information_sets
+		    = {
+		       #t MERCURIAL
+		       #t hg diff
+
+		       diff => [ 'mtn', 'diff', ],
+		      };
+
+		# go through all informational operations
+
+		foreach my $information_set (
+					     qw(
+						   diff
+					       )
+					    )
+		{
+		    # and overwrite with specific commands for this package if applicable
+
+		    #! exists such that a '0' or undef can erase the default information_set command
+
+		    if (exists $package_information->{package}->{version_control}->{commands}->{$information_set})
+		    {
+			$information_sets->{$information_set}
+			    = $package_information->{package}->{version_control}->{commands}->{$information_set};
+		    }
+		}
+
+		# go through all informational operations
+
+		foreach my $information_set (
+					     qw(
+						   diff
+					       )
+					    )
+		{
+		    # if the information_set command is defined
+
+		    if ($information_sets->{$information_set})
+		    {
+			# execute the information_set command
+
+			operation_execute
+			    (
+			     $operations,
+			     {
+			      description => "information_set $information_set",
+
+			      #t always zero here, but I guess this simply depends on working in client mode ?
+
+			      keywords => 0,
+			      package_name => $package_name,
+			     },
+			     $information_sets->{$information_set},
+			    );
+		    }
+		}
+	    }
 	   },
 	   {
 	    condition => $option_distclean && !$option_uninstall,
@@ -4052,6 +4168,7 @@ options related to operation execution profile:
     --repo-ci                commit all modifications with the given changelog description.
     --repo-clone             checkout or update the workspace source code from a remote repository.
     --repo-co                checkout or update the workspace source code from a local repository.
+    --repo-diff              show workspace differences against the local repository.
     --repo-init              initialize those local repositories that do not exist yet.
     --repo-keys              show public keys stored by version control systems.
     --repo-history           show locally stored history information of enabled software components.
@@ -4178,6 +4295,7 @@ options related to operation execution profile:
     --repo-ci                commit all modifications with the given changelog description.
     --repo-clone             checkout or update the workspace source code from a remote repository.
     --repo-co                checkout or update the workspace source code from a local repository.
+    --repo-diff              show workspace differences against the local repository.
     --repo-init              initialize those local repositories that do not exist yet.
     --repo-keys              show public keys stored by version control systems.
     --repo-history           show locally stored history information of enabled software components.
@@ -4193,7 +4311,7 @@ options related to operation execution profile:
     --uninstall              uninstall packages, cannot be combined with installation options.
     --universal              sets flags for building universal binaries on Mac OS X.
     --upload-server          enable uploading packages to this server (e.g. https://frs.sourceforge.net/uploads).
-    --version                give version information.
+    --version                print version information.
     --version-tag            The software version for a source code distribution release.
     --v|verbose              tell what is being done, specify multiple times to get more feedback.
     --website-prepare        prepare the website on your developer machine.
