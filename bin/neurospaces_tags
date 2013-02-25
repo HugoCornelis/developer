@@ -47,6 +47,10 @@ sub main
     my $regex_options = defined $option_regex_selector ? "--regex '$option_regex_selector' " : '';
     my $verbose_options = defined $option_verbose ? "--verbose " x $option_verbose : '';
 
+    # hardcoded extraction of tags from the configured components
+    # allows to use options to enable and disable components and to
+    # select components on the command line.
+
     my $packages_command = "neurospaces_repositories $regex_options $enable_options $disable_options $package_tags_options " . (join ' ', map { "'$_'" } @ARGV);
 
     my $packages_text = `$packages_command`;
