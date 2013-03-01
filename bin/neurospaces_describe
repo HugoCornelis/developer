@@ -1,0 +1,45 @@
+#!/usr/bin/perl -w
+#!/usr/bin/perl -d:ptkdb -w
+#
+
+
+use strict;
+
+
+use Getopt::Long;
+
+use YAML;
+
+
+my $option_disable;
+my $option_enable;
+my $option_package_tags = [];
+my $option_regex_selector;
+my $option_verbose;
+
+{
+    my $result
+	= GetOptions
+	    (
+	     "disable=s" => \$option_disable,
+	     "enable=s" => \$option_enable,
+	     "package-tags=s" => $option_package_tags,
+	     "regex-selector=s" => \$option_regex_selector,
+	     "v|verbose+" => \$option_verbose,
+	    );
+
+    if (!$result)
+    {
+	die "$0: *** Error: Error in option processing";
+    }
+}
+
+my $disable_options = defined $option_disable ? "--disable '$option_disable' " : '';
+my $enable_options = defined $option_enable ? "--enable $option_enable " : '';
+my $package_tags_options = @$option_package_tags ? join ' ', (map { "--package-tags '$_'" } @$option_package_tags) : '';
+my $regex_options = defined $option_regex_selector ? "--regex '$option_regex_selector' " : '';
+my $verbose_options = defined $option_verbose ? "--verbose " x $option_verbose : '';
+
+system "neurospaces_build --help-descriptions $regex_options $enable_options $disable_options $package_tags_options " . (join ' ', map { "'$_'" } @ARGV);
+
+

@@ -28,6 +28,7 @@ dist_bin_SCRIPTS = \
 	bin/neurospaces_countcode \
 	bin/neurospaces_create_directories \
 	bin/neurospaces_cron \
+	bin/neurospaces_describe \
 	bin/neurospaces_dev_uninstall \
 	bin/neurospaces_diff \
 	bin/neurospaces_dist \
