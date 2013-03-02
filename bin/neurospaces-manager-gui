@@ -41,7 +41,7 @@ sub main
 {
     read_cmd_line();
 
-    our $packages_tags = Neurospaces::Developer::package_tags();
+    our $packages_tags = Neurospaces::Developer::Packages::package_tags();
 
     Neurospaces::Developer::Manager::GUI::create($packages_tags);
 }
