@@ -248,7 +248,7 @@ sub all_operations_execute
 	{
 	    my $condition_value = $all_operation->{condition};
 
-	    my $operation = $all_operation->{operation};
+	    my $operation = $all_operation->{implementation};
 
 	    my $description = $all_operation->{description};
 
@@ -1127,7 +1127,7 @@ options related to behavior of external applications:
 		   }
 		   map
 		   {
-		       $_->{description} || join ' ', @{$_->{operation} || []},
+		       $_->{description} || join ' ', @{$_->{implementation} || []},
 		   }
 		   @$all_operations,
 		  )

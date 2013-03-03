@@ -3,20 +3,11 @@ $files = {
                                         {
                                           'expr' => undef,
                                           'value' => '1',
-                                          'text' => 'main();
+                                          'text' => '	    if (ref $condition_value eq \'CODE\')
 ',
                                           'fname' => './neurospaces_build',
                                           'type' => 'user',
-                                          'line' => '5063'
-                                        },
-                                        {
-                                          'expr' => undef,
-                                          'value' => '1',
-                                          'text' => '	foreach my $all_operation (@$all_operations)
-',
-                                          'fname' => './neurospaces_build',
-                                          'type' => 'user',
-                                          'line' => '380'
+                                          'line' => '305'
                                         }
                                       ]
          };
