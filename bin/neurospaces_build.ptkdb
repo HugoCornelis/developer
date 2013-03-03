@@ -7,7 +7,7 @@ $files = {
 ',
                                           'fname' => './neurospaces_build',
                                           'type' => 'user',
-                                          'line' => '5249'
+                                          'line' => '5063'
                                         },
                                         {
                                           'expr' => undef,
@@ -16,7 +16,7 @@ $files = {
 ',
                                           'fname' => './neurospaces_build',
                                           'type' => 'user',
-                                          'line' => '784'
+                                          'line' => '380'
                                         }
                                       ]
          };
