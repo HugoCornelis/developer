@@ -382,7 +382,70 @@ sub all_operations_execute
 
 	    my $operation = $all_operation->{operation};
 
-	    my $description = $all_operation->{description} || (join ' ', @$operation );
+	    my $description = $all_operation->{description};
+
+	    # construct package directory
+
+	    my $target_directory = $package->{directory};
+
+	    # if we are working on a client machine
+
+	    if ($option_client)
+	    {
+		if (!defined $option_src_dir
+		    || !defined $option_src_tag)
+		{
+		    die "$0: *** Error: you must set option_src_dir and option_src_tag when working in client mode";
+		}
+
+		# construct a target directory from the src-* options
+
+		$target_directory = $option_src_dir . "/" . $package_name . "-" . $option_src_tag;
+	    }
+
+	    my $filename = $package_name . "-" . (defined $option_src_tag ? $option_src_tag : '') . ".tar.gz";
+
+	    my $prefix = $option_download_server =~ m|://| ? '' : 'http://';
+
+	    my $url = $prefix . $option_download_server . "/neurospaces/" . $filename;
+
+	    my $directory = $option_src_dir ? $option_src_dir : $target_directory;
+
+	    if (ref $description eq 'CODE')
+	    {
+		$description
+		    = &$description
+			(
+			 {
+# 			  description => $description,
+			  directory => $directory,
+			  ( $option_src_tag ? (filename => $filename,) : (), ),
+			  operations => $operations,
+			  package => $package,
+			  package_name => $package_name,
+			  url => $url,
+			 },
+			);
+	    }
+
+	    if (ref $condition_value eq 'CODE')
+	    {
+		$condition_value
+		    = &$condition_value
+			(
+			 {
+			  description => $description,
+			  directory => $directory,
+			  ( $option_src_tag ? (filename => $filename,) : (), ),
+			  operations => $operations,
+			  package => $package,
+			  package_name => $package_name,
+			  url => $url,
+			 },
+			);
+	    }
+
+# 	    $description ||= (join ' ', @$operation );
 
 	    # if the uninstall option is given
 
@@ -415,25 +478,6 @@ sub all_operations_execute
 		    print "$0: package $package_name [" . $description . "] preparing to execute \n";
 		}
 
-		# construct package directory
-
-		my $target_directory = $package->{directory};
-
-		# if we are working on a client machine
-
-		if ($option_client)
-		{
-		    if (!defined $option_src_dir
-			|| !defined $option_src_tag)
-		    {
-			die "$0: *** Error: you must set option_src_dir and option_src_tag when working in client mode";
-		    }
-
-		    # construct a target directory from the src-* options
-
-		    $target_directory = $option_src_dir . "/" . $package_name . "-" . $option_src_tag;
-		}
-
 		# if this is perl code
 
 		if (ref $operation eq 'CODE')
@@ -444,14 +488,6 @@ sub all_operations_execute
 
 		    if (!$option_dry_run)
 		    {
-			my $directory = $option_src_dir ? $option_src_dir : $target_directory;
-
-			my $filename = $package_name . "-" . (defined $option_src_tag ? $option_src_tag : '') . ".tar.gz";
-
-			my $prefix = $option_download_server =~ m|://| ? '' : 'http://';
-
-			my $url = $prefix . $option_download_server . "/neurospaces/" . $filename;
-
 			my $result
 			    = &$operation
 				(
