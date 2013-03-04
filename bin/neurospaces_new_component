@@ -17,6 +17,7 @@ my $option_component_names = [];
 my $option_documentation_set;
 my $option_heterarch_set;
 my $option_package_tags = [];
+my $option_read_only;
 my $option_repository_server;
 my $option_verbose;
 
@@ -88,6 +89,10 @@ sub main
 	    next;
 	}
 
+	# assume we don't have to overwrite the local configuration
+
+	my $write_configuration = '';
+
 	# if the repository server and port was set
 
 	if ($option_repository_server)
@@ -130,7 +135,23 @@ sub main
 		die "$0: *** Error: for component $component_name: $error";
 	    }
 
-	    # if it is valid, write the new configuration to the global configuration file
+	    # this configuration is valid, register that we have to write the new configuration
+
+	    $write_configuration = " option_repository_server $option_repository_server";
+	}
+
+	# if the package was marked as read-only
+
+	if ($option_read_only)
+	{
+	    # make sure the configuration is overwritten.
+
+	    $write_configuration .= " option_read_only $option_read_only";
+	}
+
+	if ($write_configuration)
+	{
+	    # write the new configuration to the global configuration file
 
 	    my $build_database_filename = "/etc/neurospaces/developer/build.yml";
 
@@ -140,11 +161,16 @@ sub main
 
 	    $build_database->{all_packages}->{$component_name}
 		= {
+		   ($option_read_only ? ( read_only => $option_read_only ) : ()),
 		   (scalar @$option_package_tags ? (tags => $option_package_tags) : ()),
-		   version_control => {
-				       port_number => $repository_port,
-				       server => $repository_server,
-				      },
+		   ($option_repository_server ?
+		    (
+		     version_control => {
+					 port_number => $repository_port,
+					 server => $repository_server,
+					},
+		    )
+		    : ()),
 		  };
 
 	    YAML::DumpFile($build_database_filename, $build_database);
@@ -307,6 +333,7 @@ sub read_cmd_line
 	     "help" => \$option_help,
 	     "heterarch-set!" => \$option_heterarch_set,
 	     "package-tags=s" => $option_package_tags,
+	     "read-only=s" => \$option_read_only,
 	     "repository-server=s" => \$option_repository_server,
 	     "v|verbose+" => \$option_verbose,
 	    );
@@ -325,6 +352,7 @@ options:
     --help               print usage information.
     --heterarch-set      create the new components as heterarch sets.
     --package-tags       add this package tag to each new component configuration (may be given multiple times).
+    --read-only          explains why this package is locally read-only (eg. you don't have permission to sync to the server).
     --repository-server  use the given server to configure the new component (eg. repo-genesis3.cbi.utsa.edu:4696).
     --verbose            set verbosity level.
 ";
