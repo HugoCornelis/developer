@@ -16,8 +16,6 @@ use YAML;
 
 our $option_verbose = 0;
 
-our $packages_tags;
-
 
 $SIG{'__DIE__'}
     = sub
@@ -41,9 +39,7 @@ sub main
 {
     read_cmd_line();
 
-    our $packages_tags = Neurospaces::Developer::Packages::package_tags();
-
-    Neurospaces::Developer::Manager::GUI::create($packages_tags);
+    Neurospaces::Developer::Manager::GUI::create();
 }
 
 
