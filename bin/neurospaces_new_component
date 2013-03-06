@@ -95,6 +95,9 @@ sub main
 
 	# if the repository server and port was set
 
+	my $repository_port;
+	my $repository_server;
+
 	if ($option_repository_server)
 	{
 	    # configure the new component with the given server and port and make the new component available to the developer tools.
@@ -106,8 +109,8 @@ sub main
 
 	    $option_repository_server =~ /(.+):(.+)/;
 
-	    my $repository_port = $2;
-	    my $repository_server = $1;
+	    $repository_port = $2;
+	    $repository_server = $1;
 
 	    if (! defined $repository_port
 		or ! defined $repository_server)
@@ -176,146 +179,158 @@ sub main
 	    YAML::DumpFile($build_database_filename, $build_database);
 	}
 
-	if ($option_verbose)
+	# for a new component that is not read-only
+
+	if (not $option_read_only)
 	{
-	    print "$0: creating neurospaces component $component_name\'s directories and files\n";
-	}
+	    # produce a template that allows to start new development
 
-	system "mkdir -p '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0'";
-
-	system "mkdir -p '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/perl'";
-
-	system "mkdir -p '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/python'";
-
-	system "mkdir -p '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/python/neurospaces'";
-
-	system "mkdir -p '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/install/rpm'";
-
-	system "mkdir -p '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/tests'";
-
-	system "mkdir -p '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/docs'";
-
-	system "mkdir -p '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/bin'";
-
-	system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/autogen.sh' '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/'";
-
-	system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/python/neurospaces/__cbi__.py' '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/python/neurospaces'";
-
-	system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/tests/introduction.template' '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/tests/introduction.html'";
-
-	system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/install/rpm/developer.spec' '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/install/rpm/$component_name.spec'";
-
-	system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/TODO.template' '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/TODO.txt'";
-
-	system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/COPYING' '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/'";
-
-	system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/license.txt' '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/'";
-
-	system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/tests.template' '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/tests.config'";
-
-	system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/configure.template' '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/configure.ac'";
-
-	system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/Makefile.template' '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/Makefile.am'";
-
-	system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/bin/neurospaces_template' '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/bin/$component_name'";
-
-	system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/release-expand.template' '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/release-expand.config'";
-
-	system "perl -e 's/__component_name__/$component_name/sg' -pi '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/release-expand.config'";
-
-	system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/.mtn-ignore.template' '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/.mtn-ignore'";
-
-	system "perl -e 's/__component_name__/$component_name/sg' -pi '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/.mtn-ignore'";
-
-	# initialize the repository
-
-	if ($option_verbose)
-	{
-	    print "$0: creating repository for $component_name based on the existing configuration\n";
-	}
-
-	system "neurospaces_init '$component_name'";
-
-	# initialize the workspace, the interface with the repository
-
-	if ($option_verbose)
-	{
-	    print "$0: creating workspace for $component_name based on the existing configuration\n";
-	}
-
-	system "neurospaces_setup '$component_name'";
-
-	# if this is a documentation set
-
-	if ($option_documentation_set)
-	{
 	    if ($option_verbose)
 	    {
-		print "$0: creating documentation_set workspace files for $component_name\n";
+		print "$0: creating neurospaces component $component_name\'s directories and files as a template to conveniently start development\n";
 	    }
 
-	    # copy new document
+	    system "mkdir -p '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0'";
 
-	    system "cp -a '$ENV{HOME}/neurospaces_project/userdocs/source/snapshots/0/NewDocument' '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/NewDocument'";
+	    system "mkdir -p '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/perl'";
 
-	    # copy makefile template that installs the documentation build scripts
+	    system "mkdir -p '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/python'";
 
-	    system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/Makefile.documentation.template' '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/Makefile.am'";
+	    system "mkdir -p '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/python/neurospaces'";
 
-	    system "perl -e 's/__component_name__/$component_name/sg' -pi '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/Makefile.am'";
+	    system "mkdir -p '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/install/rpm'";
 
-	    # copy tool scripts for automation of operations such as syncs
+	    system "mkdir -p '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/tests'";
 
-	    system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/documentation-sync.template' '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/bin/$component_name-sync'";
+	    system "mkdir -p '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/docs'";
 
-	    system "perl -e 's/__component_name__/$component_name/sg' -pi '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/bin/$component_name-sync'";
+	    system "mkdir -p '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/bin'";
 
-	    system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/documentation-version.template' '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/bin/$component_name-version'";
+	    system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/autogen.sh' '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/'";
 
-	    system "perl -e 's/__component_name__/$component_name/sg' -pi '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/bin/$component_name-version'";
+	    system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/python/neurospaces/__cbi__.py' '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/python/neurospaces'";
 
-	}
+	    system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/tests/introduction.template' '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/tests/introduction.html'";
 
-	# if this is a heterarch set
+	    system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/install/rpm/developer.spec' '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/install/rpm/$component_name.spec'";
 
-	if ($option_heterarch_set)
-	{
+	    system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/TODO.template' '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/TODO.txt'";
+
+	    system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/COPYING' '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/'";
+
+	    system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/license.txt' '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/'";
+
+	    system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/tests.template' '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/tests.config'";
+
+	    system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/configure.template' '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/configure.ac'";
+
+	    system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/Makefile.template' '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/Makefile.am'";
+
+	    system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/bin/neurospaces_template' '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/bin/$component_name'";
+
+	    system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/release-expand.template' '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/release-expand.config'";
+
+	    system "perl -e 's/__component_name__/$component_name/sg' -pi '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/release-expand.config'";
+
+	    system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/.mtn-ignore.template' '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/.mtn-ignore'";
+
+	    system "perl -e 's/__component_name__/$component_name/sg' -pi '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/.mtn-ignore'";
+
+	    # initialize the repository
+
 	    if ($option_verbose)
 	    {
-		print "$0: creating heterarch_set workspace files for $component_name\n";
+		print "$0: creating repository for $component_name based on the existing configuration\n";
 	    }
 
-	    # copy new document
+	    system "neurospaces_init '$component_name'";
 
-	    system "cp -a '$ENV{HOME}/neurospaces_project/heterarch/source/snapshots/0/NewDocument' '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/NewDocument'";
+	    # initialize the workspace, the interface with the repository
 
-	    # copy makefile template that installs the documentation build scripts
+	    if ($option_verbose)
+	    {
+		print "$0: creating workspace for $component_name based on the existing configuration\n";
+	    }
 
-	    system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/Makefile.heterarch.template' '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/Makefile.am'";
+	    system "neurospaces_setup '$component_name'";
 
-	    system "perl -e 's/__component_name__/$component_name/sg' -pi '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/Makefile.am'";
+	    # if this is a documentation set
 
-	    # copy tool scripts for automation of operations such as syncs
+	    if ($option_documentation_set)
+	    {
+		if ($option_verbose)
+		{
+		    print "$0: creating documentation_set workspace files for $component_name\n";
+		}
 
-	    system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/documentation-sync.template' '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/bin/$component_name-sync'";
+		# copy new document
 
-	    system "perl -e 's/__component_name__/$component_name/sg' -pi '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/bin/$component_name-sync'";
+		system "cp -a '$ENV{HOME}/neurospaces_project/userdocs/source/snapshots/0/NewDocument' '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/NewDocument'";
 
-	    system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/documentation-version.template' '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/bin/$component_name-version'";
+		# copy makefile template that installs the documentation build scripts
 
-	    system "perl -e 's/__component_name__/$component_name/sg' -pi '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/bin/$component_name-version'";
+		system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/Makefile.documentation.template' '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/Makefile.am'";
 
+		system "perl -e 's/__component_name__/$component_name/sg' -pi '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/Makefile.am'";
+
+		# copy tool scripts for automation of operations such as syncs
+
+		system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/documentation-sync.template' '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/bin/$component_name-sync'";
+
+		system "perl -e 's/__component_name__/$component_name/sg' -pi '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/bin/$component_name-sync'";
+
+		system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/documentation-version.template' '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/bin/$component_name-version'";
+
+		system "perl -e 's/__component_name__/$component_name/sg' -pi '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/bin/$component_name-version'";
+
+	    }
+
+	    # if this is a heterarch set
+
+	    if ($option_heterarch_set)
+	    {
+		if ($option_verbose)
+		{
+		    print "$0: creating heterarch_set workspace files for $component_name\n";
+		}
+
+		# copy new document
+
+		system "cp -a '$ENV{HOME}/neurospaces_project/heterarch/source/snapshots/0/NewDocument' '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/NewDocument'";
+
+		# copy makefile template that installs the documentation build scripts
+
+		system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/Makefile.heterarch.template' '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/Makefile.am'";
+
+		system "perl -e 's/__component_name__/$component_name/sg' -pi '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/Makefile.am'";
+
+		# copy tool scripts for automation of operations such as syncs
+
+		system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/documentation-sync.template' '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/bin/$component_name-sync'";
+
+		system "perl -e 's/__component_name__/$component_name/sg' -pi '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/bin/$component_name-sync'";
+
+		system "cp -a '$ENV{HOME}/neurospaces_project/developer/source/snapshots/0/documentation-version.template' '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/bin/$component_name-version'";
+
+		system "perl -e 's/__component_name__/$component_name/sg' -pi '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/bin/$component_name-version'";
+
+	    }
+
+	    # initialize keywords based on their current expansion
+
+	    if ($option_verbose)
+	    {
+		print "$0: initializing keywords for $component_name\n";
+	    }
+
+	    system "cd '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/' ; release-expand";
 	}
-
-	# initialize keywords based on their current expansion
-
-	if ($option_verbose)
+	else
 	{
-	    print "$0: initializing keywords for $component_name\n";
+	    # let the user know that a developer's template was not generated
+
+	    print "$0: NOT creating a developer's workspace for neurospaces component $component_name, instead try pulling its code from the server and then installing it.\n";
 	}
-
-	system "cd '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/' ; release-expand";
-
     }
 
 }
