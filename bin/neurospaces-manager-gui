@@ -14,6 +14,16 @@ use Neurospaces::Developer::Manager::GUI;
 use YAML;
 
 
+$0 =~ m(.*/(.*));
+
+our $program_name = $1;
+
+$program_name =~ m((.*?)-(.*));
+
+our $program_class_name = $1;
+our $program_operation_name = $2;
+
+
 our $option_verbose = 0;
 
 

@@ -11,6 +11,16 @@ use Getopt::Long;
 use YAML;
 
 
+$0 =~ m(.*/(.*));
+
+my $program_name = $1;
+
+$program_name =~ m((.*?)-(.*));
+
+my $class_name = $1;
+my $operation_name = $2;
+
+
 my $option_config = "";
 my $option_output_directory = "/tmp";
 my $option_no_check = 0;
@@ -927,7 +937,7 @@ sub report_error
 
     my $error_code = shift;
 
-    try_to_mail("neurospaces_cron error", "$0: $command returned $error_code");
+    try_to_mail("$0: *** Error", "$0: $command returned $error_code");
 
     die "$0: $command returned $error_code";
 }
