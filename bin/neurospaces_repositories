@@ -14,6 +14,7 @@ use YAML;
 my $option_disable;
 my $option_enable;
 my $option_package_tags = [];
+my $option_package_disabled_included;
 my $option_regex_selector;
 my $option_verbose;
 
@@ -23,6 +24,7 @@ my $option_verbose;
 	    (
 	     "disable=s" => \$option_disable,
 	     "enable=s" => \$option_enable,
+	     "package-disabled-included!" => \$option_package_disabled_included,
 	     "package-tags=s" => $option_package_tags,
 	     "regex-selector=s" => \$option_regex_selector,
 	     "v|verbose+" => \$option_verbose,
@@ -36,10 +38,11 @@ my $option_verbose;
 
 my $disable_options = defined $option_disable ? "--disable '$option_disable' " : '';
 my $enable_options = defined $option_enable ? "--enable $option_enable " : '';
+my $disabled_included_options = defined $option_package_disabled_included ? "--package-disabled-included " : '';
 my $package_tags_options = @$option_package_tags ? join ' ', (map { "--package-tags '$_'" } @$option_package_tags) : '';
 my $regex_options = defined $option_regex_selector ? "--regex '$option_regex_selector' " : '';
 my $verbose_options = defined $option_verbose ? "--verbose " x $option_verbose : '';
 
-system "neurospaces_build --help-repositories $regex_options $enable_options $disable_options $package_tags_options " . (join ' ', map { "'$_'" } @ARGV);
+system "neurospaces_build --help-repositories $regex_options $enable_options $disable_options $disabled_included_options $package_tags_options " . (join ' ', map { "'$_'" } @ARGV);
 
 

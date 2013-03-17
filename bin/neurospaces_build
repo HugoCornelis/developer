@@ -40,6 +40,7 @@ our $option_install = 1;
 our $option_installed_versions = 1;
 our $option_keep_going;
 our $option_mac_universal = 0;
+our $option_package_disabled_included = 0;
 our $option_package_tags = [];
 our $option_regex_selector = ".*";
 our $option_repo_ci = 0;
@@ -595,6 +596,7 @@ sub read_cmd_line
 	     "install!" => \$option_install,
 	     "installed-versions!" => \$option_installed_versions,
 	     "keep-going!" => \$option_keep_going,
+	     "package-disabled-included!" => \$option_package_disabled_included,
 	     "package-tags=s" => $option_package_tags,
 	     "pkg-deb" => \$option_pkg_deb,
 	     "pkg-deb-dir=s" => \$option_pkg_deb_dir,
@@ -707,6 +709,7 @@ sub read_cmd_line
 	   "install!" => $option_install,
 	   "installed-versions!" => $option_installed_versions,
 	   "keep-going!" => $option_keep_going,
+	   "package-disabled-included!" => $option_package_disabled_included,
 	   "package-tags=s" => $option_package_tags,
 	   "pkg-deb!" => $option_pkg_deb,
 	   "pkg-deb-dir=s" => $option_pkg_deb_dir,
@@ -898,73 +901,74 @@ options related to operation mode selection:
     --developer              execute in developer mode.
 
 options related to operation execution profile:
-    --certification-report   annotate the (monotone) repository with the build_report.
-    --check                  check packages.
-    --clean                  clean before compiling.
-    --compile                compile packages.
-    --configure              configure before compiling.
-    --configure-with-prefix  configure with a hardcoded prefix.
-    --configure-type         type of configuration (default is 'release').
-    --countcode              countcode at different times during the build.
-    --describe               describe the function of packages.
-    --directories-create     create package directory structure.
-    --disable                explicitly disable this regex of packages in the configuration.
-    --dist                   build distribution tarballs.
-    --dist-dir               distribution directories to copy the tarballs to?
-    --distcheck              check created tarballs.
-    --distclean              distclean before compiling.
-    --distkeywords           do keyword expansion (be careful with this one).
-    --docs                   generate docs during compilation.
-    --dry-run                do not execute any command, just report what would be done.
-    --enable                 explicitly enable these regex of packages in the configuration.
-    --help                   print usage information.
-    --help-all               print usage, all packages and all operations.
-    --help-build-order       print information on software package build order.
-    --help-descriptions      print descriptions of the function of packages.
-    --help-operations        print known operations.
-    --help-packages          print known packages, in order of build.
-    --help-repositories      print known source code repositories.
-    --install                install packages.
-    --installed-versions     print the installed version of each software package.
-    --keep-going             keep going in case of non-fatal errors (ala make -k).
-    --package-tags           select packages based on the given tag(s).
-    --pkg-deb                build debian packages for each software component.
-    --pkg-deb-dir            Directory to place debian packages after a debian build.
-    --pkg-rpm                build RPM packages for each software component.
-    --pkg-rpm-dir            Directory to place RPM packages after an RPM build.
-    --pkg-tar                build source tarballs for each software package.
-    --pkg-tar-dir            Directory to place source tarballs into after creating a dist.
-    --regex-selector         defines a regex to select specific packages.
-    --release-tag            Sets a release tag for source code distribution.
-    --repo-ci                commit all modifications with the given changelog description.
-    --repo-clone             checkout or update the workspace source code from a remote repository.
-    --repo-co                checkout or update the workspace source code from a local repository.
-    --repo-diff              show workspace differences against the local repository.
-    --repo-init              initialize those local repositories that do not exist yet.
-    --repo-keys              show public keys stored by version control systems.
-    --repo-history           show locally stored history information of enabled software components.
-    --repo-history-last      number of history records to show.
-    --repo-pull              pull the repositories from this server (e.g. repo-genesis3.cbi.utsa.edu).
-    --repo-push              push the repositories to this server (e.g. repo-genesis3.cbi.utsa.edu).
-    --repo-serve             start the version control program in server mode to give others access to your code.
-                             this will automatically fork processes as needed and return control to the terminal.
-    --repo-setup             create a workspace interface to the version control repository if it does not exist yet.
-    --repo-status            compare workspace with source code repository branch head.
-    --repo-sync              sync the repositories with this server (e.g. repo-genesis3.cbi.utsa.edu).
-    --tag                    set this tag on all packages.
-    --uninstall              uninstall packages, cannot be combined with installation options.
-    --universal              sets flags for building universal binaries on Mac OS X.
-    --upload-server          enable uploading packages to this server (e.g. https://frs.sourceforge.net/uploads).
-    --version                print version information.
-    --version-tag            The software version for a source code distribution release.
-    --v|verbose              tell what is being done, specify multiple times to get more feedback.
-    --website-prepare        prepare the website on your developer machine.
-    --website-upload         upload the website to the webserver.
+    --certification-report      annotate the (monotone) repository with the build_report.
+    --check                     check packages.
+    --clean                     clean before compiling.
+    --compile                   compile packages.
+    --configure                 configure before compiling.
+    --configure-with-prefix     configure with a hardcoded prefix.
+    --configure-type            type of configuration (default is 'release').
+    --countcode                 countcode at different times during the build.
+    --describe                  describe the function of packages.
+    --directories-create        create package directory structure.
+    --disable                   explicitly disable this regex of packages in the configuration.
+    --dist                      build distribution tarballs.
+    --dist-dir                  distribution directories to copy the tarballs to?
+    --distcheck                 check created tarballs.
+    --distclean                 distclean before compiling.
+    --distkeywords              do keyword expansion (be careful with this one).
+    --docs                      generate docs during compilation.
+    --dry-run                   do not execute any command, just report what would be done.
+    --enable                    explicitly enable these regex of packages in the configuration.
+    --help                      print usage information.
+    --help-all                  print usage, all packages and all operations.
+    --help-build-order          print information on software package build order.
+    --help-descriptions         print descriptions of the function of packages.
+    --help-operations           print known operations.
+    --help-packages             print known packages, in order of build.
+    --help-repositories         print known source code repositories.
+    --install                   install packages.
+    --installed-versions        print the installed version of each software package.
+    --keep-going                keep going in case of non-fatal errors (ala make -k).
+    --package-disabled-included also select disabled packages.
+    --package-tags              select packages based on the given tag(s).
+    --pkg-deb                   build debian packages for each software component.
+    --pkg-deb-dir               Directory to place debian packages after a debian build.
+    --pkg-rpm                   build RPM packages for each software component.
+    --pkg-rpm-dir               Directory to place RPM packages after an RPM build.
+    --pkg-tar                   build source tarballs for each software package.
+    --pkg-tar-dir               Directory to place source tarballs into after creating a dist.
+    --regex-selector            defines a regex to select specific packages.
+    --release-tag               Sets a release tag for source code distribution.
+    --repo-ci                   commit all modifications with the given changelog description.
+    --repo-clone                checkout or update the workspace source code from a remote repository.
+    --repo-co                   checkout or update the workspace source code from a local repository.
+    --repo-diff                 show workspace differences against the local repository.
+    --repo-init                 initialize those local repositories that do not exist yet.
+    --repo-keys                 show public keys stored by version control systems.
+    --repo-history              show locally stored history information of enabled software components.
+    --repo-history-last         number of history records to show.
+    --repo-pull                 pull the repositories from this server (e.g. repo-genesis3.cbi.utsa.edu).
+    --repo-push                 push the repositories to this server (e.g. repo-genesis3.cbi.utsa.edu).
+    --repo-serve                start the version control program in server mode to give others access to your code.
+                                this will automatically fork processes as needed and return control to the terminal.
+    --repo-setup                create a workspace interface to the version control repository if it does not exist yet.
+    --repo-status               compare workspace with source code repository branch head.
+    --repo-sync                 sync the repositories with this server (e.g. repo-genesis3.cbi.utsa.edu).
+    --tag                       set this tag on all packages.
+    --uninstall                 uninstall packages, cannot be combined with installation options.
+    --universal                 sets flags for building universal binaries on Mac OS X.
+    --upload-server             enable uploading packages to this server (e.g. https://frs.sourceforge.net/uploads).
+    --version                   print version information.
+    --version-tag               The software version for a source code distribution release.
+    --v|verbose                 tell what is being done, specify multiple times to get more feedback.
+    --website-prepare           prepare the website on your developer machine.
+    --website-upload            upload the website to the webserver.
 
 options related to installation on a client machine:
-    --download-server        enable downloading packages from this server (e.g. downloads.sourceforge.net).
-    --src-tag                use this tag for finding src directories on a client machine.
-    --src-dir                use this dir as the base for directories on a client machine.
+    --download-server           enable downloading packages from this server (e.g. downloads.sourceforge.net).
+    --src-tag                   use this tag for finding src directories on a client machine.
+    --src-dir                   use this dir as the base for directories on a client machine.
 
 So on a client machine, for package xxx, the src are found in the
 directory <src-dir>/xxx-<src-tag>.  From there the build starts as
@@ -972,8 +976,8 @@ usual.
 
 
 options related to behavior of external applications:
-    --environment            fills in the environment, can be given multiple times.
-                             e.g. environment NEUROSPACES_HARNESS_OPTION_EMAIL=1 generates emails for tests that fail.
+    --environment               fills in the environment, can be given multiple times.
+                                e.g. environment NEUROSPACES_HARNESS_OPTION_EMAIL=1 generates emails for tests that fail.
 
 ";
 
@@ -1027,73 +1031,74 @@ options related to operation mode selection:
     --developer              execute in developer mode.
 
 options related to operation execution profile:
-    --certification-report   annotate the (monotone) repository with the build_report.
-    --check                  check packages.
-    --clean                  clean before compiling.
-    --compile                compile packages.
-    --configure              configure before compiling.
-    --configure-with-prefix  configure with a hardcoded prefix.
-    --configure-type         type of configuration (default is 'release').
-    --countcode              countcode at different times during the build.
-    --describe               describe the function of packages.
-    --directories-create     create package directory structure.
-    --disable                explicitly disable this regex of packages in the configuration.
-    --dist                   build distribution tarballs.
-    --dist-dir               distribution directories to copy the tarballs to?
-    --distcheck              check created tarballs.
-    --distclean              distclean before compiling.
-    --distkeywords           do keyword expansion (be careful with this one).
-    --docs                   generate docs during compilation.
-    --dry-run                do not execute any command, just report what would be done.
-    --enable                 explicitly enable these regex of packages in the configuration.
-    --help                   print usage information.
-    --help-all               print usage, all packages and all operations.
-    --help-build-order       print information on software package build order.
-    --help-descriptions      print descriptions of the function of packages.
-    --help-operations        print known operations.
-    --help-packages          print known packages, in order of build.
-    --help-repositories      print known source code repositories.
-    --install                install packages.
-    --installed-versions     print the installed version of each software package.
-    --keep-going             keep going in case of non-fatal errors (ala make -k).
-    --package-tags           select packages based on the given tag(s).
-    --pkg-deb                build debian packages for each software component.
-    --pkg-deb-dir            Directory to place debian packages after a debian build.
-    --pkg-rpm                build RPM packages for each software component.
-    --pkg-rpm-dir            Directory to place RPM packages after an RPM build.
-    --pkg-tar                build source tarballs for each software package.
-    --pkg-tar-dir            Directory to place source tarballs into after creating a dist.
-    --regex-selector         defines a regex to select specific packages.
-    --release-tag            Sets a release tag for source code distribution.
-    --repo-ci                commit all modifications with the given changelog description.
-    --repo-clone             checkout or update the workspace source code from a remote repository.
-    --repo-co                checkout or update the workspace source code from a local repository.
-    --repo-diff              show workspace differences against the local repository.
-    --repo-init              initialize those local repositories that do not exist yet.
-    --repo-keys              show public keys stored by version control systems.
-    --repo-history           show locally stored history information of enabled software components.
-    --repo-history-last      number of history records to show.
-    --repo-pull              pull the repositories from this server (e.g. repo-genesis3.cbi.utsa.edu).
-    --repo-push              push the repositories to this server (e.g. repo-genesis3.cbi.utsa.edu).
-    --repo-serve             start the version control program in server mode to give others access to your code.
-                             this will automatically fork processes as needed and return control to the terminal.
-    --repo-setup             create a workspace interface to the version control repository if it does not exist yet.
-    --repo-status            compare workspace with source code repository branch head.
-    --repo-sync              sync the repositories with this server (e.g. repo-genesis3.cbi.utsa.edu).
-    --tag                    set this tag on all packages.
-    --uninstall              uninstall packages, cannot be combined with installation options.
-    --universal              sets flags for building universal binaries on Mac OS X.
-    --upload-server          enable uploading packages to this server (e.g. https://frs.sourceforge.net/uploads).
-    --version                print version information.
-    --version-tag            The software version for a source code distribution release.
-    --v|verbose              tell what is being done, specify multiple times to get more feedback.
-    --website-prepare        prepare the website on your developer machine.
-    --website-upload         upload the website to the webserver.
+    --certification-report      annotate the (monotone) repository with the build_report.
+    --check                     check packages.
+    --clean                     clean before compiling.
+    --compile                   compile packages.
+    --configure                 configure before compiling.
+    --configure-with-prefix     configure with a hardcoded prefix.
+    --configure-type            type of configuration (default is 'release').
+    --countcode                 countcode at different times during the build.
+    --describe                  describe the function of packages.
+    --directories-create        create package directory structure.
+    --disable                   explicitly disable this regex of packages in the configuration.
+    --dist                      build distribution tarballs.
+    --dist-dir                  distribution directories to copy the tarballs to?
+    --distcheck                 check created tarballs.
+    --distclean                 distclean before compiling.
+    --distkeywords              do keyword expansion (be careful with this one).
+    --docs                      generate docs during compilation.
+    --dry-run                   do not execute any command, just report what would be done.
+    --enable                    explicitly enable these regex of packages in the configuration.
+    --help                      print usage information.
+    --help-all                  print usage, all packages and all operations.
+    --help-build-order          print information on software package build order.
+    --help-descriptions         print descriptions of the function of packages.
+    --help-operations           print known operations.
+    --help-packages             print known packages, in order of build.
+    --help-repositories         print known source code repositories.
+    --install                   install packages.
+    --installed-versions        print the installed version of each software package.
+    --keep-going                keep going in case of non-fatal errors (ala make -k).
+    --package-disabled-included also select disabled packages.
+    --package-tags              select packages based on the given tag(s).
+    --pkg-deb                   build debian packages for each software component.
+    --pkg-deb-dir               Directory to place debian packages after a debian build.
+    --pkg-rpm                   build RPM packages for each software component.
+    --pkg-rpm-dir               Directory to place RPM packages after an RPM build.
+    --pkg-tar                   build source tarballs for each software package.
+    --pkg-tar-dir               Directory to place source tarballs into after creating a dist.
+    --regex-selector            defines a regex to select specific packages.
+    --release-tag               Sets a release tag for source code distribution.
+    --repo-ci                   commit all modifications with the given changelog description.
+    --repo-clone                checkout or update the workspace source code from a remote repository.
+    --repo-co                   checkout or update the workspace source code from a local repository.
+    --repo-diff                 show workspace differences against the local repository.
+    --repo-init                 initialize those local repositories that do not exist yet.
+    --repo-keys                 show public keys stored by version control systems.
+    --repo-history              show locally stored history information of enabled software components.
+    --repo-history-last         number of history records to show.
+    --repo-pull                 pull the repositories from this server (e.g. repo-genesis3.cbi.utsa.edu).
+    --repo-push                 push the repositories to this server (e.g. repo-genesis3.cbi.utsa.edu).
+    --repo-serve                start the version control program in server mode to give others access to your code.
+                                this will automatically fork processes as needed and return control to the terminal.
+    --repo-setup                create a workspace interface to the version control repository if it does not exist yet.
+    --repo-status               compare workspace with source code repository branch head.
+    --repo-sync                 sync the repositories with this server (e.g. repo-genesis3.cbi.utsa.edu).
+    --tag                       set this tag on all packages.
+    --uninstall                 uninstall packages, cannot be combined with installation options.
+    --universal                 sets flags for building universal binaries on Mac OS X.
+    --upload-server             enable uploading packages to this server (e.g. https://frs.sourceforge.net/uploads).
+    --version                   print version information.
+    --version-tag               The software version for a source code distribution release.
+    --v|verbose                 tell what is being done, specify multiple times to get more feedback.
+    --website-prepare           prepare the website on your developer machine.
+    --website-upload            upload the website to the webserver.
 
 options related to installation on a client machine:
-    --download-server        enable downloading packages from this server (e.g. downloads.sourceforge.net).
-    --src-tag                use this tag for finding src directories on a client machine.
-    --src-dir                use this dir as the base for directories on a client machine.
+    --download-server           enable downloading packages from this server (e.g. downloads.sourceforge.net).
+    --src-tag                   use this tag for finding src directories on a client machine.
+    --src-dir                   use this dir as the base for directories on a client machine.
 
 So on a client machine, for package xxx, the src are found in the
 directory <src-dir>/xxx-<src-tag>.  From there the build starts as
@@ -1101,8 +1106,8 @@ usual.
 
 
 options related to behavior of external applications:
-    --environment            fills in the environment, can be given multiple times.
-                             e.g. environment NEUROSPACES_HARNESS_OPTION_EMAIL=1 generates emails for tests that fail.
+    --environment               fills in the environment, can be given multiple times.
+                                e.g. environment NEUROSPACES_HARNESS_OPTION_EMAIL=1 generates emails for tests that fail.
 
 ",
 
@@ -1350,13 +1355,25 @@ options related to behavior of external applications:
 		   my $repository_port_number
 		       = $package_information->{version_control}->{port_number};
 
-		   {
-		       package => $_,
-		       repository_name => $repository_name,
-# 		       repository_port_number => $repository_port_number,
-		       repository_server => $repository_server . ":" . $repository_port_number,
-		       tags => $all_packages->{$_}->{tags},
-		   };
+		    my $result
+			= {
+			   ($all_packages->{$_}->{disabled} ? (disabled => $all_packages->{$_}->{disabled}) : ()),
+			   package => $_,
+			   repository_name => $repository_name,
+			   # 		       repository_port_number => $repository_port_number,
+			   repository_server => $repository_server . ":" . $repository_port_number,
+			   tags => $all_packages->{$_}->{tags},
+			  };
+
+		 $result;
+
+# 		   {
+# 		       package => $_,
+# 		       repository_name => $repository_name,
+# # 		       repository_port_number => $repository_port_number,
+# 		       repository_server => $repository_server . ":" . $repository_port_number,
+# 		       tags => $all_packages->{$_}->{tags},
+# 		   };
 	       }
 	       sort
 	       {
@@ -1364,7 +1381,7 @@ options related to behavior of external applications:
 	       }
 	       grep
 	       {
-		   not $all_packages->{$_}->{disabled}
+		   ($option_package_disabled_included or (not $all_packages->{$_}->{disabled}))
 	       }
 	       grep
 	       {
