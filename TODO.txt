@@ -1,4 +1,16 @@
 -*- outline -*-
+* neurospaces_new_component
+** still required when starting a new component on the server
+*** service neurospaces-servers stop
+*** su - monotone
+*** edit build.yml, include new configuration.
+*** neurospaces_create_directories iresto, but likely not required
+*** neurospaces_init iresto
+*** mtn read </tmp/hugo.cornelis.key --db ~/neurospaces_project/MTN/iresto.mtn
+*** exit
+*** service neurospaces-servers start
+*** validate from a remote machine: neurospaces_sync iresto
+
 * Mac OS X universal binaries
 Allowing compilation of universal binaries is actually easy, you
 simply disable dependency tracking and allow all arch flags (ppc, i386, x86_64). 
