@@ -1,5 +1,14 @@
 -*- outline -*-
 
+* neurospaces-manager-gui
+From a fresh installation:
+I tried the neurospaces-manager-gui and clicking install method
+first. It just sat there and did not do anything. So I swapped back to
+the command line for the rest of the steps which produced the attached
+log file. I expect that I should have selected the packages etc before
+clicking install, but since this was not in the instructions I did not
+do and followed the alternative set of instructions.
+
 * neurospaces_harness
 Likely during initialization, the regression tester collects
 information about the target system.  One of the pieces of information
