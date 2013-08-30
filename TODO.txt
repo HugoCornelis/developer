@@ -1,5 +1,60 @@
 -*- outline -*-
 
+* for the creation of a component that uses catalyst
+example is johan-music and JokesOnYou
+** neurospaces_new_component as usual
+** to create the catalyst application
+*** commands to run
+catalyst.pl AgoraMusic
+cd AgoraMusic/
+perl Makefile.PL
+touch Makefile.old
+*** .mtn-ignore
+| |   +^JokesOnYou/pm_to_blib$
+*** Makefile.am
+|   ============================================================
+|   --- Makefile.am	0ac38702d3284b5c6a1f700bc9727175d32d9639
+|   +++ Makefile.am	c962c531d98bc50a6c4b22727b7827098b436e31
+|   @@ -14,7 +14,10 @@
+|    ##############################################################################
+|    
+|    
+|   -#SUBDIRS = perl python
+|   +SUBDIRS = \
+|   +	. \
+|   +	JokesOnYou \
+|   +	tests # perl python
+|    
+|    # fill in the scripts that should go with the distribution:
+|    dist_bin_SCRIPTS = \
+|   @@ -46,7 +49,11 @@ am__tar = ${AMTAR} chf - --format=posix 
+|    am__tar = ${AMTAR} chf - --format=posix "$$tardir"
+|    
+|    
+|   +# during a clean, MakeMaker renames the makefile, this rule must
+|   +# regenerate it as it is used as an interface with the neurospaces
+|   +# developer package.
+|    clean-local:
+|   +	( cd JokesOnYou && perl Makefile.PL )
+|    	rm -rf $(TMP_DIR)
+|    	$(RM) -rf $(top_srcdir)/*.deb
+|    	$(RM) -f $(top_srcdir)/*.changes
+*** Makefile.am, but maybe not required
+| |   ============================================================
+| |   --- Makefile.am	3efad280d381210aa9bd5064d995e47e1ff31593
+| |   +++ Makefile.am	9381cc41ba6a6f3316a33643ffffb54b131b35ab
+| |   @@ -57,7 +57,9 @@ clean-local:
+| |    # developer package.
+| |    clean-local:
+| |    	( cd JokesOnYou && perl Makefile.PL )
+| |   -	rm -rf $(TMP_DIR)
+| |   +	$(RM) -rf $(TMP_DIR)
+| |   +	$(RM) -rf $(top_srcdir)/jokes/*/output/*
+| |   +	$(RM) -fr $(top_srcdir)/html/
+| |    	$(RM) -rf $(top_srcdir)/*.deb
+| |    	$(RM) -f $(top_srcdir)/*.changes
+| |    	$(RM) -f $(top_srcdir)/*.dsc
+
 * neurospaces-manager-gui
 From a fresh installation:
 I tried the neurospaces-manager-gui and clicking install method
