@@ -17,6 +17,7 @@ my $option_component_names = [];
 my $option_documentation_set;
 my $option_heterarch_set;
 my $option_package_tags = [];
+my $option_populate_only;
 my $option_read_only;
 my $option_repository_server;
 my $option_verbose;
@@ -71,11 +72,23 @@ sub main
 
 	if (exists $all_packages->{$component_name})
 	{
-	    # we don't do this, bail out.
+	    # and we are not only populating the workspace
 
-	    print "$0: *** Error: $component_name is already configured, not proceeding\n";
+	    if (not $option_populate_only)
+	    {
+		# we don't do this, bail out.
 
-	    next;
+		print "$0: *** Error: $component_name is already configured, not proceeding\n";
+
+		next;
+	    }
+
+	    # only populating the workspace
+
+	    else
+	    {
+		# will continue below
+	    }
 	}
 
 	# if this component already has a workspace (but maybe it is not configured)
@@ -151,6 +164,17 @@ sub main
 
 	    $write_configuration .= " option_read_only $option_read_only";
 	}
+
+	# if we are only populating the workspace
+
+	if ($option_populate_only)
+	{
+	    # we never write a configuration
+
+	    $write_configuration =  '';
+	}
+
+	# if we are writing a new configuration
 
 	if ($write_configuration)
 	{
@@ -236,23 +260,26 @@ sub main
 
 	    system "perl -e 's/__component_name__/$component_name/sg' -pi '$ENV{HOME}/neurospaces_project/$component_name/source/snapshots/0/.mtn-ignore'";
 
-	    # initialize the repository
-
-	    if ($option_verbose)
+	    if (not $option_populate_only)
 	    {
-		print "$0: creating repository for $component_name based on the existing configuration\n";
+		# initialize the repository
+
+		if ($option_verbose)
+		{
+		    print "$0: creating repository for $component_name based on the existing configuration\n";
+		}
+
+		system "neurospaces_init '$component_name'";
+
+		# initialize the workspace, the interface with the repository
+
+		if ($option_verbose)
+		{
+		    print "$0: creating workspace for $component_name based on the existing configuration\n";
+		}
+
+		system "neurospaces_setup '$component_name'";
 	    }
-
-	    system "neurospaces_init '$component_name'";
-
-	    # initialize the workspace, the interface with the repository
-
-	    if ($option_verbose)
-	    {
-		print "$0: creating workspace for $component_name based on the existing configuration\n";
-	    }
-
-	    system "neurospaces_setup '$component_name'";
 
 	    # if this is a documentation set
 
@@ -348,6 +375,7 @@ sub read_cmd_line
 	     "help" => \$option_help,
 	     "heterarch-set!" => \$option_heterarch_set,
 	     "package-tags=s" => $option_package_tags,
+	     "populate-only!" => \$option_populate_only,
 	     "read-only=s" => \$option_read_only,
 	     "repository-server=s" => \$option_repository_server,
 	     "v|verbose+" => \$option_verbose,
@@ -367,6 +395,8 @@ options:
     --help               print usage information.
     --heterarch-set      create the new components as heterarch sets.
     --package-tags       add this package tag to each new component configuration (may be given multiple times).
+    --populate-only      only populate the workspace but do not initialize the repository.
+                         note that an pre-existing workspace cancels the operation (remove your workspace if required).
     --read-only          explains why this package is locally read-only (eg. you don't have permission to sync to the server).
     --repository-server  use the given server to configure the new component (eg. repo-genesis3.cbi.utsa.edu:4696).
     --verbose            set verbosity level.
