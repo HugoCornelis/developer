@@ -1,5 +1,17 @@
 -*- outline -*-
 
+* when moving a home directory
+** what happened
+*** moved from
+/home/johan
+*** to
+/media/johan/5fe616d7-896e-4e57-8671-4d37235d491b/home/johan
+** diagnosis
+*** neurospaces_upgrade did not work anymore
+** solution
+*** provide a script that updates the
+_MTN/options files in the workspaces.
+
 * for the creation of a component that uses catalyst
 example is johan-music and JokesOnYou
 ** neurospaces_new_component as usual
