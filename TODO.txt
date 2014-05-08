@@ -11,6 +11,9 @@
 ** solution
 *** provide a script that updates the
 _MTN/options files in the workspaces.
+database "/home/johan/neurospaces_project/MTN/agora-classica-utilities.mtn"
+branch "agora-classica-utilities"
+keydir "/home/johan/.monotone/keys"
 
 * for the creation of a component that uses catalyst
 example is johan-music and JokesOnYou
