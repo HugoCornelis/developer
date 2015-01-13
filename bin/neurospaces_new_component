@@ -402,6 +402,25 @@ sub read_cmd_line
 	    "
 $0: create new neurospaces component source trees.
 
+Example usage 1:
+
+To create the workspace of a new component from pre-existing sources:
+
+$0 --populate-only --component-name ucatchit --verbose
+
+Then copy the pre-existing sources to the created directory, optionally followed by
+
+neurospaces_init ucatchit
+neurospaces_setup ucatchit
+
+
+Example usage 2:
+
+To create a new repository to be served from the internet:
+
+$0 --component-name ucatchit --repository-server 91.183.94.6:65537 --package-tags 'Neurospaces-Development' --verbose
+
+
 options:
     --component-name     set component name to create, may be used one or more times.
     --documentation-set  create the new components as documentation sets.
