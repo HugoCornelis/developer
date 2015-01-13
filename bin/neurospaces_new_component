@@ -169,6 +169,11 @@ sub main
 
 	if ($option_populate_only)
 	{
+	    if ($option_verbose)
+	    {
+		print "$0: only populating with files, not changing the configuration\n";
+	    }
+
 	    # we never write a configuration
 
 	    $write_configuration =  '';
@@ -279,6 +284,14 @@ sub main
 		}
 
 		system "neurospaces_setup '$component_name'";
+	    }
+	    else
+	    {
+		if ($option_verbose)
+		{
+		    print "$0: only populating with files, not creating the repository nor the workspace\n";
+		}
+
 	    }
 
 	    # if this is a documentation set
