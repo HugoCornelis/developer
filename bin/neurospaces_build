@@ -1442,6 +1442,28 @@ options related to behavior of external applications:
 	exit 1;
     }
 
+    # when packages are explicitly listed on the command line, check if they exist in the configuration
+
+    if (@ARGV)
+    {
+	my $nonexistent_packages = [];
+
+	foreach my $argument (@ARGV)
+	{
+	    if (not exists $all_packages->{$argument})
+	    {
+		push @$nonexistent_packages, $argument;
+	    }
+	}
+
+	if (scalar @$nonexistent_packages)
+	{
+	    my $nonexistent_packages_string = join ', ', map { "'$_'" } @$nonexistent_packages;
+
+	    die "$0: *** Error: the following arguments are not found in the package configuration: $nonexistent_packages_string";
+	}
+    }
+
 }
 
 
