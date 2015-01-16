@@ -1515,6 +1515,8 @@ sub report_exit
     {
 	# exit, possibly success
 
+# 	print "$0: exiting with exit_code $exit_code\n";
+
 	exit $exit_code;
     }
 }

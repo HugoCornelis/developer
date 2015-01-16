@@ -45,11 +45,13 @@ sub execute_system_command
 {
     my $command = shift;
 
-    system $command;
+    use IPC::System::Simple qw(system);
 
-    if ($?)
+    my $exit_status = system $command;
+
+    if ($exit_status)
     {
-	print "$0: *** Error: ($command) failed, $?\n";
+	die "$0: *** Error: ($command) failed, $?\n";
 
     }
 
