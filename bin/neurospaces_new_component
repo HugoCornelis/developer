@@ -188,7 +188,7 @@ sub main
 	{
 	    if ($option_verbose)
 	    {
-		print "$0: only populating with files, not changing the configuration\n";
+		print "$0: *** Warning: only populating with files, not changing the configuration\n";
 	    }
 
 	    # we never write a configuration
