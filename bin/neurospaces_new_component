@@ -114,7 +114,7 @@ sub main
 	{
 	    # we don't do this, bail out.
 
-	    print "$0: *** Error: $component_name has a workspace, not proceeding\n";
+	    print "$0: *** Error: $component_name has a workspace, nothing has been done for $component_name\n";
 
 	    next;
 	}
