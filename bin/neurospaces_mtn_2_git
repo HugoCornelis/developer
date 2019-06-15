@@ -1,0 +1,255 @@
+#!/usr/bin/perl -w
+#!/usr/bin/perl -d:ptkdb -w
+#
+
+
+use strict;
+
+
+use Data::Dumper;
+
+use Getopt::Long;
+
+use YAML;
+
+
+my $option_help;
+my $option_verbose;
+
+
+sub main
+{
+    parse_options();
+
+    my $all_directories
+	= [
+	   map
+	   {
+	       chomp;
+
+	       m(.*/(.*));
+
+	       $1;
+	   }
+	   `ls -1d $ENV{HOME}/projects/*`,
+	  ];
+
+    my $no_git_directories_with_exceptions
+	= [
+	   grep
+	   {
+	       `ls 2>/dev/null "$ENV{HOME}/projects/$_"/source/snapshots/*/.git`;
+
+	       my $not_git = $?;
+
+	       $not_git;
+	   }
+	   @$all_directories,
+	  ];
+
+    my $exception_directories
+	= {
+	   '2014-02-07-jokes-on-you' => 'backup database',
+	   '2014-02-07-jokes-on-you-old' => 'backup database',
+	   'all' => 'supposed to group all the other ones, does not have its own directory',
+	   'chemesis3.newkey' => 'backup database',
+	   'em' => 'has no source directory, is likely empty',
+	   'hanche-genou' => 'has no source directory, is likely empty, what is the difference with uci-hanche-genou?',
+	   'morphologies' => 'has no source directory, is likely empty',
+	   'neurospacesweb' => 'has no source directory, has no package configuration, is likely empty',
+	   'perl-Data-Utilities' => 'different directory layout',
+	   'ucatchit-journal' => 'has no source directory, is likely empty',
+	  };
+
+    my $no_git_directories
+	= [
+	   grep
+	   {
+	       not exists $exception_directories->{$_};
+	   }
+	   @$no_git_directories_with_exceptions,
+	  ];
+
+    if ($option_verbose)
+    {
+	print Dumper( { no_git_directories => $no_git_directories, }, );
+    }
+
+    # loop over all no_git_directories
+
+    foreach my $no_git_directory (sort @$no_git_directories)
+    {
+	if ($option_verbose)
+	{
+	    print "no_git_directory: $no_git_directory\n";
+	}
+
+	# upgrade the monotone database to the latest version
+
+	shell_command("cd \"$ENV{HOME}\"/neurospaces_project/$no_git_directory/source/snapshots/0 && mtn db migrate", { verbose => 1, }, );
+
+	# create the directory tree for the git based sources
+
+	shell_command("mkdir --parents \"$ENV{HOME}\"/projects/$no_git_directory/source/snapshots/0", { verbose => 1, }, );
+
+	# initialized the git repostory
+
+	shell_command("cd \"$ENV{HOME}\"/projects/$no_git_directory/source/snapshots/0 && git init", { verbose => 1, }, );
+
+	# migrate from monotone to git
+
+	shell_command("cd \"$ENV{HOME}\"/projects/$no_git_directory/source/snapshots/0 && mtn --db=~/neurospaces_project/MTN/$no_git_directory.mtn --authors-file=~/neurospaces_project/exported-authors.txt git_export | git fast-import", { verbose => 1, }, );
+
+	# git fsck
+
+	shell_command("cd \"$ENV{HOME}\"/projects/$no_git_directory/source/snapshots/0 && git fsck", { verbose => 1, }, );
+
+	# either the branch of the work tree is the same as the project
+
+	my $branch_does_not_exist = shell_command("cd \"$ENV{HOME}\"/projects/$no_git_directory/source/snapshots/0 && git checkout $no_git_directory", { allow_fail => "the branch may not exist", }, , { verbose => 1, }, );
+
+	# or the branch tree is '0'
+
+	if ($branch_does_not_exist)
+	{
+	    shell_command("cd \"$ENV{HOME}\"/projects/$no_git_directory/source/snapshots/0 && git checkout 0", { verbose => 1, }, );
+	}
+	else
+	{
+	    # make sure the directory name and the branch name are the same
+
+	    shell_command("cd \"$ENV{HOME}\"/projects/$no_git_directory/source/snapshots && mv 0 $no_git_directory", { verbose => 1, }, );
+	}
+    }
+
+    # loop over all git_directories
+
+    my $git_directories
+	= [
+	   grep
+	   {
+	       `ls 2>/dev/null "$ENV{HOME}/projects/$_"/source/snapshots/*/.git`;
+
+	       my $has_git = not $?;
+
+	       $has_git;
+	   }
+	   @$all_directories,
+	  ];
+
+    if ($option_verbose)
+    {
+	print Dumper( { git_directories => $git_directories, }, );
+    }
+
+    foreach my $git_directory (sort @$git_directories)
+    {
+	# copy from the monotone based tree to the git based tree
+
+	if ($option_verbose)
+	{
+	    print "git_directory: $git_directory\n";
+	}
+
+	shell_command("cp -a \"$ENV{HOME}\"/neurospaces_project/$git_directory/source/snapshots/0/. \"$ENV{HOME}\"/projects/$git_directory/source/snapshots/*", { verbose => 1, }, );
+    }
+}
+
+
+sub parse_options
+{
+    my $result
+	= GetOptions
+	    (
+	     "help!" => \$option_help,
+	     "v|verbose+" => \$option_verbose,
+	    );
+
+    if (!$result)
+    {
+	die "$0: *** Error: Error in option processing";
+    }
+
+    if ($option_help)
+    {
+	print "
+$0: convert neurospaces monotone version control databases to git databases
+
+This script:
+
+1. locates project directories in ~/projects/*,
+
+2. creates source directories for each project directory found,
+
+3. associates a monotone databases in ~/neurospaces_project/MTN for each project directory found,
+
+4. converts this monotone database to a git database in ~/projects/<project>/source/snapshots/<branch>/.git
+
+5. the default branch is 0, but an attempt is made to match the branch to the project name.
+
+Options:
+
+    --help      show this message
+    --verbose   be verbose during command execution
+
+";
+
+	exit 0;
+    }
+
+}
+
+
+sub shell_command
+{
+    my $command = shift;
+
+    my $options = shift;
+
+    my $allow_fail = $options->{allow_fail};
+
+    my $verbose = $options->{verbose};
+
+    if (defined $verbose
+	and $verbose =~ /^[0-9]+$/)
+    {
+	$verbose = "*** INFO: ";
+    }
+
+    my $dry_run = $options->{dry_run};
+
+    my $output_path = $options->{output_path};
+
+    if ($verbose)
+    {
+	print "---\n";
+	print "$verbose: trying to $command\n";
+    }
+
+    use IPC::System::Simple qw(system);
+
+    my $exit_status = system $command;
+
+#     system "( $command ) >>$output_path 2>&1";
+
+    if ($exit_status)
+    {
+	if ($allow_fail)
+	{
+# 	    system "echo >>$output_path 2>&1 failed with $?: $command\n";
+
+	    print "*** Error: $command failed with exit status $?\n";
+	}
+	else
+	{
+	    die "*** Fatal: $command failed with exit status $?\n";
+	}
+    }
+
+    return $exit_status;
+}
+
+
+main();
+
+

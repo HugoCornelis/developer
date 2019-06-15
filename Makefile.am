@@ -41,6 +41,7 @@ dist_bin_SCRIPTS = \
 	bin/neurospaces_install \
 	bin/neurospaces_kill_servers \
 	bin/neurospaces_migrate \
+	bin/neurospaces_mtn_2_git \
 	bin/neurospaces_new_component \
 	bin/neurospaces_packages \
 	bin/neurospaces_pkgdeb \
