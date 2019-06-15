@@ -1344,36 +1344,44 @@ options related to behavior of external applications:
 	       {
 		   my $package_information = $all_packages->{$_};
 
-		   my $repository_name
-		       = $package_information->{version_control}->{repository}
-			   || $package_information->{directory} . '/' . 'mtn';
+		    my $result;
 
-		   my $repository_server
-		       = $package_information->{version_control}->{server}
-			   || Neurospaces::Developer::Operations::version_control_translate_server($package_information, 'default');
+		    if (exists $package_information->{version_control}->{git})
+		    {
+			$result
+			    = {
+			       ($all_packages->{$_}->{disabled} ? (disabled => $all_packages->{$_}->{disabled}) : ()),
+			       package => $_,
+			       repository_name => $package_information->{version_control}->{git}->{remote},
+ 			       repository_server => 'here should be the remote repository information',
+			       tags => $all_packages->{$_}->{tags},
+			      };
+		    }
+		    else
+		    {
+			my $repository_name
+			    = $package_information->{version_control}->{repository}
+				|| $package_information->{directory} . '/' . 'mtn';
 
-		   my $repository_port_number
-		       = $package_information->{version_control}->{port_number};
+			my $repository_server
+			    = $package_information->{version_control}->{server}
+				|| Neurospaces::Developer::Operations::version_control_translate_server($package_information, 'default');
 
-		    my $result
-			= {
-			   ($all_packages->{$_}->{disabled} ? (disabled => $all_packages->{$_}->{disabled}) : ()),
-			   package => $_,
-			   repository_name => $repository_name,
-			   # 		       repository_port_number => $repository_port_number,
-			   repository_server => $repository_server . ":" . $repository_port_number,
-			   tags => $all_packages->{$_}->{tags},
-			  };
+			my $repository_port_number
+			    = $package_information->{version_control}->{port_number};
 
-		 $result;
+			$result
+			    = {
+			       ($all_packages->{$_}->{disabled} ? (disabled => $all_packages->{$_}->{disabled}) : ()),
+			       package => $_,
+			       repository_name => $repository_name,
+			       # 		       repository_port_number => $repository_port_number,
+			       repository_server => $repository_server . ":" . $repository_port_number,
+			       tags => $all_packages->{$_}->{tags},
+			      };
+		    }
 
-# 		   {
-# 		       package => $_,
-# 		       repository_name => $repository_name,
-# # 		       repository_port_number => $repository_port_number,
-# 		       repository_server => $repository_server . ":" . $repository_port_number,
-# 		       tags => $all_packages->{$_}->{tags},
-# 		   };
+		    $result;
 	       }
 	       sort
 	       {
