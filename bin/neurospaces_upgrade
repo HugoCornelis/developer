@@ -117,7 +117,17 @@ sub try_to
 
 #     system "( $command ) >>$output_path 2>&1";
 
-    system "( $command )";
+#     system "( $command )";
+
+    use IPC::System::Simple qw(system);
+
+    my $exit_status = system $command;
+
+    if ($exit_status)
+    {
+	die "$0: *** Error: ($command) failed, $?\n";
+
+    }
 
     if ($?)
     {
