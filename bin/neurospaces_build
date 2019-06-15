@@ -1348,12 +1348,14 @@ options related to behavior of external applications:
 
 		    if (exists $package_information->{version_control}->{git})
 		    {
+ 			my $repository_server = `git 2>&1 -C "$package_information->{directory}/" remote -v`;
+
 			$result
 			    = {
 			       ($all_packages->{$_}->{disabled} ? (disabled => $all_packages->{$_}->{disabled}) : ()),
 			       package => $_,
 			       repository_name => $package_information->{version_control}->{git}->{remote},
- 			       repository_server => 'here should be the remote repository information',
+ 			       repository_server => $repository_server,
 			       tags => $all_packages->{$_}->{tags},
 			      };
 		    }
