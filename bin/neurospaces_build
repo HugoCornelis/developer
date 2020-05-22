@@ -13,6 +13,15 @@ use Neurospaces::Developer;
 use YAML;
 
 
+# See https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=707229
+
+BEGIN
+{
+    $INC{'Mo/builder.pm'} = 1;
+    $INC{'Mo/default.pm'} = 1;
+}
+
+
 # options related to operation mode selection:
 
 our $option_client = 0;
