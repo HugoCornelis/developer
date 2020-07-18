@@ -97,6 +97,7 @@ EXTRA_DIST = \
 	cpan \
 	docs \
 	tests \
+	test_templates \
 	license.txt
 
 am__tar = ${AMTAR} chf - --format=posix "$$tardir"
