@@ -1,0 +1,15 @@
+
+After installation run the tests specified in this directory with the
+command:
+
+$ neurospaces_harness
+
+Then convert the test specifications in this directory with the
+command:
+
+$ neurospaces_harness_2_html --introduction ./introduction.html
+
+Then inspect the HTML version of these test specifications with:
+
+$ firefox --new-window ./html_output/index.html
+
