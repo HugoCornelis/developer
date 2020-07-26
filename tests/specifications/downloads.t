@@ -43,7 +43,7 @@ my $test
 						 ],
 				comment => 'this test is disabled if no "default" route to the internet can be found, the "route" command must output a line with the text "default"',
 				description => "download from the downloads.sourceforge.net server.",
-				disabled => (`/sbin/route` =~ /default/ ? '' : 'no default route to the internet found'),
+				disabled => "this test depends on the use of monotone which we don't use anymore " . (`/sbin/route` =~ /default/ ? '' : 'no default route to the internet found'),
 				preparation => {
 						description => "Creating a subdirectory for execution of the test",
 						preparer =>
@@ -63,7 +63,7 @@ my $test
 					      '--verbose',
 					      '--no-install',
 					      '--regex',
-<					      'developer',
+					      'developer',
 					      '--enable',
 					      'developer',
 					      '--src-tag',
@@ -188,6 +188,7 @@ options:
 						  },
 						 ],
 				description => "download from a non-existent download server.",
+				disabled => "this test depends on the use of monotone which we don't use anymore " . (`/sbin/route` =~ /default/ ? '' : 'no default route to the internet found'),
 			       },
 			      ],
        description => "testing of download and consequent build operations",

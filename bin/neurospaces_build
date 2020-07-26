@@ -874,7 +874,7 @@ sub read_cmd_line
 
 	my $program_name = $1;
 
-	print Dump($build_report->{options});
+	print "\n\n" . Dump($build_report->{options});
 
 	print
 	    "
@@ -990,6 +990,7 @@ options related to behavior of external applications:
 
 ";
 
+	exit 0;
     }
 
     # reporting options
