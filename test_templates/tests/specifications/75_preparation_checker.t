@@ -63,7 +63,7 @@ my $test = {
 					  },
 					 },
 			   },
-	    name => 'preparation.t',
+	    name => '75_preparation_checker.t',
 	   };
 
 return $test;

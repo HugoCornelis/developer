@@ -1,0 +1,107 @@
+<!DOCTYPE html
+	PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en-US" xml:lang="en-US">
+<head>
+<title>./tests/specifications/10_simple_examples_module.html: Index of group ./tests/specifications/10_simple_examples_module</title>
+<link href="/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+<link href="/favicon.ico" rel="icon" type="image/x-icon" />
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+</head>
+<body>
+<h1>Index of group ./tests/specifications/10_simple_examples_module</h1><hr /><a href="../../index.html">Index</a><br /><a href="main.html">Up</a><br /><hr /><h1>simple examples</h1><h4>Overview, Comments, Preparation, Reparation</h4><a name="./tests/specifications_./tests/specifications/10_simple_examples_module_starter"></a>
+<table border="2" cellspacing="2" cellpadding="5">
+<tbody>
+<tr><td valign="top">1. Comments</td><td valign="top"><pre>
+This module provides examples of simple tests, how to disable specific tests and how to flag tests with a hard error.
+For more elaborate examples, such as web site interaction and numerical comparisons,
+please take a look at the test suite of the Neurospaces Development project tools.</pre>
+</td></tr>
+</tbody>
+</table>
+
+<table>
+
+
+<tbody>
+<tr><td><a href="#./tests/specifications_./tests/specifications/10_simple_examples_module_1">1. Echo command testing</a></td></tr>
+</tbody>
+
+
+
+<tbody>
+<tr><td><a href="#./tests/specifications_./tests/specifications/10_simple_examples_module_2">2. Echo command testing</a></td></tr>
+</tbody>
+
+
+</table>
+<hr /><a name="./tests/specifications_./tests/specifications/10_simple_examples_module_1"></a><h2>1. Echo command testing</h2><h4>Startup command : <a>echo abc</a></h4><hr /><h4>Overview, Comments, Preparation, Reparation</h4><a name="./tests/specifications_./tests/specifications/10_simple_examples_module_1_prep"></a>
+<table border="2" cellspacing="2" cellpadding="5">
+<tbody>
+<tr><td valign="top">1. Comment for this test definition</td><td valign="top"><pre>
+This comment can be used by test developers to provide information about the echo command.</pre>
+</td></tr>
+</tbody>
+</table>
+<h4>1.1. Is 'abc' echoed to the terminal ?</h4><a name="./tests/specifications_./tests/specifications/10_simple_examples_module_1_1"></a>
+<table border="2" cellspacing="2" cellpadding="5">
+<tbody>
+<tr><td valign="top">1. Part of expected output </td><td valign="top"><pre>
+abc
+</pre>
+</td></tr>
+<tr><td valign="top">2. Comment</td><td valign="top"><pre>
+This comment provides information about this specific test: The string 'abc' is echoed to the terminal by the echo command.  This test checks whether it indeed appeared in the terminal.</pre>
+</td></tr>
+</tbody>
+</table>
+<hr /><a name="./tests/specifications_./tests/specifications/10_simple_examples_module_2"></a><h2>2. Echo command testing</h2><h4>Startup command : <a>echo def ghi</a></h4><hr /><h4>Overview, Comments, Preparation, Reparation</h4><a name="./tests/specifications_./tests/specifications/10_simple_examples_module_2_prep"></a>
+<table border="2" cellspacing="2" cellpadding="5">
+<tbody>
+<tr><td valign="top">1. Comment for this test definition</td><td valign="top"><pre>
+The echo command prints a single output consisting of two strings.  This test shows how this single output can be read with two consecutive tests.</pre>
+</td></tr>
+</tbody>
+</table>
+<h4>2.1. Is 'def' echoed to the terminal ?</h4><a name="./tests/specifications_./tests/specifications/10_simple_examples_module_2_1"></a>
+<table border="2" cellspacing="2" cellpadding="5">
+<tbody>
+<tr><td valign="top">1. Part of expected output </td><td valign="top"><pre>
+def</pre>
+</td></tr>
+</tbody>
+</table>
+<h4>2.2. Waits for 3 seconds</h4><a name="./tests/specifications_./tests/specifications/10_simple_examples_module_2_2"></a>
+<table border="2" cellspacing="2" cellpadding="5">
+<tbody>
+<tr><td valign="top">1. Part of expected output </td><td valign="top"><pre>
+</pre>
+</td></tr>
+</tbody>
+</table>
+<h4>2.3. For testers: this would enforce an error, but the test is disabled</h4><a name="./tests/specifications_./tests/specifications/10_simple_examples_module_2_3"></a>
+<table border="2" cellspacing="2" cellpadding="5">
+<tbody>
+<tr><td valign="top">1. Part of expected output </td><td valign="top"><pre>
+</pre>
+</td></tr>
+<tr><td valign="top">2. This test is currently not executed</td><td valign="top"><pre>
+(disabled is 'The disabled clause allows to disable a specific test, or to disable all the tests associated with a command, or to disable an entire test module.  Here we disable this test because we want the test suite to succeed as we know that this specific was flagged with an error clause.')</pre>
+</td></tr>
+</tbody>
+</table>
+<h4>2.4. Is 'ghi' echoed to the terminal ?</h4><a name="./tests/specifications_./tests/specifications/10_simple_examples_module_2_4"></a>
+<table border="2" cellspacing="2" cellpadding="5">
+<tbody>
+<tr><td valign="top">1. Part of expected output </td><td valign="top"><pre>
+ghi</pre>
+</td></tr>
+<tr><td valign="top">2. Comment</td><td valign="top"><pre>
+Due to the given timeout value, this test waits for a maximum of one second before it would error out.
+The default timeout value is two seconds.</pre>
+</td></tr>
+</tbody>
+</table>
+
+</body>
+</html>

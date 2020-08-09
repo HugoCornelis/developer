@@ -12,4 +12,4 @@ command_definitions:
 
 comment: This module provides example tests of numerical comparisons.
 description: numerical comparisons
-name: numerical_compare_yaml.t
+name: 31_numerical_compare_yaml.t

@@ -18,4 +18,4 @@ comment: |-
   please take a look at the test suite of the Neurospaces Development project tools.
 
 description: output_files_yaml module
-name: output_files_yaml.t
+name: 41_output_files_yaml.t

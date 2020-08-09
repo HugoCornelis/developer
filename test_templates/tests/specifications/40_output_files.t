@@ -29,7 +29,7 @@ my $test
 For more elaborate examples, such as web site interaction and numerical comparisons,
 please take a look at the test suite of the Neurospaces Development project tools.",
        description => "output_files module",
-       name => 'output_files.t',
+       name => '40_output_files.t',
       };
 
 

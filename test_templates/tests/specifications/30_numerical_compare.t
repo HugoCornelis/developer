@@ -24,7 +24,7 @@ my $test
 			      ],
        comment => "This module provides example tests of numerical comparisons.",
        description => "numerical comparisons",
-       name => 'numerical_compare.t',
+       name => '30_numerical_compare.t',
       };
 
 
