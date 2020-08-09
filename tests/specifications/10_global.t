@@ -264,7 +264,7 @@ environment=s:
 			       },
 			      ],
        description => "build testing logic, and operations not specific to client or developer mode",
-       name => 'global.t',
+       name => '10_global.t',
       };
 
 

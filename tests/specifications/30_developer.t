@@ -31,7 +31,7 @@ my $test
 						   read => (join '', `cat $::config->{core_directory}/tests/specifications/strings/neurospaces_build--tag-build-10--no-compile--no-configure--no-install--regex-developer--dry-run--developer--verbose--verbose--verbose.txt`),
 						  },
 						 ],
-				description => "tag on the developer package, without any compiling and related, verbose dry run mode",
+				description => "tag the developer package, without compilation nor installation, verbose dry run mode",
 				disabled => 'because the mtn version always changes, this test needs regexes to get it to work',
 			       },
 			       {
@@ -60,7 +60,7 @@ my $test
 			       },
 			      ],
        description => "build testing in developer mode",
-       name => 'developer.t',
+       name => '30_developer.t',
       };
 
 

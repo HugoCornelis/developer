@@ -192,7 +192,7 @@ options:
 			       },
 			      ],
        description => "testing of download and consequent build operations",
-       name => 'downloads.t',
+       name => '50_downloads.t',
       };
 
 
