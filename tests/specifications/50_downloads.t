@@ -27,17 +27,17 @@ my $test
 				command_tests => [
 						  {
 						   description => "Can we download packages from downloads.sourceforge.net, part 1 ?",
-						   read => (join '', `cat $::config->{core_directory}/tests/specifications/strings/neurospaces_build--download-server--downloads.sourceforge.net--verbose--verbose--verbose--check--no-install--regex--studio--src-tag--build-37--src-dir--_tmp_downloads.t_packages__part1`),
+						   read => (join '', `cat $::global_config->{core_directory}/tests/specifications/strings/neurospaces_build--download-server--downloads.sourceforge.net--verbose--verbose--verbose--check--no-install--regex--studio--src-tag--build-37--src-dir--_tmp_downloads.t_packages__part1`),
 						   timeout => 100,
 						  },
 						  {
 						   description => "Can we download packages from downloads.sourceforge.net, part 2 ?",
-						   read => (join '', `cat $::config->{core_directory}/tests/specifications/strings/neurospaces_build--download-server--downloads.sourceforge.net--verbose--verbose--verbose--check--no-install--regex--studio--src-tag--build-37--src-dir--_tmp_downloads.t_packages__part2`),
+						   read => (join '', `cat $::global_config->{core_directory}/tests/specifications/strings/neurospaces_build--download-server--downloads.sourceforge.net--verbose--verbose--verbose--check--no-install--regex--studio--src-tag--build-37--src-dir--_tmp_downloads.t_packages__part2`),
 						   timeout => 100,
 						  },
 						  {
 						   description => "Can we download packages from downloads.sourceforge.net, part 3 ?",
-						   read => (join '', `cat $::config->{core_directory}/tests/specifications/strings/neurospaces_build--download-server--downloads.sourceforge.net--verbose--verbose--verbose--check--no-install--regex--studio--src-tag--build-37--src-dir--_tmp_downloads.t_packages__part3`),
+						   read => (join '', `cat $::global_config->{core_directory}/tests/specifications/strings/neurospaces_build--download-server--downloads.sourceforge.net--verbose--verbose--verbose--check--no-install--regex--studio--src-tag--build-37--src-dir--_tmp_downloads.t_packages__part3`),
 						   timeout => 100,
 						  },
 						 ],
