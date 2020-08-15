@@ -57,6 +57,7 @@ my $test
 						  },
 						 ],
 				description => "operate on the developer package, without any compiling and related, verbose dry run mode",
+				disabled => 'this test can only work on PCs that have only neurospaces installed and nothing else',
 			       },
 			      ],
        description => "build testing in developer mode",
