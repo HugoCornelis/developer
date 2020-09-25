@@ -1,0 +1,77 @@
+-*- org -*-
+#+STARTUP: showall
+
+* package Heterarch::Test::Element;
+
+
+* package Heterarch::Test::Module;
+Can have preparation and reparation clauses.
+Contains a list of command definitions.
+
+** package Heterarch::Test::CommandDefinition;
+Can have preparation and reparation clauses.
+Contains a possible empty list of command tests.
+
+*** "Heterarch::Test::CommandDefinition";
+default, only possible for command definitions that have no command
+tests.
+
+*** "Heterarch::Test::CommandDefinition::PerlClass";
+    if ($command_definition->{class})
+
+*** "Heterarch::Test::CommandDefinition::PerlCode";
+    elsif (ref $command_definition->{command} eq 'CODE')
+
+*** "Heterarch::Test::CommandDefinition::Interactive";
+    else
+
+** package Heterarch::Test::CommandTest;
+*** "Heterarch::Test::CommandTest";
+default
+
+*** "Heterarch::Test::CommandTest::CommandObject";
+    if (ref $command_test->{write} eq 'ARRAY')
+
+*** # "Heterarch::Test::CommandTest::PerlCode";
+    # elsif (ref $command eq 'CODE')
+
+*** "Heterarch::Test::CommandTest::Interactive";
+    else
+
+**** "Heterarch::Test::CommandTest::Interactive::ShellTester";
+    else
+	my $tester = $command_test->{tester};
+	if ($tester)
+
+**** "Heterarch::Test::CommandTest::Interactive::Literal";
+    else
+	my $read = $command_test->{read};
+	elsif (defined $read)
+	    if (!ref $read)
+
+**** "Heterarch::Test::CommandTest::Interactive::Regex";
+    else
+	my $read = $command_test->{read};
+	elsif (defined $read)
+	    elsif (ref $read eq 'ARRAY')
+
+**** "Heterarch::Test::CommandTest::Interactive::Alternatives";
+    else
+	my $read = $command_test->{read};
+	elsif (defined $read)
+	    else
+		if ($read->{alternatives})
+
+**** "Heterarch::Test::CommandTest::Interactive::File";
+    else
+	my $read = $command_test->{read};
+	elsif (defined $read)
+	    else
+		elsif ($read->{application_output_file})
+
+**** "Heterarch::Test::CommandTest::Interactive::Shell";
+    else
+	my $read = $command_test->{read};
+	elsif (defined $read)
+	    else
+		elsif ($read->{shell})
