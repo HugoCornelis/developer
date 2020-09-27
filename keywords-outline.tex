@@ -1,0 +1,439 @@
+% Created 2020-09-27 So 10:49
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{fixltx2e}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{float}
+\usepackage{wrapfig}
+\usepackage{rotating}
+\usepackage[normalem]{ulem}
+\usepackage{amsmath}
+\usepackage{textcomp}
+\usepackage{marvosym}
+\usepackage{wasysym}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\tolerance=1000
+\author{Hugo}
+\date{\today}
+\title{keywords-outline}
+\hypersetup{
+  pdfkeywords={},
+  pdfsubject={},
+  pdfcreator={Emacs 25.2.2 (Org mode 8.2.10)}}
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+-*- org -*-
+
+\section{package Heterarch::Test::Element;}
+\label{sec-1}
+All the test elements described below derive from this class.
+No keywords.
+
+\section{package Heterarch::Test::Module;}
+\label{sec-2}
+A file with test specifications is called a test module.  A test
+module groups related tests.  For example core functions of an
+algorithm can be tested in one test module, edge cases of the same
+algorithm can be tested in a second test module.  During test
+execution the file with test specifications is represented with this
+class (a package implements a class).
+
+A test module recognizes optional \verb~preparation~ and \verb~reparation~
+clauses to prepare the environment before tests are executed, and
+restore the environment to its original state after test execution,
+respectively.  A test module contains a list of command definitions.
+
+\subsection{keywords}
+\label{sec-2-1}
+The keywords recognized in a test module are:
+\subsubsection{\texttt{harnessing}}
+\label{sec-2-1-1}
+\begin{enumerate}
+\item \texttt{preparation}
+\label{sec-2-1-1-1}
+\begin{enumerate}
+\item \texttt{preparer}
+\label{sec-2-1-1-1-1}
+\begin{enumerate}
+\item \texttt{class}
+\label{sec-2-1-1-1-1-1}
+\item \texttt{applicators}
+\label{sec-2-1-1-1-1-2}
+\begin{enumerate}
+\item \texttt{method}
+\label{sec-2-1-1-1-1-2-1}
+\item \texttt{arguments}
+\label{sec-2-1-1-1-1-2-2}
+\end{enumerate}
+\item \texttt{system\_commands}
+\label{sec-2-1-1-1-1-3}
+\end{enumerate}
+\end{enumerate}
+
+\item \texttt{reparation}
+\label{sec-2-1-1-2}
+\begin{enumerate}
+\item \texttt{class}
+\label{sec-2-1-1-2-0-1}
+\item \texttt{applicators}
+\label{sec-2-1-1-2-0-2}
+\begin{enumerate}
+\item \texttt{method}
+\label{sec-2-1-1-2-0-2-1}
+\item \texttt{arguments}
+\label{sec-2-1-1-2-0-2-2}
+\end{enumerate}
+\item \texttt{system\_commands}
+\label{sec-2-1-1-2-0-3}
+\end{enumerate}
+\end{enumerate}
+
+\subsubsection{\texttt{command\_definitions}}
+\label{sec-2-1-2}
+The list of command definitions of the module.
+
+
+\section{package Heterarch::Test::CommandDefinition;}
+\label{sec-3}
+Can have preparation and reparation clauses.
+
+Contains a command specification that specifies how to connect with
+the application to be tested.  After this connection is successfully
+established, the command tests are executed one by one and results
+recorded.
+
+Contains a possible empty list of command tests.  If the list of
+command tests is empty, the only test in the command definition is
+connection establishment with the application to be tested.
+
+\subsection{keywords}
+\label{sec-3-1}
+The keywords recognized in a command definition are:
+\subsubsection{\texttt{harnessing}}
+\label{sec-3-1-1}
+\begin{enumerate}
+\item \texttt{preparation}
+\label{sec-3-1-1-1}
+\begin{enumerate}
+\item \texttt{preparer}
+\label{sec-3-1-1-1-1}
+\begin{enumerate}
+\item \texttt{class}
+\label{sec-3-1-1-1-1-1}
+\item \texttt{applicators}
+\label{sec-3-1-1-1-1-2}
+\begin{enumerate}
+\item \texttt{method}
+\label{sec-3-1-1-1-1-2-1}
+\item \texttt{arguments}
+\label{sec-3-1-1-1-1-2-2}
+\end{enumerate}
+\item \texttt{system\_commands}
+\label{sec-3-1-1-1-1-3}
+\end{enumerate}
+\end{enumerate}
+
+\item \texttt{reparation}
+\label{sec-3-1-1-2}
+\begin{enumerate}
+\item \texttt{class}
+\label{sec-3-1-1-2-0-1}
+\item \texttt{applicators}
+\label{sec-3-1-1-2-0-2}
+\begin{enumerate}
+\item \texttt{method}
+\label{sec-3-1-1-2-0-2-1}
+\item \texttt{arguments}
+\label{sec-3-1-1-2-0-2-2}
+\end{enumerate}
+\item \texttt{system\_commands}
+\label{sec-3-1-1-2-0-3}
+\end{enumerate}
+\end{enumerate}
+\subsubsection{\texttt{command\_tests}}
+\label{sec-3-1-2}
+The list of command tests for the command definition.
+\subsubsection{\texttt{class}}
+\label{sec-3-1-3}
+\subsubsection{\texttt{command}}
+\label{sec-3-1-4}
+
+\subsection{"Heterarch::Test::CommandDefinition";}
+\label{sec-3-2}
+default, only possible for command definitions that have no command
+tests.
+
+\subsection{"Heterarch::Test::CommandDefinition::PerlClass";}
+\label{sec-3-3}
+\begin{verbatim}
+if ($command_definition->{class})
+\end{verbatim}
+
+The perl class referenced by the class keyword is instantiated using a
+constructor without arguments.  The instance of the class is then
+called using the methods named in the write keyword of the command
+tests.  The result is checked with the method named in the read
+keyword.
+
+\subsubsection{keywords}
+\label{sec-3-3-1}
+\begin{enumerate}
+\item \texttt{class}
+\label{sec-3-3-1-1}
+\end{enumerate}
+
+
+\subsection{"Heterarch::Test::CommandDefinition::PerlCode";}
+\label{sec-3-4}
+\begin{verbatim}
+elsif (ref $command_definition->{command} eq 'CODE')
+\end{verbatim}
+
+The perl code found inside the command keyword is run before command
+tests are executed.
+
+\subsubsection{keywords}
+\label{sec-3-4-1}
+\begin{enumerate}
+\item \texttt{command} (perl code)
+\label{sec-3-4-1-1}
+\end{enumerate}
+
+\subsection{"Heterarch::Test::CommandDefinition::Interactive";}
+\label{sec-3-5}
+\begin{verbatim}
+else
+\end{verbatim}
+
+If no class keyword is found and if the command keyword is not a code
+reference to perl code, the command keyword is used as the name of a
+system command.  This system command is executed to establish a
+connection with the application to be tested.
+
+
+\section{package Heterarch::Test::CommandTest;}
+\label{sec-4}
+\subsection{"Heterarch::Test::CommandTest";}
+\label{sec-4-1}
+Default class, normally not used.
+
+\subsection{"Heterarch::Test::CommandTest::CommandObject";}
+\label{sec-4-2}
+\begin{verbatim}
+if (ref $command_test->{write} eq 'ARRAY')
+\end{verbatim}
+
+If the \verb~command_test~ has a \verb~write~ clause with a list, it is used as
+a list of methods that are invoked on the perl object previoulsy
+instantiated.  The result is then verified with the \verb~read~ clause that
+is used as literal text.
+
+\subsubsection{keywords}
+\label{sec-4-2-1}
+\begin{enumerate}
+\item \texttt{write}
+\label{sec-4-2-1-1}
+\begin{enumerate}
+\item \texttt{method}
+\label{sec-4-2-1-1-1}
+\item \texttt{arguments}
+\label{sec-4-2-1-1-2}
+\end{enumerate}
+\item = read=
+\label{sec-4-2-1-2}
+\end{enumerate}
+
+\subsection{\# "Heterarch::Test::CommandTest::PerlCode";}
+\label{sec-4-3}
+\begin{verbatim}
+# elsif (ref $command eq 'CODE')
+\end{verbatim}
+
+\subsection{"Heterarch::Test::CommandTest::Interactive";}
+\label{sec-4-4}
+\begin{verbatim}
+else
+\end{verbatim}
+This class is used to test the application interactively.  Other
+classes derive from it to implement specific testing capabilities.  If
+the specific tests fail, this class may still decide to do further
+testing (for instance using numerical comparisons rather than textual
+comparisons).
+
+
+\subsubsection{keywords}
+\label{sec-4-4-1}
+\begin{enumerate}
+\item \texttt{read}
+\label{sec-4-4-1-1}
+What is expected for interactive output from the application.  The
+value of this clause can be literal text, an array or a hash /
+dictionary with keywords that are explained in the following sections.
+
+\item \texttt{shell}
+\label{sec-4-4-1-2}
+Runs the given system shell command for a maximum of \verb~timeout~
+seconds.
+
+\item \texttt{timeout}
+\label{sec-4-4-1-3}
+The maximum time to wait before reporting a failure that the
+application did not generate the expected output.
+
+\item \texttt{wait}
+\label{sec-4-4-1-4}
+A time specified in seconds the tester will wait after applying the
+\verb~write~ clause, and before applying the \verb~read~ clause.
+\item \texttt{write}
+\label{sec-4-4-1-5}
+The text to write to the application.
+\end{enumerate}
+
+\subsubsection{"Heterarch::Test::CommandTest::Interactive::ShellTester";}
+\label{sec-4-4-2}
+\begin{verbatim}
+else
+    my $tester = $command_test->{tester};
+    if ($tester)
+\end{verbatim}
+
+\begin{enumerate}
+\item keywords
+\label{sec-4-4-2-1}
+\begin{enumerate}
+\item \texttt{tester}
+\label{sec-4-4-2-1-1}
+\begin{enumerate}
+\item \texttt{shell}
+\label{sec-4-4-2-1-1-1}
+The shell command is run and its output is used as if it was produced
+by the application being tested.
+\end{enumerate}
+\end{enumerate}
+\end{enumerate}
+
+\subsubsection{"Heterarch::Test::CommandTest::Interactive::Literal";}
+\label{sec-4-4-3}
+\begin{verbatim}
+else
+    my $read = $command_test->{read};
+    elsif (defined $read)
+	if (!ref $read)
+\end{verbatim}
+
+Literal comparison between what is expected and what is produced by the application.
+
+\begin{enumerate}
+\item keywords
+\label{sec-4-4-3-1}
+\begin{enumerate}
+\item \texttt{white\_space}
+\label{sec-4-4-3-1-1}
+If the value of the \verb~white_space~ clause is equal to \verb~convert seen 0a to 0d 0a newlines~, newlines in the expected literal text are
+converted from \verb~0x0a~ to \verb~0x0d 0x0a~ newlines.
+
+The implementation of the tester should be changed so that the value
+of this key corresponds with the implementation.
+\end{enumerate}
+\end{enumerate}
+
+\subsubsection{"Heterarch::Test::CommandTest::Interactive::Regex";}
+\label{sec-4-4-4}
+\begin{verbatim}
+else
+    my $read = $command_test->{read};
+    elsif (defined $read)
+	elsif (ref $read eq 'ARRAY')
+\end{verbatim}
+
+The \verb~read~ clause is an array with as its first element the value
+\verb~-re~.  The second value is used as a regular expression to compare
+with the output that the application has produced.
+
+
+\subsubsection{"Heterarch::Test::CommandTest::Interactive::Alternatives";}
+\label{sec-4-4-5}
+\begin{verbatim}
+else
+    my $read = $command_test->{read};
+    elsif (defined $read)
+	else
+	    if ($read->{alternatives})
+\end{verbatim}
+
+The \verb~read~ clause has a keyword \verb~alternatives~ that is used to
+compose a regular expression consisting of the different alternatives
+in the expected output.  This expressions is then compared with the
+output that the application has produced.
+
+\begin{enumerate}
+\item keywords
+\label{sec-4-4-5-1}
+\begin{enumerate}
+\item \texttt{alternatives}
+\label{sec-4-4-5-1-1}
+\end{enumerate}
+\end{enumerate}
+
+\subsubsection{"Heterarch::Test::CommandTest::Interactive::File";}
+\label{sec-4-4-6}
+\begin{verbatim}
+else
+    my $read = $command_test->{read};
+    elsif (defined $read)
+	else
+	    elsif ($read->{application_output_file})
+\end{verbatim}
+
+The \verb~read~ clause has a the keywords \verb~application_output_file~ and
+either \verb~expected_output_file~ or \verb~expected_output~.  The keyword
+\verb~application_output_file~ defines the name of the file that will be
+produced by the application during the test.  If the keyword
+\verb~expected_output_file~ is present, it is used as a reference to a file
+whose contents will be compared against the contents of the
+application output file.  Otherwise the contents of the clause
+\verb~expected_output~ is used and compared against the contents of the
+application output file.
+
+\begin{enumerate}
+\item keywords
+\label{sec-4-4-6-1}
+\begin{enumerate}
+\item \texttt{application\_output\_file}
+\label{sec-4-4-6-1-1}
+\item \texttt{expected\_output}
+\label{sec-4-4-6-1-2}
+\item \texttt{expected\_output\_file}
+\label{sec-4-4-6-1-3}
+\end{enumerate}
+\end{enumerate}
+
+\subsubsection{"Heterarch::Test::CommandTest::Interactive::Shell";}
+\label{sec-4-4-7}
+\begin{verbatim}
+else
+    my $read = $command_test->{read};
+    elsif (defined $read)
+	else
+	    elsif ($read->{shell})
+\end{verbatim}
+
+\begin{enumerate}
+\item keywords
+\label{sec-4-4-7-1}
+\begin{enumerate}
+\item \texttt{shell}
+\label{sec-4-4-7-1-1}
+The command in the \verb~shell~ clause is executed as a system shell
+command and its output is compared against the output produced by the
+application.
+\end{enumerate}
+\end{enumerate}
+% Emacs 25.2.2 (Org mode 8.2.10)
+\end{document}
