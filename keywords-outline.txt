@@ -2,76 +2,273 @@
 #+STARTUP: showall
 
 * package Heterarch::Test::Element;
-
+All the test elements described below derive from this class.
+No keywords.
 
 * package Heterarch::Test::Module;
-Can have preparation and reparation clauses.
-Contains a list of command definitions.
+A file with test specifications is called a test module.  A test
+module groups related tests.  For example core functions of an
+algorithm can be tested in one test module, edge cases of the same
+algorithm can be tested in a second test module.  During test
+execution the file with test specifications is represented with this
+class (a package implements a class).
 
-** package Heterarch::Test::CommandDefinition;
-Can have preparation and reparation clauses.
-Contains a possible empty list of command tests.
+A test module recognizes optional ~preparation~ and ~reparation~
+clauses to prepare the environment before tests are executed, and
+restore the environment to its original state after test execution,
+respectively.  A test module contains a list of command definitions.
 
-*** "Heterarch::Test::CommandDefinition";
+** keywords
+The keywords recognized in a test module are:
+*** =harnessing=
+**** =preparation=
+***** =preparer=
+****** =class=
+****** =applicators=
+******* =method=
+******* =arguments=
+****** =system_commands=
+
+**** =reparation=
+****** =class=
+****** =applicators=
+******* =method=
+******* =arguments=
+****** =system_commands=
+
+*** =command_definitions=
+The list of command definitions of the module.
+
+
+* package Heterarch::Test::CommandDefinition;
+Can have preparation and reparation clauses.
+
+Contains a command specification that specifies how to connect with
+the application to be tested.  After this connection is successfully
+established, the command tests are executed one by one and results
+recorded.
+
+Contains a possible empty list of command tests.  If the list of
+command tests is empty, the only test in the command definition is
+connection establishment with the application to be tested.
+
+** keywords
+The keywords recognized in a command definition are:
+*** =harnessing=
+**** =preparation=
+***** =preparer=
+****** =class=
+****** =applicators=
+******* =method=
+******* =arguments=
+****** =system_commands=
+
+**** =reparation=
+****** =class=
+****** =applicators=
+******* =method=
+******* =arguments=
+****** =system_commands=
+*** =command_tests=
+The list of command tests for the command definition.
+*** =class=
+*** =command=
+
+** "Heterarch::Test::CommandDefinition";
 default, only possible for command definitions that have no command
 tests.
 
-*** "Heterarch::Test::CommandDefinition::PerlClass";
+** "Heterarch::Test::CommandDefinition::PerlClass";
+#+BEGIN_SRC perl
     if ($command_definition->{class})
+#+END_SRC
 
-*** "Heterarch::Test::CommandDefinition::PerlCode";
+The perl class referenced by the class keyword is instantiated using a
+constructor without arguments.  The instance of the class is then
+called using the methods named in the write keyword of the command
+tests.  The result is checked with the method named in the read
+keyword.
+
+*** keywords
+**** =class=
+
+
+** "Heterarch::Test::CommandDefinition::PerlCode";
+#+BEGIN_SRC perl
     elsif (ref $command_definition->{command} eq 'CODE')
+#+END_SRC
 
-*** "Heterarch::Test::CommandDefinition::Interactive";
+The perl code found inside the command keyword is run before command
+tests are executed.
+
+*** keywords
+**** =command= (perl code)
+
+** "Heterarch::Test::CommandDefinition::Interactive";
+#+BEGIN_SRC perl
     else
+#+END_SRC
 
-** package Heterarch::Test::CommandTest;
-*** "Heterarch::Test::CommandTest";
-default
+If no class keyword is found and if the command keyword is not a code
+reference to perl code, the command keyword is used as the name of a
+system command.  This system command is executed to establish a
+connection with the application to be tested.
 
-*** "Heterarch::Test::CommandTest::CommandObject";
+
+* package Heterarch::Test::CommandTest;
+** "Heterarch::Test::CommandTest";
+Default class, normally not used.
+
+** "Heterarch::Test::CommandTest::CommandObject";
+#+BEGIN_SRC perl
     if (ref $command_test->{write} eq 'ARRAY')
+#+END_SRC
 
-*** # "Heterarch::Test::CommandTest::PerlCode";
+If the ~command_test~ has a ~write~ clause with a list, it is used as
+a list of methods that are invoked on the perl object previoulsy
+instantiated.  The result is then verified with the ~read~ clause that
+is used as literal text.
+
+*** keywords
+**** =write=
+***** =method=
+***** =arguments=
+**** = read=
+
+** # "Heterarch::Test::CommandTest::PerlCode";
+#+BEGIN_SRC perl
     # elsif (ref $command eq 'CODE')
+#+END_SRC
 
-*** "Heterarch::Test::CommandTest::Interactive";
+** "Heterarch::Test::CommandTest::Interactive";
+#+BEGIN_SRC perl
     else
+#+END_SRC
+This class is used to test the application interactively.  Other
+classes derive from it to implement specific testing capabilities.  If
+the specific tests fail, this class may still decide to do further
+testing (for instance using numerical comparisons rather than textual
+comparisons).
 
-**** "Heterarch::Test::CommandTest::Interactive::ShellTester";
-    else
-	my $tester = $command_test->{tester};
-	if ($tester)
 
-**** "Heterarch::Test::CommandTest::Interactive::Literal";
-    else
-	my $read = $command_test->{read};
-	elsif (defined $read)
-	    if (!ref $read)
+*** keywords
+**** =read=
+What is expected for interactive output from the application.  The
+value of this clause can be literal text, an array or a hash /
+dictionary with keywords that are explained in the following sections.
 
-**** "Heterarch::Test::CommandTest::Interactive::Regex";
-    else
-	my $read = $command_test->{read};
-	elsif (defined $read)
-	    elsif (ref $read eq 'ARRAY')
+**** =shell=
+Runs the given system shell command for a maximum of ~timeout~
+seconds.
 
-**** "Heterarch::Test::CommandTest::Interactive::Alternatives";
-    else
-	my $read = $command_test->{read};
-	elsif (defined $read)
-	    else
-		if ($read->{alternatives})
+**** =timeout=
+The maximum time to wait before reporting a failure that the
+application did not generate the expected output.
 
-**** "Heterarch::Test::CommandTest::Interactive::File";
-    else
-	my $read = $command_test->{read};
-	elsif (defined $read)
-	    else
-		elsif ($read->{application_output_file})
+**** =wait=
+A time specified in seconds the tester will wait after applying the
+~write~ clause, and before applying the ~read~ clause.
+**** =write=
+The text to write to the application.
 
-**** "Heterarch::Test::CommandTest::Interactive::Shell";
+*** "Heterarch::Test::CommandTest::Interactive::ShellTester";
+#+BEGIN_SRC perl
     else
-	my $read = $command_test->{read};
-	elsif (defined $read)
-	    else
-		elsif ($read->{shell})
+        my $tester = $command_test->{tester};
+        if ($tester)
+#+END_SRC
+
+**** keywords
+***** =tester=
+****** =shell=
+The shell command is run and its output is used as if it was produced
+by the application being tested.
+
+*** "Heterarch::Test::CommandTest::Interactive::Literal";
+#+BEGIN_SRC perl
+    else
+        my $read = $command_test->{read};
+        elsif (defined $read)
+            if (!ref $read)
+#+END_SRC
+
+Literal comparison between what is expected and what is produced by the application.
+
+**** keywords
+***** =white_space=
+If the value of the ~white_space~ clause is equal to ~convert seen 0a
+to 0d 0a newlines~, newlines in the expected literal text are
+converted from ~0x0a~ to ~0x0d 0x0a~ newlines.
+
+The implementation of the tester should be changed so that the value
+of this key corresponds with the implementation.
+
+*** "Heterarch::Test::CommandTest::Interactive::Regex";
+#+BEGIN_SRC perl
+    else
+        my $read = $command_test->{read};
+        elsif (defined $read)
+            elsif (ref $read eq 'ARRAY')
+#+END_SRC
+
+The ~read~ clause is an array with as its first element the value
+~-re~.  The second value is used as a regular expression to compare
+with the output that the application has produced.
+
+
+*** "Heterarch::Test::CommandTest::Interactive::Alternatives";
+#+BEGIN_SRC perl
+    else
+        my $read = $command_test->{read};
+        elsif (defined $read)
+            else
+                if ($read->{alternatives})
+#+END_SRC
+
+The ~read~ clause has a keyword ~alternatives~ that is used to
+compose a regular expression consisting of the different alternatives
+in the expected output.  This expressions is then compared with the
+output that the application has produced.
+
+**** keywords
+***** =alternatives=
+
+*** "Heterarch::Test::CommandTest::Interactive::File";
+#+BEGIN_SRC perl
+    else
+        my $read = $command_test->{read};
+        elsif (defined $read)
+            else
+                elsif ($read->{application_output_file})
+#+END_SRC
+
+The ~read~ clause has a the keywords ~application_output_file~ and
+either ~expected_output_file~ or ~expected_output~.  The keyword
+~application_output_file~ defines the name of the file that will be
+produced by the application during the test.  If the keyword
+~expected_output_file~ is present, it is used as a reference to a file
+whose contents will be compared against the contents of the
+application output file.  Otherwise the contents of the clause
+~expected_output~ is used and compared against the contents of the
+application output file.
+
+**** keywords
+***** =application_output_file=
+***** =expected_output=
+***** =expected_output_file=
+
+*** "Heterarch::Test::CommandTest::Interactive::Shell";
+#+BEGIN_SRC perl
+    else
+        my $read = $command_test->{read};
+        elsif (defined $read)
+            else
+                elsif ($read->{shell})
+#+END_SRC
+
+**** keywords
+***** =shell=
+The command in the ~shell~ clause is executed as a system shell
+command and its output is compared against the output produced by the
+application.
+
