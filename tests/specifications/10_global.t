@@ -264,6 +264,21 @@ environment=s:
 			       },
 			      ],
        description => "build testing logic, and operations not specific to client or developer mode",
+       explanation => "
+
+The scripts to build a Neurospaces based simulator fetch specific
+software packages from the Internet, compile them and integrate them
+into a comprehensive simulator.
+They can be used to configure a computer for further simulator
+development or for running simulations.
+
+A developer uses the same scripts to configure a simulation server.
+
+This test module defines general tests that are not specific to
+ simulator users (client mode) or simulator developers (developer
+ mode).
+
+",
        name => '10_global.t',
       };
 

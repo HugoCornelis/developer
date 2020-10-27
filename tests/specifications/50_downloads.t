@@ -192,6 +192,12 @@ options:
 			       },
 			      ],
        description => "testing of download and consequent build operations",
+       explanation => "
+
+The script to build a Neurospaces based simulator supports download,
+compilation and installation of external software components.
+
+",
        name => '50_downloads.t',
       };
 

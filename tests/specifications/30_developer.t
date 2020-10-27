@@ -61,6 +61,14 @@ my $test
 			       },
 			      ],
        description => "build testing in developer mode",
+       explanation => "
+
+The script to build a Neurospaces based simulator implements specific
+operations that supports the development on single software
+components.  It can then be used to build a release version of these
+components.
+
+",
        name => '30_developer.t',
       };
 
