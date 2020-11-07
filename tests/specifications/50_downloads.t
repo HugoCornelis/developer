@@ -192,12 +192,15 @@ options:
 			       },
 			      ],
        description => "testing of download and consequent build operations",
-       explanation => "
+       documentation => {
+			 explanation => "
 
 The script to build a Neurospaces based simulator supports download,
 compilation and installation of external software components.
 
 ",
+			 purpose => "This module tests the automated download and installation of a software component.",
+			},
        name => '50_downloads.t',
       };
 

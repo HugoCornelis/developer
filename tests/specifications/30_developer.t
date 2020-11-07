@@ -61,14 +61,18 @@ my $test
 			       },
 			      ],
        description => "build testing in developer mode",
-       explanation => "
+       documentation => {
+			 explanation => "
 
 The script to build a Neurospaces based simulator implements specific
-operations that supports the development on single software
-components.  It can then be used to build a release version of these
-components.
+operations that supports the development of single software
+components.  After development it is also used to build new release
+versions of these components.  Version control and tags are used to
+reconstruct binary packages from source code.
 
 ",
+			 purpose => "Tagging and releasing.",
+			},
        name => '30_developer.t',
       };
 
