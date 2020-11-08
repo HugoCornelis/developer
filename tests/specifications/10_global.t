@@ -263,11 +263,11 @@ environment=s:
 				description => "wrong options",
 			       },
 			      ],
-       description => "build testing logic, and operations not specific to client or developer mode",
+       description => "build testing logic, and operations not specific to user or developer mode",
        documentation => {
                          explanation => "
 
-The scripts to build a Neurospaces based simulator fetch specific
+The scripts to build a Neurospaces based simulator download specific
 software packages from the Internet, compile them and integrate them
 into a comprehensive simulator.  They are used to configure a computer
 for simulator development, for running simulations and to configure a
