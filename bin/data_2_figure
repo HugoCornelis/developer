@@ -1,0 +1,491 @@
+#!/usr/bin/perl -w
+#!/usr/bin/perl -d:ptkdb
+#
+
+use strict;
+
+
+use Data::Transformator;
+
+use Expect;
+
+use Getopt::Long;
+
+use YAML;
+
+
+my $option_dump_json;
+my $option_dump_perl;
+my $option_dump_yaml;
+my $option_figure_filename;
+my $option_help;
+my $option_input_filename;
+my $option_output_filename;
+my $option_show;
+my $option_variable_names = [];
+my $option_variable_parsers = [];
+my $option_verbose;
+
+
+our $global_config;
+
+
+$SIG{'__DIE__'}
+    = sub
+      {
+	  use Carp;
+
+	  print STDERR Carp::longmess(@_);
+
+	  exit(3);
+      };
+
+
+$SIG{'INT'}
+    = sub
+      {
+	  exit(2);
+      };
+
+
+sub figure_definition_2_graph_definition
+{
+    my $figure_definition = shift;
+
+    my $input_data = shift;
+
+# sub _output_graph_prepare
+# {
+#     my $figure = shift;
+
+#     my $expected_output = shift;
+
+    # start creating the graph definition
+
+    my $graph_definition
+	= {
+	   application_values => [],
+	   axes => $figure_definition->{axes},
+	   name => $figure_definition->{name},
+	   title => $figure_definition->{title},
+	  };
+
+    # loop over all the variables defined for this figure
+
+    my $figure_variables = $figure_definition->{variables};
+
+    my $application_values = $graph_definition->{application_values};
+
+    foreach my $figure_variable (@$figure_variables)
+    {
+	# convert this variable to an array with values
+
+	my $figure_variable_name = $figure_variable->{name};
+
+	my $application_result
+	    = {
+	       name => $figure_variable_name,
+	       values => [],
+	      };
+
+	my $application_result_values = $application_result->{values};
+
+	my $figure_variable_parser = $figure_variable->{regex_parser};
+
+	# reset the string against which we do the regex parsing
+
+	my $output = $input_data;
+
+	# my $match1 = ($output =~ m/\(pdVms/sg);
+	# my $match2 = ($output =~ m/\(pdVms\[/sg);
+	# my $match3 = ($output =~ m/\(pdVms\[9/sg);
+	# my $match4 = ($output =~ m/\(pdVms\[9\]\) : /sg);
+	# my $match5 = ($output =~ m/\(pdVms\[9\]\) : \(/sg);
+	# my $match6 = ($output =~ m/\(pdVms\[9\]\) : \((.*?)/sg);
+	# my $match7 = ($output =~ m/\(pdVms\[9\]\) : \((.*?)\)/sg);
+	# my $match8 = ($output =~ m/\(pdVms\[9\]\) : \((.*?)\)/sg);
+
+
+	while ($output =~ m/$figure_variable_parser/sg)
+# 	while ($output =~ m/\(pdVms\[0\]\) : \((.*?)\)/sg)
+	{
+	    my $value = $1;
+
+	    push @$application_result_values, $value;
+
+# 	    print "For $figure_variable_parser, found: $value\n";
+	}
+
+	print "For $figure_variable_parser, found: @$application_result_values values\n";
+
+	push @$application_values, $application_result;
+    }
+
+    # return result
+
+    return $graph_definition;
+}
+
+
+sub figure_read_and_configure
+{
+    my $figure_filename = shift;
+
+    # if the figure filename is set
+
+    if ($figure_filename)
+    {
+	# read the figure_definition
+
+	my $figure_definition;
+
+	if ($figure_filename =~ /\.pl$/)
+	{
+	    $figure_definition = do $figure_filename;
+	}
+	elsif ($figure_filename =~ /\.(yml|yaml)$/)
+	{
+	    use YAML;
+
+	    $figure_definition = YAML::LoadFile($figure_filename);
+
+	    if ($@)
+	    {
+		die "$0: *** Error: The figure_definition file $figure_filename cannot be read ($@)";
+	    }
+	}
+	elsif ($figure_filename =~ /\.(js|json)$/)
+	{
+	    local $/; # enable 'slurp' mode
+
+	    my $file = IO::File->new("<$figure_filename");
+
+	    my $json_text = <$file>;
+
+	    $file->close();
+
+	    use JSON;
+
+	    my $json = JSON->new();
+
+	    #! allow code refs, they are converted to nulls
+
+	    $json->allow_unknown(1);
+
+	    $figure_definition = $json->decode($json_text);
+
+	    if ($@)
+	    {
+		die "$0: *** Error: The figure_definition file $figure_filename cannot be read ($@)";
+	    }
+	}
+	else
+	{
+	    die "$0: *** Error: The figure_definition file $figure_filename cannot be read (unknown extension, please try yaml, json or perl)";
+	}
+
+	my $variables = $figure_definition->{variables};
+
+	if (ref $variables ne 'ARRAY')
+	{
+	    die "$0: *** Error: The figure_definition file $figure_filename should deliver a reference to an array for its variables";
+	}
+
+	my $counter = 0;
+
+	foreach my $variable (@$variables)
+	{
+	    $counter++;
+
+	    if (not exists $variable->{name})
+	    {
+		die "$0: *** Error: The variable file $figure_filename defines a variable without a name at position " . $counter;
+	    }
+
+	    if (not exists $variable->{regex_parser})
+	    {
+		die "$0: *** Error: The variable file $figure_filename defines variable $variable->{name} without a regex_parser";
+	    }
+	}
+
+	# return result
+
+	return $figure_definition;
+    }
+    else
+    {
+	die "$0: *** Error: option_variable_filename must be set to a valid file with variable definitions";
+    }
+}
+
+
+sub graph_definition_render
+{
+    my $graph_definition = shift;
+
+    my $output_filename = shift;
+
+    my $rc = eval
+    {
+	local $SIG{'__DIE__'};
+
+	require GD::Graph;
+
+	GD::Graph->import();
+
+	1;
+    };
+
+    if (not $rc)
+    {
+	print "*** Error: $@";
+
+	return undef;
+    }
+
+    my $application_values = $graph_definition->{application_values};
+
+    my $data
+	= [
+	   [], # labels X axis, mostly time
+	  ];
+
+    # keep a count of how many items are given in each array
+
+    my $counts = [];
+
+    my $count;
+
+    # loop over all the given value arrays
+
+    my $counter = 1;
+
+    foreach my $application_value (@$application_values)
+    {
+	my $name = $application_value->{name};
+
+	my $values = $application_value->{values};
+
+	push @$counts, scalar @$values;
+
+	# validate the count: must either be zero or always be the same
+
+	if (not defined $count)
+	{
+	    $count = scalar @$values;
+	}
+	elsif (scalar @$values eq 0)
+	{
+	    next;
+	}
+	elsif ($count ne scalar @$values)
+	{
+	    die "$0: *** Error: graph_definition $graph_definition->{name} has variable arrays with different counts for the same plot, cannot render this graph\n";
+	}
+
+	# link the application data with the data for the graph
+
+	push @$data, $values;
+    }
+
+    # if there was data found
+
+    if ($count)
+    {
+	# initialize the graph
+
+	use GD::Graph::lines;
+
+	my $graph = GD::Graph::lines->new(800,400);
+
+	$graph->set(
+		    x_label           => $graph_definition->{axes}->{x}->{label},
+		    y_label           => $graph_definition->{axes}->{y}->{label},
+		    title             => $graph_definition->{title},
+		    x_labels_vertical => 1,
+		    transparent       => 0,
+		   )
+	    or warn $graph->error();
+
+	# create the x axis values
+
+	my $steps = $graph_definition->{axes}->{x}->{steps} || 1;
+	my $step_size = $graph_definition->{axes}->{x}->{step_size} || 1;
+
+	my $x_axis
+	    = [
+	       map
+	       {
+		   my $value = $_;
+
+		   my $result = $value * $steps * $step_size / $count;
+
+		   $result;
+	       }
+	       0 .. $count,
+	      ];
+
+	# insert the x axis in the graph data
+
+	$data->[0] = $x_axis;
+
+	# create the graph image
+
+	my $gd = $graph->plot($data) or die $graph->error();
+
+	# write it to the output file
+
+	my $filename;
+
+	if (defined $output_filename)
+	{
+	    $filename = $output_filename;
+	}
+	else
+	{
+	    $filename = "$graph_definition->{name}.png";
+	}
+
+	open my $png, '>', $filename;
+
+	binmode $png;
+	print $png $graph->gd->png;
+	close $png;
+
+	# return the filename of the output file
+
+	return $filename;
+    }
+    else
+    {
+	return undef;
+    }
+}
+
+
+sub main
+{
+    # parse options
+
+    parse_options();
+
+    # read the figure_definition
+
+    my $figure_definition = figure_read_and_configure($option_figure_filename);
+
+    # read the raw input data
+
+    my $input_data = read_input_file($option_input_filename);
+
+    # parse the input data using the figure definition
+
+    my $graph_definition = figure_definition_2_graph_definition($figure_definition, $input_data);
+
+    # render the graph
+
+    my $filename = graph_definition_render($graph_definition, $option_output_filename);
+
+    if (defined $filename)
+    {
+	# show the graph
+
+	if ($option_show)
+	{
+	    system "gwenview $filename &";
+	}
+    }
+}
+
+
+sub parse_options
+{
+    my $result
+	= GetOptions
+	    (
+	     "dump-json!" => \$option_dump_json,
+	     "dump-perl!" => \$option_dump_perl,
+	     "dump-yaml!" => \$option_dump_yaml,
+	     "figure-filename=s" => \$option_figure_filename,
+	     "input-filename=s" => \$option_input_filename,
+	     "help!" => \$option_help,
+	     "output-filename=s" => \$option_output_filename,
+	     "show!" => \$option_show,
+	     "variable-names=s" => $option_variable_names,
+	     "variable-parsers=s" => $option_variable_parsers,
+	     "v|verbose+" => \$option_verbose,
+	    );
+
+    if (!$result)
+    {
+	die "$0: Error in option processing";
+    }
+
+    if (scalar @$option_variable_parsers ne scalar @$option_variable_names)
+    {
+	die "$0: *** Error: The number of variable parsers and variable names should be equal (" . (scalar @$option_variable_parsers) . "vs" . (scalar @$option_variable_names) . ").";
+    }
+
+    $global_config->{options}
+	= {
+	   dump_json => $option_dump_json,
+	   dump_perl => $option_dump_perl,
+	   dump_yaml => $option_dump_yaml,
+	   figure_filename => $option_figure_filename,
+	   help => $option_help,
+	   input_filename => $option_input_filename,
+	   output_filename => $option_output_filename,
+	   show => $option_show,
+	   variable_names => $option_variable_names,
+	   variable_parsers => $option_variable_parsers,
+	   verbose => $option_verbose,
+	  };
+
+    if ($option_help)
+    {
+	print
+	    "
+$0: test definition executor
+
+options:
+    --dump-json          dump test specifications to json files in /tmp/.
+    --dump-perl          dump test specifications to perl files in /tmp/.
+    --dump-yaml          dump test specifications to yaml files in /tmp/.
+    --figure-filename    the name of the file with the figure definition and variables.
+    --help               print usage information.
+    --input-filename     file with raw input data.
+    --output-filename    the name of the output file.
+    --show               show the graph figure after it was created.
+    --variable-names     followed with the name of a variable, can be given multiple times.
+    --variable-parsers   followed with the regex parser for a variable, can be given multiple times.
+    --verbose            set verbosity level.
+";
+
+	exit 1;
+    }
+
+}
+
+
+sub read_input_file
+{
+    my $input_filename = shift;
+
+    my $result;
+
+    {
+	local $/; # enable 'slurp' mode
+
+	my $file = IO::File->new("<$input_filename");
+
+	$result = <$file>;
+
+	$file->close();
+    }
+
+    return $result;
+}
+
+
+main();
+
+

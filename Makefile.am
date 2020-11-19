@@ -17,6 +17,7 @@
 SUBDIRS = perl python
 
 dist_bin_SCRIPTS = \
+	bin/data_2_figure \
 	bin/mcad2doxy \
 	bin/mtn-ancestors \
 	bin/neurospaces-manager-gui \
