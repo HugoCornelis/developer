@@ -5,6 +5,13 @@
 /.emacs.desktop.lock
 *.elc
 
+_MTN/
+bin/cscope.files
+bin/neurospaces_harness.ptkdb
+neurospaces_cpan_modules
+tests/html/
+try-graph.pl
+
 # http://www.gnu.org/software/automake
 
 Makefile.in
