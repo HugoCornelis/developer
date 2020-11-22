@@ -116,7 +116,10 @@ sub figure_definition_2_graph_definition
 # 	    print "For $figure_variable_parser, found: $value\n";
 	}
 
-	print "For $figure_variable_parser, found: @$application_result_values values\n";
+	if ($option_verbose)
+	{
+	    print "For $figure_variable_parser, found: @$application_result_values values\n";
+	}
 
 	push @$application_values, $application_result;
     }
@@ -320,10 +323,20 @@ sub graph_definition_render
 
 		   my $result = $value * $steps * $step_size / $count;
 
-		   $result;
+		   my $rounded = sprintf "%.4f", $result;
+
+		   $rounded;
 	       }
 	       0 .. $count,
 	      ];
+
+	if ($count > 20)
+	{
+	    $graph->set(
+			x_label_skip => ( $count / 20 ),
+		       )
+		or warn $graph->error();
+	}
 
 	# insert the x axis in the graph data
 
