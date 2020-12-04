@@ -19,7 +19,8 @@ my $option_dump_perl;
 my $option_dump_yaml;
 my $option_figure_filename;
 my $option_help;
-my $option_input_filename;
+my $option_input_array;
+my $option_input_data;
 my $option_output_filename;
 my $option_show;
 my $option_variable_names = [];
@@ -388,7 +389,7 @@ sub main
 
     # read the raw input data
 
-    my $input_data = read_input_file($option_input_filename);
+    my $input_data = read_input_file($option_input_data);
 
     # parse the input data using the figure definition
 
@@ -419,7 +420,8 @@ sub parse_options
 	     "dump-perl!" => \$option_dump_perl,
 	     "dump-yaml!" => \$option_dump_yaml,
 	     "figure-filename=s" => \$option_figure_filename,
-	     "input-filename=s" => \$option_input_filename,
+	     "input-array=s" => \$option_input_array,
+	     "input-data=s" => \$option_input_data,
 	     "help!" => \$option_help,
 	     "output-filename=s" => \$option_output_filename,
 	     "show!" => \$option_show,
@@ -445,7 +447,8 @@ sub parse_options
 	   dump_yaml => $option_dump_yaml,
 	   figure_filename => $option_figure_filename,
 	   help => $option_help,
-	   input_filename => $option_input_filename,
+	   input_array => $option_input_array,
+	   input_data => $option_input_data,
 	   output_filename => $option_output_filename,
 	   show => $option_show,
 	   variable_names => $option_variable_names,
@@ -465,7 +468,8 @@ options:
     --dump-yaml          dump test specifications to yaml files in /tmp/.
     --figure-filename    the name of the file with the figure definition and variables.
     --help               print usage information.
-    --input-filename     file with raw input data.
+    --input-array        file with a yaml formatted input array.
+    --input-data         file with space separated numerical input data.
     --output-filename    the name of the output file.
     --show               show the graph figure after it was created.
     --variable-names     followed with the name of a variable, can be given multiple times.
