@@ -71,6 +71,10 @@ sub figure_definition_2_graph_definition
 	   title => $figure_definition->{title},
 	  };
 
+    # we did not find values yet
+
+    my $has_values;
+
     # loop over all the variables defined for this figure
 
     my $figure_variables = $figure_definition->{variables};
@@ -110,6 +114,8 @@ sub figure_definition_2_graph_definition
 	while ($output =~ m/$figure_variable_parser/sg)
 # 	while ($output =~ m/\(pdVms\[0\]\) : \((.*?)\)/sg)
 	{
+	    $has_values = "yes";
+
 	    my $value = $1;
 
 	    push @$application_result_values, $value;
@@ -372,7 +378,7 @@ sub graph_definition_render
     }
     else
     {
-	return undef;
+	die "$0: *** Error: graph_definition $graph_definition->{name} has variables but no values are associated with these variables, cannot render this graph\n";
     }
 }
 
