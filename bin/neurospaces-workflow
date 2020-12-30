@@ -1,0 +1,1371 @@
+#!/usr/bin/perl -w
+
+use strict;
+
+use warnings;
+
+use Data::Dumper;
+
+$Data::Dumper::Sortkeys = 'always';
+
+use Getopt::Long;
+
+
+$SIG{'__DIE__'}
+    = sub
+      {
+	  require Carp;
+
+	  print STDERR Carp::longmess(@_);
+      };
+
+
+$SIG{'INT'}
+    = sub
+      {
+	  require Carp;
+
+	  print STDERR Carp::longmess(@_);
+
+	  exit 1;
+      };
+
+
+our $option_bash_completion;
+our $option_branch = "master";
+our $option_build_server;
+our $option_built_image_directory;
+our $option_commands = [];
+our $option_dry_run;
+our $option_export_remote;
+our $option_export_sh;
+our $option_export_times;
+our $option_forward_destination_server = "laptop";
+our $option_forward_source_server = "laptop";
+our $option_help;
+our $option_help_build_servers;
+our $option_help_commands;
+our $option_help_packages;
+our $option_help_projects;
+our $option_help_targets;
+our $option_incremental = 1;
+our $option_interaction;
+our $option_packages = [];
+our $option_remote = "gitlab";
+our $option_ssh_server;
+our $option_ssh_port;
+our $option_ssh_user;
+our $option_tftp_directory;
+our $option_target;
+our $option_verbose;
+
+
+our $default_command = "build";
+our $default_target = "cbi-332";
+
+
+our $global_command_line = join " ", $0, @ARGV;
+our $global_overriden_packages;
+our $global_program_abs_directory;
+our $global_program_name;
+
+{
+    use Cwd;
+
+    my $program_name_full = $0;
+    my $program_name_full_abs = Cwd::abs_path($program_name_full);
+
+    ($program_name_full_abs =~ m((.*)/(\S+)));
+
+    $global_program_abs_directory = $1;
+    $global_program_name = $2;
+}
+
+
+our $global_target_command;
+
+my $global_business_project = "neurospaces";
+
+my $global_commands_filename = "$global_program_abs_directory/$global_business_project-commands";
+
+my $global_configuration_filename = "$global_program_abs_directory/$global_business_project-configuration";
+
+our $global_configuration = do $global_configuration_filename;
+
+if ($@)
+{
+    die "$0: *** Error: no valid configuration file '$global_configuration_filename' found ($@)\n";
+}
+
+if (not defined $global_configuration
+    and $!)
+{
+    die "$0: *** Error: no configuration file '$global_configuration_filename' found ($!)\n";
+}
+
+my $global_build_servers = $global_configuration->{build_servers};
+my $global_packages = $global_configuration->{packages};
+my $global_projects = $global_configuration->{projects};
+my $global_submodule_branches = $global_configuration->{submodule_branches};
+my $global_stamp_filenames = $global_configuration->{stamp_filenames};
+my $global_target_files = $global_configuration->{target_files};
+my $global_targets = $global_configuration->{targets};
+
+our $global_main_project_name = "cabin-router";
+
+
+package Command;
+
+
+#! these imports will be properly implemented with proper packages
+
+sub execute_shell_command
+{
+    return Context::execute_shell_command(@_);
+}
+
+
+sub execute_shell_command_array
+{
+    return Context::execute_shell_command_array(@_);
+}
+
+
+sub execute_shell_command_schedule
+{
+    return Context::execute_shell_command_schedule(@_);
+}
+
+
+sub execute_shell_command_schedule_array
+{
+    return Context::execute_shell_command_schedule_array(@_);
+}
+
+
+my $global_commands = do $global_commands_filename;
+
+if ($@)
+{
+    die "$0: *** Error: no valid configuration file '$global_commands_filename' found ($@)\n";
+}
+
+if ($!)
+{
+    die "$0: *** Error: no configuration file '$global_commands_filename' found ($!)\n";
+}
+
+
+package Context;
+
+
+our $global_exported_sh_file;
+
+our $global_exported_sh_filename;
+
+our $global_exported_times_file;
+
+our $global_exported_times_filename;
+
+
+sub process_chdir_2_cd
+{
+    my $command = shift;
+
+    my $dry_run = shift;
+
+    my $arguments;
+
+    # if this is a chdir command
+
+    if ($command =~ /^\s*chdir\s+(.*)$/)
+    {
+	# process its arguments
+
+	my $arguments = $1;
+
+	# remove quotes, they are invalid in directory names for the purpose of this script
+
+	$arguments =~ s/^'//g;
+	$arguments =~ s/'$//g;
+
+	# some forms of chdir require an argument,
+	# some forms of cd don't and use a default of $HOME
+
+	if ($arguments =~ /^\s*$/)
+	{
+	    $arguments = $ENV{HOME};
+	}
+
+	# distinguish between a real invocation and dry-run
+
+	if ($dry_run)
+	{
+	    $command = "cd $arguments";
+	}
+	else
+	{
+	    #! CHDIR is further processed by the caller
+
+	    $command = "CHDIR $arguments";
+	}
+    }
+
+    # return the possibly processed result
+
+    return $command;
+}
+
+
+my $interaction_roles = {};
+
+my $current_interaction_role;
+
+
+sub execute_shell_command
+{
+    my $command = shift;
+
+    my $options = shift;
+
+    my $processed_command = $command;
+
+    $processed_command =~ s(^\s*#.*)()g;
+
+    my $command_is_empty = $processed_command =~ /^\s*$/ ? 'yes' : '';
+
+    my $command_length = length $processed_command;
+
+    my $allow_fail = $options->{allow_fail};
+
+    my $verbose = $options->{verbose} || $option_verbose;
+
+    # the command to be exported defaults to the command given
+
+    my $export_command = defined $option_export_sh ? $command : undef;
+
+    if (defined $verbose
+	and $verbose =~ /^[0-9]+$/)
+    {
+	$verbose = "*** INFO: ";
+    }
+
+    my $export_sh = $options->{export_sh};
+
+    if (not defined $export_sh)
+    {
+	if (defined $option_export_sh)
+	{
+	    $export_sh = { filename => $option_export_sh, };
+	}
+    }
+    else
+    {
+	if (defined $option_export_sh)
+	{
+	    $export_sh->{filename} = $option_export_sh;
+	}
+    }
+
+    my $export_times = $options->{export_times};
+
+    if (not defined $export_times)
+    {
+	if (defined $option_export_times)
+	{
+	    $export_times = { filename => $option_export_times, };
+	}
+    }
+    else
+    {
+	if (defined $option_export_times)
+	{
+	    $export_times->{filename} = $option_export_times;
+	}
+    }
+
+    my $export_output = $options->{export_output};
+
+    my $dry_run = $options->{dry_run} || $option_dry_run;
+
+    my $output_path = $options->{output_path};
+
+    # prefix the command with an optional ssh remote
+
+    if ($options->{remote})
+    {
+	if (exists $options->{remote}->{skip}
+	    and $command =~ /$options->{remote}->{skip}/)
+	{
+	    $current_interaction_role = "localuser\@localhost";
+	}
+	else
+	{
+	    my $prefix = "";
+
+	    if (exists $options->{remote}->{ssh_password})
+	    {
+		my $ssh_password = $options->{remote}->{ssh_password};
+
+		$prefix .= "sshpass -p $ssh_password ";
+	    }
+
+	    if (exists $options->{remote}->{ssh_options})
+	    {
+		$current_interaction_role = "";
+
+		my $ssh_options = $options->{remote}->{ssh_options};
+
+		if (exists $options->{remote}->{ssh_server})
+		{
+		    my $ssh_server = $options->{remote}->{ssh_server};
+
+		    if (exists $options->{remote}->{ssh_user})
+		    {
+			my $ssh_user = $options->{remote}->{ssh_user};
+
+			$current_interaction_role = "$ssh_user\@$ssh_server";
+
+			$prefix .= "ssh $ssh_options $ssh_user\@$ssh_server ";
+		    }
+		    else
+		    {
+			$current_interaction_role = $ssh_server;
+
+			$prefix .= "ssh $ssh_options $ssh_server ";
+		    }
+		}
+		else
+		{
+		    $current_interaction_role = "localuser\@localhost";
+
+		    $prefix .= "ssh $ssh_options ";
+		}
+	    }
+	    else
+	    {
+		$current_interaction_role = "localuser\@localhost";
+	    }
+
+	    if (defined $verbose and ($verbose =~ /INFO/ or $verbose > 1))
+	    {
+		print "$verbose: prefix is $prefix\n";
+	    }
+
+	    $command = "$prefix   $command";
+
+	    if ($option_export_remote)
+	    {
+		$export_command = $command;
+	    }
+	}
+    }
+    else
+    {
+	$current_interaction_role = "localuser\@localhost";
+    }
+
+    # prefix the command with an optional timeout
+
+    if ($options->{timeout})
+    {
+	my $timeout_options = $options->{timeout};
+
+	if (exists $timeout_options->{skip}
+	    and $command =~ /$timeout_options->{skip}/)
+	{
+	}
+	else
+	{
+	    my $prefix = "";
+
+	    if (exists $timeout_options->{sudo}
+		and $timeout_options->{sudo} eq 1)
+	    {
+		$prefix .= "sudo ";
+	    }
+
+	    $prefix .= "timeout ";
+
+	    if (exists $timeout_options->{options})
+	    {
+		$prefix .= "$timeout_options->{options} ";
+	    }
+
+	    if (not exists $timeout_options->{duration})
+	    {
+		die "*** Error: $0: the timeout option of '$command' does not have the mandatory duration specified";
+	    }
+
+	    $prefix .= "$timeout_options->{duration} ";
+
+	    $command = "$prefix   $command";
+	}
+    }
+
+    if ($verbose)
+    {
+	use Cwd qw();
+
+	my $path = Cwd::cwd();
+
+	print "---\n";
+
+	if (defined $verbose and ($verbose =~ /INFO/ or $verbose > 1))
+	{
+	    print "$verbose: current path is: $path\n";
+	}
+
+	print "$verbose: trying to $command\n";
+    }
+
+    # we are either in dry-run ...
+
+    if ($dry_run)
+    {
+	if ($export_sh
+	    and exists $export_sh->{prefix})
+	{
+	    my $dry_run_prefix = "$0: *** Running in dry_run mode, export prefix: '";
+
+	    print map { "$dry_run_prefix$_\n" } split "\n", $export_sh->{prefix};
+	}
+
+	$command = process_chdir_2_cd($command, $dry_run);
+
+	print "$0: *** Running in dry_run mode, not executing: '$command'\n";
+    }
+
+    # ... or printing an interaction diagram
+
+    elsif ($option_interaction)
+    {
+	my $interaction_indent = 4;
+
+	my $is_new = "";
+
+	if (exists $interaction_roles->{$current_interaction_role})
+	{
+	    $interaction_indent = $interaction_roles->{$current_interaction_role}->{indent};
+	}
+	else
+	{
+	    my $sorted_roles = [ keys %$interaction_roles, ];
+
+	    $interaction_indent = 4 + scalar @$sorted_roles * 64;
+
+	    $interaction_roles->{$current_interaction_role} = { indent => $interaction_indent, };
+
+	    $is_new = 'yes';
+	}
+
+	my $indent = " " x $interaction_indent;
+
+	if ($is_new)
+	{
+	    print "$indent'$current_interaction_role'\n\n";
+	}
+
+	if ($processed_command !~ /^\s*$/)
+	{
+	    print "$indent'$processed_command'\n";
+	}
+    }
+
+    # ... or exporting to a shell executable script ...
+
+    elsif (defined $option_export_sh)
+    {
+	if (not defined $global_exported_sh_file)
+	{
+	    if (not defined $global_exported_sh_filename)
+	    {
+		$global_exported_sh_filename = $export_sh->{filename};
+	    }
+
+	    my $ok = open($global_exported_sh_file, ">", $global_exported_sh_filename);
+
+	    if (not $ok)
+	    {
+		die "*** Error: $0: cannot open $global_exported_sh_filename for writing ($!)";
+	    }
+
+	    print $global_exported_sh_file "#!/bin/sh\n";
+	    print $global_exported_sh_file "#\n";
+	    print $global_exported_sh_file "# script generated with $::global_program_name\n";
+	    print $global_exported_sh_file "#\n";
+	    print $global_exported_sh_file "# the command line to generate this script was:\n";
+	    print $global_exported_sh_file "#\n";
+	    print $global_exported_sh_file "# $global_command_line\n";
+	    print $global_exported_sh_file "#\n";
+
+	    chmod 0755, $global_exported_sh_filename;
+	}
+
+	if ($export_command =~ /^'/
+	    and $export_command =~ /'$/)
+	{
+	    $export_command =~ s/^'//;
+	    $export_command =~ s/'$//;
+	}
+
+	print "$0: *** Running in export_sh mode, exporting: '$export_command'\n";
+
+	if (exists $export_sh->{prefix})
+	{
+	    print $global_exported_sh_file $export_sh->{prefix};
+	}
+
+	print $global_exported_sh_file "$export_command\n";
+    }
+
+    # ... or we have to execute the given command
+
+    else
+    {
+	my $exit_status;
+
+	# force the execution of a change of the working directory to this process
+
+	#! note that the \s+ is a bug: it forces the use of white-space when no arguments are given
+
+	$command = process_chdir_2_cd($command, $dry_run);
+
+	if ($command =~ /^CHDIR\s+(.*)$/)
+	{
+	    my $arguments = $1;
+
+	    $exit_status = not chdir $arguments;
+	}
+	else
+	{
+	    if ($export_times)
+	    {
+		if (not defined $global_exported_times_file)
+		{
+		    if (not defined $global_exported_times_filename)
+		    {
+			$global_exported_times_filename = $export_times->{filename};
+		    }
+
+		    my $ok = open($global_exported_times_file, ">", $global_exported_times_filename);
+
+		    if (not $ok)
+		    {
+			die "*** Error: $0: cannot open $global_exported_times_filename for writing ($!)";
+		    }
+
+		    print $global_exported_times_file "#!/bin/sh\n";
+		    print $global_exported_times_file "#\n";
+		    print $global_exported_times_file "# script generated with $::global_program_name\n";
+		    print $global_exported_times_file "#\n";
+		    print $global_exported_times_file "# the command line to generate this script was:\n";
+		    print $global_exported_times_file "#\n";
+		    print $global_exported_times_file "# $global_command_line\n";
+		    print $global_exported_times_file "#\n";
+
+		    chmod 0644, $global_exported_times_filename;
+		}
+	    }
+
+	    # execute the command, collect start and end time
+
+	    use IPC::System::Simple qw(capture);
+
+	    my $start_time = time();
+
+	    my $output = "";
+
+	    if (not $command_is_empty)
+	    {
+		if (not $export_output)
+		{
+		    # print "# $command (length: $command_length)\n#\n";
+
+		    print "# $command\n#\n";
+
+		    $exit_status = system "$command";
+		}
+		else
+		{
+		    $output .= capture($command);
+
+		    $exit_status = $IPC::System::Simple::EXITVAL;
+		}
+	    }
+
+	    my $end_time = time();
+
+	    if ($export_times)
+	    {
+		print $global_exported_times_file "$0: *** Starting ('$command') at " . localtime($start_time) . "\n";
+
+		print $global_exported_times_file "$0: *** Ended    ('$command') at " . localtime($end_time) . "\n";
+
+		print $global_exported_times_file "$0: *** Duration (s): " . ($end_time - $start_time) . "\n";
+
+		print $global_exported_times_file "\n";
+	    }
+
+	    if ($export_output)
+	    {
+		my $filename = generate_output_filename($global_target_command, $command);
+
+		my $output_file;
+
+		my $ok = open($output_file, ">", $filename);
+
+		if (not $ok)
+		{
+		    die "*** Error: $0: cannot open $filename for writing ($!)";
+		}
+
+		print $output_file "# $command\n#\n";
+
+		print $output_file $output;
+
+		close($output_file);
+	    }
+	    # else
+	    # {
+	    # 	print $output;
+	    # }
+	}
+
+#     my $exit_status = system "( $command ) >>$output_path 2>&1";
+
+	if ($exit_status)
+	{
+	    if ($allow_fail)
+	    {
+# 	    system "echo >>$output_path 2>&1 failed with $?: $command\n";
+
+		print "$0: *** Error: $command failed with exit status $?\n";
+	    }
+	    else
+	    {
+		die "$0: *** Fatal: $command failed with exit status $?\n";
+	    }
+	}
+
+	return $exit_status;
+    }
+}
+
+
+sub execute_shell_command_array
+{
+    my $commands = shift;
+
+    my $options = shift;
+
+    foreach my $command (@$commands)
+    {
+	execute_shell_command($command, $options);
+    }
+}
+
+
+sub execute_shell_command_schedule
+{
+    my $schedule = shift;
+
+    my $command_array = $schedule->{commands};
+
+    my $option_array = $schedule->{options};
+
+    if (not defined $option_array)
+    {
+	$option_array = [ {}, ];
+    }
+
+    foreach my $options (@$option_array)
+    {
+	foreach my $command (@$command_array)
+	{
+	    execute_shell_command($command, $options);
+	}
+    }
+}
+
+
+sub execute_shell_command_schedule_array
+{
+    my $schedule_array = shift;
+
+    foreach my $schedule (@$schedule_array)
+    {
+	execute_shell_command_schedule($schedule);
+    }
+}
+
+
+our $output_filename_counter = 0;
+
+sub generate_output_filename
+{
+    my $prefix = shift;
+
+    my $command = shift;
+
+    $command =~ /([a-z0-9]){0,5}(?:[a-z0-9]*)([a-z0-9]){0,5}(?:[a-z0-9]*)([a-z0-9]){0,5}(?:[a-z0-9]*)/i;
+
+    my $one = defined $1 ? $1 : "one";
+
+    my $two = defined $2 ? $2 : "two";
+
+    my $three = defined $3 ? $3 : "three";
+
+    $output_filename_counter++;
+
+    my $result = "$prefix-$output_filename_counter-$one-$two-$three";
+
+    return $result;
+}
+
+
+package main;
+
+
+sub bash_completion
+{
+    my $command_line = $option_bash_completion || "";
+
+    my $arguments = [ split ' ', $command_line, ];
+
+    my $command = shift @$arguments;
+
+    if ($command =~ /configuration/)
+    {
+	bash_completion_generate($command, $arguments, $global_configuration);
+    }
+    elsif ($command =~ /workflow/)
+    {
+	my $internal_commands = generate_command_hash();
+
+	bash_completion_generate($command, $arguments, $internal_commands);
+    }
+
+    exit 0;
+}
+
+
+sub bash_completion_generate
+{
+    my $command = shift;
+
+    my $arguments = shift;
+
+    my $configuration = shift;
+
+    while (@$arguments)
+    {
+	if (ref $configuration eq 'HASH')
+	{
+	    my $argument = shift @$arguments;
+
+	    if (exists $configuration->{$argument})
+	    {
+		$configuration = $configuration->{$argument};
+	    }
+	}
+	elsif (ref $configuration eq 'ARRAY')
+	{
+	    last;
+	}
+	else
+	{
+	    last;
+	}
+    }
+
+    if (ref $configuration eq 'HASH')
+    {
+	print join " ", keys %$configuration;
+    }
+    elsif (ref $configuration eq 'ARRAY')
+    {
+	print join " ", @$configuration;
+    }
+    else
+    {
+	print "";
+    }
+}
+
+
+sub generate_command_hash
+{
+    my $commands = generate_command_list();
+
+    # set default result
+
+    my $result = {};
+
+    # loop over all the found targets and commands
+
+    foreach my $command (@$commands)
+    {
+	# extract the target and the subroutine from the generated string
+
+	$command =~ m(([^ ]+) ([^ ]+))g;
+
+	my $target = $1;
+
+	my $subroutine = $2;
+
+	# insert them into the result
+
+	$result->{$target}->{$subroutine} = $command;
+    }
+
+    # return result
+
+    return $result;
+}
+
+
+sub generate_command_list
+{
+    # generate a list of the available command subroutines
+
+    my $subroutines = [
+		       # clarify that they belong to the Command:: package
+
+		       map
+		       {
+			   "Command::$_";
+		       }
+
+		       # select only code references
+
+		       grep
+		       {
+			   not defined &$_;
+		       }
+		       keys %Command::,
+		      ];
+
+    # rework, select and sort these commands
+
+    my $commands = [
+		    # alphabatically group and make sense
+
+		    sort
+
+		    # remove internal commands and commands that don't belong to a target
+
+		    grep
+		    {
+			$_ !~ /Command::/;
+		    }
+
+		    # remove Command:: package name and rework target prefixes
+
+		    map
+		    {
+			foreach my $target (sort keys %$global_targets)
+			{
+			    $target =~ s/-/_/g;
+
+			    s/Command::${target}_(.*)/${target} $1/g;
+			}
+
+			$_;
+		    }
+
+		    # all internal commands
+
+		    sort @$subroutines,
+		   ];
+
+    return $commands;
+}
+
+
+sub main
+{
+    # this is YAML related, see for instance https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=707229
+
+    $INC{'Mo/builder.pm'} = 1;
+    $INC{'Mo/default.pm'} = 1;
+
+    # parse command line
+
+    parse_command_line();
+
+    # perform bash completion logic, this will exit the script
+
+    if ($option_bash_completion)
+    {
+	bash_completion();
+    }
+
+    # parse package directories
+
+    #t this will overwrite the code in the build directories with custom code for packages listed in local.mk.
+    #t should set a flag whether a build will be required and honor the flag in preprocessing stages.
+
+    process_packages_directories();
+
+    # figure out the target and the command
+
+    my $target = $option_target;
+
+    my $command = $option_commands->[0];
+
+    # we allow finger laziness: the shift key is not necessary for the underscore
+
+    $target =~ s/-/_/g;
+    $command =~ s/-/_/g;
+
+    $global_target_command = "$target-$command";
+
+    # given the target and the command generate a useful filename for exporting commands to a shell script
+
+    if (defined $option_export_sh)
+    {
+	if ($option_export_sh eq 0)
+	{
+	    $option_export_sh = "/tmp/$global_target_command.sh";
+	}
+	elsif ($option_export_sh eq 1
+	       or $option_export_sh eq '')
+	{
+	    $option_export_sh = "$global_target_command.sh";
+	}
+
+	# again we prefer to not need to press the shift key
+
+	$option_export_sh =~ s/_/-/g;
+    }
+
+    # given the target and the command generate a useful filename for exporting execution times to a log file
+
+    if (defined $option_export_times)
+    {
+	if ($option_export_times eq 0)
+	{
+	    $option_export_times = "/tmp/$global_target_command.times";
+	}
+	elsif ($option_export_times eq 1
+	       or $option_export_times eq '')
+	{
+	    $option_export_times = "$global_target_command.times";
+	}
+
+	# again we prefer to not need to press the shift key
+
+	$option_export_times =~ s/_/-/g;
+    }
+
+    # if we are using a build server
+
+    if ($option_build_server)
+    {
+	die "$0: *** option_build_server is still in development";
+
+	my $build_source = "";
+
+	my $build_server = $global_build_servers->{$option_build_server};
+
+	if ($build_server->{name} ne 'laptop')
+	{
+	    my $ssh_user = $build_server->{ssh_user};
+
+	    my $ssh_server = $build_server->{ssh_server};
+
+	    my $tftp_directory = $build_server->{tftp_directory};
+
+	    $build_source .= "$ssh_user\@$ssh_server";
+	}
+
+	# this results in something like this:
+	#
+	# ssh cornelih@cbi.utsa.edu tmux new-session -d 'project-workflow ssp build && bash'
+	#
+	# but I will likely also need to use sendkeys to detach from the session
+	# also need to cd to the correct directory
+
+	Context::execute_shell_command("ssh $build_source tmux new-session -d 'project-workflow $target $command && bash'");
+    }
+    else
+    {
+	my $command_implementation = "Command::${target}_${command}";
+
+	{
+	    no strict "refs";
+
+	    &$command_implementation();
+	}
+    }
+}
+
+
+sub parse_command_line
+{
+    my $result
+        = GetOptions
+	(
+	 "bash-completion=s" => \$option_bash_completion,
+	 "branch=s" => \$option_branch,
+	 "build-server=s" => \$option_build_server,
+	 "built-image-directory=s" => \$option_built_image_directory,
+	 "command=s" => $option_commands,
+	 "dry-run!" => \$option_dry_run,
+	 "export-remote" => \$option_export_remote,
+	 "export-sh:s" => \$option_export_sh,
+	 "export-times!" => \$option_export_times,
+	 "forward-destination-server=s" => \$option_forward_destination_server,
+	 "forward-source-server=s" => \$option_forward_source_server,
+	 "help!" => \$option_help,
+	 "help-build-servers!" => \$option_help_build_servers,
+	 "help-commands!" => \$option_help_commands,
+	 "help-packages!" => \$option_help_packages,
+	 "help-projects!" => \$option_help_projects,
+	 "help-targets!" => \$option_help_targets,
+	 "incremental!" => \$option_incremental,
+	 "interaction!" => \$option_interaction,
+	 "package=s" => $option_packages,
+	 "ssh-port=s" => \$option_ssh_port,
+	 "ssh-server=s" => \$option_ssh_server,
+	 "ssh-user=s" => \$option_ssh_user,
+	 "target=s" => \$option_target,
+	 "tftp-directory=s" => \$option_tftp_directory,
+	 "v|verbose+" => \$option_verbose,
+	);
+
+    if (!$result)
+    {
+        die "$0: *** error in option processing, try --help";
+    }
+
+    # my $asking_help = ($option_help
+    # 		       or $option_help_build_servers
+    # 		       or $option_help_commands
+    # 		       or $option_help_packages
+    # 		       or $option_help_projects
+    # 		       or $option_help_targets);
+
+    if (scalar @ARGV eq 0)
+    {
+	$option_commands->[0] = $default_command;
+    }
+    elsif (scalar @ARGV eq 1)
+    {
+	# no commands given, a single argument is the command
+
+	$option_commands->[scalar @$option_commands] = $ARGV[0];
+    }
+    elsif (scalar @ARGV eq 2)
+    {
+	# giving both a target option and a target argument on the command line is an error, we can only take commands for one target
+
+	if (defined $option_target)
+	{
+	    die "$0: *** Error: both a --target option and an target argument given, try --help";
+	}
+
+	$option_target = shift @ARGV;
+
+	$option_commands->[scalar @$option_commands] = $ARGV[0];
+    }
+    else
+    {
+        die "$0: *** error in argument processing, try --help";
+    }
+
+    if (not defined $option_target)
+    {
+	$option_target = $default_target;
+    }
+
+    if ($option_help)
+    {
+        print
+            "
+$0: checkout and build the given Buildroot target using OVERRIDE_SRCDIR delivered packages.
+
+Special targets include 'toolchain' (build toolchain and unpacks the result), and others (try --help-targets).
+
+examples -- also try these with the --dry-run and --verbose options:
+
+  \$ $0                                                      # build the default target (the default target is '$default_target')
+
+  \$ $0 ssp                                                  # build the 'ssp' target
+
+  \$ $0 --dry-run                                            # display the commands that would be executed for the default target
+
+
+options:
+    --bash-completion         compute bash completion for the given command line.
+    --branch                  git branch to work with.
+    --build-server            the build server profile to work with.
+    --built-image-directory   the directory on the build server where the built images are to be found.
+    --command                 commands to execute, hyphens (-) will be replaced with underscores (_).
+    --dry-run                 if set, do not execute system shell commands but print them to STDOUT.
+    --export-remote           include the remote access part when exporting commands to a file.
+    --export-sh               export the commands to a file with the given name.
+    --export-times            export the times when commands are started and ended to a file with the given name.
+    --forward-destination     the target file forward destination to copy to.
+    --forward-source          the target file forward source to copy from.
+    --help                    display usage information and stop execution.
+    --help-build-servers      display the known build servers.
+    --help-commands           display the available commands (requires the installation of Devel::Symdump with 'sudo cpanm Devel::Symdump').
+    --help-packages           display known package and overriden package information and stop execution.
+    --help-projects           display known project information and stop execution.
+    --help-targets            display known targets and stop execution.
+    --incremental             assume an incremental build (default is " . ($option_incremental ? "yes" : "no") . "
+    --interaction             show the interaction diagram of the commands.
+    --packages                packages to operate on, can be given multiple times.
+    --ssh-port                the ssh port.
+    --ssh-server              the used ssh build server.
+    --ssh-user                ssh-user on the build server (please configure your public key).
+    --target                  the target to build (default is '$option_target').
+    --tftp-directory          the target tftp directory (where your device will find its kernel and rootfs).
+    --verbose                 set verbosity level.
+";
+
+	exit 0;
+    }
+
+    # parse the local.mk packages so that they are actual for the help pages
+
+    parse_packages_directories();
+
+    if (defined $option_build_server)
+    {
+	if (not exists $global_build_servers->{$option_build_server})
+	{
+	    die "$0: *** Error: unknown build server $option_build_server, use --help-build-servers to learn about the known servers";
+	}
+
+	# if (not defined $option_ssh_server)
+	# {
+	#     $option_ssh_server = $global_build_servers->{$option_build_server}->{ssh_server};
+	# }
+
+	# if (not defined $option_ssh_user)
+	# {
+	#     $option_ssh_user = $global_build_servers->{$option_build_server}->{ssh_user};
+	# }
+
+	if (not defined $option_ssh_port)
+	{
+	    $option_ssh_port = $global_build_servers->{$option_build_server}->{ssh_port};
+	}
+
+	# if (not defined $option_tftp_directory)
+	# {
+	#     $option_tftp_directory = $global_build_servers->{$option_build_server}->{tftp_directory};
+	# }
+
+	# if (not defined $option_built_image_directory)
+	# {
+	#     $option_built_image_directory = $global_build_servers->{$option_build_server}->{built_image_directory};
+	# }
+    }
+
+    if (defined $option_forward_destination_server)
+    {
+	if (not exists $global_build_servers->{$option_forward_destination_server})
+	{
+	    die "$0: *** Error: unknown forwarding server $option_forward_destination_server, use --help-build-servers to learn about the known servers";
+	}
+    }
+
+    if (defined $option_forward_source_server)
+    {
+	if (not exists $global_build_servers->{$option_forward_source_server})
+	{
+	    die "$0: *** Error: unknown forwarding server $option_forward_source_server, use --help-build-servers to learn about the known servers";
+	}
+    }
+
+    if ($option_help_build_servers)
+    {
+	use YAML;
+
+	print Dump( { build_servers => $global_build_servers, }, );
+
+	exit 0;
+    }
+
+    if ($option_help_commands)
+    {
+	use YAML;
+
+	my $commands = generate_command_list();
+
+	$commands
+	    = [
+	       map
+	       {
+		   "$global_program_name $_ --dry";
+	       }
+	       @$commands,
+	      ];
+
+	print Dump( { "available_commands (copy-paste the one you would like to execute, try it with the --dry option, execute it without this option)" => $commands, }, );
+
+	exit 0;
+    }
+
+    if ($option_help_packages)
+    {
+	use YAML;
+
+	print Dump( { global_packages => $global_packages, }, );
+
+	print Dump( { global_overriden_packages => $global_overriden_packages, }, );
+
+	exit 0;
+    }
+
+    # if ($option_help_node_configuration)
+    # {
+    # 	use YAML;
+
+    # 	print Dump( { configuration => $global_node_configuration, }, );
+
+    # 	exit 0;
+    # }
+
+    if ($option_help_projects)
+    {
+	use YAML;
+
+	print Dump( { global_projects => $global_projects, }, );
+
+	exit 0;
+    }
+
+    if ($option_help_targets)
+    {
+	use YAML;
+
+	print Dump( { targets => $global_targets, }, );
+
+	exit 0;
+    }
+
+}
+
+
+# parse the package directories in local.mk
+
+sub parse_packages_directories
+{
+#     "$ENV{HOME}/projects/developer/source/snapshots/$branch";
+
+    # packages listed in alphabetical order, dashes replaced with underscores
+
+    my $package_overrides_filename = "local.mk";
+
+    my $package_overrides;
+
+    {
+	# see also https://stackoverflow.com/questions/8963400/the-correct-way-to-read-a-data-file-into-an-array
+
+	# local $/;		# enable localized slurp mode
+
+	$package_overrides = [ `cat 2>/dev/null "$package_overrides_filename"` ];
+    }
+
+    # loop over all lines in local.mk
+
+    my $overriden_packages;
+
+    foreach my $package_override (@$package_overrides)
+    {
+	# we are only interested custom repositories
+
+	if ($package_override !~ /_OVERRIDE_SRCDIR/)
+	{
+	    next;
+	}
+
+	if ($package_override =~ /_RSYNC_EXCLUSIONS/)
+	{
+	    next;
+	}
+
+	# skip comment lines
+
+	if ($package_override =~ /^\s*#/)
+	{
+	    next;
+	}
+
+	#! beware of unmatched characters in the directory name
+
+	$package_override =~ /^\s*(\w+)_OVERRIDE_SRCDIR\s*=\s*([\w\/\.-]*)/;
+
+	my $package_name = lc $1;
+
+	# # skip gcc related overrides, buildroot ignores them, we deal with them elsewhere
+
+	# if ($package_name =~ m'.*_gcc$')
+	# {
+	#     next;
+	# }
+
+	my $package_directory = $2;
+
+	$overriden_packages->{$package_name}->{directory} = $package_directory;
+
+	if ($option_verbose)
+	{
+	    print "$0: *** added for package $package_name OVERRIDE_SRCDIR $package_directory\n";
+	}
+    }
+
+    # propagate the overriden_packages
+
+    $global_overriden_packages = $overriden_packages;
+}
+
+
+# prepare the package directories in local.mk
+
+sub process_packages_directories
+{
+    # loop over all the overriden packages
+
+    foreach my $package_name (sort keys %$global_overriden_packages)
+    {
+	# skip gcc related overrides, buildroot ignores them, we deal
+	# with them in the build command of the toolchain target
+
+	if ($package_name =~ m'.*_gcc$')
+	{
+	    next;
+	}
+
+	# get the package source directory from the override
+
+	my $package_directory = $global_overriden_packages->{$package_name}->{directory};
+
+	# get the build directory from the globally known packages
+
+	my $build_directory = $global_packages->{$package_name}->{build_directory};
+
+	if (not defined $build_directory)
+	{
+	    die "$0: *** Fatal: package $package_name has no build_directory defined in the package list";
+	}
+
+	# Context::execute_shell_command("mkdir --parents '$build_directory'");
+
+	# Context::execute_shell_command("cp -a '$package_directory'/* '$build_directory'");
+
+	# my $stamp_built = $global_stamp_filenames->[0];
+
+	# Context::execute_shell_command("rm -f '$build_directory/$stamp_built'");
+    }
+}
+
+
+main();
+
+

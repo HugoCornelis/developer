@@ -20,7 +20,10 @@ dist_bin_SCRIPTS = \
 	bin/data_2_figure \
 	bin/mcad2doxy \
 	bin/mtn-ancestors \
+	bin/neurospaces-commands \
+	bin/neurospaces-configuration \
 	bin/neurospaces-manager-gui \
+	bin/neurospaces-workflow \
 	bin/neurospaces_build \
 	bin/neurospaces_check \
 	bin/neurospaces_clean \
