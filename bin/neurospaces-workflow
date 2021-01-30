@@ -86,8 +86,6 @@ our $global_target_command;
 
 my $global_business_project = "neurospaces";
 
-my $global_commands_filename = "$global_program_abs_directory/$global_business_project-commands";
-
 my $global_configuration_filename = "$global_program_abs_directory/$global_business_project-configuration";
 
 our $global_configuration = do $global_configuration_filename;
@@ -143,16 +141,57 @@ sub execute_shell_command_schedule_array
 }
 
 
-my $global_commands = do $global_commands_filename;
+my $commands_seen;
 
-if ($@)
-{
-    die "$0: *** Error: no valid configuration file '$global_commands_filename' found ($@)\n";
-}
+my $command_filenames_found
+    = [
+       grep
+       {
+	   /$global_business_project-commands[-a-z0-9]*$/;
+       }
+       map
+       {
+	   chomp; $_;
+       }
+       `ls $global_program_abs_directory/$global_business_project-commands*`,
+      ];
 
-if ($!)
+my $command_filenames_configured
+    = [
+       grep
+       {
+	   /$global_business_project-commands[-a-z0-9]*$/;
+       }
+       map
+       {
+	   "$global_program_abs_directory/$_";
+       }
+       @{ $global_configuration->{command_filenames} },
+      ];
+
+my $command_filenames
+    = [
+       grep
+       {
+	   not $commands_seen->{$_}++;
+       }
+       @$command_filenames_configured,
+#        @$command_filenames_found,
+      ];
+
+foreach my $command_filename (@$command_filenames)
 {
-    die "$0: *** Error: no configuration file '$global_commands_filename' found ($!)\n";
+    my $commands = do $command_filename;
+
+    if ($@)
+    {
+	die "$0: *** Error: no valid commands file '$command_filename' found ($@)\n";
+    }
+
+    if ($!)
+    {
+	die "$0: *** Error: no commands file '$command_filename' found ($!)\n";
+    }
 }
 
 
@@ -178,11 +217,13 @@ sub process_chdir_2_cd
 
     # if this is a chdir command
 
-    if ($command =~ /^\s*chdir\s+(.*)$/)
+    if ($command =~ /^\s*chdir\s+(.*)$/
+	or $command =~ /^\s*cd\s*$/
+	or $command =~ /^\s*cd\s+(.*)$/)
     {
 	# process its arguments
 
-	my $arguments = $1;
+	my $arguments = $1 || "";
 
 	# remove quotes, they are invalid in directory names for the purpose of this script
 
@@ -197,18 +238,7 @@ sub process_chdir_2_cd
 	    $arguments = $ENV{HOME};
 	}
 
-	# distinguish between a real invocation and dry-run
-
-	if ($dry_run)
-	{
-	    $command = "cd $arguments";
-	}
-	else
-	{
-	    #! CHDIR is further processed by the caller
-
-	    $command = "CHDIR $arguments";
-	}
+	$command = "cd $arguments";
     }
 
     # return the possibly processed result
@@ -434,6 +464,19 @@ sub execute_shell_command
 	$command = process_chdir_2_cd($command, $dry_run);
 
 	print "$0: *** Running in dry_run mode, not executing: '$command'\n";
+
+	# we do run the cd command to allow File::Spec to compute correct relative paths
+
+	if ($command =~ /cd\s+(.*)$/)
+	{
+	    my $arguments = $1;
+
+	    my $exit_status = not chdir $arguments;
+	}
+	else
+	{
+	    #! should die here?
+	}
     }
 
     # ... or printing an interaction diagram
@@ -463,7 +506,7 @@ sub execute_shell_command
 
 	if ($is_new)
 	{
-	    print "$indent'$current_interaction_role'\n\n";
+	    print "${indent}ROLE: '$current_interaction_role'\n\n";
 	}
 
 	if ($processed_command !~ /^\s*$/)
@@ -502,6 +545,21 @@ sub execute_shell_command
 	    chmod 0755, $global_exported_sh_filename;
 	}
 
+	$export_command = process_chdir_2_cd($export_command, $dry_run);
+
+	# we do run the cd command to allow File::Spec to compute correct relative paths
+
+	if ($export_command =~ /cd\s+(.*)$/)
+	{
+	    my $arguments = $1;
+
+	    my $exit_status = not chdir $arguments;
+	}
+	else
+	{
+	    #! should die here?
+	}
+
 	if ($export_command =~ /^'/
 	    and $export_command =~ /'$/)
 	{
@@ -531,9 +589,11 @@ sub execute_shell_command
 
 	$command = process_chdir_2_cd($command, $dry_run);
 
-	if ($command =~ /^CHDIR\s+(.*)$/)
+	if ($command =~ /cd\s+(.*)$/)
 	{
 	    my $arguments = $1;
+
+	    print "# $command\n#\n";
 
 	    $exit_status = not chdir $arguments;
 	}
@@ -640,7 +700,7 @@ sub execute_shell_command
 	    {
 # 	    system "echo >>$output_path 2>&1 failed with $?: $command\n";
 
-		print "$0: *** Error: $command failed with exit status $?\n";
+		print "$0: *** Note: $command was allowed to fail (because $allow_fail) and has exit status $?\n";
 	    }
 	    else
 	    {
@@ -731,20 +791,48 @@ sub bash_completion
 {
     my $command_line = $option_bash_completion || "";
 
+    my $command_line_words = [ split ' ', $command_line, ];
+
+    #! kind of sloppy ...
+
+    my $comp_cword = $option_target;
+
+    my $comp_point = $ARGV[0];
+
+    my $command_line_word = $command_line_words->[$comp_cword];
+
     my $arguments = [ split ' ', $command_line, ];
 
     my $command = shift @$arguments;
 
+    my $result;
+
     if ($command =~ /configuration/)
     {
-	bash_completion_generate($command, $arguments, $global_configuration);
+	$result = bash_completion_generate($command, $arguments, $global_configuration);
+
+	push @$result, '--', '-1', '-2', '-3';
     }
     elsif ($command =~ /workflow/)
     {
-	my $internal_commands = generate_command_hash();
+	if (defined $command_line_word
+	    and $command_line_word =~ /^-/)
+	{
+	    $result = bash_completion_generate_options();
 
-	bash_completion_generate($command, $arguments, $internal_commands);
+	    unshift @$result, 'aa', 'bb';
+	}
+	else
+	{
+	    my $internal_commands = generate_command_hash();
+
+	    $result = bash_completion_generate($command, $arguments, $internal_commands);
+
+	    push @$result, '--a', '--b';
+	}
     }
+
+    print join " ", @$result;
 
     exit 0;
 }
@@ -757,6 +845,8 @@ sub bash_completion_generate
     my $arguments = shift;
 
     my $configuration = shift;
+
+    # search the given arguments in the configuration
 
     while (@$arguments)
     {
@@ -779,18 +869,57 @@ sub bash_completion_generate
 	}
     }
 
+    # return the result depending on its type
+
     if (ref $configuration eq 'HASH')
     {
-	print join " ", keys %$configuration;
+	return [ keys %$configuration, ];
     }
     elsif (ref $configuration eq 'ARRAY')
     {
-	print join " ", @$configuration;
+	return [ @$configuration, ];
     }
     else
     {
-	print "";
+	return [];
     }
+}
+
+
+sub bash_completion_generate_options
+{
+    my $result = [
+		  qw(
+			--bash-completion
+			--branch
+			--build-server
+			--built-image-directory
+			--command
+			--dry-run
+			--export-remote
+			--export-sh
+			--export-times
+			--forward-destination
+			--forward-source
+			--help
+			--help-build-servers
+			--help-commands
+			--help-packages
+			--help-projects
+			--help-targets
+			--incremental
+			--interaction
+			--packages
+			--ssh-port
+			--ssh-server
+			--ssh-user
+			--target
+			--tftp-directory
+			--verbose
+		   )
+		 ];
+
+    return $result;
 }
 
 
@@ -987,7 +1116,7 @@ sub main
 	# but I will likely also need to use sendkeys to detach from the session
 	# also need to cd to the correct directory
 
-	Context::execute_shell_command("ssh $build_source tmux new-session -d 'project-workflow $target $command && bash'");
+	Context::execute_shell_command("ssh $build_source tmux new-session -d 'neurospaces-workflow $target $command && bash'");
     }
     else
     {
@@ -1088,7 +1217,7 @@ $0: checkout and build the given Buildroot target using OVERRIDE_SRCDIR delivere
 
 Special targets include 'toolchain' (build toolchain and unpacks the result), and others (try --help-targets).
 
-examples -- also try these with the --dry-run and --verbose options:
+examples -- first try these with the --dry-run to understand what they do:
 
   \$ $0                                                      # build the default target (the default target is '$default_target')
 
@@ -1099,6 +1228,7 @@ examples -- also try these with the --dry-run and --verbose options:
 
 options:
     --bash-completion         compute bash completion for the given command line.
+                              hint: the bash completion script implements completion for options, targets and commands.
     --branch                  git branch to work with.
     --build-server            the build server profile to work with.
     --built-image-directory   the directory on the build server where the built images are to be found.
@@ -1305,7 +1435,7 @@ sub parse_packages_directories
 
 	# # skip gcc related overrides, buildroot ignores them, we deal with them elsewhere
 
-	# if ($package_name =~ m'.*_gcc$')
+	# if ($package_name eq 'cr_gcc')
 	# {
 	#     next;
 	# }
@@ -1337,7 +1467,7 @@ sub process_packages_directories
 	# skip gcc related overrides, buildroot ignores them, we deal
 	# with them in the build command of the toolchain target
 
-	if ($package_name =~ m'.*_gcc$')
+	if ($package_name eq 'cr_gcc')
 	{
 	    next;
 	}

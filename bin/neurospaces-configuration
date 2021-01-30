@@ -54,6 +54,9 @@ my $configuration = {
 						  tftp_directory => "/srv/tftp/genesis",
 						 },
 				      },
+		     command_filenames => [
+					   "neurospaces-commands",
+					  ],
 		     node_configuration => $global_node_configuration,
 		     packages => {
 				 },
