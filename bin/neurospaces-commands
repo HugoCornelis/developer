@@ -65,6 +65,12 @@ sub heccer_build_manual_visual
 {
     heccer_build_manual();
 
+    heccer_manual_visual();
+}
+
+
+sub heccer_manual_visual
+{
     my $commands
 	= [
 	   "okular /tmp/test_report_heccer/test_report_heccer_command_definition-command_test-meta-module.pdf &",
@@ -107,6 +113,12 @@ sub ssp_build_manual_visual
 {
     ssp_build_manual();
 
+    ssp_manual_visual();
+}
+
+
+sub ssp_manual_visual
+{
     my $commands
 	= [
 	   "okular /tmp/test_report_ssp/test_report_ssp_command_definition-command_test-meta-module.pdf &",
