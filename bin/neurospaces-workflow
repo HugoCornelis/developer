@@ -61,7 +61,7 @@ our $option_verbose;
 
 
 our $default_command = "build";
-our $default_target = "cbi-332";
+our $default_target = "ssp";
 
 
 our $global_command_line = join " ", $0, @ARGV;
@@ -109,7 +109,7 @@ my $global_stamp_filenames = $global_configuration->{stamp_filenames};
 my $global_target_files = $global_configuration->{target_files};
 my $global_targets = $global_configuration->{targets};
 
-our $global_main_project_name = "cabin-router";
+our $global_main_project_name = "ssp";
 
 
 package Command;
@@ -247,10 +247,134 @@ sub process_chdir_2_cd
 }
 
 
+sub build_tree_needs_rebuild
+{
+    my $build_tree = shift;
+
+    my $options = shift;
+
+    my $result = "default is to rebuild";
+
+    my $remote_prefix = $options->{remote_prefix};
+
+    # if we have sources and targets
+
+    if ($build_tree->{sources}
+	and $build_tree->{targets})
+    {
+	# determine the youngest source file
+
+	my $source_youngest = 0;
+
+	my $sources = $build_tree->{sources};
+
+	foreach my $source (@$sources)
+	{
+	    #! %Y gives second accuracy, %y gives a higher resolution
+	    #! but its output requires more parsing
+
+	    my $source_stat_command = 'stat --format="%Y" ' . "'$source'";
+
+	    if ($remote_prefix)
+	    {
+		$source_stat_command = "$remote_prefix   $source_stat_command";
+	    }
+
+	    my $source_stat_output = `$source_stat_command 2>/dev/null`;
+
+	    if ($option_verbose
+		and $option_verbose > 1)
+	    {
+		print "build_tree_needs_rebuild(): source_stat_output: $source_stat_output ($source)\n";
+	    }
+
+	    if ($?)
+	    {
+		return 1;
+	    }
+
+	    # the youngest source file is the one with the highest seconds value
+
+	    if ($source_stat_output > $source_youngest)
+	    {
+		$source_youngest = $source_stat_output;
+	    }
+	}
+
+	# determine the oldest target file
+
+	my $target_oldest = 16127117390; # GMT: Friday, January 17, 2481 10:49:50 AM
+
+	my $targets = $build_tree->{targets};
+
+	foreach my $target (@$targets)
+	{
+	    #! %Y gives second accuracy, %y gives a higher resolution
+	    #! but its output requires more parsing
+
+	    my $target_stat_command = 'stat --format="%Y" ' . "'$target'";
+
+	    if ($remote_prefix)
+	    {
+		$target_stat_command = "$remote_prefix   $target_stat_command";
+	    }
+
+	    my $target_stat_output = `$target_stat_command 2>/dev/null`;
+
+	    if ($option_verbose
+		and $option_verbose > 1)
+	    {
+		print "build_tree_needs_rebuild(): target_stat_output: $target_stat_output ($target)\n";
+	    }
+
+	    if ($?)
+	    {
+		return 1;
+	    }
+
+	    # the oldest target file is the one with the smallest seconds value
+
+	    if ($target_stat_output < $target_oldest)
+	    {
+		$target_oldest = $target_stat_output;
+	    }
+	}
+
+	# if the youngest source file is younger than the oldest target file
+
+	if ($source_youngest >= $target_oldest)
+	{
+	    # we need to rebuild
+
+	    $result = 1;
+	}
+
+	# else all the target files  are younger than the youngest source file
+
+	else
+	{
+	    # so we don't need to rebuild
+
+	    $result = 0;
+	}
+
+	if ($option_verbose
+	    and $option_verbose > 1)
+	{
+	    print "build_tree_needs_rebuild(): source_youngest: $source_youngest, target_oldest: $target_oldest ==> needs_rebuild: $result\n";
+	}
+
+    }
+
+    # return result
+
+    return $result;
+}
+
+
 my $interaction_roles = {};
 
 my $current_interaction_role;
-
 
 sub execute_shell_command
 {
@@ -280,6 +404,8 @@ sub execute_shell_command
 	$verbose = "*** INFO: ";
     }
 
+    # if exporting to a script for this command
+
     my $export_sh = $options->{export_sh};
 
     if (not defined $export_sh)
@@ -291,11 +417,15 @@ sub execute_shell_command
     }
     else
     {
+	# if globally exporting all commands
+
 	if (defined $option_export_sh)
 	{
 	    $export_sh->{filename} = $option_export_sh;
 	}
     }
+
+    # if exporting timing information for this command
 
     my $export_times = $options->{export_times};
 
@@ -308,36 +438,37 @@ sub execute_shell_command
     }
     else
     {
+	# if globally exporting all timing information
+
 	if (defined $option_export_times)
 	{
 	    $export_times->{filename} = $option_export_times;
 	}
     }
 
-    my $export_output = $options->{export_output};
+    # if there is remoting information
 
-    my $dry_run = $options->{dry_run} || $option_dry_run;
-
-    my $output_path = $options->{output_path};
-
-    # prefix the command with an optional ssh remote
+    my $remote_prefix = "";
 
     if ($options->{remote})
     {
+	# do we need to skip remoting for this command?
+
 	if (exists $options->{remote}->{skip}
 	    and $command =~ /$options->{remote}->{skip}/)
 	{
 	    $current_interaction_role = "localuser\@localhost";
 	}
+
+	# else construct the remote role
+
 	else
 	{
-	    my $prefix = "";
-
 	    if (exists $options->{remote}->{ssh_password})
 	    {
 		my $ssh_password = $options->{remote}->{ssh_password};
 
-		$prefix .= "sshpass -p $ssh_password ";
+		$remote_prefix .= "sshpass -p $ssh_password ";
 	    }
 
 	    if (exists $options->{remote}->{ssh_options})
@@ -356,20 +487,20 @@ sub execute_shell_command
 
 			$current_interaction_role = "$ssh_user\@$ssh_server";
 
-			$prefix .= "ssh $ssh_options $ssh_user\@$ssh_server ";
+			$remote_prefix .= "ssh $ssh_options $ssh_user\@$ssh_server ";
 		    }
 		    else
 		    {
 			$current_interaction_role = $ssh_server;
 
-			$prefix .= "ssh $ssh_options $ssh_server ";
+			$remote_prefix .= "ssh $ssh_options $ssh_server ";
 		    }
 		}
 		else
 		{
 		    $current_interaction_role = "localuser\@localhost";
 
-		    $prefix .= "ssh $ssh_options ";
+		    $remote_prefix .= "ssh $ssh_options ";
 		}
 	    }
 	    else
@@ -379,47 +510,62 @@ sub execute_shell_command
 
 	    if (defined $verbose and ($verbose =~ /INFO/ or $verbose > 1))
 	    {
-		print "$verbose: prefix is $prefix\n";
-	    }
-
-	    $command = "$prefix   $command";
-
-	    if ($option_export_remote)
-	    {
-		$export_command = $command;
+		print "$verbose: remote_prefix is $remote_prefix\n";
 	    }
 	}
     }
+
+    # else no remoting information
+
     else
     {
+	# track the interaction role
+
 	$current_interaction_role = "localuser\@localhost";
     }
 
-    # prefix the command with an optional timeout
+    # prefix the command with the remoting information
+
+    if ($remote_prefix)
+    {
+	$command = "$remote_prefix   $command";
+
+	if ($option_export_remote)
+	{
+	    $export_command = $command;
+	}
+    }
+
+    # if there is timeout information
+
+    my $timeout_prefix = "";
 
     if ($options->{timeout})
     {
+	# if we need to skip timeout information
+
 	my $timeout_options = $options->{timeout};
 
 	if (exists $timeout_options->{skip}
 	    and $command =~ /$timeout_options->{skip}/)
 	{
 	}
+
+	# else construct the timeout command
+
 	else
 	{
-	    my $prefix = "";
-
 	    if (exists $timeout_options->{sudo}
 		and $timeout_options->{sudo} eq 1)
 	    {
-		$prefix .= "sudo ";
+		$timeout_prefix .= "sudo ";
 	    }
 
-	    $prefix .= "timeout ";
+	    $timeout_prefix .= "timeout ";
 
 	    if (exists $timeout_options->{options})
 	    {
-		$prefix .= "$timeout_options->{options} ";
+		$timeout_prefix .= "$timeout_options->{options} ";
 	    }
 
 	    if (not exists $timeout_options->{duration})
@@ -427,10 +573,24 @@ sub execute_shell_command
 		die "*** Error: $0: the timeout option of '$command' does not have the mandatory duration specified";
 	    }
 
-	    $prefix .= "$timeout_options->{duration} ";
-
-	    $command = "$prefix   $command";
+	    $timeout_prefix .= "$timeout_options->{duration} ";
 	}
+    }
+
+    # prefix the command with the timeout command
+
+    if ($timeout_prefix)
+    {
+	$command = "$timeout_prefix   $command";
+    }
+
+    # if we need to rebuild according to the build_tree
+
+    my $needs_rebuild = build_tree_needs_rebuild($options->{build_tree}, { remote_prefix => $remote_prefix, }, );
+
+    if (not $needs_rebuild)
+    {
+	return 0;
     }
 
     if ($verbose)
@@ -450,6 +610,8 @@ sub execute_shell_command
     }
 
     # we are either in dry-run ...
+
+    my $dry_run = $options->{dry_run} || $option_dry_run;
 
     if ($dry_run)
     {
@@ -599,6 +761,8 @@ sub execute_shell_command
 	}
 	else
 	{
+	    my $export_output = $options->{export_output};
+
 	    if ($export_times)
 	    {
 		if (not defined $global_exported_times_file)
@@ -692,6 +856,8 @@ sub execute_shell_command
 	    # }
 	}
 
+	my $output_path = $options->{output_path};
+
 #     my $exit_status = system "( $command ) >>$output_path 2>&1";
 
 	if ($exit_status)
@@ -718,6 +884,13 @@ sub execute_shell_command_array
     my $commands = shift;
 
     my $options = shift;
+
+    my $needs_rebuild = build_tree_needs_rebuild($options->{build_tree}, );
+
+    if (not $needs_rebuild)
+    {
+	return 0;
+    }
 
     foreach my $command (@$commands)
     {
@@ -760,6 +933,9 @@ sub execute_shell_command_schedule_array
 }
 
 
+# given a filename prefix and a 'command' generate an output filename
+# for logging the output of the command.
+
 our $output_filename_counter = 0;
 
 sub generate_output_filename
@@ -767,6 +943,14 @@ sub generate_output_filename
     my $prefix = shift;
 
     my $command = shift;
+
+    # a command three alphanumeric sequences that are used to
+    # construct an abbreviation of the command for use in the
+    # generated output filename
+
+    #! I don't believe this has ever been fully tested, and I don't
+    #! believe the regex is correct, it seems to miss anchors between
+    #! the alphanumeric sequences.
 
     $command =~ /([a-z0-9]){0,5}(?:[a-z0-9]*)([a-z0-9]){0,5}(?:[a-z0-9]*)([a-z0-9]){0,5}(?:[a-z0-9]*)/i;
 
@@ -776,9 +960,15 @@ sub generate_output_filename
 
     my $three = defined $3 ? $3 : "three";
 
+    # make sure the filename is unique to the given command
+
     $output_filename_counter++;
 
+    # generate the filename
+
     my $result = "$prefix-$output_filename_counter-$one-$two-$three";
+
+    # return result
 
     return $result;
 }
@@ -1213,9 +1403,9 @@ sub parse_command_line
     {
         print
             "
-$0: checkout and build the given Buildroot target using OVERRIDE_SRCDIR delivered packages.
+$0: checkout and build the given targets
 
-Special targets include 'toolchain' (build toolchain and unpacks the result), and others (try --help-targets).
+OVERRIDE_SRCDIR delivered packages for Buildroot targets are recognized.
 
 examples -- first try these with the --dry-run to understand what they do:
 

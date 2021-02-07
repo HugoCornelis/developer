@@ -53,11 +53,52 @@ sub heccer_build_manual
 {
     my $commands
 	= [
-	   "chdir $ENV{HOME}/projects/heccer/source/snapshots/master",
+	   "cd $ENV{HOME}/projects/heccer/source/snapshots/master",
 	   "neurospaces_harness --tags manual --output-pdf --output-figures --verbose",
 	  ];
 
-    execute_shell_command_array($commands);
+    my $build_tree
+	= {
+	   sources => [
+		       "$ENV{HOME}/projects/heccer/source/snapshots/master/tests/specifications/version.t",
+		      ],
+	   targets => [
+		       "/tmp/report_heccer.yml",
+		       "/tmp/test_report_heccer",
+		       "/tmp/test_report_heccer/",
+		       "/tmp/test_report_heccer/test_report_heccer_command_definition-command_test-meta-module2_perfectclamp__t_3_tests___code___perfectclamp-passive10-2_1_NONE-perfectclamp_output_graph_render_figure_definition.yml",
+		       "/tmp/test_report_heccer/test_report_heccer_command_definition-command_test-meta-module2_perfectclamp__t_3_tests___code___perfectclamp-passive10-2_1_NONE-perfectclamp_output_graph_render_data",
+		       "/tmp/test_report_heccer/test_report_heccer_command_definition-command_test-meta-module",
+		       "/tmp/test_report_heccer/test_report_heccer_command_definition-command_test-meta-module/figures",
+		       "/tmp/test_report_heccer/test_report_heccer_command_definition-command_test-meta-module/figures/ns-main-logo-dark2.jpg",
+		       "/tmp/test_report_heccer/test_report_heccer_command_definition-command_test-meta-module3_pulsegen__t_1_tests___code___pulsegen-freerun_1_NONE-pulsegen_output_graph_render_figure_definition.yml",
+		       "/tmp/test_report_heccer/test_report_heccer_command_definition-command_test-meta-module3_pulsegen__t_1_tests___code___pulsegen-freerun_1_NONE-pulsegen_output_graph_render_data",
+		       "/tmp/test_report_heccer/test_report_heccer_command_definition-command_test-meta-module.aux",
+		       "/tmp/test_report_heccer/test_report_heccer_command_definition-command_test-meta-module1_active___hh__t_1_tests___code___hh1_1_NONE-hh_output_graph_render_data",
+		       "/tmp/test_report_heccer/test_report_heccer_command_definition-command_test-meta-module2_perfectclamp__t_2_tests___code___perfectclamp-passive10_1_NONE-perfectclamp_output_graph_render_data",
+		       "/tmp/test_report_heccer/test_report_heccer_command_definition-command_test-meta-module3_pulsegen__t_2_tests___code___pulsegen-extgate_1_NONE-pulsegen_output_graph_render_data",
+		       "/tmp/test_report_heccer/test_report_heccer_command_definition-command_test-meta-module3_pulsegen__t_2_tests___code___pulsegen-extgate_1_NONE-pulsegen-output_graph_render.png",
+		       "/tmp/test_report_heccer/test_report_heccer_command_definition-command_test-meta-module2_perfectclamp__t_2_tests___code___perfectclamp-passive10_1_NONE-perfectclamp-output_graph_render.png",
+		       "/tmp/test_report_heccer/test_report_heccer_command_definition-command_test-meta-module3_pulsegen__t_2_tests___code___pulsegen-extgate_1_NONE-pulsegen_output_graph_render_figure_definition.yml",
+		       "/tmp/test_report_heccer/test_report_heccer_command_definition-command_test-meta-module2_perfectclamp__t_2_tests___code___perfectclamp-passive10_1_NONE-perfectclamp_output_graph_render_figure_definition.yml",
+		       "/tmp/test_report_heccer/test_report_heccer_command_definition-command_test-meta-module3_pulsegen__t_3_tests___code___pulsegen-exttrig_1_NONE-pulsegen-output_graph_render.png",
+		       "/tmp/test_report_heccer/test_report_heccer_command_definition-command_test-meta-module3_pulsegen__t_1_tests___code___pulsegen-freerun_1_NONE-pulsegen-output_graph_render.png",
+		       "/tmp/test_report_heccer/test_report_heccer_command_definition-command_test-meta-module.tex",
+		       "/tmp/test_report_heccer/test_report_heccer_command_definition-command_test-meta-module1_active___hh__t_1_tests___code___hh1_1_NONE-hh_output_graph_render_figure_definition.yml",
+		       "/tmp/test_report_heccer/test_report_heccer_command_definition-command_test-meta-module.out",
+		       "/tmp/test_report_heccer/test_report_heccer_command_definition-command_test-meta-module.log",
+		       "/tmp/test_report_heccer/test_report_heccer_command_definition-command_test-meta-module.pdf",
+		       "/tmp/test_report_heccer/test_report_heccer_command_definition-command_test-meta-module2_perfectclamp__t_1_tests___code___perfectclamp-passive1_1_NONE-perfectclamp_output_graph_render_data",
+		       "/tmp/test_report_heccer/test_report_heccer_command_definition-command_test-meta-module3_pulsegen__t_3_tests___code___pulsegen-exttrig_1_NONE-pulsegen_output_graph_render_figure_definition.yml",
+		       "/tmp/test_report_heccer/test_report_heccer_command_definition-command_test-meta-module3_pulsegen__t_3_tests___code___pulsegen-exttrig_1_NONE-pulsegen_output_graph_render_data",
+		       "/tmp/test_report_heccer/test_report_heccer_command_definition-command_test-meta-module2_perfectclamp__t_1_tests___code___perfectclamp-passive1_1_NONE-perfectclamp-output_graph_render.png",
+		       "/tmp/test_report_heccer/test_report_heccer_command_definition-command_test-meta-module1_active___hh__t_1_tests___code___hh1_1_NONE-hh-output_graph_render.png",
+		       "/tmp/test_report_heccer/test_report_heccer_command_definition-command_test-meta-module2_perfectclamp__t_3_tests___code___perfectclamp-passive10-2_1_NONE-perfectclamp-output_graph_render.png",
+		       "/tmp/test_report_heccer/test_report_heccer_command_definition-command_test-meta-module2_perfectclamp__t_1_tests___code___perfectclamp-passive1_1_NONE-perfectclamp_output_graph_render_figure_definition.yml",
+		      ],
+	  };
+
+    execute_shell_command_array($commands, { build_tree => $build_tree, }, );
 }
 
 
@@ -101,7 +142,7 @@ sub ssp_build_manual
 {
     my $commands
 	= [
-	   "chdir $ENV{HOME}/projects/ssp/source/snapshots/master",
+	   "cd $ENV{HOME}/projects/ssp/source/snapshots/master",
 	   "neurospaces_harness --tags manual --output-pdf --output-figures --verbose",
 	  ];
 
