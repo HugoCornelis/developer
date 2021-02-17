@@ -146,7 +146,51 @@ sub ssp_build_manual
 	   "neurospaces_harness --tags manual --output-pdf --output-figures --verbose",
 	  ];
 
-    execute_shell_command_array($commands);
+    my $build_tree
+	= {
+	   sources => [
+		       "$ENV{HOME}/projects/ssp/source/snapshots/master/tests/specifications/0_startup.t",
+		      ],
+	   targets => [
+		       "/tmp/report_ssp.yml",
+		       "/tmp/test_report_ssp",
+		       "/tmp/test_report_ssp/test_report_ssp_command_definition-command_test-meta-module1_builtins___purkinje__t_2_bin___ssp_1_NONE-hh-vm_output_graph_render_figure_definition.yml",
+		       "/tmp/test_report_ssp/test_report_ssp_command_definition-command_test-meta-module3_integration___tabulator__t_4_tests___perl___hh_tabulator_alpha_beta_1_NONE-hh-vm-b-forward-output_graph_render.png",
+		       "/tmp/test_report_ssp/test_report_ssp_command_definition-command_test-meta-module3_integration___tabulator__t_4_tests___perl___hh_tabulator_alpha_beta_1_NONE-hh-vm-b-backward-output_graph_render.png",
+		       "/tmp/test_report_ssp/test_report_ssp_command_definition-command_test-meta-module2_integration___purkinje__t_2_bin___ssp_1_NONE-hh-vm-output_graph_render.png",
+		       "/tmp/test_report_ssp/test_report_ssp_command_definition-command_test-meta-module.aux",
+		       "/tmp/test_report_ssp/test_report_ssp_command_definition-command_test-meta-module2_integration___purkinje__t_2_bin___ssp_1_NONE-hh-vm_output_graph_render_data",
+		       "/tmp/test_report_ssp/test_report_ssp_command_definition-command_test-meta-module3_integration___tabulator__t_1_tests___perl___hh_tabulator_internal_1_NONE-hh-vm-a-output_graph_render.png",
+		       "/tmp/test_report_ssp/test_report_ssp_command_definition-command_test-meta-module1_builtins___purkinje__t_3_bin___ssp_1_NONE-hh-vm_output_graph_render_data",
+		       "/tmp/test_report_ssp/test_report_ssp_command_definition-command_test-meta-module1_builtins___purkinje__t_1_bin___ssp_1_NONE-hh-vm_output_graph_render_figure_definition.yml",
+		       "/tmp/test_report_ssp/test_report_ssp_command_definition-command_test-meta-module1_builtins___purkinje__t_3_bin___ssp_1_NONE-hh-vm-output_graph_render.png",
+		       "/tmp/test_report_ssp/test_report_ssp_command_definition-command_test-meta-module2_integration___purkinje__t_2_bin___ssp_1_NONE-hh-vm_output_graph_render_figure_definition.yml",
+		       "/tmp/test_report_ssp/test_report_ssp_command_definition-command_test-meta-module.log",
+		       "/tmp/test_report_ssp/test_report_ssp_command_definition-command_test-meta-module.tex",
+		       "/tmp/test_report_ssp/test_report_ssp_command_definition-command_test-meta-module2_integration___purkinje__t_2_bin___ssp_1_NONE-hh-ca_output_graph_render_data",
+		       "/tmp/test_report_ssp/test_report_ssp_command_definition-command_test-meta-module.out",
+		       "/tmp/test_report_ssp/test_report_ssp_command_definition-command_test-meta-module2_integration___purkinje__t_2_bin___ssp_1_NONE-hh-ca-output_graph_render.png",
+		       "/tmp/test_report_ssp/test_report_ssp_command_definition-command_test-meta-module1_builtins___purkinje__t_1_bin___ssp_1_NONE-hh-vm-output_graph_render.png",
+		       "/tmp/test_report_ssp/test_report_ssp_command_definition-command_test-meta-module3_integration___tabulator__t_1_tests___perl___hh_tabulator_internal_1_NONE-hh-vm-b-output_graph_render.png",
+		       "/tmp/test_report_ssp/test_report_ssp_command_definition-command_test-meta-module1_builtins___purkinje__t_3_bin___ssp_1_NONE-hh-vm_output_graph_render_figure_definition.yml",
+		       "/tmp/test_report_ssp/test_report_ssp_command_definition-command_test-meta-module2_integration___purkinje__t_2_bin___ssp_1_NONE-hh-ca_output_graph_render_figure_definition.yml",
+		       "/tmp/test_report_ssp/test_report_ssp_command_definition-command_test-meta-module3_integration___tabulator__t_1_tests___perl___hh_tabulator_internal_1_NONE-hh-vm_output_graph_render_data",
+		       "/tmp/test_report_ssp/test_report_ssp_command_definition-command_test-meta-module3_integration___tabulator__t_4_tests___perl___hh_tabulator_alpha_beta_1_NONE-hh-vm_output_graph_render_data",
+		       "/tmp/test_report_ssp/test_report_ssp_command_definition-command_test-meta-module",
+		       "/tmp/test_report_ssp/test_report_ssp_command_definition-command_test-meta-module/figures",
+		       "/tmp/test_report_ssp/test_report_ssp_command_definition-command_test-meta-module/figures/ns-main-logo-dark2.jpg",
+		       "/tmp/test_report_ssp/test_report_ssp_command_definition-command_test-meta-module1_builtins___purkinje__t_2_bin___ssp_1_NONE-hh-vm_output_graph_render_data",
+		       "/tmp/test_report_ssp/test_report_ssp_command_definition-command_test-meta-module1_builtins___purkinje__t_2_bin___ssp_1_NONE-hh-vm-output_graph_render.png",
+		       "/tmp/test_report_ssp/test_report_ssp_command_definition-command_test-meta-module3_integration___tabulator__t_4_tests___perl___hh_tabulator_alpha_beta_1_NONE-hh-vm_output_graph_render_figure_definition.yml",
+		       "/tmp/test_report_ssp/test_report_ssp_command_definition-command_test-meta-module1_builtins___purkinje__t_1_bin___ssp_1_NONE-hh-vm_output_graph_render_data",
+		       "/tmp/test_report_ssp/test_report_ssp_command_definition-command_test-meta-module3_integration___tabulator__t_4_tests___perl___hh_tabulator_alpha_beta_1_NONE-hh-vm-a-forward-output_graph_render.png",
+		       "/tmp/test_report_ssp/test_report_ssp_command_definition-command_test-meta-module3_integration___tabulator__t_1_tests___perl___hh_tabulator_internal_1_NONE-hh-vm_output_graph_render_figure_definition.yml",
+		       "/tmp/test_report_ssp/test_report_ssp_command_definition-command_test-meta-module.pdf",
+		       "/tmp/test_report_ssp/test_report_ssp_command_definition-command_test-meta-module3_integration___tabulator__t_4_tests___perl___hh_tabulator_alpha_beta_1_NONE-hh-vm-a-backward-output_graph_render.png",
+		      ],
+	  };
+
+    execute_shell_command_array($commands, { build_tree => $build_tree, }, );
 }
 
 
