@@ -84,7 +84,7 @@ our $global_program_name;
 
 our $global_target_command;
 
-my $global_business_project = "neurospaces";
+our $global_business_project = "neurospaces";
 
 my $global_configuration_filename = "$global_program_abs_directory/$global_business_project-configuration";
 
@@ -1411,10 +1411,11 @@ examples -- first try these with the --dry-run to understand what they do:
 
   \$ $0                                                      # build the default target (the default target is '$default_target')
 
-  \$ $0 ssp                                                  # build the 'ssp' target
+  \$ $0 ssp                                                  # build the 'ssp' target (if it exists for your local configuration)
 
   \$ $0 --dry-run                                            # display the commands that would be executed for the default target
 
+  \$ $0 --help-targets                                       # display the available targets that are found in the configuration file
 
 options:
     --bash-completion         compute bash completion for the given command line.
