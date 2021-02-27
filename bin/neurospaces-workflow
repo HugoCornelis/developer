@@ -372,6 +372,21 @@ sub build_tree_needs_rebuild
 }
 
 
+sub display_commented_command
+{
+    my $command = shift;
+
+    my $options = shift;
+
+    if (not $options->{quiet})
+    {
+	# print "# $command (length: $command_length)\n#\n";
+
+	print "# $command\n#\n";
+    }
+}
+
+
 my $interaction_roles = {};
 
 my $current_interaction_role;
@@ -755,7 +770,7 @@ sub execute_shell_command
 	{
 	    my $arguments = $1;
 
-	    print "# $command\n#\n";
+	    display_commented_command($command, $options);
 
 	    $exit_status = not chdir $arguments;
 	}
@@ -804,9 +819,7 @@ sub execute_shell_command
 	    {
 		if (not $export_output)
 		{
-		    # print "# $command (length: $command_length)\n#\n";
-
-		    print "# $command\n#\n";
+		    display_commented_command($command, $options);
 
 		    $exit_status = system "$command";
 		}
