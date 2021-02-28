@@ -92,67 +92,95 @@ our $global_business_project;
 our $global_configuration;
 
 
-my $global_business_project_configuration_filename = "project.pl";
+package BusinessProject;
 
-# find the business project configuration directory
 
-my $global_business_project_configuration_directories
-    = [
-       ".",
-       $global_program_abs_directory,
-      ];
-
-my $global_business_project_configuration_directory;
-
-foreach my $business_project_configuration_directory (@$global_business_project_configuration_directories)
+sub _init
 {
-    if (-d $business_project_configuration_directory
-	and -e "$business_project_configuration_directory/$global_business_project_configuration_filename"
-	and -r "$business_project_configuration_directory/$global_business_project_configuration_filename")
+    # set the global business project name and business configuration data, this is used to find configuration and command files
+
+    $global_business_project = _init_get_project_name();
+
+    # set the technical configuration
+
+    $global_configuration = _init_get_configuration($global_business_project);
+}
+
+
+sub _init_get_project_name
+{
+    my $business_project_configuration_filename = "project.pl";
+
+    # find the business project configuration directory
+
+    my $business_project_configuration_directories
+	= [
+	   ".",
+	   $global_program_abs_directory,
+	  ];
+
+    my $business_project_configuration_directory;
+
+    foreach my $tmp (@$business_project_configuration_directories)
     {
-	$global_business_project_configuration_directory = $business_project_configuration_directory;
+	if (-d $tmp
+	    and -e "$tmp/$business_project_configuration_filename"
+	    and -r "$tmp/$business_project_configuration_filename")
+	{
+	    $business_project_configuration_directory = $tmp;
 
-	last;
+	    last;
+	}
     }
+
+    # read the business project configuration
+
+    if (not defined $business_project_configuration_directory)
+    {
+	die "$0: *** Error: no valid configuration file '$business_project_configuration_filename' found in any of the configuration directories ('.' or '$global_program_abs_directory')\n";
+    }
+
+    # set the global variable with the business_project data
+
+    $global_business_project_configuration = do "$business_project_configuration_directory/$business_project_configuration_filename";
+
+    if ($@)
+    {
+	die "$0: *** Error: no valid configuration file '$business_project_configuration_directory/$business_project_configuration_filename' found ($@)\n";
+    }
+
+    if (not defined $global_business_project_configuration
+	and $!)
+    {
+	die "$0: *** Error: no configuration file '$business_project_configuration_directory/$business_project_configuration_filename' found ($!)\n";
+    }
+
+    # return business project name, it is used to find configuration and command files
+
+    return $global_business_project_configuration->{project_name};
 }
 
-# read the business project configuration
 
-if (not defined $global_business_project_configuration_directory)
+sub _init_get_configuration
 {
-    die "$0: *** Error: no valid configuration file '$global_business_project_configuration_filename' found in any of the configuration directories ('.' or '$global_program_abs_directory')\n";
-}
+    my $project_name = shift;
 
-$global_business_project_configuration = do "$global_business_project_configuration_directory/$global_business_project_configuration_filename";
+    my $configuration_filename = "$global_program_abs_directory/$project_name-configuration";
 
-if ($@)
-{
-    die "$0: *** Error: no valid configuration file '$global_business_project_configuration_directory/$global_business_project_configuration_filename' found ($@)\n";
-}
+    my $configuration = do $configuration_filename;
 
-if (not defined $global_business_project_configuration
-    and $!)
-{
-    die "$0: *** Error: no configuration file '$global_business_project_configuration_directory/$global_business_project_configuration_filename' found ($!)\n";
-}
+    if ($@)
+    {
+	die "$0: *** Error: no valid configuration file '$configuration_filename' found ($@)\n";
+    }
 
-# set the global business project name, it is used to find configuration and command files
+    if (not defined $configuration
+	and $!)
+    {
+	die "$0: *** Error: no configuration file '$configuration_filename' found ($!)\n";
+    }
 
-$global_business_project = $global_business_project_configuration->{project_name};
-
-my $global_configuration_filename = "$global_program_abs_directory/$global_business_project-configuration";
-
-$global_configuration = do $global_configuration_filename;
-
-if ($@)
-{
-    die "$0: *** Error: no valid configuration file '$global_configuration_filename' found ($@)\n";
-}
-
-if (not defined $global_configuration
-    and $!)
-{
-    die "$0: *** Error: no configuration file '$global_configuration_filename' found ($!)\n";
+    return $configuration;
 }
 
 
@@ -1279,9 +1307,17 @@ sub main
     $INC{'Mo/builder.pm'} = 1;
     $INC{'Mo/default.pm'} = 1;
 
+    # initiallize business project related global configuration
+
+    BusinessProject::_init();
+
     # initialize the command module
 
     Command::_init();
+
+    # parse the local.mk packages to update the dynamically generated help pages
+
+    $global_overriden_packages = buildroot_parse_packages_directories();
 
     # parse command line
 
@@ -1299,7 +1335,7 @@ sub main
     #t this will overwrite the code in the build directories with custom code for packages listed in local.mk.
     #t should set a flag whether a build will be required and honor the flag in preprocessing stages.
 
-    buildroot_process_packages_directories();
+    buildroot_process_packages_directories($global_overriden_packages);
 
     # figure out the target and the command
 
@@ -1528,10 +1564,6 @@ options:
 	exit 0;
     }
 
-    # parse the local.mk packages to update the dynamically generated help pages
-
-    buildroot_parse_packages_directories();
-
     if (defined $option_build_server)
     {
 	my $build_servers = $global_configuration->{build_servers};
@@ -1731,7 +1763,7 @@ sub buildroot_parse_packages_directories
 
     # propagate the overriden_packages
 
-    $global_overriden_packages = $overriden_packages;
+    return $overriden_packages;
 }
 
 
@@ -1739,9 +1771,11 @@ sub buildroot_parse_packages_directories
 
 sub buildroot_process_packages_directories
 {
+    my $overriden_packages = shift;
+
     # loop over all the overriden packages
 
-    foreach my $package_name (sort keys %$global_overriden_packages)
+    foreach my $package_name (sort keys %$overriden_packages)
     {
 	# skip gcc related overrides, buildroot ignores them, we deal
 	# with them in the build command of the toolchain target
@@ -1753,7 +1787,7 @@ sub buildroot_process_packages_directories
 
 	# get the package source directory from the override
 
-	my $package_directory = $global_overriden_packages->{$package_name}->{directory};
+	my $package_directory = $overriden_packages->{$package_name}->{directory};
 
 	# get the build directory from the globally known packages
 
