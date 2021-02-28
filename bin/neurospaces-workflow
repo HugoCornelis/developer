@@ -150,13 +150,6 @@ if (not defined $global_configuration
     die "$0: *** Error: no configuration file '$global_configuration_filename' found ($!)\n";
 }
 
-my $global_build_servers = $global_configuration->{build_servers};
-my $global_packages = $global_configuration->{packages};
-my $global_projects = $global_configuration->{projects};
-my $global_submodule_branches = $global_configuration->{submodule_branches};
-my $global_stamp_filenames = $global_configuration->{stamp_filenames};
-my $global_target_files = $global_configuration->{target_files};
-my $global_targets = $global_configuration->{targets};
 
 our $global_main_project_name = "ssp";
 
@@ -1237,6 +1230,8 @@ sub generate_command_list
 
     # rework, select and sort these commands
 
+    my $targets = $global_configuration->{targets};
+
     my $commands = [
 		    # alphabatically group and make sense
 
@@ -1253,7 +1248,7 @@ sub generate_command_list
 
 		    map
 		    {
-			foreach my $target (sort keys %$global_targets)
+			foreach my $target (sort keys %$targets)
 			{
 			    $target =~ s/-/_/g;
 
@@ -1360,7 +1355,9 @@ sub main
 
 	my $build_source = "";
 
-	my $build_server = $global_build_servers->{$option_build_server};
+	my $build_servers = $global_configuration->{build_servers};
+
+	my $build_server = $build_servers->{$option_build_server};
 
 	if ($build_server->{name} ne 'laptop')
 	{
@@ -1532,40 +1529,44 @@ options:
 
     if (defined $option_build_server)
     {
-	if (not exists $global_build_servers->{$option_build_server})
+	my $build_servers = $global_configuration->{build_servers};
+
+	if (not exists $build_servers->{$option_build_server})
 	{
 	    die "$0: *** Error: unknown build server $option_build_server, use --help-build-servers to learn about the known servers";
 	}
 
 	# if (not defined $option_ssh_server)
 	# {
-	#     $option_ssh_server = $global_build_servers->{$option_build_server}->{ssh_server};
+	#     $option_ssh_server = $build_servers->{$option_build_server}->{ssh_server};
 	# }
 
 	# if (not defined $option_ssh_user)
 	# {
-	#     $option_ssh_user = $global_build_servers->{$option_build_server}->{ssh_user};
+	#     $option_ssh_user = $build_servers->{$option_build_server}->{ssh_user};
 	# }
 
 	if (not defined $option_ssh_port)
 	{
-	    $option_ssh_port = $global_build_servers->{$option_build_server}->{ssh_port};
+	    $option_ssh_port = $build_servers->{$option_build_server}->{ssh_port};
 	}
 
 	# if (not defined $option_tftp_directory)
 	# {
-	#     $option_tftp_directory = $global_build_servers->{$option_build_server}->{tftp_directory};
+	#     $option_tftp_directory = $build_servers->{$option_build_server}->{tftp_directory};
 	# }
 
 	# if (not defined $option_built_image_directory)
 	# {
-	#     $option_built_image_directory = $global_build_servers->{$option_build_server}->{built_image_directory};
+	#     $option_built_image_directory = $build_servers->{$option_build_server}->{built_image_directory};
 	# }
     }
 
+    my $build_servers = $global_configuration->{build_servers};
+
     if (defined $option_forward_destination_server)
     {
-	if (not exists $global_build_servers->{$option_forward_destination_server})
+	if (not exists $build_servers->{$option_forward_destination_server})
 	{
 	    die "$0: *** Error: unknown forwarding server $option_forward_destination_server, use --help-build-servers to learn about the known servers";
 	}
@@ -1573,7 +1574,7 @@ options:
 
     if (defined $option_forward_source_server)
     {
-	if (not exists $global_build_servers->{$option_forward_source_server})
+	if (not exists $build_servers->{$option_forward_source_server})
 	{
 	    die "$0: *** Error: unknown forwarding server $option_forward_source_server, use --help-build-servers to learn about the known servers";
 	}
@@ -1583,7 +1584,7 @@ options:
     {
 	use YAML;
 
-	print Dump( { build_servers => $global_build_servers, }, );
+	print Dump( { build_servers => $build_servers, }, );
 
 	exit 0;
     }
@@ -1612,7 +1613,9 @@ options:
     {
 	use YAML;
 
-	print Dump( { global_packages => $global_packages, }, );
+	my $packages = $global_configuration->{packages};
+
+	print Dump( { global_packages => $packages, }, );
 
 	print Dump( { global_overriden_packages => $global_overriden_packages, }, );
 
@@ -1632,7 +1635,9 @@ options:
     {
 	use YAML;
 
-	print Dump( { global_projects => $global_projects, }, );
+	my $projects = $global_configuration->{projects};
+
+	print Dump( { global_projects => $projects, }, );
 
 	exit 0;
     }
@@ -1641,7 +1646,9 @@ options:
     {
 	use YAML;
 
-	print Dump( { targets => $global_targets, }, );
+	my $targets = $global_configuration->{targets};
+
+	print Dump( { targets => $targets, }, );
 
 	exit 0;
     }
@@ -1745,7 +1752,9 @@ sub buildroot_process_packages_directories
 
 	# get the build directory from the globally known packages
 
-	my $build_directory = $global_packages->{$package_name}->{build_directory};
+	my $packages = $global_configuration->{packages};
+
+	my $build_directory = $packages->{$package_name}->{build_directory};
 
 	if (not defined $build_directory)
 	{
@@ -1756,7 +1765,9 @@ sub buildroot_process_packages_directories
 
 	# Context::execute_shell_command("cp -a '$package_directory'/* '$build_directory'");
 
-	# my $stamp_built = $global_stamp_filenames->[0];
+	# my $stamp_filenames = $global_configuration->{stamp_filenames};
+
+	# my $stamp_built = $stamp_filenames->[0];
 
 	# Context::execute_shell_command("rm -f '$build_directory/$stamp_built'");
     }
