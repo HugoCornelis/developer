@@ -85,7 +85,55 @@ our $global_program_name;
 
 our $global_target_command;
 
-our $global_business_project = "neurospaces";
+my $global_business_project_configuration_filename = "project.pl";
+
+# find the business project configuration directory
+
+my $global_business_project_configuration_directories
+    = [
+       ".",
+       $global_program_abs_directory,
+      ];
+
+our $global_business_project_configuration;
+
+my $global_business_project_configuration_directory;
+
+foreach my $business_project_configuration_directory (@$global_business_project_configuration_directories)
+{
+    if (-d $business_project_configuration_directory
+	and -e "$business_project_configuration_directory/$global_business_project_configuration_filename"
+	and -r "$business_project_configuration_directory/$global_business_project_configuration_filename")
+    {
+	$global_business_project_configuration_directory = $business_project_configuration_directory;
+
+	last;
+    }
+}
+
+# read the business project configuration
+
+if (not defined $global_business_project_configuration_directory)
+{
+    die "$0: *** Error: no valid configuration file '$global_business_project_configuration_filename' found in any of the configuration directories ('.' or '$global_program_abs_directory')\n";
+}
+
+$global_business_project_configuration = do "$global_business_project_configuration_directory/$global_business_project_configuration_filename";
+
+if ($@)
+{
+    die "$0: *** Error: no valid configuration file '$global_business_project_configuration_directory/$global_business_project_configuration_filename' found ($@)\n";
+}
+
+if (not defined $global_business_project_configuration
+    and $!)
+{
+    die "$0: *** Error: no configuration file '$global_business_project_configuration_directory/$global_business_project_configuration_filename' found ($!)\n";
+}
+
+# set the global business project name, it is used to find configuration and command files
+
+our $global_business_project = $global_business_project_configuration->{project_name};
 
 my $global_configuration_filename = "$global_program_abs_directory/$global_business_project-configuration";
 
