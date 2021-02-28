@@ -40,6 +40,7 @@ our $option_dry_run;
 our $option_export_remote;
 our $option_export_sh;
 our $option_export_times;
+our $option_export_verbose;
 our $option_forward_destination_server = "laptop";
 our $option_forward_source_server = "laptop";
 our $option_help;
@@ -746,6 +747,11 @@ sub execute_shell_command
 
 	print "$0: *** Running in export_sh mode, exporting: '$export_command'\n";
 
+	if ($option_export_verbose)
+	{
+	    print $global_exported_sh_file "echo '$export_command'\n";
+	}
+
 	if (exists $export_sh->{prefix})
 	{
 	    print $global_exported_sh_file $export_sh->{prefix};
@@ -1238,7 +1244,7 @@ sub main
     #t this will overwrite the code in the build directories with custom code for packages listed in local.mk.
     #t should set a flag whether a build will be required and honor the flag in preprocessing stages.
 
-    process_packages_directories();
+    buildroot_process_packages_directories();
 
     # figure out the target and the command
 
@@ -1348,6 +1354,7 @@ sub parse_command_line
 	 "export-remote" => \$option_export_remote,
 	 "export-sh:s" => \$option_export_sh,
 	 "export-times!" => \$option_export_times,
+	 "export-verbose!" => \$option_export_verbose,
 	 "forward-destination-server=s" => \$option_forward_destination_server,
 	 "forward-source-server=s" => \$option_forward_source_server,
 	 "help!" => \$option_help,
@@ -1441,6 +1448,7 @@ options:
     --export-remote           include the remote access part when exporting commands to a file.
     --export-sh               export the commands to a file with the given name.
     --export-times            export the times when commands are started and ended to a file with the given name.
+    --export-verbose          when exporting the commands to a file, interleave them with echo commands.
     --forward-destination     the target file forward destination to copy to.
     --forward-source          the target file forward source to copy from.
     --help                    display usage information and stop execution.
@@ -1463,9 +1471,9 @@ options:
 	exit 0;
     }
 
-    # parse the local.mk packages so that they are actual for the help pages
+    # parse the local.mk packages to update the dynamically generated help pages
 
-    parse_packages_directories();
+    buildroot_parse_packages_directories();
 
     if (defined $option_build_server)
     {
@@ -1588,7 +1596,7 @@ options:
 
 # parse the package directories in local.mk
 
-sub parse_packages_directories
+sub buildroot_parse_packages_directories
 {
 #     "$ENV{HOME}/projects/developer/source/snapshots/$branch";
 
@@ -1662,7 +1670,7 @@ sub parse_packages_directories
 
 # prepare the package directories in local.mk
 
-sub process_packages_directories
+sub buildroot_process_packages_directories
 {
     # loop over all the overriden packages
 
