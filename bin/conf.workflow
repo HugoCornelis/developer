@@ -1,4 +1,13 @@
 # this file should be copied to /usr/share/grc/
+#
+# add this at the top of /etc/grc.conf
+#
+#
+# # neurospaces workflow
+# (^|[/\w\.]+/)workflow
+# conf.workflow
+#
+#
 # targets
 # regexp=ccr(?!-workflow)
 # colours=green bold
@@ -7,21 +16,6 @@
 # colours=green bold
 # -
 # regexp=ip_routing
-# colours=green bold
-# -
-# regexp=apm2
-# colours=green bold
-# -
-# regexp=benchmark
-# colours=green bold
-# -
-# regexp=container
-# colours=green bold
-# -
-# regexp=cr(?!-workflow)
-# colours=green bold
-# -
-# regexp=smp_cr
 # colours=green bold
 # -
 # commands

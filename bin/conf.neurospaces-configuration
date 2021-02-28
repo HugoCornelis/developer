@@ -1,4 +1,13 @@
 # this file should be copied to /usr/share/grc/
+#
+# add this at the top of /etc/grc.conf
+#
+#
+# # neurospaces configuration
+# (^|[/\w\.]+/)neurospaces-configuration
+# conf.neurospaces-configuration
+#
+#
 # maintainance laptop according to the documentation
 regexp=laptop_slave
 colours=yellow

@@ -23,7 +23,6 @@ dist_bin_SCRIPTS = \
 	bin/neurospaces-commands \
 	bin/neurospaces-configuration \
 	bin/neurospaces-manager-gui \
-	bin/neurospaces-workflow \
 	bin/neurospaces_build \
 	bin/neurospaces_check \
 	bin/neurospaces_clean \
@@ -77,7 +76,8 @@ dist_bin_SCRIPTS = \
 	bin/release-extract \
 	bin/signal_voltage_characteristics \
 	bin/td-labels \
-	bin/td-majors
+	bin/td-majors \
+	bin/workflow
 
 developertestdir=$(prefix)/neurospaces/developer
 nobase_dist_developertest_DATA=@TEST_SPECIFICATION_FILES@
