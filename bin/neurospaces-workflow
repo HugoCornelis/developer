@@ -190,56 +190,59 @@ sub execute_shell_command_schedule_array
 }
 
 
-my $commands_seen;
-
-my $command_filenames_found
-    = [
-       grep
-       {
-	   /$global_business_project-commands[-a-z0-9]*$/;
-       }
-       map
-       {
-	   chomp; $_;
-       }
-       `ls $global_program_abs_directory/$global_business_project-commands*`,
-      ];
-
-my $command_filenames_configured
-    = [
-       grep
-       {
-	   /$global_business_project-commands[-a-z0-9]*$/;
-       }
-       map
-       {
-	   "$global_program_abs_directory/$_";
-       }
-       @{ $global_configuration->{command_filenames} },
-      ];
-
-my $command_filenames
-    = [
-       grep
-       {
-	   not $commands_seen->{$_}++;
-       }
-       @$command_filenames_configured,
-#        @$command_filenames_found,
-      ];
-
-foreach my $command_filename (@$command_filenames)
+sub _init
 {
-    my $commands = do $command_filename;
+    my $commands_seen;
 
-    if ($@)
-    {
-	die "$0: *** Error: no valid commands file '$command_filename' found ($@)\n";
-    }
+    my $command_filenames_found
+	= [
+	   grep
+	   {
+	       /$global_business_project-commands[-a-z0-9]*$/;
+	   }
+	   map
+	   {
+	       chomp; $_;
+	   }
+	   `ls $global_program_abs_directory/$global_business_project-commands*`,
+	  ];
 
-    if ($!)
+    my $command_filenames_configured
+	= [
+	   grep
+	   {
+	       /$global_business_project-commands[-a-z0-9]*$/;
+	   }
+	   map
+	   {
+	       "$global_program_abs_directory/$_";
+	   }
+	   @{ $global_configuration->{command_filenames} },
+	  ];
+
+    my $command_filenames
+	= [
+	   grep
+	   {
+	       not $commands_seen->{$_}++;
+	   }
+	   @$command_filenames_configured,
+	   #        @$command_filenames_found,
+	  ];
+
+    foreach my $command_filename (@$command_filenames)
     {
-	die "$0: *** Error: no commands file '$command_filename' found ($!)\n";
+	my $commands = do $command_filename;
+
+	if ($@)
+	{
+	    die "$0: *** Error: no valid commands file '$command_filename' found ($@)\n";
+	}
+
+	if ($!)
+	{
+	    die "$0: *** Error: no commands file '$command_filename' found ($!)\n";
+	}
     }
 }
 
@@ -1275,6 +1278,10 @@ sub main
 
     $INC{'Mo/builder.pm'} = 1;
     $INC{'Mo/default.pm'} = 1;
+
+    # initialize the command module
+
+    Command::_init();
 
     # parse command line
 
