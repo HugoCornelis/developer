@@ -46,6 +46,7 @@ our $option_forward_source_server = "laptop";
 our $option_help;
 our $option_help_build_servers;
 our $option_help_commands;
+our $option_help_field_project_name;
 our $option_help_packages;
 our $option_help_projects;
 our $option_help_targets;
@@ -85,106 +86,9 @@ our $global_program_name;
 
 our $global_target_command;
 
-our $global_business_project_configuration;
+our $global_field_project_configuration;
 
-our $global_business_project;
-
-our $global_configuration;
-
-
-package BusinessProject;
-
-
-sub _init
-{
-    # set the global business project name and business configuration data, this is used to find configuration and command files
-
-    $global_business_project = _init_get_project_name();
-
-    # set the technical configuration
-
-    $global_configuration = _init_get_configuration($global_business_project);
-}
-
-
-sub _init_get_project_name
-{
-    my $business_project_configuration_filename = "project.pl";
-
-    # find the business project configuration directory
-
-    my $business_project_configuration_directories
-	= [
-	   ".",
-	   $global_program_abs_directory,
-	  ];
-
-    my $business_project_configuration_directory;
-
-    foreach my $tmp (@$business_project_configuration_directories)
-    {
-	if (-d $tmp
-	    and -e "$tmp/$business_project_configuration_filename"
-	    and -r "$tmp/$business_project_configuration_filename")
-	{
-	    $business_project_configuration_directory = $tmp;
-
-	    last;
-	}
-    }
-
-    # read the business project configuration
-
-    if (not defined $business_project_configuration_directory)
-    {
-	die "$0: *** Error: no valid configuration file '$business_project_configuration_filename' found in any of the configuration directories ('.' or '$global_program_abs_directory')\n";
-    }
-
-    # set the global variable with the business_project data
-
-    $global_business_project_configuration = do "$business_project_configuration_directory/$business_project_configuration_filename";
-
-    if ($@)
-    {
-	die "$0: *** Error: no valid configuration file '$business_project_configuration_directory/$business_project_configuration_filename' found ($@)\n";
-    }
-
-    if (not defined $global_business_project_configuration
-	and $!)
-    {
-	die "$0: *** Error: no configuration file '$business_project_configuration_directory/$business_project_configuration_filename' found ($!)\n";
-    }
-
-    # return business project name, it is used to find configuration and command files
-
-    return $global_business_project_configuration->{project_name};
-}
-
-
-sub _init_get_configuration
-{
-    my $project_name = shift;
-
-    my $configuration_filename = "$global_program_abs_directory/$project_name-configuration";
-
-    my $configuration = do $configuration_filename;
-
-    if ($@)
-    {
-	die "$0: *** Error: no valid configuration file '$configuration_filename' found ($@)\n";
-    }
-
-    if (not defined $configuration
-	and $!)
-    {
-	die "$0: *** Error: no configuration file '$configuration_filename' found ($!)\n";
-    }
-
-    return $configuration;
-}
-
-
-our $global_main_project_name = "ssp";
+our $global_technical_project_configuration;
 
 
 package Command;
@@ -220,30 +124,32 @@ sub _init
 {
     my $commands_seen;
 
+    my $field_project_name = $global_field_project_configuration->{field_project_name};
+
     my $command_filenames_found
 	= [
 	   grep
 	   {
-	       /$global_business_project-commands[-a-z0-9]*$/;
+	       /$field_project_name-commands[-a-z0-9]*$/;
 	   }
 	   map
 	   {
 	       chomp; $_;
 	   }
-	   `ls $global_program_abs_directory/$global_business_project-commands*`,
+	   `ls $global_program_abs_directory/$field_project_name-commands*`,
 	  ];
 
     my $command_filenames_configured
 	= [
 	   grep
 	   {
-	       /$global_business_project-commands[-a-z0-9]*$/;
+	       /$field_project_name-commands[-a-z0-9]*$/;
 	   }
 	   map
 	   {
 	       "$global_program_abs_directory/$_";
 	   }
-	   @{ $global_configuration->{command_filenames} },
+	   @{ $global_technical_project_configuration->{command_filenames} },
 	  ];
 
     my $command_filenames
@@ -1070,6 +976,141 @@ sub generate_output_filename
 }
 
 
+package FieldProject;
+
+
+sub _init
+{
+    # set the global field project name and field configuration data, this is used to find configuration and command files
+
+    $global_field_project_configuration = _init_get_field_project_configuration();
+
+    # set the technical configuration
+
+    $global_technical_project_configuration = _init_get_configuration($global_field_project_configuration->{field_project_name});
+}
+
+
+sub _init_get_field_project_configuration
+{
+    # set default result: undefined
+
+    my $result;
+
+    # try to determine the field_project_name from the executable name
+
+    if ($0 =~ m(.*/(.*)-workflow))
+    {
+	# set result
+
+	$result
+	    = {
+	       field_project_name => $1,
+	       from_executable => "dynamically_generated from the executable script name",
+	      };
+    }
+    else
+    {
+	# try to determine the field project name for a field_project_configuration file
+
+	my $field_project_configuration_filename = "project.pl";
+
+	# loop over the possible field project configuration directories
+
+	my $field_project_configuration_directories
+	    = [
+	       ".",
+	       $global_program_abs_directory,
+	      ];
+
+	my $field_project_configuration_directory;
+
+	foreach my $tmp (@$field_project_configuration_directories)
+	{
+	    # if a field_project_configuration file can be found
+
+	    if (-d $tmp
+		and -e "$tmp/$field_project_configuration_filename"
+		and -r "$tmp/$field_project_configuration_filename")
+	    {
+		# this is the one we use
+
+		$field_project_configuration_directory = $tmp;
+
+		last;
+	    }
+	}
+
+	# if the field_project_configuration_directory was found
+
+	if (defined $field_project_configuration_directory)
+	{
+	    # read the field project configuration
+
+	    # set the global variable with the field_project data
+
+	    my $field_project_configuration = do "$field_project_configuration_directory/$field_project_configuration_filename";
+
+	    if ($@)
+	    {
+		die "$0: *** Error: no valid configuration file '$field_project_configuration_directory/$field_project_configuration_filename' found ($@)\n";
+	    }
+
+	    if (not defined $field_project_configuration
+		and $!)
+	    {
+		die "$0: *** Error: no configuration file '$field_project_configuration_directory/$field_project_configuration_filename' found ($!)\n";
+	    }
+
+	    # set result: field project name, it is used to find configuration and command files
+
+	    $result
+		= {
+		   %$field_project_configuration,
+		   from_directory => $field_project_configuration_directory,
+		  };
+	}
+
+	# no field_project_configuration_directory was found
+
+	else
+	{
+	    die "$0: *** Error: no valid configuration file '$field_project_configuration_filename' found in any of the configuration directories ('.' or '$global_program_abs_directory')\n";
+	}
+    }
+
+    # return result
+
+    return $result;
+}
+
+
+sub _init_get_configuration
+{
+    my $project_name = shift;
+
+    my $configuration_filename = "$global_program_abs_directory/$project_name-configuration";
+
+    my $configuration = do $configuration_filename;
+
+    if ($@)
+    {
+	die "$0: *** Error: no valid configuration file '$configuration_filename' found ($@)\n";
+    }
+
+    if (not defined $configuration
+	and $!)
+    {
+	die "$0: *** Error: no configuration file '$configuration_filename' found ($!)\n";
+    }
+
+    return $configuration;
+}
+
+
+our $global_main_project_name = "ssp";
+
+
 package main;
 
 
@@ -1095,7 +1136,7 @@ sub bash_completion
 
     if ($command =~ /configuration/)
     {
-	$result = bash_completion_generate($command, $arguments, $global_configuration);
+	$result = bash_completion_generate($command, $arguments, $global_technical_project_configuration);
 
 	push @$result, '--', '-1', '-2', '-3';
     }
@@ -1185,11 +1226,13 @@ sub bash_completion_generate_options
 			--export-remote
 			--export-sh
 			--export-times
+			--export-verbose
 			--forward-destination
 			--forward-source
 			--help
 			--help-build-servers
 			--help-commands
+			--help-field-project-name
 			--help-packages
 			--help-projects
 			--help-targets
@@ -1263,7 +1306,7 @@ sub generate_command_list
 
     # rework, select and sort these commands
 
-    my $targets = $global_configuration->{targets};
+    my $targets = $global_technical_project_configuration->{targets};
 
     my $commands = [
 		    # alphabatically group and make sense
@@ -1307,9 +1350,9 @@ sub main
     $INC{'Mo/builder.pm'} = 1;
     $INC{'Mo/default.pm'} = 1;
 
-    # initiallize business project related global configuration
+    # initiallize field project related global configuration
 
-    BusinessProject::_init();
+    FieldProject::_init();
 
     # initialize the command module
 
@@ -1396,7 +1439,7 @@ sub main
 
 	my $build_source = "";
 
-	my $build_servers = $global_configuration->{build_servers};
+	my $build_servers = $global_technical_project_configuration->{build_servers};
 
 	my $build_server = $build_servers->{$option_build_server};
 
@@ -1453,6 +1496,7 @@ sub parse_command_line
 	 "help!" => \$option_help,
 	 "help-build-servers!" => \$option_help_build_servers,
 	 "help-commands!" => \$option_help_commands,
+	 "help-field-project-name!" => \$option_help_field_project_name,
 	 "help-packages!" => \$option_help_packages,
 	 "help-projects!" => \$option_help_projects,
 	 "help-targets!" => \$option_help_targets,
@@ -1547,6 +1591,7 @@ options:
     --help                    display usage information and stop execution.
     --help-build-servers      display the known build servers.
     --help-commands           display the available commands (requires the installation of Devel::Symdump with 'sudo cpanm Devel::Symdump').
+    --help-field-project-name print the field project name and exit.
     --help-packages           display known package and overriden package information and stop execution.
     --help-projects           display known project information and stop execution.
     --help-targets            display known targets and stop execution.
@@ -1566,7 +1611,7 @@ options:
 
     if (defined $option_build_server)
     {
-	my $build_servers = $global_configuration->{build_servers};
+	my $build_servers = $global_technical_project_configuration->{build_servers};
 
 	if (not exists $build_servers->{$option_build_server})
 	{
@@ -1599,7 +1644,7 @@ options:
 	# }
     }
 
-    my $build_servers = $global_configuration->{build_servers};
+    my $build_servers = $global_technical_project_configuration->{build_servers};
 
     if (defined $option_forward_destination_server)
     {
@@ -1650,11 +1695,20 @@ options:
     {
 	use YAML;
 
-	my $packages = $global_configuration->{packages};
+	my $packages = $global_technical_project_configuration->{packages};
 
 	print Dump( { global_packages => $packages, }, );
 
 	print Dump( { global_overriden_packages => $global_overriden_packages, }, );
+
+	exit 0;
+    }
+
+    if ($option_help_field_project_name)
+    {
+	use YAML;
+
+	print Dump( { global_field_project_configuration => $global_field_project_configuration, }, );
 
 	exit 0;
     }
@@ -1672,7 +1726,7 @@ options:
     {
 	use YAML;
 
-	my $projects = $global_configuration->{projects};
+	my $projects = $global_technical_project_configuration->{projects};
 
 	print Dump( { global_projects => $projects, }, );
 
@@ -1683,7 +1737,7 @@ options:
     {
 	use YAML;
 
-	my $targets = $global_configuration->{targets};
+	my $targets = $global_technical_project_configuration->{targets};
 
 	print Dump( { targets => $targets, }, );
 
@@ -1791,7 +1845,7 @@ sub buildroot_process_packages_directories
 
 	# get the build directory from the globally known packages
 
-	my $packages = $global_configuration->{packages};
+	my $packages = $global_technical_project_configuration->{packages};
 
 	my $build_directory = $packages->{$package_name}->{build_directory};
 
@@ -1804,7 +1858,7 @@ sub buildroot_process_packages_directories
 
 	# Context::execute_shell_command("cp -a '$package_directory'/* '$build_directory'");
 
-	# my $stamp_filenames = $global_configuration->{stamp_filenames};
+	# my $stamp_filenames = $global_technical_project_configuration->{stamp_filenames};
 
 	# my $stamp_built = $stamp_filenames->[0];
 

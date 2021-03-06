@@ -7,7 +7,7 @@ use warnings;
 
 my $configuration
     = {
-       project_name => "neurospaces",
+       field_project_name => "neurospaces",
       };
 
 

@@ -20,3 +20,6 @@ _neurospaces_workflow_completions()
 complete -F _neurospaces_workflow_completions workflow
 complete -F _neurospaces_workflow_completions ./workflow
 
+complete -F _neurospaces_workflow_completions neurospaces-workflow
+complete -F _neurospaces_workflow_completions ./neurospaces-workflow
+
