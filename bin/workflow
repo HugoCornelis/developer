@@ -70,12 +70,19 @@ our $default_target = "ssp";
 our $global_command_line = join " ", $0, @ARGV;
 our $global_overriden_packages;
 our $global_program_abs_directory;
+our $global_program_rel_directory;
 our $global_program_name;
 
 {
     use Cwd;
 
+    ($0 =~ m((.*)/(\S+)));
+
+    $global_program_rel_directory = $1;
+    # $global_program_name = $2;
+
     my $program_name_full = $0;
+
     my $program_name_full_abs = Cwd::abs_path($program_name_full);
 
     ($program_name_full_abs =~ m((.*)/(\S+)));
@@ -137,7 +144,7 @@ sub _init
 	   {
 	       chomp; $_;
 	   }
-	   `ls $global_program_abs_directory/$field_project_name-commands*`,
+	   `ls $global_program_rel_directory/$field_project_name-commands*`,
 	  ];
 
     my $command_filenames_configured
@@ -148,7 +155,7 @@ sub _init
 	   }
 	   map
 	   {
-	       "$global_program_abs_directory/$_";
+	       "$global_program_rel_directory/$_";
 	   }
 	   @{ $global_technical_project_configuration->{command_filenames} },
 	  ];
@@ -1031,7 +1038,7 @@ sub _init
 
     # set the technical configuration
 
-    $global_technical_project_configuration = _init_get_configuration($global_field_project_configuration->{field_project_name});
+    $global_technical_project_configuration = _init_get_technical_configuration($global_field_project_configuration->{field_project_name});
 }
 
 
@@ -1064,6 +1071,7 @@ sub _init_get_field_project_configuration
 	my $field_project_configuration_directories
 	    = [
 	       ".",
+	       $global_program_rel_directory,
 	       $global_program_abs_directory,
 	      ];
 
@@ -1119,7 +1127,7 @@ sub _init_get_field_project_configuration
 
 	else
 	{
-	    die "$0: *** Error: no valid configuration file '$field_project_configuration_filename' found in any of the configuration directories ('.' or '$global_program_abs_directory')\n";
+	    die "$0: *** Error: no valid configuration file '$field_project_configuration_filename' found in any of the configuration directories ('.', 'global_program_rel_directory' or '$global_program_abs_directory')\n";
 	}
     }
 
@@ -1129,26 +1137,56 @@ sub _init_get_field_project_configuration
 }
 
 
-sub _init_get_configuration
+sub _init_get_technical_configuration
 {
     my $project_name = shift;
 
-    my $configuration_filename = "$global_program_abs_directory/$project_name-configuration";
+    my $technical_project_configuration_directories
+	= [
+	   ".",
+	   $global_program_rel_directory,
+	   $global_program_abs_directory,
+	  ];
 
-    my $configuration = do $configuration_filename;
+    my $technical_project_configuration_directory;
+
+    foreach my $tmp (@$technical_project_configuration_directories)
+    {
+	# if a technical_project_configuration file can be found
+
+	if (-d $tmp
+	    and -e "$tmp/$project_name-configuration"
+	    and -r "$tmp/$project_name-configuration")
+	{
+	    # this is the one we use
+
+	    $technical_project_configuration_directory = $tmp;
+
+	    last;
+	}
+    }
+
+    if (not defined $technical_project_configuration_directory)
+    {
+	die "$0: *** Error: no configuration file '$project_name-configuration' found in any of the searched directories (would prefer this to be in $global_program_rel_directory)\n";
+    }
+
+    my $technical_configuration_filename = "$technical_project_configuration_directory/$project_name-configuration";
+
+    my $technical_configuration = do $technical_configuration_filename;
 
     if ($@)
     {
-	die "$0: *** Error: no valid configuration file '$configuration_filename' found ($@)\n";
+	die "$0: *** Error: no valid configuration file '$technical_configuration_filename' found ($@)\n";
     }
 
-    if (not defined $configuration
+    if (not defined $technical_configuration
 	and $!)
     {
-	die "$0: *** Error: no configuration file '$configuration_filename' found ($!)\n";
+	die "$0: *** Error: no configuration file '$technical_configuration_filename' found ($!)\n";
     }
 
-    return $configuration;
+    return $technical_configuration;
 }
 
 
