@@ -39,6 +39,7 @@ our $option_commands = [];
 our $option_dry_run;
 our $option_export_remote;
 our $option_export_sh;
+our $option_export_sudo;
 our $option_export_times;
 our $option_export_verbose;
 our $option_forward_destination_server = "laptop";
@@ -442,6 +443,47 @@ sub execute_shell_command
 	if (defined $option_export_times)
 	{
 	    $export_times->{filename} = $option_export_times;
+	}
+    }
+
+    # if there is sudo information
+
+    my $sudo_prefix = "";
+
+    if ($options->{sudo})
+    {
+	# if we need to skip sudo information
+
+	my $sudo_options = $options->{sudo};
+
+	if (exists $sudo_options->{skip}
+	    and $command =~ /$sudo_options->{skip}/)
+	{
+	}
+
+	# else construct the sudo command
+
+	elsif (exists $sudo_options->{pattern}
+	       and $command =~ /$sudo_options->{pattern}/)
+	{
+	    $sudo_prefix .= "sudo ";
+
+	    if (exists $sudo_options->{options})
+	    {
+		$sudo_prefix .= "$sudo_options->{options} ";
+	    }
+	}
+    }
+
+    # prefix the command with the sudo command
+
+    if ($sudo_prefix)
+    {
+	$command = "$sudo_prefix   $command";
+
+	if ($option_export_sudo)
+	{
+	    $export_command = $command;
 	}
     }
 
@@ -1225,6 +1267,7 @@ sub bash_completion_generate_options
 			--dry-run
 			--export-remote
 			--export-sh
+			--export-sudo
 			--export-times
 			--export-verbose
 			--forward-destination
@@ -1489,6 +1532,7 @@ sub parse_command_line
 	 "dry-run!" => \$option_dry_run,
 	 "export-remote" => \$option_export_remote,
 	 "export-sh:s" => \$option_export_sh,
+	 "export-sudo" => \$option_export_sudo,
 	 "export-times!" => \$option_export_times,
 	 "export-verbose!" => \$option_export_verbose,
 	 "forward-destination-server=s" => \$option_forward_destination_server,
@@ -1584,6 +1628,7 @@ options:
     --dry-run                 if set, do not execute system shell commands but print them to STDOUT.
     --export-remote           include the remote access part when exporting commands to a file.
     --export-sh               export the commands to a file with the given name.
+    --export-sudo             include the sudo commands when exporting commands to a file.
     --export-times            export the times when commands are started and ended to a file with the given name.
     --export-verbose          when exporting the commands to a file, interleave them with echo commands.
     --forward-destination     the target file forward destination to copy to.
