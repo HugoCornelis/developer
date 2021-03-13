@@ -623,6 +623,8 @@ sub execute_shell_command
     if ($timeout_prefix)
     {
 	$command = "$timeout_prefix   $command";
+
+	$export_command = $command;
     }
 
     # if we need to rebuild according to the build_tree
