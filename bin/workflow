@@ -1035,15 +1035,32 @@ sub generate_output_filename
 package FieldProject;
 
 
+our $status;
+
+
 sub _init
 {
-    # set the global field project name and field configuration data, this is used to find configuration and command files
+    # default result: empty
 
-    $global_field_project_configuration = _init_get_field_project_configuration();
+    my $result_field;
+
+    my $result_technical;
+
+    # set the global field project name and field configuration data
+    # this is used to find configuration and command files
+
+    $result_field = _init_get_field_project_configuration();
 
     # set the technical configuration
 
-    $global_technical_project_configuration = _init_get_technical_configuration($global_field_project_configuration->{field_project_name});
+    if ($result_field)
+    {
+	$result_technical = _init_get_technical_configuration($result_field->{field_project_name});
+    }
+
+    # return field project configuration data
+
+    return ($result_field, $result_technical);
 }
 
 
@@ -1110,13 +1127,17 @@ sub _init_get_field_project_configuration
 
 	    if ($@)
 	    {
-		die "$0: *** Error: no valid configuration file '$field_project_configuration_directory/$field_project_configuration_filename' found ($@)\n";
+		$status = "$0: *** Error: no valid configuration file '$field_project_configuration_directory/$field_project_configuration_filename' found ($@)\n";
+
+		return undef;
 	    }
 
 	    if (not defined $field_project_configuration
 		and $!)
 	    {
-		die "$0: *** Error: no configuration file '$field_project_configuration_directory/$field_project_configuration_filename' found ($!)\n";
+		$status = "$0: *** Error: no configuration file '$field_project_configuration_directory/$field_project_configuration_filename' found ($!)\n";
+
+		return undef;
 	    }
 
 	    # set result: field project name, it is used to find configuration and command files
@@ -1132,7 +1153,9 @@ sub _init_get_field_project_configuration
 
 	else
 	{
-	    die "$0: *** Error: no valid configuration file '$field_project_configuration_filename' found in any of the configuration directories ('.', 'global_program_rel_directory' or '$global_program_abs_directory')\n";
+	    $status = "$0: *** Error: no valid configuration file '$field_project_configuration_filename' found in any of the configuration directories ('.', 'global_program_rel_directory' or '$global_program_abs_directory')\n";
+
+	    return undef;
 	}
     }
 
@@ -1173,7 +1196,9 @@ sub _init_get_technical_configuration
 
     if (not defined $technical_project_configuration_directory)
     {
-	die "$0: *** Error: no configuration file '$project_name-configuration' found in any of the searched directories (would prefer this to be in $global_program_rel_directory)\n";
+	$status = "$0: *** Error: no configuration file '$project_name-configuration' found in any of the searched directories (would prefer this to be in $global_program_rel_directory)\n";
+
+	return undef;
     }
 
     my $technical_configuration_filename = "$technical_project_configuration_directory/$project_name-configuration";
@@ -1182,13 +1207,17 @@ sub _init_get_technical_configuration
 
     if ($@)
     {
-	die "$0: *** Error: no valid configuration file '$technical_configuration_filename' found ($@)\n";
+	$status = "$0: *** Error: no valid configuration file '$technical_configuration_filename' found ($@)\n";
+
+	return undef;
     }
 
     if (not defined $technical_configuration
 	and $!)
     {
-	die "$0: *** Error: no configuration file '$technical_configuration_filename' found ($!)\n";
+	$status = "$0: *** Error: no configuration file '$technical_configuration_filename' found ($!)\n";
+
+	return undef;
     }
 
     return $technical_configuration;
@@ -1440,15 +1469,19 @@ sub main
 
     # initiallize field project related global configuration
 
-    FieldProject::_init();
+    ($global_field_project_configuration, $global_technical_project_configuration) = FieldProject::_init();
 
-    # initialize the command module
+    if ($global_field_project_configuration
+	and $global_technical_project_configuration)
+    {
+	# initialize the command module
 
-    Command::_init();
+	Command::_init();
 
-    # parse the local.mk packages to update the dynamically generated help pages
+	# parse the local.mk packages to update the dynamically generated help pages
 
-    $global_overriden_packages = buildroot_parse_packages_directories();
+	$global_overriden_packages = buildroot_parse_packages_directories();
+    }
 
     # parse command line
 
@@ -1737,11 +1770,13 @@ options:
 
     my $build_servers = $global_technical_project_configuration->{build_servers};
 
+    my $status;
+
     if (defined $option_forward_destination_server)
     {
 	if (not exists $build_servers->{$option_forward_destination_server})
 	{
-	    die "$0: *** Error: unknown forwarding server $option_forward_destination_server, use --help-build-servers to learn about the known servers";
+	    $status = "$0: *** Error: unknown forwarding server $option_forward_destination_server, use --help-build-servers to learn about the known servers";
 	}
     }
 
@@ -1749,7 +1784,7 @@ options:
     {
 	if (not exists $build_servers->{$option_forward_source_server})
 	{
-	    die "$0: *** Error: unknown forwarding server $option_forward_source_server, use --help-build-servers to learn about the known servers";
+	    $status = "$0: *** Error: unknown forwarding server $option_forward_source_server, use --help-build-servers to learn about the known servers";
 	}
     }
 
@@ -1835,6 +1870,15 @@ options:
 	exit 0;
     }
 
+    if ($FieldProject::status)
+    {
+	die $FieldProject::status;
+    }
+
+    if ($status)
+    {
+	die $status;
+    }
 }
 
 
