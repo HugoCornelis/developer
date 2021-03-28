@@ -578,7 +578,8 @@ sub execute_shell_command
     {
 	$command = "$remote_prefix   $command";
 
-	if ($option_export_remote)
+	if ($option_export_remote eq 0
+	    or $option_export_remote eq $interaction_roles->{$current_interaction_role}->{number})
 	{
 	    $export_command = $command;
 	}
@@ -697,7 +698,7 @@ sub execute_shell_command
     {
 	my $interaction_indent = 4;
 
-	my $is_new = "";
+	my $is_new_and_needs_header = "";
 
 	if (exists $interaction_roles->{$current_interaction_role})
 	{
@@ -709,14 +710,18 @@ sub execute_shell_command
 
 	    $interaction_indent = 4 + scalar @$sorted_roles * 64;
 
-	    $interaction_roles->{$current_interaction_role} = { indent => $interaction_indent, };
+	    $interaction_roles->{$current_interaction_role}
+		= {
+		   number => (scalar @$sorted_roles),
+		   indent => $interaction_indent,
+		  };
 
-	    $is_new = 'yes';
+	    $is_new_and_needs_header = 'yes';
 	}
 
 	my $indent = " " x $interaction_indent;
 
-	if ($is_new)
+	if ($is_new_and_needs_header)
 	{
 	    print "${indent}ROLE: '$current_interaction_role'\n\n";
 	}
@@ -1666,7 +1671,8 @@ options:
     --built-image-directory   the directory on the build server where the built images are to be found.
     --command                 commands to execute, hyphens (-) will be replaced with underscores (_).
     --dry-run                 if set, do not execute system shell commands but print them to STDOUT.
-    --export-remote           include the remote access part when exporting commands to a file.
+    --export-remote           include the remote access part of exported commands.
+                              this option takes a number: 0 means all roles are exported, any other number exports only that respective role.
     --export-sh               export the commands to a file with the given name.
     --export-sudo             include the sudo commands when exporting commands to a file.
     --export-times            export the times when commands are started and ended to a file with the given name.
