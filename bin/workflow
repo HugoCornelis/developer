@@ -199,11 +199,67 @@ our $global_exported_times_file;
 our $global_exported_times_filename;
 
 
-sub process_chdir_2_cd
+# note: keys are interaction_roles, values are working directories
+
+our $global_remote_working_directory = {};
+
+
+sub working_directory_for_interaction_role_apply
+{
+    my $interaction_role = shift;
+
+    my $command = shift;
+
+    my $result = $command;
+
+    if ($interaction_role ne "localuser\@localhost")
+    {
+	my $current_working_directory = $global_remote_working_directory->{$interaction_role};
+
+	if (defined $current_working_directory)
+	{
+	    $result = "cd $current_working_directory && $command";
+	}
+    }
+
+    return $result;
+}
+
+
+sub _working_directory_for_interaction_role_change
+{
+    my $interaction_role = shift;
+
+    my $working_directory = shift;
+
+    my $current_working_directory = $global_remote_working_directory->{$interaction_role};
+
+    use File::Spec;
+
+    my $is_absolute = File::Spec->file_name_is_absolute( $working_directory );
+
+    my $new_working_directory;
+
+    if ($is_absolute)
+    {
+	$new_working_directory = $working_directory;
+    }
+    else
+    {
+	$new_working_directory = File::Spec->catdir( $current_working_directory, $working_directory );
+    }
+
+    $global_remote_working_directory->{$interaction_role} = $new_working_directory;
+}
+
+
+sub working_directory_for_interaction_role_parse
 {
     my $command = shift;
 
     my $dry_run = shift;
+
+    my $current_interaction_role = shift;
 
     my $arguments;
 
@@ -231,6 +287,14 @@ sub process_chdir_2_cd
 	}
 
 	$command = "cd $arguments";
+
+	# keep track of the possibly remote working directory
+
+	_working_directory_for_interaction_role_change($current_interaction_role, $arguments);
+    }
+    else
+    {
+#  	$command = working_directory_for_interaction_role_apply($current_interaction_role, $command);
     }
 
     # return the possibly processed result
@@ -453,58 +517,19 @@ sub execute_shell_command
 	}
     }
 
-    # if there is sudo information
-
-    my $sudo_prefix = "";
-
-    if ($options->{sudo})
-    {
-	# if we need to skip sudo information
-
-	my $sudo_options = $options->{sudo};
-
-	if (exists $sudo_options->{skip}
-	    and $command =~ /$sudo_options->{skip}/)
-	{
-	}
-
-	# else construct the sudo command
-
-	elsif (exists $sudo_options->{pattern}
-	       and $command =~ /$sudo_options->{pattern}/)
-	{
-	    $sudo_prefix .= "sudo ";
-
-	    if (exists $sudo_options->{options})
-	    {
-		$sudo_prefix .= "$sudo_options->{options} ";
-	    }
-	}
-    }
-
-    # prefix the command with the sudo command
-
-    if ($sudo_prefix)
-    {
-	$command = "$sudo_prefix   $command";
-
-	if ($option_export_sudo)
-	{
-	    $export_command = $command;
-	}
-    }
-
     # if there is remoting information
 
     my $remote_prefix = "";
 
     if ($options->{remote})
     {
-	# do we need to skip remoting for this command?
+	# if we need to skip remoting for this command?
 
 	if (exists $options->{remote}->{skip}
 	    and $command =~ /$options->{remote}->{skip}/)
 	{
+	    # use the localuser interaction role to prevent remoting
+
 	    $current_interaction_role = "localuser\@localhost";
 	}
 
@@ -570,6 +595,51 @@ sub execute_shell_command
 	# track the interaction role
 
 	$current_interaction_role = "localuser\@localhost";
+    }
+
+    # apply the working directory for the remote
+
+    $command = working_directory_for_interaction_role_apply($current_interaction_role, $command);
+
+    # if there is sudo information
+
+    my $sudo_prefix = "";
+
+    if ($options->{sudo})
+    {
+	# if we need to skip sudo information
+
+	my $sudo_options = $options->{sudo};
+
+	if (exists $sudo_options->{skip}
+	    and $command =~ /$sudo_options->{skip}/)
+	{
+	}
+
+	# else construct the sudo command
+
+	elsif (exists $sudo_options->{pattern}
+	       and $command =~ /$sudo_options->{pattern}/)
+	{
+	    $sudo_prefix .= "sudo ";
+
+	    if (exists $sudo_options->{options})
+	    {
+		$sudo_prefix .= "$sudo_options->{options} ";
+	    }
+	}
+    }
+
+    # prefix the command with the sudo command
+
+    if ($sudo_prefix)
+    {
+	$command = "$sudo_prefix   $command";
+
+	if ($option_export_sudo)
+	{
+	    $export_command = $command;
+	}
     }
 
     # prefix the command with the remoting information
@@ -674,11 +744,11 @@ sub execute_shell_command
 	    print map { "$dry_run_prefix$_\n" } split "\n", $export_sh->{prefix};
 	}
 
-	$command = process_chdir_2_cd($command, $dry_run);
+	$command = working_directory_for_interaction_role_parse($command, $dry_run, $current_interaction_role);
 
 	print "$0: *** Running in dry_run mode, not executing: '$command'\n";
 
-	# we do run the cd command to allow File::Spec to compute correct relative paths
+	# we run the cd command to allow File::Spec to compute correct relative paths
 
 	if ($command =~ /cd\s+(.*)$/)
 	{
@@ -762,9 +832,9 @@ sub execute_shell_command
 	    chmod 0755, $global_exported_sh_filename;
 	}
 
-	$export_command = process_chdir_2_cd($export_command, $dry_run);
+	$export_command = working_directory_for_interaction_role_parse($export_command, $dry_run, $current_interaction_role);
 
-	# we do run the cd command to allow File::Spec to compute correct relative paths
+	# we run the cd command to allow File::Spec to compute correct relative paths
 
 	if ($export_command =~ /cd\s+(.*)$/)
 	{
@@ -809,7 +879,7 @@ sub execute_shell_command
 
 	#! note that the \s+ is a bug: it forces the use of white-space when no arguments are given
 
-	$command = process_chdir_2_cd($command, $dry_run);
+	$command = working_directory_for_interaction_role_parse($command, $dry_run, $current_interaction_role);
 
 	if ($command =~ /cd\s+(.*)$/)
 	{
