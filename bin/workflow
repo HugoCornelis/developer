@@ -453,13 +453,17 @@ sub execute_shell_command
 
     my $options = shift;
 
-    my $processed_command = $command;
+    # keep a record of the command that will be executed
 
-    $processed_command =~ s(^\s*#.*)()g;
+    my $executable_command = $command;
 
-    my $command_is_empty = $processed_command =~ /^\s*$/ ? 'yes' : '';
+    $executable_command =~ s(^\s*#.*)()g;
 
-    my $command_length = length $processed_command;
+    my $command_is_empty = $executable_command =~ /^\s*$/ ? 'yes' : '';
+
+    my $command_length = length $executable_command;
+
+    # option preprocessing
 
     my $allow_fail = $options->{allow_fail};
 
@@ -796,9 +800,9 @@ sub execute_shell_command
 	    print "${indent}ROLE: '$current_interaction_role'\n\n";
 	}
 
-	if ($processed_command !~ /^\s*$/)
+	if ($executable_command !~ /^\s*$/)
 	{
-	    print "$indent'$processed_command'\n";
+	    print "$indent'$executable_command'\n";
 	}
     }
 
