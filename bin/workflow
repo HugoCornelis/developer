@@ -42,6 +42,7 @@ our $option_export_sh;
 our $option_export_sudo;
 our $option_export_times;
 our $option_export_verbose;
+our $option_force_rebuild;
 our $option_forward_destination_server = "laptop";
 our $option_forward_source_server = "laptop";
 our $option_help;
@@ -312,6 +313,17 @@ sub build_tree_needs_rebuild
     my $result = "default is to rebuild";
 
     my $remote_prefix = $options->{remote_prefix};
+
+    if ($option_force_rebuild)
+    {
+	if ($option_verbose
+	    and $option_verbose > 1)
+	{
+	    print "build_tree_needs_rebuild(): option_force_rebuild is set\n";
+	}
+
+	return "option_force_rebuild";
+    }
 
     # if we have sources and targets
 
@@ -1418,6 +1430,7 @@ sub bash_completion_generate_options
 			--export-sudo
 			--export-times
 			--export-verbose
+			--force-rebuild
 			--forward-destination
 			--forward-source
 			--help
@@ -1687,6 +1700,7 @@ sub parse_command_line
 	 "export-sudo" => \$option_export_sudo,
 	 "export-times!" => \$option_export_times,
 	 "export-verbose!" => \$option_export_verbose,
+	 "force-rebuild!" => \$option_force_rebuild,
 	 "forward-destination-server=s" => \$option_forward_destination_server,
 	 "forward-source-server=s" => \$option_forward_source_server,
 	 "help!" => \$option_help,
@@ -1784,6 +1798,7 @@ options:
     --export-sudo             include the sudo commands when exporting commands to a file.
     --export-times            export the times when commands are started and ended to a file with the given name.
     --export-verbose          when exporting the commands to a file, interleave them with echo commands.
+    --force-rebuild           force a rebuild regardless of the existence and build date of previously built artefacts.
     --forward-destination     the target file forward destination to copy to.
     --forward-source          the target file forward source to copy from.
     --help                    display usage information and stop execution.
