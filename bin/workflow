@@ -492,6 +492,8 @@ sub execute_shell_command
 	$verbose = "*** INFO: ";
     }
 
+    # start of meta option and information processing
+
     # if exporting to a script for this command
 
     my $export_sh = $options->{export_sh};
@@ -614,9 +616,20 @@ sub execute_shell_command
 	$current_interaction_role = "localuser\@localhost";
     }
 
-    # apply the working directory for the remote
+    # apply the working directory for the remote on the command to be executed
 
     $command = working_directory_for_interaction_role_apply($current_interaction_role, $command);
+
+    # if we need to rebuild according to the build_tree
+
+    my $needs_rebuild = build_tree_needs_rebuild($options->{build_tree}, { remote_prefix => $remote_prefix, }, );
+
+    if (not $needs_rebuild)
+    {
+	return 0;
+    }
+
+    # start of peripheral option and command processing
 
     # if there is sudo information
 
@@ -722,15 +735,6 @@ sub execute_shell_command
 	$export_command = $command;
     }
 
-    # if we need to rebuild according to the build_tree
-
-    my $needs_rebuild = build_tree_needs_rebuild($options->{build_tree}, { remote_prefix => $remote_prefix, }, );
-
-    if (not $needs_rebuild)
-    {
-	return 0;
-    }
-
     if ($verbose)
     {
 	use Cwd qw();
@@ -746,6 +750,8 @@ sub execute_shell_command
 
 	print "$verbose: trying to $command\n";
     }
+
+    # start of core command processing
 
     # we are either in dry-run ...
 
@@ -764,8 +770,6 @@ sub execute_shell_command
 	$command = working_directory_for_interaction_role_parse($command, $dry_run, $current_interaction_role);
 
 	print "$0: *** Running in dry_run mode, not executing: '$command'\n";
-
-	# we run the cd command to allow File::Spec to compute correct relative paths
 
 	if ($command =~ /cd\s+(.*)$/)
 	{
@@ -850,8 +854,6 @@ sub execute_shell_command
 	}
 
 	$export_command = working_directory_for_interaction_role_parse($export_command, $dry_run, $current_interaction_role);
-
-	# we run the cd command to allow File::Spec to compute correct relative paths
 
 	if ($export_command =~ /cd\s+(.*)$/)
 	{
