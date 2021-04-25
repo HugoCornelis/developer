@@ -49,6 +49,7 @@ our $option_help;
 our $option_help_build_servers;
 our $option_help_commands;
 our $option_help_field_project_name;
+our $option_help_options;
 our $option_help_packages;
 our $option_help_projects;
 our $option_help_targets;
@@ -1707,6 +1708,7 @@ sub parse_command_line
 	 "help-build-servers!" => \$option_help_build_servers,
 	 "help-commands!" => \$option_help_commands,
 	 "help-field-project-name!" => \$option_help_field_project_name,
+	 "help-options!" => \$option_help_options,
 	 "help-packages!" => \$option_help_packages,
 	 "help-projects!" => \$option_help_projects,
 	 "help-targets!" => \$option_help_targets,
@@ -1902,6 +1904,50 @@ options:
 	      ];
 
 	print Dump( { "available_commands (copy-paste the one you would like to execute, try it with the --dry option, execute it without this option)" => $commands, }, );
+
+	exit 0;
+    }
+
+    if ($option_help_options)
+    {
+	use YAML;
+
+	my $options
+	    = {
+	       bash_completion => $option_bash_completion,
+	       branch => $option_branch,
+	       build_server => $option_build_server,
+	       built_image_directory => $option_built_image_directory,
+	       commands => $option_commands,
+	       dry_run => $option_dry_run,
+	       export_remote => $option_export_remote,
+	       export_sh => $option_export_sh,
+	       export_sudo => $option_export_sudo,
+	       export_times => $option_export_times,
+	       export_verbose => $option_export_verbose,
+	       force_rebuild => $option_force_rebuild,
+	       forward_destination_server => $option_forward_destination_server,
+	       forward_source_server => $option_forward_source_server,
+	       help => $option_help,
+	       help_build_servers => $option_help_build_servers,
+	       help_commands => $option_help_commands,
+	       help_field_project_name => $option_help_field_project_name,
+	       help_options => $option_help_options,
+	       help_packages => $option_help_packages,
+	       help_projects => $option_help_projects,
+	       help_targets => $option_help_targets,
+	       incremental => $option_incremental,
+	       interaction => $option_interaction,
+	       packages => $option_packages,
+	       ssh_port => $option_ssh_port,
+	       ssh_server => $option_ssh_server,
+	       ssh_user => $option_ssh_user,
+	       target => $option_target,
+	       tftp_directory => $option_tftp_directory,
+	       verbose => $option_verbose,
+	      };
+
+	print Dump( { "options" => $options, }, );
 
 	exit 0;
     }
