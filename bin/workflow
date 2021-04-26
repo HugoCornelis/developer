@@ -460,6 +460,561 @@ my $interaction_roles = {};
 
 my $current_interaction_role;
 
+
+sub apply_remote
+{
+    my $remote_prefix = shift;
+
+    my $command = shift;
+
+    my $option_export_remote = shift;
+
+    my $export_sh_command = shift;
+
+    if ($remote_prefix)
+    {
+	$command = "$remote_prefix   $command";
+
+	if (defined $option_export_remote
+	    and ($option_export_remote eq 0
+		 or $option_export_remote eq $interaction_roles->{$current_interaction_role}->{number}))
+	{
+	    $export_sh_command = $command;
+	}
+    }
+
+    return ($command, $export_sh_command);
+}
+
+
+sub apply_sudo
+{
+    my $sudo_prefix = shift;
+
+    my $command = shift;
+
+    my $option_export_sudo = shift;
+
+    my $export_sh_command = shift;
+
+    if ($sudo_prefix)
+    {
+	$command = "$sudo_prefix   $command";
+
+	if ($option_export_sudo)
+	{
+	    $export_sh_command = $command;
+	}
+    }
+
+    return ($command, $export_sh_command);
+}
+
+
+sub apply_timeout
+{
+    my $timeout_prefix = shift;
+
+    my $command = shift;
+
+    my $option_export_timeout = shift;
+
+    my $export_sh_command = shift;
+
+    if ($timeout_prefix)
+    {
+	$command = "$timeout_prefix   $command";
+
+	$export_sh_command = $command;
+    }
+
+    return ($command, $export_sh_command);
+}
+
+
+sub compute_remote
+{
+    my $command = shift;
+
+    my $option_remote = shift;
+
+    # default result: an empty string
+
+    my $result = "";
+
+    if ($option_remote)
+    {
+	# if we need to skip remoting for this command?
+
+	if (exists $option_remote->{skip}
+	    and $command =~ /$option_remote->{skip}/)
+	{
+	    # use the localuser interaction role to prevent remoting
+
+	    $current_interaction_role = "localuser\@localhost";
+	}
+
+	# else construct the remote role
+
+	else
+	{
+	    if (exists $option_remote->{ssh_password})
+	    {
+		my $ssh_password = $option_remote->{ssh_password};
+
+		$result .= "sshpass -p $ssh_password ";
+	    }
+
+	    if (exists $option_remote->{ssh_options})
+	    {
+		$current_interaction_role = "";
+
+		my $ssh_options = $option_remote->{ssh_options};
+
+		if (exists $option_remote->{ssh_server})
+		{
+		    my $ssh_server = $option_remote->{ssh_server};
+
+		    if (exists $option_remote->{ssh_user})
+		    {
+			my $ssh_user = $option_remote->{ssh_user};
+
+			$current_interaction_role = "$ssh_user\@$ssh_server";
+
+			$result .= "ssh $ssh_options $ssh_user\@$ssh_server ";
+		    }
+		    else
+		    {
+			$current_interaction_role = $ssh_server;
+
+			$result .= "ssh $ssh_options $ssh_server ";
+		    }
+		}
+		else
+		{
+		    $current_interaction_role = "localuser\@localhost";
+
+		    $result .= "ssh $ssh_options ";
+		}
+	    }
+	    else
+	    {
+		$current_interaction_role = "localuser\@localhost";
+	    }
+
+	    if (defined $option_verbose and $option_verbose > 1)
+	    {
+		print "$0: *** result is $result\n";
+	    }
+	}
+    }
+
+    # else no remoting information
+
+    else
+    {
+	# track the interaction role
+
+	$current_interaction_role = "localuser\@localhost";
+    }
+
+    # return result
+
+    return $result;
+}
+
+
+sub compute_sudo
+{
+    my $command = shift;
+
+    my $option_sudo = shift;
+
+    # default result: an empty string
+
+    my $result = "";
+
+    if ($option_sudo)
+    {
+	# if we need to skip sudo information
+
+	if (exists $option_sudo->{skip}
+	    and $command =~ /$option_sudo->{skip}/)
+	{
+	}
+
+	# else construct the sudo command
+
+	elsif (exists $option_sudo->{pattern}
+	       and $command =~ /$option_sudo->{pattern}/)
+	{
+	    $result .= "sudo ";
+
+	    if (exists $option_sudo->{options})
+	    {
+		$result .= "$option_sudo->{options} ";
+	    }
+	}
+    }
+
+    # return result
+
+    return $result;
+}
+
+
+sub compute_timeout
+{
+    my $command = shift;
+
+    my $option_timeout = shift;
+
+    # default result: an empty string
+
+    my $result = "";
+
+    if ($option_timeout)
+    {
+	# if we need to skip timeout information
+
+	if (exists $option_timeout->{skip}
+	    and $command =~ /$option_timeout->{skip}/)
+	{
+	}
+
+	# else construct the timeout command
+
+	else
+	{
+	    if (exists $option_timeout->{sudo}
+		and $option_timeout->{sudo} eq 1)
+	    {
+		$result .= "sudo ";
+	    }
+
+	    $result .= "timeout ";
+
+	    if (exists $option_timeout->{options})
+	    {
+		$result .= "$option_timeout->{options} ";
+	    }
+
+	    if (not exists $option_timeout->{duration})
+	    {
+		die "*** Error: $0: the timeout option of '$command' does not have the mandatory duration specified";
+	    }
+
+	    $result .= "$option_timeout->{duration} ";
+	}
+    }
+
+    # return result
+
+    return $result;
+}
+
+
+sub execute_option_dry_run
+{
+    my $command = shift;
+
+    my $executable_command = shift;
+
+    my $export_sh = shift;
+
+    my $dry_run = shift;
+
+    if ($export_sh
+	and exists $export_sh->{prefix})
+    {
+	my $dry_run_prefix = "$0: *** Running in dry_run mode, export prefix: '";
+
+	print map { "$dry_run_prefix$_\n" } split "\n", $export_sh->{prefix};
+    }
+
+    $command = working_directory_for_interaction_role_parse($command, $dry_run, $current_interaction_role);
+
+    print "$0: *** Running in dry_run mode, not executing: '$command'\n";
+
+    if ($command =~ /cd\s+(.*)$/)
+    {
+	my $arguments = $1;
+
+	my $exit_status = not chdir $arguments;
+    }
+    else
+    {
+	#! should die here?
+    }
+}
+
+
+sub execute_option_interaction
+{
+    my $command = shift;
+
+    my $executable_command = shift;
+
+    my $interaction_indent = 4;
+
+    my $is_new_and_needs_header = "";
+
+    if (exists $interaction_roles->{$current_interaction_role})
+    {
+	$interaction_indent = $interaction_roles->{$current_interaction_role}->{indent};
+    }
+    else
+    {
+	my $sorted_roles = [ keys %$interaction_roles, ];
+
+	$interaction_indent = 4 + scalar @$sorted_roles * 64;
+
+	$interaction_roles->{$current_interaction_role}
+	    = {
+	       number => (scalar @$sorted_roles),
+	       indent => $interaction_indent,
+	      };
+
+	$is_new_and_needs_header = 'yes';
+    }
+
+    my $indent = " " x $interaction_indent;
+
+    if ($is_new_and_needs_header)
+    {
+	print "${indent}ROLE: '$current_interaction_role'\n\n";
+    }
+
+    if ($executable_command !~ /^\s*$/)
+    {
+	print "$indent'$executable_command'\n";
+    }
+}
+
+
+sub execute_option_export_sh
+{
+    my $export_sh_command = shift;
+
+    my $executable_command = shift;
+
+    my $export_sh = shift;
+
+    my $dry_run = shift;
+
+    if (not defined $global_exported_sh_file)
+    {
+	if (not defined $global_exported_sh_filename)
+	{
+	    $global_exported_sh_filename = $export_sh->{filename};
+	}
+
+	my $ok = open($global_exported_sh_file, ">", $global_exported_sh_filename);
+
+	if (not $ok)
+	{
+	    die "*** Error: $0: cannot open $global_exported_sh_filename for writing ($!)";
+	}
+
+	print $global_exported_sh_file "#!/bin/sh\n";
+	print $global_exported_sh_file "#\n";
+	print $global_exported_sh_file "# script generated with $::global_program_name\n";
+	print $global_exported_sh_file "#\n";
+	print $global_exported_sh_file "# the command line to generate this script was:\n";
+	print $global_exported_sh_file "#\n";
+	print $global_exported_sh_file "# $global_command_line\n";
+	print $global_exported_sh_file "#\n";
+
+	chmod 0755, $global_exported_sh_filename;
+    }
+
+    $export_sh_command = working_directory_for_interaction_role_parse($export_sh_command, $dry_run, $current_interaction_role);
+
+    if ($export_sh_command =~ /cd\s+(.*)$/)
+    {
+	my $arguments = $1;
+
+	my $exit_status = not chdir $arguments;
+    }
+    else
+    {
+	#! should die here?
+    }
+
+    if ($export_sh_command =~ /^'/
+	and $export_sh_command =~ /'$/)
+    {
+	$export_sh_command =~ s/^'//;
+	$export_sh_command =~ s/'$//;
+    }
+
+    print "$0: *** Running in export_sh mode, exporting: '$export_sh_command'\n";
+
+    if ($option_export_verbose)
+    {
+	print $global_exported_sh_file "echo '$export_sh_command'\n";
+    }
+
+    if (exists $export_sh->{prefix})
+    {
+	print $global_exported_sh_file $export_sh->{prefix};
+    }
+
+    print $global_exported_sh_file "$export_sh_command\n";
+}
+
+
+sub execute_real_command
+{
+    my $command = shift;
+
+    my $executable_command = shift;
+
+    my $options = shift;
+
+    my $dry_run = shift;
+
+    my $exit_status;
+
+    # force the execution of a change of the working directory to this process
+
+    #! note that the \s+ is a bug: it forces the use of white-space when no arguments are given
+
+    $command = working_directory_for_interaction_role_parse($command, $dry_run, $current_interaction_role);
+
+    if ($command =~ /cd\s+(.*)$/)
+    {
+	my $arguments = $1;
+
+	display_commented_command($command, $options);
+
+	$exit_status = not chdir $arguments;
+    }
+    else
+    {
+	my $export_output = $options->{export_output};
+
+	my $export_times = $options->{export_times};
+
+	if ($export_times)
+	{
+	    if (not defined $global_exported_times_file)
+	    {
+		if (not defined $global_exported_times_filename)
+		{
+		    $global_exported_times_filename = $export_times->{filename};
+		}
+
+		my $ok = open($global_exported_times_file, ">", $global_exported_times_filename);
+
+		if (not $ok)
+		{
+		    die "*** Error: $0: cannot open $global_exported_times_filename for writing ($!)";
+		}
+
+		print $global_exported_times_file "#!/bin/sh\n";
+		print $global_exported_times_file "#\n";
+		print $global_exported_times_file "# script generated with $::global_program_name\n";
+		print $global_exported_times_file "#\n";
+		print $global_exported_times_file "# the command line to generate this script was:\n";
+		print $global_exported_times_file "#\n";
+		print $global_exported_times_file "# $global_command_line\n";
+		print $global_exported_times_file "#\n";
+
+		chmod 0644, $global_exported_times_filename;
+	    }
+	}
+
+	# execute the command, collect start and end time
+
+	use IPC::System::Simple qw(capture);
+
+	my $start_time = time();
+
+	my $output = "";
+
+	my $command_is_empty = $executable_command =~ /^\s*$/ ? 'yes' : '';
+
+	if (not $command_is_empty)
+	{
+	    if (not $export_output)
+	    {
+		display_commented_command($command, $options);
+
+		$exit_status = system "$command";
+	    }
+	    else
+	    {
+		$output .= capture($command);
+
+		$exit_status = $IPC::System::Simple::EXITVAL;
+	    }
+	}
+
+	my $end_time = time();
+
+	if ($export_times)
+	{
+	    print $global_exported_times_file "$0: *** Starting ('$command') at " . localtime($start_time) . "\n";
+
+	    print $global_exported_times_file "$0: *** Ended    ('$command') at " . localtime($end_time) . "\n";
+
+	    print $global_exported_times_file "$0: *** Duration (s): " . ($end_time - $start_time) . "\n";
+
+	    print $global_exported_times_file "\n";
+	}
+
+	if ($export_output)
+	{
+	    my $filename = generate_output_filename($global_target_command, $command);
+
+	    my $output_file;
+
+	    my $ok = open($output_file, ">", $filename);
+
+	    if (not $ok)
+	    {
+		die "*** Error: $0: cannot open $filename for writing ($!)";
+	    }
+
+	    print $output_file "# $command\n#\n";
+
+	    print $output_file $output;
+
+	    close($output_file);
+	}
+	# else
+	# {
+	# 	print $output;
+	# }
+    }
+
+    my $output_path = $options->{output_path};
+
+#     my $exit_status = system "( $command ) >>$output_path 2>&1";
+
+    if ($exit_status)
+    {
+	my $allow_fail = $options->{allow_fail};
+
+	if ($allow_fail)
+	{
+# 	    system "echo >>$output_path 2>&1 failed with $?: $command\n";
+
+	    print "$0: *** Note: $command was allowed to fail (because $allow_fail) and has exit status $?\n";
+	}
+	else
+	{
+	    die "$0: *** Fatal: $command failed with exit status $?\n";
+	}
+    }
+
+    # return the result of command execution
+
+    return $exit_status;
+}
+
+
 sub execute_shell_command
 {
     my $command = shift;
@@ -472,19 +1027,15 @@ sub execute_shell_command
 
     $executable_command =~ s(^\s*#.*)()g;
 
-    my $command_is_empty = $executable_command =~ /^\s*$/ ? 'yes' : '';
-
     my $command_length = length $executable_command;
 
     # option preprocessing
-
-    my $allow_fail = $options->{allow_fail};
 
     my $verbose = $options->{verbose} || $option_verbose;
 
     # the command to be exported defaults to the command given
 
-    my $export_command = defined $option_export_sh ? $command : undef;
+    my $export_sh_command = defined $option_export_sh ? $command : undef;
 
     if (defined $verbose
 	and $verbose =~ /^[0-9]+$/)
@@ -536,91 +1087,25 @@ sub execute_shell_command
 	}
     }
 
+    # start of peripheral option and command processing
+
     # if there is remoting information
 
-    my $remote_prefix = "";
+    my $remote_prefix = compute_remote($command, $options->{remote});
 
-    if ($options->{remote})
-    {
-	# if we need to skip remoting for this command?
-
-	if (exists $options->{remote}->{skip}
-	    and $command =~ /$options->{remote}->{skip}/)
-	{
-	    # use the localuser interaction role to prevent remoting
-
-	    $current_interaction_role = "localuser\@localhost";
-	}
-
-	# else construct the remote role
-
-	else
-	{
-	    if (exists $options->{remote}->{ssh_password})
-	    {
-		my $ssh_password = $options->{remote}->{ssh_password};
-
-		$remote_prefix .= "sshpass -p $ssh_password ";
-	    }
-
-	    if (exists $options->{remote}->{ssh_options})
-	    {
-		$current_interaction_role = "";
-
-		my $ssh_options = $options->{remote}->{ssh_options};
-
-		if (exists $options->{remote}->{ssh_server})
-		{
-		    my $ssh_server = $options->{remote}->{ssh_server};
-
-		    if (exists $options->{remote}->{ssh_user})
-		    {
-			my $ssh_user = $options->{remote}->{ssh_user};
-
-			$current_interaction_role = "$ssh_user\@$ssh_server";
-
-			$remote_prefix .= "ssh $ssh_options $ssh_user\@$ssh_server ";
-		    }
-		    else
-		    {
-			$current_interaction_role = $ssh_server;
-
-			$remote_prefix .= "ssh $ssh_options $ssh_server ";
-		    }
-		}
-		else
-		{
-		    $current_interaction_role = "localuser\@localhost";
-
-		    $remote_prefix .= "ssh $ssh_options ";
-		}
-	    }
-	    else
-	    {
-		$current_interaction_role = "localuser\@localhost";
-	    }
-
-	    if (defined $verbose and ($verbose =~ /INFO/ or $verbose > 1))
-	    {
-		print "$verbose: remote_prefix is $remote_prefix\n";
-	    }
-	}
-    }
-
-    # else no remoting information
-
-    else
-    {
-	# track the interaction role
-
-	$current_interaction_role = "localuser\@localhost";
-    }
-
-    # apply the working directory for the remote on the command to be executed
+    # now that we know the remote, apply the working directory for the remote on the command to be executed
 
     $command = working_directory_for_interaction_role_apply($current_interaction_role, $command);
 
-    # if we need to rebuild according to the build_tree
+    # compute the sudo prefix
+
+    my $sudo_prefix = compute_sudo($command, $options->{sudo});
+
+    # compute the timeout prefix
+
+    my $timeout_prefix = compute_timeout($command, $options->{timeout});
+
+    # if we need to rebuild according to the (optionally remote) build_tree
 
     my $needs_rebuild = build_tree_needs_rebuild($options->{build_tree}, { remote_prefix => $remote_prefix, }, );
 
@@ -629,111 +1114,21 @@ sub execute_shell_command
 	return 0;
     }
 
-    # start of peripheral option and command processing
-
-    # if there is sudo information
-
-    my $sudo_prefix = "";
-
-    if ($options->{sudo})
-    {
-	# if we need to skip sudo information
-
-	my $sudo_options = $options->{sudo};
-
-	if (exists $sudo_options->{skip}
-	    and $command =~ /$sudo_options->{skip}/)
-	{
-	}
-
-	# else construct the sudo command
-
-	elsif (exists $sudo_options->{pattern}
-	       and $command =~ /$sudo_options->{pattern}/)
-	{
-	    $sudo_prefix .= "sudo ";
-
-	    if (exists $sudo_options->{options})
-	    {
-		$sudo_prefix .= "$sudo_options->{options} ";
-	    }
-	}
-    }
+    #! note that the order of processing determines whether the options are locally or remotely applied
 
     # prefix the command with the sudo command
 
-    if ($sudo_prefix)
-    {
-	$command = "$sudo_prefix   $command";
-
-	if ($option_export_sudo)
-	{
-	    $export_command = $command;
-	}
-    }
+    ($command, $export_sh_command) = apply_sudo($sudo_prefix, $command, $option_export_sudo, $export_sh_command);
 
     # prefix the command with the remoting information
 
-    if ($remote_prefix)
-    {
-	$command = "$remote_prefix   $command";
-
-	if ($option_export_remote eq 0
-	    or $option_export_remote eq $interaction_roles->{$current_interaction_role}->{number})
-	{
-	    $export_command = $command;
-	}
-    }
-
-    # if there is timeout information
-
-    my $timeout_prefix = "";
-
-    if ($options->{timeout})
-    {
-	# if we need to skip timeout information
-
-	my $timeout_options = $options->{timeout};
-
-	if (exists $timeout_options->{skip}
-	    and $command =~ /$timeout_options->{skip}/)
-	{
-	}
-
-	# else construct the timeout command
-
-	else
-	{
-	    if (exists $timeout_options->{sudo}
-		and $timeout_options->{sudo} eq 1)
-	    {
-		$timeout_prefix .= "sudo ";
-	    }
-
-	    $timeout_prefix .= "timeout ";
-
-	    if (exists $timeout_options->{options})
-	    {
-		$timeout_prefix .= "$timeout_options->{options} ";
-	    }
-
-	    if (not exists $timeout_options->{duration})
-	    {
-		die "*** Error: $0: the timeout option of '$command' does not have the mandatory duration specified";
-	    }
-
-	    $timeout_prefix .= "$timeout_options->{duration} ";
-	}
-    }
+    ($command, $export_sh_command) = apply_remote($remote_prefix, $command, $option_export_remote, $export_sh_command);
 
     # prefix the command with the timeout command
 
-    if ($timeout_prefix)
-    {
-	$command = "$timeout_prefix   $command";
+    ($command, $export_sh_command) = apply_timeout($timeout_prefix, $command, undef, $export_sh_command);
 
-	$export_command = $command;
-    }
+    # start of core command processing
 
     if ($verbose)
     {
@@ -751,277 +1146,34 @@ sub execute_shell_command
 	print "$verbose: trying to $command\n";
     }
 
-    # start of core command processing
-
     # we are either in dry-run ...
 
     my $dry_run = $options->{dry_run} || $option_dry_run;
 
     if ($dry_run)
     {
-	if ($export_sh
-	    and exists $export_sh->{prefix})
-	{
-	    my $dry_run_prefix = "$0: *** Running in dry_run mode, export prefix: '";
-
-	    print map { "$dry_run_prefix$_\n" } split "\n", $export_sh->{prefix};
-	}
-
-	$command = working_directory_for_interaction_role_parse($command, $dry_run, $current_interaction_role);
-
-	print "$0: *** Running in dry_run mode, not executing: '$command'\n";
-
-	if ($command =~ /cd\s+(.*)$/)
-	{
-	    my $arguments = $1;
-
-	    my $exit_status = not chdir $arguments;
-	}
-	else
-	{
-	    #! should die here?
-	}
+	execute_option_dry_run($command, $executable_command, $export_sh, $dry_run);
     }
 
     # ... or printing an interaction diagram
 
     elsif ($option_interaction)
     {
-	my $interaction_indent = 4;
-
-	my $is_new_and_needs_header = "";
-
-	if (exists $interaction_roles->{$current_interaction_role})
-	{
-	    $interaction_indent = $interaction_roles->{$current_interaction_role}->{indent};
-	}
-	else
-	{
-	    my $sorted_roles = [ keys %$interaction_roles, ];
-
-	    $interaction_indent = 4 + scalar @$sorted_roles * 64;
-
-	    $interaction_roles->{$current_interaction_role}
-		= {
-		   number => (scalar @$sorted_roles),
-		   indent => $interaction_indent,
-		  };
-
-	    $is_new_and_needs_header = 'yes';
-	}
-
-	my $indent = " " x $interaction_indent;
-
-	if ($is_new_and_needs_header)
-	{
-	    print "${indent}ROLE: '$current_interaction_role'\n\n";
-	}
-
-	if ($executable_command !~ /^\s*$/)
-	{
-	    print "$indent'$executable_command'\n";
-	}
+	execute_option_interaction($command, $executable_command);
     }
 
     # ... or exporting to a shell executable script ...
 
     elsif (defined $option_export_sh)
     {
-	if (not defined $global_exported_sh_file)
-	{
-	    if (not defined $global_exported_sh_filename)
-	    {
-		$global_exported_sh_filename = $export_sh->{filename};
-	    }
-
-	    my $ok = open($global_exported_sh_file, ">", $global_exported_sh_filename);
-
-	    if (not $ok)
-	    {
-		die "*** Error: $0: cannot open $global_exported_sh_filename for writing ($!)";
-	    }
-
-	    print $global_exported_sh_file "#!/bin/sh\n";
-	    print $global_exported_sh_file "#\n";
-	    print $global_exported_sh_file "# script generated with $::global_program_name\n";
-	    print $global_exported_sh_file "#\n";
-	    print $global_exported_sh_file "# the command line to generate this script was:\n";
-	    print $global_exported_sh_file "#\n";
-	    print $global_exported_sh_file "# $global_command_line\n";
-	    print $global_exported_sh_file "#\n";
-
-	    chmod 0755, $global_exported_sh_filename;
-	}
-
-	$export_command = working_directory_for_interaction_role_parse($export_command, $dry_run, $current_interaction_role);
-
-	if ($export_command =~ /cd\s+(.*)$/)
-	{
-	    my $arguments = $1;
-
-	    my $exit_status = not chdir $arguments;
-	}
-	else
-	{
-	    #! should die here?
-	}
-
-	if ($export_command =~ /^'/
-	    and $export_command =~ /'$/)
-	{
-	    $export_command =~ s/^'//;
-	    $export_command =~ s/'$//;
-	}
-
-	print "$0: *** Running in export_sh mode, exporting: '$export_command'\n";
-
-	if ($option_export_verbose)
-	{
-	    print $global_exported_sh_file "echo '$export_command'\n";
-	}
-
-	if (exists $export_sh->{prefix})
-	{
-	    print $global_exported_sh_file $export_sh->{prefix};
-	}
-
-	print $global_exported_sh_file "$export_command\n";
+	execute_option_export_sh($export_sh_command, $executable_command, $export_sh, $dry_run);
     }
 
     # ... or we have to execute the given command
 
     else
     {
-	my $exit_status;
-
-	# force the execution of a change of the working directory to this process
-
-	#! note that the \s+ is a bug: it forces the use of white-space when no arguments are given
-
-	$command = working_directory_for_interaction_role_parse($command, $dry_run, $current_interaction_role);
-
-	if ($command =~ /cd\s+(.*)$/)
-	{
-	    my $arguments = $1;
-
-	    display_commented_command($command, $options);
-
-	    $exit_status = not chdir $arguments;
-	}
-	else
-	{
-	    my $export_output = $options->{export_output};
-
-	    if ($export_times)
-	    {
-		if (not defined $global_exported_times_file)
-		{
-		    if (not defined $global_exported_times_filename)
-		    {
-			$global_exported_times_filename = $export_times->{filename};
-		    }
-
-		    my $ok = open($global_exported_times_file, ">", $global_exported_times_filename);
-
-		    if (not $ok)
-		    {
-			die "*** Error: $0: cannot open $global_exported_times_filename for writing ($!)";
-		    }
-
-		    print $global_exported_times_file "#!/bin/sh\n";
-		    print $global_exported_times_file "#\n";
-		    print $global_exported_times_file "# script generated with $::global_program_name\n";
-		    print $global_exported_times_file "#\n";
-		    print $global_exported_times_file "# the command line to generate this script was:\n";
-		    print $global_exported_times_file "#\n";
-		    print $global_exported_times_file "# $global_command_line\n";
-		    print $global_exported_times_file "#\n";
-
-		    chmod 0644, $global_exported_times_filename;
-		}
-	    }
-
-	    # execute the command, collect start and end time
-
-	    use IPC::System::Simple qw(capture);
-
-	    my $start_time = time();
-
-	    my $output = "";
-
-	    if (not $command_is_empty)
-	    {
-		if (not $export_output)
-		{
-		    display_commented_command($command, $options);
-
-		    $exit_status = system "$command";
-		}
-		else
-		{
-		    $output .= capture($command);
-
-		    $exit_status = $IPC::System::Simple::EXITVAL;
-		}
-	    }
-
-	    my $end_time = time();
-
-	    if ($export_times)
-	    {
-		print $global_exported_times_file "$0: *** Starting ('$command') at " . localtime($start_time) . "\n";
-
-		print $global_exported_times_file "$0: *** Ended    ('$command') at " . localtime($end_time) . "\n";
-
-		print $global_exported_times_file "$0: *** Duration (s): " . ($end_time - $start_time) . "\n";
-
-		print $global_exported_times_file "\n";
-	    }
-
-	    if ($export_output)
-	    {
-		my $filename = generate_output_filename($global_target_command, $command);
-
-		my $output_file;
-
-		my $ok = open($output_file, ">", $filename);
-
-		if (not $ok)
-		{
-		    die "*** Error: $0: cannot open $filename for writing ($!)";
-		}
-
-		print $output_file "# $command\n#\n";
-
-		print $output_file $output;
-
-		close($output_file);
-	    }
-	    # else
-	    # {
-	    # 	print $output;
-	    # }
-	}
-
-	my $output_path = $options->{output_path};
-
-#     my $exit_status = system "( $command ) >>$output_path 2>&1";
-
-	if ($exit_status)
-	{
-	    if ($allow_fail)
-	    {
-# 	    system "echo >>$output_path 2>&1 failed with $?: $command\n";
-
-		print "$0: *** Note: $command was allowed to fail (because $allow_fail) and has exit status $?\n";
-	    }
-	    else
-	    {
-		die "$0: *** Fatal: $command failed with exit status $?\n";
-	    }
-	}
-
-	return $exit_status;
+	my $exit_code = execute_real_command($command, $executable_command, $options, $dry_run);
     }
 }
 
