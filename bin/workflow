@@ -575,17 +575,19 @@ sub compute_remote
 		{
 		    my $ssh_server = $option_remote->{ssh_server};
 
+		    my $remote_role = exists $option_remote->{name} ? $option_remote->{name} : $ssh_server;
+
 		    if (exists $option_remote->{ssh_user})
 		    {
 			my $ssh_user = $option_remote->{ssh_user};
 
-			$current_interaction_role = "$ssh_user\@$ssh_server";
+			$current_interaction_role = "$ssh_user\@$remote_role";
 
 			$result .= "ssh $ssh_options $ssh_user\@$ssh_server ";
 		    }
 		    else
 		    {
-			$current_interaction_role = $ssh_server;
+			$current_interaction_role = $remote_role;
 
 			$result .= "ssh $ssh_options $ssh_server ";
 		    }
