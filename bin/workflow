@@ -261,7 +261,7 @@ sub working_directory_for_interaction_role_parse
 
     my $dry_run = shift;
 
-    my $current_interaction_role = shift;
+    my $interaction_role = shift;
 
     my $arguments;
 
@@ -292,11 +292,11 @@ sub working_directory_for_interaction_role_parse
 
 	# keep track of the possibly remote working directory
 
-	_working_directory_for_interaction_role_change($current_interaction_role, $arguments);
+	_working_directory_for_interaction_role_change($interaction_role, $arguments);
     }
     else
     {
-#  	$command = working_directory_for_interaction_role_apply($current_interaction_role, $command);
+#  	$command = working_directory_for_interaction_role_apply($interaction_role, $command);
     }
 
     # return the possibly processed result
