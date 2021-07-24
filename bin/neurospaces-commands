@@ -49,6 +49,28 @@ $ project-workflow ip_routing all | sed -E "s|addr:([0-9]+.[0-9]+.[0-9]+.[0-9]+)
 ';
 
 
+sub heccer_test_command
+{
+    my $filename = "ls.sh";
+
+    execute_shell_script
+	(
+	 $filename,
+	 {
+	  remote => {
+		     description => "for testing",
+		     name => "virtual-remote",
+		     ssh_options => "-o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null",
+		     ssh_password => "root",
+		     ssh_port => "22",
+		     ssh_server => "192.168.0.210",
+		     ssh_user => "root",
+		    },
+	 },
+	);
+}
+
+
 sub heccer_build_manual
 {
     my $commands

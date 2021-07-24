@@ -104,8 +104,6 @@ our $global_technical_project_configuration;
 package Command;
 
 
-#! these imports will be properly implemented with proper packages
-
 sub execute_shell_command
 {
     return Engine::execute_shell_command(@_);
@@ -127,6 +125,38 @@ sub execute_shell_command_schedule
 sub execute_shell_command_schedule_array
 {
     return Engine::execute_shell_command_schedule_array(@_);
+}
+
+
+sub execute_shell_script
+{
+    my $filename = shift;
+
+    # assumes $/ has its default value of a newline
+
+    use IO::File;
+
+    my $file = IO::File->new("<$filename");
+
+    if (not $file)
+    {
+	die "$0: *** Error: no valid commands available in file '$filename'\n";
+    }
+
+    my $commands
+	= [
+	   map
+	   {
+	       chomp; $_;
+	   }
+	   <$file>,
+	  ];
+
+    # use Data::Dumper;
+
+    # print Dumper($commands);
+
+    return Engine::execute_shell_command_array($commands, @_);
 }
 
 
