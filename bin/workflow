@@ -1958,7 +1958,7 @@ sub parse_command_line
     {
         print
             "
-$0: checkout and build the given targets
+$0: support for workflow design for embedded software engineers.
 
 OVERRIDE_SRCDIR delivered packages for Buildroot targets are recognized.
 
