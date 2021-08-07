@@ -320,6 +320,16 @@ sub _working_directory_for_interaction_role_change
     }
     else
     {
+	if (not defined $current_working_directory)
+	{
+	    die "*** Error: $0: current_working_directory not defined when parsing directories.";
+	}
+
+	if (not defined $working_directory)
+	{
+	    die "*** Error: $0: working_directory not defined when parsing directories.";
+	}
+
 	$new_working_directory = File::Spec->catdir( $current_working_directory, $working_directory );
     }
 
