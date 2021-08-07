@@ -300,6 +300,8 @@ sub working_directory_for_interaction_role_apply
 }
 
 
+# keep track of the possibly remote working directory
+
 sub _working_directory_for_interaction_role_change
 {
     my $interaction_role = shift;
@@ -543,7 +545,9 @@ my $interaction_roles = {};
 my $current_interaction_role;
 
 
-sub apply_remote
+# apply the remoting prefix
+
+sub apply_remote_record_exported_command
 {
     my $remote_prefix = shift;
 
@@ -555,12 +559,26 @@ sub apply_remote
 
     if ($remote_prefix)
     {
-	$command = "$remote_prefix   $command";
+	# if we are exporting only one role
 
 	if (defined $option_export_remote
-	    and ($option_export_remote eq 0
+	    and (($option_export_remote eq $interaction_roles->{$current_interaction_role}->{name})
 		 or $option_export_remote eq $interaction_roles->{$current_interaction_role}->{number}))
 	{
+	    # we export the command without the remoting information
+
+	    $export_sh_command = $command;
+	}
+
+	$command = "$remote_prefix   $command";
+
+	# if we are exporting all roles
+
+	if (defined $option_export_remote
+	    and ($option_export_remote eq 0))
+	{
+	    # we export the command with the remoting information prefixed
+
 	    $export_sh_command = $command;
 	}
     }
@@ -568,6 +586,8 @@ sub apply_remote
     return ($command, $export_sh_command);
 }
 
+
+# apply the sudo prefix
 
 sub apply_sudo
 {
@@ -593,6 +613,8 @@ sub apply_sudo
 }
 
 
+# apply the timeout prefix
+
 sub apply_timeout
 {
     my $timeout_prefix = shift;
@@ -614,15 +636,21 @@ sub apply_timeout
 }
 
 
-sub compute_remote
+sub compute_remote_and_interaction_role
 {
     my $command = shift;
 
     my $option_remote = shift;
 
+    my $remote_policy = shift || "ssh";
+
     # default result: an empty string
 
-    my $result = "";
+    my $remote_prefix = "";
+
+    my $interaction_role;
+
+    my $interaction_role_with_policy_syntax;
 
     if ($option_remote)
     {
@@ -633,7 +661,7 @@ sub compute_remote
 	{
 	    # use the localuser interaction role to prevent remoting
 
-	    $current_interaction_role = "localuser\@localhost";
+	    $interaction_role = "localuser\@localhost";
 	}
 
 	# else construct the remote role
@@ -644,12 +672,12 @@ sub compute_remote
 	    {
 		my $ssh_password = $option_remote->{ssh_password};
 
-		$result .= "sshpass -p $ssh_password ";
+		$remote_prefix .= "sshpass -p $ssh_password ";
 	    }
 
 	    if (exists $option_remote->{ssh_options})
 	    {
-		$current_interaction_role = "";
+		$interaction_role = "";
 
 		my $ssh_options = $option_remote->{ssh_options};
 
@@ -663,32 +691,46 @@ sub compute_remote
 		    {
 			my $ssh_user = $option_remote->{ssh_user};
 
-			$current_interaction_role = "$ssh_user\@$remote_role";
+			$interaction_role = "$ssh_user\@$remote_role";
 
-			$result .= "ssh $ssh_options $ssh_user\@$ssh_server ";
+			$remote_prefix .= "$remote_policy $ssh_options $ssh_user\@$ssh_server ";
+
+			# either ssh syntax ...
+
+			if ($remote_policy eq 'ssh')
+			{
+			    $interaction_role_with_policy_syntax = "$ssh_user\@$ssh_server";
+			}
+
+			# ... or scp syntax (the filename should be appended -- is this clumsy?)
+
+			else
+			{
+			    $interaction_role_with_policy_syntax = "$ssh_user\@$ssh_server:";
+			}
 		    }
 		    else
 		    {
-			$current_interaction_role = $remote_role;
+			$interaction_role = $remote_role;
 
-			$result .= "ssh $ssh_options $ssh_server ";
+			$remote_prefix .= "$remote_policy $ssh_options $ssh_server ";
 		    }
 		}
 		else
 		{
-		    $current_interaction_role = "localuser\@localhost";
+		    $interaction_role = "localuser\@localhost";
 
-		    $result .= "ssh $ssh_options ";
+		    $remote_prefix .= "$remote_policy $ssh_options ";
 		}
 	    }
 	    else
 	    {
-		$current_interaction_role = "localuser\@localhost";
+		$interaction_role = "localuser\@localhost";
 	    }
 
 	    if (defined $option_verbose and $option_verbose > 1)
 	    {
-		print "$0: *** result is $result\n";
+		print "$0: *** result is $remote_prefix\n";
 	    }
 	}
     }
@@ -699,14 +741,23 @@ sub compute_remote
     {
 	# track the interaction role
 
-	$current_interaction_role = "localuser\@localhost";
+	$interaction_role = "localuser\@localhost";
     }
+
+    $current_interaction_role = $interaction_role;
 
     # return result
 
-    return $result;
+    return
+    {
+     interaction_role => $current_interaction_role,
+     interaction_role_with_policy_syntax => $interaction_role_with_policy_syntax,
+     remote_prefix => $remote_prefix,
+    };
 }
 
+
+# prefix the given command with appropriate sudo options.
 
 sub compute_sudo
 {
@@ -746,6 +797,8 @@ sub compute_sudo
     return $result;
 }
 
+
+# prefix the command with appropriate timeout options
 
 sub compute_timeout
 {
@@ -833,6 +886,32 @@ sub execute_option_dry_run
 }
 
 
+sub identify_interaction_roles
+{
+    my $command = shift;
+
+    my $executable_command = shift;
+
+    if (exists $interaction_roles->{$current_interaction_role})
+    {
+    }
+    else
+    {
+	my $sorted_roles = [ keys %$interaction_roles, ];
+
+	my $interaction_indent = 4 + scalar @$sorted_roles * 64;
+
+	$interaction_roles->{$current_interaction_role}
+	    = {
+	       indent => $interaction_indent,
+	       is_new_and_needs_header => 'yes',
+	       name => $current_interaction_role,
+	       number => (scalar @$sorted_roles),
+	      };
+    }
+}
+
+
 sub execute_option_interaction
 {
     my $command = shift;
@@ -841,32 +920,24 @@ sub execute_option_interaction
 
     my $interaction_indent = 4;
 
-    my $is_new_and_needs_header = "";
+    my $interaction_role = $interaction_roles->{$current_interaction_role};
 
-    if (exists $interaction_roles->{$current_interaction_role})
+    if (not defined $interaction_role)
     {
-	$interaction_indent = $interaction_roles->{$current_interaction_role}->{indent};
+	die "*** Error: $0: option_interaction cannot compute an indentation level without a valid interaction role";
     }
-    else
-    {
-	my $sorted_roles = [ keys %$interaction_roles, ];
 
-	$interaction_indent = 4 + scalar @$sorted_roles * 64;
-
-	$interaction_roles->{$current_interaction_role}
-	    = {
-	       number => (scalar @$sorted_roles),
-	       indent => $interaction_indent,
-	      };
-
-	$is_new_and_needs_header = 'yes';
-    }
+    $interaction_indent = $interaction_roles->{$current_interaction_role}->{indent};
 
     my $indent = " " x $interaction_indent;
 
-    if ($is_new_and_needs_header)
+    if ($interaction_role->{is_new_and_needs_header} eq 'yes')
     {
-	print "${indent}ROLE: '$current_interaction_role'\n\n";
+	my $header = "${indent}ROLE: '$current_interaction_role'";
+
+	$interaction_role->{is_new_and_needs_header} = $header;
+
+	print "$header\n\n";
     }
 
     if ($executable_command !~ /^\s*$/)
@@ -932,19 +1003,24 @@ sub execute_option_export_sh
 	$export_sh_command =~ s/'$//;
     }
 
-    print "$0: *** Running in export_sh mode, exporting: '$export_sh_command'\n";
-
-    if ($option_export_verbose)
+    if ($option_export_remote eq 0
+	or $option_export_remote eq $interaction_roles->{$current_interaction_role}->{name}
+	or $option_export_remote eq $interaction_roles->{$current_interaction_role}->{number})
     {
-	print $global_exported_sh_file "echo '$export_sh_command'\n";
-    }
+	print "$0: *** Running in export_sh mode, exporting: '$export_sh_command'\n";
 
-    if (exists $export_sh->{prefix})
-    {
-	print $global_exported_sh_file $export_sh->{prefix};
-    }
+	if ($option_export_verbose)
+	{
+	    print $global_exported_sh_file "echo '$export_sh_command'\n";
+	}
 
-    print $global_exported_sh_file "$export_sh_command\n";
+	if (exists $export_sh->{prefix})
+	{
+	    print $global_exported_sh_file $export_sh->{prefix};
+	}
+
+	print $global_exported_sh_file "$export_sh_command\n";
+    }
 }
 
 
@@ -1175,17 +1251,23 @@ sub execute_shell_command
 
     # if there is remoting information
 
-    my $remote_prefix = compute_remote($command, $options->{remote});
+    my $remote_and_interaction_role = compute_remote_and_interaction_role($command, $options->{remote});
+
+    my $remote_prefix = $remote_and_interaction_role->{remote_prefix};
+
+    # define the interaction roles
+
+    identify_interaction_roles($command, $executable_command);
 
     # now that we know the remote, apply the working directory for the remote on the command to be executed
 
     $command = working_directory_for_interaction_role_apply($current_interaction_role, $command);
 
-    # compute the sudo prefix
+    # prefix the command with appropriate sudo options
 
     my $sudo_prefix = compute_sudo($command, $options->{sudo});
 
-    # compute the timeout prefix
+    # prefix the command with appropriate timeout options
 
     my $timeout_prefix = compute_timeout($command, $options->{timeout});
 
@@ -1200,15 +1282,15 @@ sub execute_shell_command
 
     #! note that the order of processing determines whether the options are locally or remotely applied
 
-    # prefix the command with the sudo command
+    # apply the sudo prefix, possibly remote
 
     ($command, $export_sh_command) = apply_sudo($sudo_prefix, $command, $option_export_sudo, $export_sh_command);
 
-    # prefix the command with the remoting information
+    # apply the remoting prefix, always local
 
-    ($command, $export_sh_command) = apply_remote($remote_prefix, $command, $option_export_remote, $export_sh_command);
+    ($command, $export_sh_command) = apply_remote_record_exported_command($remote_prefix, $command, $option_export_remote, $export_sh_command);
 
-    # prefix the command with the timeout command
+    # apply the timeout prefix, always local
 
     ($command, $export_sh_command) = apply_timeout($timeout_prefix, $command, undef, $export_sh_command);
 
@@ -1934,7 +2016,7 @@ sub parse_command_line
 	 "built-image-directory=s" => \$option_built_image_directory,
 	 "command=s" => $option_commands,
 	 "dry-run!" => \$option_dry_run,
-	 "export-remote" => \$option_export_remote,
+	 "export-remote=s" => \$option_export_remote,
 	 "export-sh:s" => \$option_export_sh,
 	 "export-sudo" => \$option_export_sudo,
 	 "export-times!" => \$option_export_times,
