@@ -90,6 +90,9 @@ our $global_program_name;
     ($program_name_full_abs =~ m((.*)/(\S+)));
 
     $global_program_abs_directory = $1;
+
+    ($0 =~ m((.*)/(\S+)));
+
     $global_program_name = $2;
 }
 
