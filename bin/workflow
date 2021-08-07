@@ -163,6 +163,45 @@ sub execute_shell_script
 }
 
 
+# given a local script filename, execute the script remotely
+
+sub execute_shell_script_remote
+{
+    my $local_filename = shift;
+
+    my $options = shift;
+
+    if (not -e $local_filename)
+    {
+	die "$0: *** Error: no valid script file '$local_filename'\n";
+    }
+
+    my $remote = $options->{remote};
+
+    my $remote_and_interaction_role = compute_remote_and_interaction_role("", $remote, "scp");
+
+#    my $remote_prefix = $remote_and_interaction_role->{remote_prefix};
+
+    my $interaction_role_with_policy_syntax = $remote_and_interaction_role->{interaction_role_with_policy_syntax};
+
+    use File::Spec;
+
+    my ($volume, $directories, $remote_filename) = File::Spec->splitpath( $local_filename );
+
+    $remote_filename = "/tmp/$remote_filename";
+
+    # copy the local file to the remote
+
+    my $scp_command = "scp -pr $local_filename $interaction_role_with_policy_syntax$remote_filename";
+
+    execute_shell_command($scp_command, { $options, remote => undef, }, @_);
+
+    # execute the remote file with the remote role
+
+    return Engine::execute_shell_command_array($remote_filename, $options, @_);
+}
+
+
 sub _init
 {
     my $commands_seen;
