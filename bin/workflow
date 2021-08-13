@@ -1159,13 +1159,13 @@ sub execute_real_command
 
 	if ($allow_fail)
 	{
-# 	    system "echo >>$output_path 2>&1 failed with $?: $command\n";
+# 	    system "echo >>$output_path 2>&1 failed with $exit_status: $command\n";
 
-	    print "$0: *** Note: $command was allowed to fail (because $allow_fail) and has exit status $?\n";
+	    print "$0: *** Note: $command was allowed to fail (because $allow_fail) and has exit status $exit_status\n";
 	}
 	else
 	{
-	    die "$0: *** Fatal: $command failed with exit status $?\n";
+	    die "$0: *** Fatal: $command failed with exit status $exit_status\n";
 	}
     }
 
