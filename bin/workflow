@@ -406,7 +406,7 @@ sub build_tree_needs_rebuild
 	if ($option_verbose
 	    and $option_verbose > 1)
 	{
-	    print "build_tree_needs_rebuild(): option_force_rebuild is set\n";
+	    print STDERR "build_tree_needs_rebuild(): option_force_rebuild is set\n";
 	}
 
 	return "option_force_rebuild";
@@ -440,7 +440,7 @@ sub build_tree_needs_rebuild
 	    if ($option_verbose
 		and $option_verbose > 1)
 	    {
-		print "build_tree_needs_rebuild(): source_stat_output: $source_stat_output ($source)\n";
+		print STDERR "build_tree_needs_rebuild(): source_stat_output: $source_stat_output ($source)\n";
 	    }
 
 	    if ($?)
@@ -479,7 +479,7 @@ sub build_tree_needs_rebuild
 	    if ($option_verbose
 		and $option_verbose > 1)
 	    {
-		print "build_tree_needs_rebuild(): target_stat_output: $target_stat_output ($target)\n";
+		print STDERR "build_tree_needs_rebuild(): target_stat_output: $target_stat_output ($target)\n";
 	    }
 
 	    if ($?)
@@ -516,7 +516,7 @@ sub build_tree_needs_rebuild
 	if ($option_verbose
 	    and $option_verbose > 1)
 	{
-	    print "build_tree_needs_rebuild(): source_youngest: $source_youngest, target_oldest: $target_oldest ==> needs_rebuild: $result\n";
+	    print STDERR "build_tree_needs_rebuild(): source_youngest: $source_youngest, target_oldest: $target_oldest ==> needs_rebuild: $result\n";
 	}
 
     }
@@ -734,7 +734,7 @@ sub compute_remote_and_interaction_role
 
 	    if (defined $option_verbose and $option_verbose > 1)
 	    {
-		print "$0: *** result is $remote_prefix\n";
+		print STDERR "$0: *** result is $remote_prefix\n";
 	    }
 	}
     }
@@ -1308,14 +1308,14 @@ sub execute_shell_command
 
 	my $path = Cwd::cwd();
 
-	print "---\n";
+	print STDERR "---\n";
 
 	if (defined $verbose and ($verbose =~ /INFO/ or $verbose > 1))
 	{
-	    print "$verbose: current path is: $path\n";
+	    print STDERR "$verbose: current path is: $path\n";
 	}
 
-	print "$verbose: trying to $command\n";
+	print STDERR "$verbose: trying to $command\n";
     }
 
     # we are either in dry-run ...
@@ -2405,7 +2405,7 @@ sub buildroot_parse_packages_directories
 
 	if ($option_verbose)
 	{
-	    print "$0: *** added for package $package_name OVERRIDE_SRCDIR $package_directory\n";
+	    print STDERR "$0: *** added for package $package_name OVERRIDE_SRCDIR $package_directory\n";
 	}
     }
 
