@@ -1226,24 +1226,41 @@ sub execute_shell_command
 	}
     }
 
-    # if exporting timing information for this command
+    # if we are not exporting timing information specifically for this command
 
     my $export_times = $options->{export_times};
 
     if (not defined $export_times)
     {
-	if (defined $option_export_times)
-	{
-	    $export_times = { filename => $option_export_times, };
-	}
-    }
-    else
-    {
-	# if globally exporting all timing information
+	# are we globally exporting all timing information?
 
 	if (defined $option_export_times)
 	{
+	    # configure the export_times option
+
+	    $export_times = { filename => $option_export_times, };
+	}
+	else
+	{
+	    # we are not exporting any timing information
+	}
+    }
+
+    # if we are exporting timing information specifically for this command
+
+    else
+    {
+	# if globally exporting all timing information to the same file
+
+	if (defined $option_export_times)
+	{
+	    # set the shared filename
+
 	    $export_times->{filename} = $option_export_times;
+	}
+	else
+	{
+	    # use the filename set in the command specific options
 	}
     }
 
