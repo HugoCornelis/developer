@@ -294,7 +294,7 @@ sub working_directory_for_interaction_role_apply
 
 	if (defined $current_working_directory)
 	{
-	    $result = "cd $current_working_directory && $command";
+	    $result = "'cd $current_working_directory && $command'";
 	}
     }
 
@@ -343,7 +343,7 @@ sub _working_directory_for_interaction_role_change
 
 sub working_directory_for_interaction_role_parse
 {
-    my $command = shift;
+    my $executable_command = shift;
 
     my $dry_run = shift;
 
@@ -351,11 +351,11 @@ sub working_directory_for_interaction_role_parse
 
     my $arguments;
 
-    # if this is a chdir command
+    # if this is a chdir executable_command
 
-    if ($command =~ /^\s*chdir\s+(.*)$/
-	or $command =~ /^\s*cd\s*$/
-	or $command =~ /^\s*cd\s+(.*)$/)
+    if ($executable_command =~ /^\s*chdir\s+(.*)$/
+	or $executable_command =~ /^\s*cd\s*$/
+	or $executable_command =~ /^\s*cd\s+(.*)$/)
     {
 	# process its arguments
 
@@ -374,7 +374,7 @@ sub working_directory_for_interaction_role_parse
 	    $arguments = $ENV{HOME};
 	}
 
-	$command = "cd $arguments";
+	$executable_command = "cd $arguments";
 
 	# keep track of the possibly remote working directory
 
@@ -382,12 +382,12 @@ sub working_directory_for_interaction_role_parse
     }
     else
     {
-#  	$command = working_directory_for_interaction_role_apply($interaction_role, $command);
+#  	$executable_command = working_directory_for_interaction_role_apply($interaction_role, $executable_command);
     }
 
     # return the possibly processed result
 
-    return $command;
+    return $executable_command;
 }
 
 
@@ -874,11 +874,9 @@ sub execute_option_dry_run
 	print map { "$dry_run_prefix$_\n" } split "\n", $export_sh->{prefix};
     }
 
-    $command = working_directory_for_interaction_role_parse($command, $dry_run, $current_interaction_role);
-
     print "$0: *** Running in dry_run mode, not executing: '$command'\n";
 
-    if ($command =~ /cd\s+(.*)$/)
+    if ($executable_command =~ /cd\s+(.*)$/)
     {
 	my $arguments = $1;
 
@@ -988,8 +986,6 @@ sub execute_option_export_sh
 	chmod 0755, $global_exported_sh_filename;
     }
 
-    $export_sh_command = working_directory_for_interaction_role_parse($export_sh_command, $dry_run, $current_interaction_role);
-
     if ($export_sh_command =~ /cd\s+(.*)$/)
     {
 	my $arguments = $1;
@@ -1041,13 +1037,12 @@ sub execute_real_command
 
     my $exit_status;
 
-    # force the execution of a change of the working directory to this process
-
     #! note that the \s+ is a bug: it forces the use of white-space when no arguments are given
 
-    $command = working_directory_for_interaction_role_parse($command, $dry_run, $current_interaction_role);
+    #! note the difference in processing and exit status for a local cd vs a remote cd
 
-    if ($command =~ /cd\s+(.*)$/)
+    if ($current_interaction_role eq 'localuser@localhost'
+	and $executable_command =~ /cd\s+(.*)$/)
     {
 	my $arguments = $1;
 
@@ -1285,6 +1280,12 @@ sub execute_shell_command
 	return 0;
     }
 
+    # force the execution of a change of the working directory to this process
+
+    my $dry_run = $options->{dry_run} || $option_dry_run;
+
+    $executable_command = working_directory_for_interaction_role_parse($executable_command, $dry_run, $current_interaction_role);
+
     #! note that the order of processing determines whether the options are locally or remotely applied
 
     # apply the sudo prefix, possibly remote
@@ -1318,8 +1319,6 @@ sub execute_shell_command
     }
 
     # we are either in dry-run ...
-
-    my $dry_run = $options->{dry_run} || $option_dry_run;
 
     if ($dry_run)
     {
