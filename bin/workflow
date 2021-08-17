@@ -37,6 +37,8 @@ our $option_build_server;
 our $option_built_image_directory;
 our $option_commands = [];
 our $option_dry_run;
+our $option_dump_interaction_roles;
+our $option_dump_schedule;
 our $option_export_remote;
 our $option_export_sh;
 our $option_export_sudo;
@@ -55,6 +57,7 @@ our $option_help_projects;
 our $option_help_targets;
 our $option_incremental = 1;
 our $option_interaction;
+our $option_interaction_fixed;
 our $option_packages = [];
 our $option_remote = "gitlab";
 our $option_ssh_server;
@@ -74,6 +77,7 @@ our $global_overriden_packages;
 our $global_program_abs_directory;
 our $global_program_rel_directory;
 our $global_program_name;
+our $global_scheduled_commands = [];
 
 {
     use Cwd;
@@ -555,29 +559,38 @@ sub apply_remote_record_exported_command
 
     my $command = shift;
 
-    my $option_export_remote = shift;
+    my $export_remote = shift;
 
     my $export_sh_command = shift;
 
     if ($remote_prefix)
     {
-	# if we are exporting only one role
+	# if we are exporting this one role
 
-	if (defined $option_export_remote
-	    and (($option_export_remote eq $interaction_roles->{$current_interaction_role}->{name})
-		 or $option_export_remote eq $interaction_roles->{$current_interaction_role}->{number}))
+	if (defined $export_remote
+	    and (($export_remote eq $interaction_roles->{$current_interaction_role}->{name})
+		 or $export_remote eq $interaction_roles->{$current_interaction_role}->{number}))
 	{
 	    # we export the command without the remoting information
 
 	    $export_sh_command = $command;
 	}
 
+	# this is a command for a different role
+
+	else
+	{
+	    # export as a comment
+
+	    $export_sh_command = "# <remote command at $remote_prefix: $command>";
+	}
+
 	$command = "$remote_prefix   $command";
 
 	# if we are exporting all roles
 
-	if (defined $option_export_remote
-	    and ($option_export_remote eq 0))
+	if (defined $export_remote
+	    and ($export_remote eq 0))
 	{
 	    # we export the command with the remoting information prefixed
 
@@ -858,13 +871,19 @@ sub compute_timeout
 
 sub execute_option_dry_run
 {
-    my $command = shift;
+    my $scheduled_command = shift;
 
-    my $executable_command = shift;
+    my $command = $scheduled_command->{command};
 
-    my $export_sh = shift;
+    my $dry_run = $scheduled_command->{dry_run};
 
-    my $dry_run = shift;
+    my $executable_command = $scheduled_command->{executable_command};
+
+    my $export_sh = $scheduled_command->{export_sh};
+
+    my $interaction_role = $scheduled_command->{interaction_role};
+
+    my $options = $scheduled_command->{options};
 
     if ($export_sh
 	and exists $export_sh->{prefix})
@@ -895,21 +914,70 @@ sub identify_interaction_roles
 
     my $executable_command = shift;
 
+    my $indent_delta = 64;
+
     if (exists $interaction_roles->{$current_interaction_role})
     {
+    }
+    elsif ($option_interaction_fixed)
+    {
+	my $target_servers = $global_technical_project_configuration->{target_servers};
+
+	my $interaction_indent = 4;
+
+	my $interaction_number = 1;
+
+	$interaction_roles
+	    = {
+	       map
+	       {
+		   my $target_server_key = $_;
+
+		   my $target_server = $target_servers->{$target_server_key};
+
+		   my $target_server_name = $target_server->{name} || $target_server->{ssh_server} || 'localhost';
+
+		   my $target_user = $target_server->{ssh_user} || 'localuser';
+
+		   my $target = $target_user . '@' . $target_server_name;
+
+		   my $result
+		       = {
+			  $target => {
+				      indent => $interaction_indent,
+				      is_new_and_needs_header => $option_interaction_fixed ? 'yes' : '',
+				      name => $target,
+				      number => $interaction_number,
+				     },
+			 };
+
+		   $interaction_number += 1;
+
+		   $interaction_indent += 24;
+
+		   %$result;
+	       }
+	       sort
+	       {
+		   #! should make sure that localhost always comes first
+
+		   $a cmp $b;
+	       }
+	       keys %$target_servers,
+	      };
     }
     else
     {
 	my $sorted_roles = [ keys %$interaction_roles, ];
 
-	my $interaction_indent = 4 + scalar @$sorted_roles * 64;
+	my $interaction_indent = 4 + scalar @$sorted_roles * $indent_delta;
 
 	$interaction_roles->{$current_interaction_role}
 	    = {
 	       indent => $interaction_indent,
-	       is_new_and_needs_header => 'yes',
+	       is_new_and_needs_header => $option_interaction ? 'yes' : '',
 	       name => $current_interaction_role,
-	       number => (scalar @$sorted_roles),
+	       number => (scalar @$sorted_roles) + 1,
 	      };
     }
 }
@@ -917,20 +985,55 @@ sub identify_interaction_roles
 
 sub execute_option_interaction
 {
-    my $command = shift;
+    my $scheduled_command = shift;
 
-    my $executable_command = shift;
+    my $fixed = shift;
+
+    my $command = $scheduled_command->{command};
+
+    my $executable_command = $scheduled_command->{executable_command};
+
+    my $interaction_role_arg = $scheduled_command->{interaction_role};
 
     my $interaction_indent = 4;
 
-    my $interaction_role = $interaction_roles->{$current_interaction_role};
-
-    if (not defined $interaction_role)
+    if (not defined $interaction_role_arg)
     {
-	die "*** Error: $0: option_interaction cannot compute an indentation level without a valid interaction role";
+	# use Data::Dumper;
+
+	# print Dumper( { interaction_roles => $interaction_roles, }, );
+
+	die "*** Error: $0: option_interaction cannot compute an indentation level without a valid interaction role (is '$current_interaction_role')";
     }
 
-    $interaction_indent = $interaction_roles->{$current_interaction_role}->{indent};
+    if ($fixed)
+    {
+	foreach my $interaction_role_name (sort
+					   {
+					       $interaction_roles->{$a}->{number} <=> $interaction_roles->{$b}->{number};
+					   }
+					   keys %$interaction_roles)
+	{
+	    my $interaction_role = $interaction_roles->{$interaction_role_name};
+
+	    if ($interaction_role->{is_new_and_needs_header} eq 'yes')
+	    {
+		my $interaction_indent = $interaction_roles->{$interaction_role_name}->{indent};
+
+		my $indent = " " x $interaction_indent;
+
+		my $header = "${indent}ROLE: '$interaction_role_name'";
+
+		$interaction_role->{is_new_and_needs_header} = $header;
+
+		print "$header\n\n";
+	    }
+	}
+    }
+
+    my $interaction_role = $interaction_roles->{$interaction_role_arg};
+
+    $interaction_indent = $interaction_role->{indent};
 
     my $indent = " " x $interaction_indent;
 
@@ -952,13 +1055,15 @@ sub execute_option_interaction
 
 sub execute_option_export_sh
 {
-    my $export_sh_command = shift;
+    my $scheduled_command = shift;
 
-    my $executable_command = shift;
+    my $executable_command = $scheduled_command->{executable_command};
 
-    my $export_sh = shift;
+    my $export_sh = $scheduled_command->{export_sh};
 
-    my $dry_run = shift;
+    my $export_sh_command = $scheduled_command->{export_sh_command};
+
+    my $interaction_role = $scheduled_command->{interaction_role};
 
     if (not defined $global_exported_sh_file)
     {
@@ -1004,12 +1109,12 @@ sub execute_option_export_sh
 	$export_sh_command =~ s/'$//;
     }
 
-    if ($option_export_remote eq 0
-	or $option_export_remote eq $interaction_roles->{$current_interaction_role}->{name}
-	or $option_export_remote eq $interaction_roles->{$current_interaction_role}->{number})
-    {
-	print "$0: *** Running in export_sh mode, exporting: '$export_sh_command'\n";
+    print "$0: *** Running in export_sh mode, exporting: '$export_sh_command'\n";
 
+    if ((not defined $option_export_remote or $option_export_remote eq 0)
+	or $option_export_remote eq $interaction_roles->{$interaction_role}->{name}
+	or $option_export_remote eq $interaction_roles->{$interaction_role}->{number})
+    {
 	if ($option_export_verbose)
 	{
 	    print $global_exported_sh_file "echo '$export_sh_command'\n";
@@ -1022,18 +1127,26 @@ sub execute_option_export_sh
 
 	print $global_exported_sh_file "$export_sh_command\n";
     }
+    else
+    {
+	print $global_exported_sh_file "$export_sh_command\n";
+    }
 }
 
 
-sub execute_real_command
+sub execute_scheduled_command
 {
-    my $command = shift;
+    my $scheduled_command = shift;
 
-    my $executable_command = shift;
+    my $command = $scheduled_command->{command};
 
-    my $options = shift;
+    my $dry_run = $scheduled_command->{dry_run};
 
-    my $dry_run = shift;
+    my $executable_command = $scheduled_command->{executable_command};
+
+    my $interaction_role = $scheduled_command->{interaction_role};
+
+    my $options = $scheduled_command->{options};
 
     my $exit_status;
 
@@ -1041,7 +1154,7 @@ sub execute_real_command
 
     #! note the difference in processing and exit status for a local cd vs a remote cd
 
-    if ($current_interaction_role eq 'localuser@localhost'
+    if ($interaction_role eq 'localuser@localhost'
 	and $executable_command =~ /cd\s+(.*)$/)
     {
 	my $arguments = $1;
@@ -1049,6 +1162,10 @@ sub execute_real_command
 	display_commented_command($command, $options);
 
 	$exit_status = not chdir $arguments;
+    }
+    elsif ($dry_run)
+    {
+	execute_option_dry_run($scheduled_command);
     }
     else
     {
@@ -1172,6 +1289,85 @@ sub execute_real_command
     # return the result of command execution
 
     return $exit_status;
+}
+
+
+sub schedule_real_command
+{
+    my $command = shift;
+
+    my $executable_command = shift;
+
+    my $options = shift;
+
+    my $dry_run = shift;
+
+    my $export_sh = shift;
+
+    my $export_sh_command = shift;
+
+    my $scheduled_command
+	= {
+	   command => $command,
+	   dry_run => $dry_run,
+	   executable_command => $executable_command,
+	   export_sh => $export_sh,
+	   export_sh_command => $export_sh_command,
+	   interaction_role => $current_interaction_role,
+	   options => $options,
+	  };
+
+    push @$global_scheduled_commands, $scheduled_command;
+}
+
+
+sub execute_all_scheduled_commands
+{
+    if ($option_dump_schedule)
+    {
+	use Data::Dumper;
+
+	print Dumper( { scheduled_commands => $global_scheduled_commands, }, );
+    }
+    elsif ($option_dump_interaction_roles)
+    {
+	use Data::Dumper;
+
+	print Dumper( { interaction_roles => $interaction_roles, }, );
+    }
+    else
+    {
+	foreach my $scheduled_command (@$global_scheduled_commands)
+	{
+	    # we are either in dry-run ...
+
+	    if ($option_dry_run)
+	    {
+		execute_option_dry_run($scheduled_command);
+	    }
+
+	    # ... or printing an interaction diagram
+
+	    elsif ($option_interaction or $option_interaction_fixed)
+	    {
+		execute_option_interaction($scheduled_command, $option_interaction_fixed);
+	    }
+
+	    # ... or exporting to a shell executable script ...
+
+	    elsif (defined $option_export_sh)
+	    {
+		execute_option_export_sh($scheduled_command);
+	    }
+
+	    # or really executing the scheduled command
+
+	    else
+	    {
+		execute_scheduled_command($scheduled_command);
+	    }
+	}
+    }
 }
 
 
@@ -1317,51 +1513,18 @@ sub execute_shell_command
 
     ($command, $export_sh_command) = apply_timeout($timeout_prefix, $command, undef, $export_sh_command);
 
-    # start of core command processing
+    # schedule the given command
 
-    if ($verbose)
-    {
-	use Cwd qw();
-
-	my $path = Cwd::cwd();
-
-	print STDERR "---\n";
-
-	if (defined $verbose and ($verbose =~ /INFO/ or $verbose > 1))
-	{
-	    print STDERR "$verbose: current path is: $path\n";
-	}
-
-	print STDERR "$verbose: trying to $command\n";
-    }
-
-    # we are either in dry-run ...
-
-    if ($dry_run)
-    {
-	execute_option_dry_run($command, $executable_command, $export_sh, $dry_run);
-    }
-
-    # ... or printing an interaction diagram
-
-    elsif ($option_interaction)
-    {
-	execute_option_interaction($command, $executable_command);
-    }
-
-    # ... or exporting to a shell executable script ...
-
-    elsif (defined $option_export_sh)
-    {
-	execute_option_export_sh($export_sh_command, $executable_command, $export_sh, $dry_run);
-    }
-
-    # ... or we have to execute the given command
-
-    else
-    {
-	my $exit_code = execute_real_command($command, $executable_command, $options, $dry_run);
-    }
+    my $exit_code
+	= schedule_real_command
+	  (
+	   $command,
+	   $executable_command,
+	   $options,
+	   $dry_run,
+	   $export_sh,
+	   $export_sh_command,
+	  );
 }
 
 
@@ -1767,6 +1930,8 @@ sub bash_completion_generate_options
 			--built-image-directory
 			--command
 			--dry-run
+			--dump-interaction-roles
+			--dump-schedule
 			--export-remote
 			--export-sh
 			--export-sudo
@@ -1784,6 +1949,7 @@ sub bash_completion_generate_options
 			--help-targets
 			--incremental
 			--interaction
+			--interaction-fixed
 			--packages
 			--ssh-port
 			--ssh-server
@@ -2022,6 +2188,8 @@ sub main
 
 	    &$command_implementation();
 	}
+
+	Engine::execute_all_scheduled_commands();
     }
 }
 
@@ -2037,6 +2205,8 @@ sub parse_command_line
 	 "built-image-directory=s" => \$option_built_image_directory,
 	 "command=s" => $option_commands,
 	 "dry-run!" => \$option_dry_run,
+	 "dump-interaction-roles!" => \$option_dump_interaction_roles,
+	 "dump-schedule!" => \$option_dump_schedule,
 	 "export-remote=s" => \$option_export_remote,
 	 "export-sh:s" => \$option_export_sh,
 	 "export-sudo" => \$option_export_sudo,
@@ -2055,6 +2225,7 @@ sub parse_command_line
 	 "help-targets!" => \$option_help_targets,
 	 "incremental!" => \$option_incremental,
 	 "interaction!" => \$option_interaction,
+	 "interaction-fixed!" => \$option_interaction_fixed,
 	 "package=s" => $option_packages,
 	 "ssh-port=s" => \$option_ssh_port,
 	 "ssh-server=s" => \$option_ssh_server,
@@ -2135,6 +2306,8 @@ options:
     --built-image-directory   the directory on the build server where the built images are to be found.
     --command                 commands to execute, hyphens (-) will be replaced with underscores (_).
     --dry-run                 if set, do not execute system shell commands but print them to STDOUT.
+    --dump-interaction-roles  dump the found interaction roles (note that they depend on the scheduled commands).
+    --dump-schedule           dump the constructed schedule to standard output without executing the scheduled commands.
     --export-remote           include the remote access part of exported commands.
                               this option takes a number: 0 means all roles are exported, any other number exports only that respective role.
     --export-sh               export the commands to a file with the given name.
@@ -2261,6 +2434,8 @@ options:
 	       built_image_directory => $option_built_image_directory,
 	       commands => $option_commands,
 	       dry_run => $option_dry_run,
+	       dump_interaction_roles => $option_dump_interaction_roles,
+	       dump_schedule => $option_dump_schedule,
 	       export_remote => $option_export_remote,
 	       export_sh => $option_export_sh,
 	       export_sudo => $option_export_sudo,
@@ -2279,6 +2454,7 @@ options:
 	       help_targets => $option_help_targets,
 	       incremental => $option_incremental,
 	       interaction => $option_interaction,
+	       interaction_fixed => $option_interaction_fixed,
 	       packages => $option_packages,
 	       ssh_port => $option_ssh_port,
 	       ssh_server => $option_ssh_server,
