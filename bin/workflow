@@ -37,8 +37,11 @@ our $option_build_server;
 our $option_built_image_directory;
 our $option_commands = [];
 our $option_dry_run;
+our $option_dump_all_interaction_roles;
 our $option_dump_interaction_roles;
+our $option_dump_module_interaction_roles;
 our $option_dump_schedule;
+our $option_dump_specific_workflow_roles;
 our $option_export_remote;
 our $option_export_sh;
 our $option_export_sudo;
@@ -57,7 +60,8 @@ our $option_help_projects;
 our $option_help_targets;
 our $option_incremental = 1;
 our $option_interaction;
-our $option_interaction_fixed;
+our $option_interaction_all;
+our $option_interaction_module;
 our $option_packages = [];
 our $option_remote = "gitlab";
 our $option_ssh_server;
@@ -546,7 +550,7 @@ sub display_commented_command
 }
 
 
-my $interaction_roles = {};
+our $interaction_roles = {};
 
 my $current_interaction_role;
 
@@ -893,7 +897,10 @@ sub execute_option_dry_run
 	print map { "$dry_run_prefix$_\n" } split "\n", $export_sh->{prefix};
     }
 
-    print "$0: *** Running in dry_run mode, not executing: '$command'\n";
+    if ($dry_run =~ /^[0-9]+$/)
+    {
+	print "$0: *** Running in dry_run $dry_run mode, not executing: '$command'\n";
+    }
 
     if ($executable_command =~ /cd\s+(.*)$/)
     {
@@ -919,7 +926,7 @@ sub identify_interaction_roles
     if (exists $interaction_roles->{$current_interaction_role})
     {
     }
-    elsif ($option_interaction_fixed)
+    elsif ($option_interaction_all)
     {
 	my $target_servers = $global_technical_project_configuration->{target_servers};
 
@@ -945,7 +952,7 @@ sub identify_interaction_roles
 		       = {
 			  $target => {
 				      indent => $interaction_indent,
-				      is_new_and_needs_header => $option_interaction_fixed ? 'yes' : '',
+				      is_new_and_needs_header => 'yes',
 				      name => $target,
 				      number => $interaction_number,
 				     },
@@ -987,7 +994,7 @@ sub execute_option_interaction
 {
     my $scheduled_command = shift;
 
-    my $fixed = shift;
+    my $all = shift;
 
     my $command = $scheduled_command->{command};
 
@@ -995,18 +1002,16 @@ sub execute_option_interaction
 
     my $interaction_role_arg = $scheduled_command->{interaction_role};
 
-    my $interaction_indent = 4;
-
     if (not defined $interaction_role_arg)
     {
 	# use Data::Dumper;
 
 	# print Dumper( { interaction_roles => $interaction_roles, }, );
 
-	die "*** Error: $0: option_interaction cannot compute an indentation level without a valid interaction role (is '$current_interaction_role')";
+	die "*** Error: $0: option_interaction cannot compute an indentation level without a valid interaction role (is '$interaction_role_arg')";
     }
 
-    if ($fixed)
+    if ($all)
     {
 	foreach my $interaction_role_name (sort
 					   {
@@ -1018,38 +1023,44 @@ sub execute_option_interaction
 
 	    if ($interaction_role->{is_new_and_needs_header} eq 'yes')
 	    {
-		my $interaction_indent = $interaction_roles->{$interaction_role_name}->{indent};
-
-		my $indent = " " x $interaction_indent;
-
-		my $header = "${indent}ROLE: '$interaction_role_name'";
-
-		$interaction_role->{is_new_and_needs_header} = $header;
-
-		print "$header\n\n";
+		_print_interaction_header($interaction_role);
 	    }
 	}
     }
 
     my $interaction_role = $interaction_roles->{$interaction_role_arg};
 
-    $interaction_indent = $interaction_role->{indent};
-
-    my $indent = " " x $interaction_indent;
-
     if ($interaction_role->{is_new_and_needs_header} eq 'yes')
     {
-	my $header = "${indent}ROLE: '$current_interaction_role'";
-
-	$interaction_role->{is_new_and_needs_header} = $header;
-
-	print "$header\n\n";
+	_print_interaction_header($interaction_role);
     }
 
     if ($executable_command !~ /^\s*$/)
     {
+	my $interaction_indent = $interaction_role->{indent};
+
+	my $indent = " " x $interaction_indent;
+
 	print "$indent'$executable_command'\n";
     }
+}
+
+
+sub _print_interaction_header
+{
+    my $interaction_role = shift;
+
+    my $interaction_role_name = $interaction_role->{name};
+
+    my $interaction_indent = $interaction_roles->{$interaction_role_name}->{indent};
+
+    my $indent = " " x $interaction_indent;
+
+    my $header = "${indent}ROLE: '$interaction_role_name'";
+
+    $interaction_role->{is_new_and_needs_header} = $header;
+
+    print "$header\n\n";
 }
 
 
@@ -1348,9 +1359,9 @@ sub execute_all_scheduled_commands
 
 	    # ... or printing an interaction diagram
 
-	    elsif ($option_interaction or $option_interaction_fixed)
+	    elsif ($option_interaction or $option_interaction_all)
 	    {
-		execute_option_interaction($scheduled_command, $option_interaction_fixed);
+		execute_option_interaction($scheduled_command, $option_interaction_all);
 	    }
 
 	    # ... or exporting to a shell executable script ...
@@ -1930,7 +1941,9 @@ sub bash_completion_generate_options
 			--built-image-directory
 			--command
 			--dry-run
+			--dump-all-interaction-roles
 			--dump-interaction-roles
+			--dump-module-interaction-roles
 			--dump-schedule
 			--export-remote
 			--export-sh
@@ -1949,7 +1962,8 @@ sub bash_completion_generate_options
 			--help-targets
 			--incremental
 			--interaction
-			--interaction-fixed
+			--interaction-all
+			--interaction-module
 			--packages
 			--ssh-port
 			--ssh-server
@@ -2000,6 +2014,13 @@ sub generate_command_list
     # generate a list of the available command subroutines
 
     my $subroutines = [
+		       # select only code references
+
+		       grep
+		       {
+		       	   defined &{"$_"};
+		       }
+
 		       # clarify that they belong to the Command:: package
 
 		       map
@@ -2009,10 +2030,14 @@ sub generate_command_list
 
 		       # select only code references
 
-		       grep
-		       {
-			   not defined &$_;
-		       }
+		       # grep
+		       # {
+		       # 	   ref {Command::}->{$_} eq 'CODE';
+		       # }
+		       # grep
+		       # {
+		       # 	   not defined &$_;
+		       # }
 		       keys %Command::,
 		      ];
 
@@ -2181,9 +2206,77 @@ sub main
     }
     else
     {
-	my $command_implementation = "Command::${target}_${command}";
+	my $dry_run_module_commands;
 
+	if ($option_interaction_module)
 	{
+	    $dry_run_module_commands = 'option_interaction_module';
+
+	    # make sure we don't actually run any commands
+
+	    $option_dry_run = 'option_interaction_module';
+	}
+
+	if ($option_dump_module_interaction_roles)
+	{
+	    $dry_run_module_commands = 'option_dump_module_interaction_roles';
+
+	    # make sure we don't actually run any commands
+
+	    $option_dry_run = 'option_dump_module_interaction_roles';
+	}
+
+	if ($dry_run_module_commands)
+	{
+	    # generate the list of all commands
+
+	    my $all_commands = generate_command_hash();
+
+	    # reference subroutine names specific for the given target: they belong together
+
+	    my $target_subroutines = $all_commands->{$target};
+
+	    # invoke all these subroutines in dry run mode to have them either generate or report the module roles
+
+	    my $command_implementations
+		= [
+		   map
+		   {
+		       my $subroutine = $_;
+
+		       "Command::${target}_${subroutine}";
+		   }
+		   keys %$target_subroutines,
+		  ];
+
+	    foreach my $command_implementation (@$command_implementations)
+	    {
+		if ($option_verbose)
+		{
+		    print "Invoking ($command_implementation)\n";
+		}
+
+		no strict "refs";
+
+		&$command_implementation();
+	    }
+
+	    # dump the module roles
+
+	    if ($option_dump_module_interaction_roles)
+	    {
+		print Dumper( { interaction_roles => $Engine::interaction_roles, }, );
+	    }
+	}
+	else
+	{
+	    my $command_implementation = "Command::${target}_${command}";
+
+	    if ($option_verbose)
+	    {
+		print "Invoking ($command_implementation)\n";
+	    }
+
 	    no strict "refs";
 
 	    &$command_implementation();
@@ -2205,7 +2298,9 @@ sub parse_command_line
 	 "built-image-directory=s" => \$option_built_image_directory,
 	 "command=s" => $option_commands,
 	 "dry-run!" => \$option_dry_run,
+	 "dump-all-interaction-roles!" => \$option_dump_all_interaction_roles,
 	 "dump-interaction-roles!" => \$option_dump_interaction_roles,
+	 "dump-module-interaction-roles!" => \$option_dump_module_interaction_roles,
 	 "dump-schedule!" => \$option_dump_schedule,
 	 "export-remote=s" => \$option_export_remote,
 	 "export-sh:s" => \$option_export_sh,
@@ -2225,7 +2320,8 @@ sub parse_command_line
 	 "help-targets!" => \$option_help_targets,
 	 "incremental!" => \$option_incremental,
 	 "interaction!" => \$option_interaction,
-	 "interaction-fixed!" => \$option_interaction_fixed,
+	 "interaction-all!" => \$option_interaction_all,
+	 "interaction-module!" => \$option_interaction_module,
 	 "package=s" => $option_packages,
 	 "ssh-port=s" => \$option_ssh_port,
 	 "ssh-server=s" => \$option_ssh_server,
@@ -2299,40 +2395,44 @@ examples -- first try these with the --dry-run to understand what they do:
   \$ $0 --help-targets                                       # display the available targets that are found in the configuration file
 
 options:
-    --bash-completion         compute bash completion for the given command line.
-                              hint: the bash completion script implements completion for options, targets and commands.
-    --branch                  git branch to work with.
-    --build-server            the build server profile to work with.
-    --built-image-directory   the directory on the build server where the built images are to be found.
-    --command                 commands to execute, hyphens (-) will be replaced with underscores (_).
-    --dry-run                 if set, do not execute system shell commands but print them to STDOUT.
-    --dump-interaction-roles  dump the found interaction roles (note that they depend on the scheduled commands).
-    --dump-schedule           dump the constructed schedule to standard output without executing the scheduled commands.
-    --export-remote           include the remote access part of exported commands.
-                              this option takes a number: 0 means all roles are exported, any other number exports only that respective role.
-    --export-sh               export the commands to a file with the given name.
-    --export-sudo             include the sudo commands when exporting commands to a file.
-    --export-times            export the times when commands are started and ended to a file with the given name.
-    --export-verbose          when exporting the commands to a file, interleave them with echo commands.
-    --force-rebuild           force a rebuild regardless of the existence and build date of previously built artefacts.
-    --forward-destination     the target file forward destination to copy to.
-    --forward-source          the target file forward source to copy from.
-    --help                    display usage information and stop execution.
-    --help-build-servers      display the known build servers.
-    --help-commands           display the available commands (requires the installation of Devel::Symdump with 'sudo cpanm Devel::Symdump').
-    --help-field-project-name print the field project name and exit.
-    --help-packages           display known package and overriden package information and stop execution.
-    --help-projects           display known project information and stop execution.
-    --help-targets            display known targets and stop execution.
-    --incremental             assume an incremental build (default is " . ($option_incremental ? "yes" : "no") . "
-    --interaction             show the interaction diagram of the commands.
-    --packages                packages to operate on, can be given multiple times.
-    --ssh-port                the ssh port.
-    --ssh-server              the used ssh build server.
-    --ssh-user                ssh-user on the build server (please configure your public key).
-    --target                  the target to build (default is '$option_target').
-    --tftp-directory          the target tftp directory (where your device will find its kernel and rootfs).
-    --verbose                 set verbosity level.
+    --bash-completion               compute bash completion for the given command line.
+                                    hint: the bash completion script implements completion for options, targets and commands.
+    --branch                        git branch to work with.
+    --build-server                  the build server profile to work with.
+    --built-image-directory         the directory on the build server where the built images are to be found.
+    --command                       commands to execute, hyphens (-) will be replaced with underscores (_).
+    --dry-run                       if set, do not execute system shell commands but print them to STDOUT.
+    --dump-all-interaction-roles    dump all the interaction roles found in the configuration.
+    --dump-interaction-roles        dump the found interaction roles (note that they depend on the scheduled commands).
+    --dump-module-interaction-roles dump all the interaction roles found in the module of the given command.
+    --dump-schedule                 dump the constructed schedule to standard output without executing the scheduled commands.
+    --export-remote                 include the remote access part of exported commands.
+                                    this option takes a number: 0 means all roles are exported, any other number exports only that respective role.
+    --export-sh                     export the commands to a file with the given name.
+    --export-sudo                   include the sudo commands when exporting commands to a file.
+    --export-times                  export the times when commands are started and ended to a file with the given name.
+    --export-verbose                when exporting the commands to a file, interleave them with echo commands.
+    --force-rebuild                 force a rebuild regardless of the existence and build date of previously built artefacts.
+    --forward-destination           the target file forward destination to copy to.
+    --forward-source                the target file forward source to copy from.
+    --help                          display usage information and stop execution.
+    --help-build-servers            display the known build servers.
+    --help-commands                 display the available commands (requires the installation of Devel::Symdump with 'sudo cpanm Devel::Symdump').
+    --help-field-project-name       print the field project name and exit.
+    --help-packages                 display known package and overriden package information and stop execution.
+    --help-projects                 display known project information and stop execution.
+    --help-targets                  display known targets and stop execution.
+    --incremental                   assume an incremental build (default is " . ($option_incremental ? "yes" : "no") . "
+    --interaction                   show the interaction diagram of the commands.
+    --interaction-all               show the interaction diagram of the commands using all the found interaction roles in the configuration.
+    --interaction-module            show the interaction diagram of all the commands in the module.
+    --packages                      packages to operate on, can be given multiple times.
+    --ssh-port                      the ssh port.
+    --ssh-server                    the used ssh build server.
+    --ssh-user                      ssh-user on the build server (please configure your public key).
+    --target                        the target to build (default is '$option_target').
+    --tftp-directory                the target tftp directory (where your device will find its kernel and rootfs).
+    --verbose                       set verbosity level.
 ";
 
 	exit 0;
@@ -2434,7 +2534,9 @@ options:
 	       built_image_directory => $option_built_image_directory,
 	       commands => $option_commands,
 	       dry_run => $option_dry_run,
+	       dump_all_interaction_roles => $option_dump_all_interaction_roles,
 	       dump_interaction_roles => $option_dump_interaction_roles,
+	       dump_module_interaction_roles => $option_dump_module_interaction_roles,
 	       dump_schedule => $option_dump_schedule,
 	       export_remote => $option_export_remote,
 	       export_sh => $option_export_sh,
@@ -2454,7 +2556,8 @@ options:
 	       help_targets => $option_help_targets,
 	       incremental => $option_incremental,
 	       interaction => $option_interaction,
-	       interaction_fixed => $option_interaction_fixed,
+	       interaction_all => $option_interaction_all,
+	       interaction_module => $option_interaction_module,
 	       packages => $option_packages,
 	       ssh_port => $option_ssh_port,
 	       ssh_server => $option_ssh_server,
