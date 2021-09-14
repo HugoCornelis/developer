@@ -36,7 +36,7 @@ our $option_branch = "master";
 our $option_build_server;
 our $option_built_image_directory;
 our $option_commands = [];
-our $option_dry_run;
+our $option_dry_run = '';
 our $option_dump_all_interaction_roles;
 our $option_dump_interaction_roles;
 our $option_dump_module_interaction_roles;
@@ -982,7 +982,7 @@ sub identify_interaction_roles
 	$interaction_roles->{$current_interaction_role}
 	    = {
 	       indent => $interaction_indent,
-	       is_new_and_needs_header => $option_interaction ? 'yes' : '',
+	       is_new_and_needs_header => 'yes',
 	       name => $current_interaction_role,
 	       number => (scalar @$sorted_roles) + 1,
 	      };
@@ -1028,20 +1028,27 @@ sub execute_option_interaction
 	}
     }
 
-    my $interaction_role = $interaction_roles->{$interaction_role_arg};
-
-    if ($interaction_role->{is_new_and_needs_header} eq 'yes')
+    if ($interaction_role_arg eq 'none')
     {
-	_print_interaction_header($interaction_role);
+	print "$command\n";
     }
-
-    if ($executable_command !~ /^\s*$/)
+    else
     {
-	my $interaction_indent = $interaction_role->{indent};
+	my $interaction_role = $interaction_roles->{$interaction_role_arg};
 
-	my $indent = " " x $interaction_indent;
+	if ($interaction_role->{is_new_and_needs_header} eq 'yes')
+	{
+	    _print_interaction_header($interaction_role);
+	}
 
-	print "$indent'$executable_command'\n";
+	if ($executable_command !~ /^\s*$/)
+	{
+	    my $interaction_indent = $interaction_role->{indent};
+
+	    my $indent = " " x $interaction_indent;
+
+	    print "$indent'$executable_command'\n";
+	}
     }
 }
 
@@ -1346,20 +1353,26 @@ sub execute_all_scheduled_commands
 
 	print Dumper( { interaction_roles => $interaction_roles, }, );
     }
+    elsif ($option_dump_module_interaction_roles)
+    {
+	print Dumper( { interaction_roles => $interaction_roles, }, );
+    }
     else
     {
 	foreach my $scheduled_command (@$global_scheduled_commands)
 	{
 	    # we are either in dry-run ...
 
-	    if ($option_dry_run)
+	    if ($option_dry_run =~ /^[0-9]+$/)
 	    {
 		execute_option_dry_run($scheduled_command);
 	    }
 
 	    # ... or printing an interaction diagram
 
-	    elsif ($option_interaction or $option_interaction_all)
+	    elsif ($option_interaction
+		   or $option_interaction_all
+		   or $option_interaction_module)
 	    {
 		execute_option_interaction($scheduled_command, $option_interaction_all);
 	    }
@@ -2236,7 +2249,7 @@ sub main
 
 	    my $target_subroutines = $all_commands->{$target};
 
-	    # invoke all these subroutines in dry run mode to have them either generate or report the module roles
+	    # collect the subroutine names
 
 	    my $command_implementations
 		= [
@@ -2249,23 +2262,42 @@ sub main
 		   keys %$target_subroutines,
 		  ];
 
-	    foreach my $command_implementation (@$command_implementations)
+	    # invoke all these subroutines in dry run mode to have them either generate or report the module roles
+
+	    foreach my $command_implementation (sort @$command_implementations)
 	    {
 		if ($option_verbose)
 		{
 		    print "Invoking ($command_implementation)\n";
 		}
 
-		no strict "refs";
+		$command_implementation =~ /Command::(.*)/;
 
-		&$command_implementation();
-	    }
+		my $short_command = $1;
 
-	    # dump the module roles
+		my $scheduled_command
+		    = {
+		       command => "---\n$short_command",
+		       dry_run => $dry_run_module_commands,
+		       interaction_role => 'none',
+		      };
 
-	    if ($option_dump_module_interaction_roles)
-	    {
-		print Dumper( { interaction_roles => $Engine::interaction_roles, }, );
+		push @$global_scheduled_commands, $scheduled_command;
+
+		{
+		    no strict "refs";
+
+		    &$command_implementation();
+		}
+
+		$scheduled_command
+		    = {
+		       command => "\n\n---\n",
+		       dry_run => $dry_run_module_commands,
+		       interaction_role => 'none',
+		      };
+
+		push @$global_scheduled_commands, $scheduled_command;
 	    }
 	}
 	else
