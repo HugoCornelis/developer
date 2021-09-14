@@ -320,6 +320,12 @@ sub _working_directory_for_interaction_role_change
 
     my $current_working_directory = $global_remote_working_directory->{$interaction_role};
 
+    if (not defined $current_working_directory
+	and $interaction_role eq 'localuser@localhost')
+    {
+	$current_working_directory = '.';
+    }
+
     use File::Spec;
 
     my $is_absolute = File::Spec->file_name_is_absolute( $working_directory );
