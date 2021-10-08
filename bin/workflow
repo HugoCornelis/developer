@@ -175,9 +175,15 @@ sub execute_shell_script
 
 sub execute_shell_script_remote
 {
-    my $local_filename = shift;
+    my $local_filename_arguments = shift;
 
     my $options = shift;
+
+    $local_filename_arguments =~ m(^(\S+)(\s+(.*))?$);
+
+    my $local_filename = $1;
+
+    my $arguments = $3;
 
     if (not -e $local_filename)
     {
@@ -188,11 +194,11 @@ sub execute_shell_script_remote
 
     my $remote_and_interaction_role = Engine::compute_remote_and_interaction_role("", $remote, "scp");
 
-    my $ssh_options = $remote_and_interaction_role->{ssh_options};
+    my $ssh_options = $remote_and_interaction_role->{ssh_options} || "";
 
 #    my $remote_prefix = $remote_and_interaction_role->{remote_prefix};
 
-    my $interaction_role_with_policy_syntax = $remote_and_interaction_role->{interaction_role_with_policy_syntax};
+    my $interaction_role_with_policy_syntax = $remote_and_interaction_role->{interaction_role_with_policy_syntax} || "";
 
     use File::Spec;
 
@@ -204,11 +210,12 @@ sub execute_shell_script_remote
 
     my $scp_command = "scp -pr $ssh_options $local_filename $interaction_role_with_policy_syntax$remote_filename";
 
-    execute_shell_command($scp_command, { %$options, remote => undef, }, @_);
+    # execute_shell_command($scp_command, { %$options, remote => undef, }, @_);
+    execute_shell_command($scp_command, { remote => undef, }, @_);
 
     # execute the remote file with the remote role
 
-    return Engine::execute_shell_command($remote_filename, $options, @_);
+    return Engine::execute_shell_command("$remote_filename $arguments", $options, @_);
 }
 
 
