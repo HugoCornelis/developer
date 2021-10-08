@@ -2294,7 +2294,7 @@ sub main
 
 		my $scheduled_command
 		    = {
-		       command => "---\n$short_command",
+		       command => "---\nCOMMAND: $short_command",
 		       dry_run => $dry_run_module_commands,
 		       interaction_role => 'none',
 		      };
