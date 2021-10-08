@@ -806,6 +806,11 @@ sub compute_sudo
 
     if ($option_sudo)
     {
+	my $sudo_pattern
+	    = (exists $option_sudo->{pattern}
+	       ? $option_sudo->{pattern}
+	       : '.*');
+
 	# if we need to skip sudo information
 
 	if (exists $option_sudo->{skip}
@@ -815,8 +820,7 @@ sub compute_sudo
 
 	# else construct the sudo command
 
-	elsif (exists $option_sudo->{pattern}
-	       and $command =~ /$option_sudo->{pattern}/)
+	elsif ($command =~ /$sudo_pattern/)
 	{
 	    $result .= "sudo ";
 
