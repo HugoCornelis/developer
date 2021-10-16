@@ -698,6 +698,16 @@ sub compute_remote_and_interaction_role
 	    $interaction_role = "localuser\@localhost";
 	}
 
+	# if this is the local account
+
+	elsif (exists $option_remote->{localuser}
+	       and $option_remote->{localuser} eq 'yes')
+	{
+	    # use the localuser interaction role to prevent remoting
+
+	    $interaction_role = "localuser\@localhost";
+	}
+
 	# else construct the remote role
 
 	else
@@ -955,15 +965,7 @@ sub identify_interaction_roles
 	    = {
 	       map
 	       {
-		   my $target_server_key = $_;
-
-		   my $target_server = $target_servers->{$target_server_key};
-
-		   my $target_server_name = $target_server->{name} || $target_server->{ssh_server} || 'localhost';
-
-		   my $target_user = $target_server->{ssh_user} || 'localuser';
-
-		   my $target = $target_user . '@' . $target_server_name;
+		   my $target = $_;
 
 		   my $result
 		       = {
@@ -983,9 +985,44 @@ sub identify_interaction_roles
 	       }
 	       sort
 	       {
-		   #! should make sure that localhost always comes first
+		   # make sure that localhost always comes first
 
-		   $a cmp $b;
+		   if ($a =~ /local/)
+		   {
+		       return -1;
+		   }
+		   elsif ($b =~ /local/)
+		   {
+		       return 1;
+		   }
+		   else
+		   {
+		       $a cmp $b;
+		   }
+	       }
+	       map
+	       {
+		   my $target_server_key = $_;
+
+		   my $target_server = $target_servers->{$target_server_key};
+
+		   my $result;
+
+		   if (exists $target_server->{localuser}
+		       and $target_server->{localuser} eq 'yes')
+		   {
+		       $result = "localuser\@localhost";
+		   }
+		   else
+		   {
+		       my $target_server_name = $target_server->{name} || $target_server->{ssh_server} || 'localhost';
+
+		       my $target_user = $target_server->{ssh_user} || 'localuser';
+
+		       $result = $target_user . '@' . $target_server_name;
+		   }
+
+		   $result;
 	       }
 	       keys %$target_servers,
 	      };
