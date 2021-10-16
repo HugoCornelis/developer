@@ -1,5 +1,16 @@
 # this file should be copied to /usr/share/grc/
 #
+# Colors available for configuration are:
+#
+#    Black
+#    Red
+#    Green
+#    Yellow
+#    Blue
+#    Magenta
+#    Cyan
+#    White
+#
 # add this at the top of /etc/grc.conf
 #
 #
