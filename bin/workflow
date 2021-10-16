@@ -1394,14 +1394,14 @@ sub execute_all_scheduled_commands
 		execute_option_interaction($scheduled_command, $option_interaction_all);
 	    }
 
-	    # ... or exporting to a shell executable script ...
+	    # ... or exporting to an executable shell script ...
 
 	    elsif (defined $option_export_sh)
 	    {
 		execute_option_export_sh($scheduled_command);
 	    }
 
-	    # or really executing the scheduled command
+	    # or real-time executing the scheduled command
 
 	    else
 	    {
