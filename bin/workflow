@@ -2024,6 +2024,7 @@ sub bash_completion_generate_options
 			--help-build-servers
 			--help-commands
 			--help-field-project-name
+			--help-options
 			--help-packages
 			--help-projects
 			--help-targets
@@ -2505,6 +2506,7 @@ options:
     --help-build-servers            display the known build servers.
     --help-commands                 display the available commands (requires the installation of Devel::Symdump with 'sudo cpanm Devel::Symdump').
     --help-field-project-name       print the field project name and exit.
+    --help-options                  print the option values.
     --help-packages                 display known package and overriden package information and stop execution.
     --help-projects                 display known project information and stop execution.
     --help-targets                  display known targets and stop execution.
