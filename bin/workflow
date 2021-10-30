@@ -72,10 +72,6 @@ our $option_target;
 our $option_verbose;
 
 
-our $default_command = "build";
-our $default_target = "ssp";
-
-
 our $global_command_line = join " ", $0, @ARGV;
 our $global_overriden_packages;
 our $global_program_abs_directory;
@@ -2432,13 +2428,11 @@ sub parse_command_line
 
     if (scalar @ARGV eq 0)
     {
-	$option_commands->[0] = $default_command;
+	# obsolete
     }
     elsif (scalar @ARGV eq 1)
     {
-	# no commands given, a single argument is the command
-
-	$option_commands->[scalar @$option_commands] = $ARGV[0];
+	$option_target = shift @ARGV;
     }
     elsif (scalar @ARGV eq 2)
     {
@@ -2458,11 +2452,6 @@ sub parse_command_line
         die "$0: *** error in argument processing, try --help";
     }
 
-    if (not defined $option_target)
-    {
-	$option_target = $default_target;
-    }
-
     if ($option_help)
     {
         print
@@ -2473,13 +2462,11 @@ OVERRIDE_SRCDIR delivered packages for Buildroot targets are recognized.
 
 examples -- first try these with the --dry-run to understand what they do:
 
-  \$ $0                                                      # build the default target (the default target is '$default_target')
+  \$ $0 ssp build                                            # 'build' the 'ssp' target (if it exists for your local configuration).
 
-  \$ $0 ssp                                                  # build the 'ssp' target (if it exists for your local configuration)
+  \$ $0 --dry-run ssp build                                  # display the shell commands that would be executed to 'build' the 'ssp' target.
 
-  \$ $0 --dry-run                                            # display the commands that would be executed for the default target
-
-  \$ $0 --help-targets                                       # display the available targets that are found in the configuration file
+  \$ $0 --help-targets                                       # display the available targets that are found in the configuration file.
 
 options:
     --bash-completion               compute bash completion for the given command line.
@@ -2518,8 +2505,8 @@ options:
     --ssh-port                      the ssh port.
     --ssh-server                    the used ssh build server.
     --ssh-user                      ssh-user on the build server (please configure your public key).
-    --target                        the target to build (default is '$option_target').
-    --tftp-directory                the target tftp directory (where your device will find its kernel and rootfs).
+    --target                        the target to apply the given commands to.
+    --tftp-directory                the target tftp directory (eg. where your device will find its kernel and rootfs).
     --verbose                       set verbosity level.
 ";
 
@@ -2596,16 +2583,28 @@ options:
 
 	my $commands = generate_command_list();
 
+	if ($option_target)
+	{
+	    $commands
+		= [
+		   grep
+		   {
+		       /$option_target/;
+		   }
+		   @$commands,
+		  ];
+	}
+
 	$commands
 	    = [
 	       map
 	       {
-		   "$global_program_name $_ --dry";
+		   "$global_program_name $_ --dry-run";
 	       }
 	       @$commands,
 	      ];
 
-	print Dump( { "available_commands (copy-paste the one you would like to execute, try it with the --dry option, execute it without this option)" => $commands, }, );
+	print Dump( { "available_commands (copy-paste the one you would like to execute, try it with the --dry-run option, execute it without this option)" => $commands, }, );
 
 	exit 0;
     }
@@ -2711,6 +2710,11 @@ options:
 	print Dump( { targets => $targets, }, );
 
 	exit 0;
+    }
+
+    if (not defined $option_target)
+    {
+	die "$0: *** Error: neither a target option nor target argument given, try --help";
     }
 
     if ($FieldProject::status)
