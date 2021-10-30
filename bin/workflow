@@ -2487,7 +2487,7 @@ options:
     --branch                        git branch to work with.
     --build-server                  the build server profile to work with.
     --built-image-directory         the directory on the build server where the built images are to be found.
-    --command                       commands to execute, hyphens (-) will be replaced with underscores (_).
+    --command                       commands to execute, hyphens (-) in the command will be replaced with underscores (_).
     --dry-run                       if set, do not execute system shell commands but print them to STDOUT.
     --dump-all-interaction-roles    dump all the interaction roles found in the configuration.
     --dump-interaction-roles        dump the found interaction roles (note that they depend on the scheduled commands).
