@@ -2189,7 +2189,7 @@ sub main
 
     my $target = $option_target;
 
-    my $command = $option_commands->[0];
+    my $command = $option_commands->[0] || "";
 
     # we allow finger laziness: the shift key is not necessary for the underscore
 
