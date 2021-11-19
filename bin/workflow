@@ -59,9 +59,9 @@ our $option_help_packages;
 our $option_help_projects;
 our $option_help_targets;
 our $option_incremental = 1;
-our $option_interaction;
-our $option_interaction_all;
-our $option_interaction_module;
+our $option_interactions;
+our $option_interactions_all;
+our $option_interactions_module;
 our $option_packages = [];
 our $option_remote = "gitlab";
 our $option_ssh_server;
@@ -949,7 +949,7 @@ sub identify_interaction_roles
     if (exists $interaction_roles->{$current_interaction_role})
     {
     }
-    elsif ($option_interaction_all)
+    elsif ($option_interactions_all)
     {
 	my $target_servers = $global_technical_project_configuration->{target_servers};
 
@@ -1040,7 +1040,7 @@ sub identify_interaction_roles
 }
 
 
-sub execute_option_interaction
+sub execute_option_interactions
 {
     my $scheduled_command = shift;
 
@@ -1058,7 +1058,7 @@ sub execute_option_interaction
 
 	# print Dumper( { interaction_roles => $interaction_roles, }, );
 
-	die "*** Error: $0: option_interaction cannot compute an indentation level without a valid interaction role (is '$interaction_role_arg')";
+	die "*** Error: $0: option_interactions cannot compute an indentation level without a valid interaction role (is '$interaction_role_arg')";
     }
 
     if ($all)
@@ -1420,11 +1420,11 @@ sub execute_all_scheduled_commands
 
 	    # ... or printing an interaction diagram
 
-	    elsif ($option_interaction
-		   or $option_interaction_all
-		   or $option_interaction_module)
+	    elsif ($option_interactions
+		   or $option_interactions_all
+		   or $option_interactions_module)
 	    {
-		execute_option_interaction($scheduled_command, $option_interaction_all);
+		execute_option_interactions($scheduled_command, $option_interactions_all);
 	    }
 
 	    # ... or exporting to an executable shell script ...
@@ -2025,9 +2025,9 @@ sub bash_completion_generate_options
 			--help-projects
 			--help-targets
 			--incremental
-			--interaction
-			--interaction-all
-			--interaction-module
+			--interactions
+			--interactions-all
+			--interactions-module
 			--packages
 			--ssh-port
 			--ssh-server
@@ -2272,13 +2272,13 @@ sub main
     {
 	my $dry_run_module_commands;
 
-	if ($option_interaction_module)
+	if ($option_interactions_module)
 	{
-	    $dry_run_module_commands = 'option_interaction_module';
+	    $dry_run_module_commands = 'option_interactions_module';
 
 	    # make sure we don't actually run any commands
 
-	    $option_dry_run = 'option_interaction_module';
+	    $option_dry_run = 'option_interactions_module';
 	}
 
 	if ($option_dump_module_interaction_roles)
@@ -2402,9 +2402,9 @@ sub parse_command_line
 	 "help-projects!" => \$option_help_projects,
 	 "help-targets!" => \$option_help_targets,
 	 "incremental!" => \$option_incremental,
-	 "interaction!" => \$option_interaction,
-	 "interaction-all!" => \$option_interaction_all,
-	 "interaction-module!" => \$option_interaction_module,
+	 "interactions!" => \$option_interactions,
+	 "interactions-all!" => \$option_interactions_all,
+	 "interactions-module!" => \$option_interactions_module,
 	 "package=s" => $option_packages,
 	 "ssh-port=s" => \$option_ssh_port,
 	 "ssh-server=s" => \$option_ssh_server,
@@ -2498,9 +2498,9 @@ options:
     --help-projects                 display known project information and stop execution.
     --help-targets                  display known targets and stop execution.
     --incremental                   assume an incremental build (default is " . ($option_incremental ? "yes" : "no") . "
-    --interaction                   show the interaction diagram of the commands.
-    --interaction-all               show the interaction diagram of the commands using all the found interaction roles in the configuration.
-    --interaction-module            show the interaction diagram of all the commands in the module.
+    --interactions                   show the interaction diagram of the commands.
+    --interactions-all               show the interaction diagram of the commands using all the found interaction roles in the configuration.
+    --interactions-module            show the interaction diagram of all the commands in the module.
     --packages                      packages to operate on, can be given multiple times.
     --ssh-port                      the ssh port.
     --ssh-server                    the used ssh build server.
@@ -2642,9 +2642,9 @@ options:
 	       help_projects => $option_help_projects,
 	       help_targets => $option_help_targets,
 	       incremental => $option_incremental,
-	       interaction => $option_interaction,
-	       interaction_all => $option_interaction_all,
-	       interaction_module => $option_interaction_module,
+	       interactions => $option_interactions,
+	       interactions_all => $option_interactions_all,
+	       interactions_module => $option_interactions_module,
 	       packages => $option_packages,
 	       ssh_port => $option_ssh_port,
 	       ssh_server => $option_ssh_server,
