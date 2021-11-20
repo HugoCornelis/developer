@@ -948,7 +948,7 @@ sub identify_interaction_roles
 
     my $executable_command = shift;
 
-    my $indent_delta = 64;
+    my $indent_delta = 40;
 
     if (exists $interaction_roles->{$current_interaction_role})
     {
