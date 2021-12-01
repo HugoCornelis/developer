@@ -8,7 +8,7 @@ use Data::Dumper;
 
 $Data::Dumper::Sortkeys = 'always';
 
-use Getopt::Long;
+use Getopt::Long qw(GetOptionsFromArray);;
 
 
 $SIG{'__DIE__'}
@@ -71,6 +71,46 @@ our $option_tftp_directory;
 our $option_target;
 our $option_verbose;
 
+our $global_options
+    = {
+       "bash-completion=s" => \$option_bash_completion,
+       "branch=s" => \$option_branch,
+       "build-server=s" => \$option_build_server,
+       "built-image-directory=s" => \$option_built_image_directory,
+       "command=s" => $option_commands,
+       "dry-run!" => \$option_dry_run,
+       "dump-all-interaction-roles!" => \$option_dump_all_interaction_roles,
+       "dump-interaction-roles!" => \$option_dump_interaction_roles,
+       "dump-module-interaction-roles!" => \$option_dump_module_interaction_roles,
+       "dump-schedule!" => \$option_dump_schedule,
+       "export-remote=s" => \$option_export_remote,
+       "export-sh:s" => \$option_export_sh,
+       "export-sudo" => \$option_export_sudo,
+       "export-times!" => \$option_export_times,
+       "export-verbose!" => \$option_export_verbose,
+       "force-rebuild!" => \$option_force_rebuild,
+       "forward-destination-server=s" => \$option_forward_destination_server,
+       "forward-source-server=s" => \$option_forward_source_server,
+       "help!" => \$option_help,
+       "help-build-servers!" => \$option_help_build_servers,
+       "help-commands!" => \$option_help_commands,
+       "help-field-project-name!" => \$option_help_field_project_name,
+       "help-options!" => \$option_help_options,
+       "help-packages!" => \$option_help_packages,
+       "help-projects!" => \$option_help_projects,
+       "help-targets!" => \$option_help_targets,
+       "incremental!" => \$option_incremental,
+       "interactions!" => \$option_interactions,
+       "interactions-all!" => \$option_interactions_all,
+       "interactions-module!" => \$option_interactions_module,
+       "package=s" => $option_packages,
+       "ssh-port=s" => \$option_ssh_port,
+       "ssh-server=s" => \$option_ssh_server,
+       "ssh-user=s" => \$option_ssh_user,
+       "target=s" => \$option_target,
+       "tftp-directory=s" => \$option_tftp_directory,
+       "v|verbose+" => \$option_verbose,
+      };
 
 our $global_command_line = join " ", $0, @ARGV;
 our $global_overriden_packages;
@@ -2366,7 +2406,7 @@ sub main
 
 	    no strict "refs";
 
-	    &$command_implementation();
+	    &$command_implementation(\@ARGV);
 	}
 
 	Engine::execute_all_scheduled_commands();
@@ -2376,47 +2416,7 @@ sub main
 
 sub parse_command_line
 {
-    my $result
-        = GetOptions
-	(
-	 "bash-completion=s" => \$option_bash_completion,
-	 "branch=s" => \$option_branch,
-	 "build-server=s" => \$option_build_server,
-	 "built-image-directory=s" => \$option_built_image_directory,
-	 "command=s" => $option_commands,
-	 "dry-run!" => \$option_dry_run,
-	 "dump-all-interaction-roles!" => \$option_dump_all_interaction_roles,
-	 "dump-interaction-roles!" => \$option_dump_interaction_roles,
-	 "dump-module-interaction-roles!" => \$option_dump_module_interaction_roles,
-	 "dump-schedule!" => \$option_dump_schedule,
-	 "export-remote=s" => \$option_export_remote,
-	 "export-sh:s" => \$option_export_sh,
-	 "export-sudo" => \$option_export_sudo,
-	 "export-times!" => \$option_export_times,
-	 "export-verbose!" => \$option_export_verbose,
-	 "force-rebuild!" => \$option_force_rebuild,
-	 "forward-destination-server=s" => \$option_forward_destination_server,
-	 "forward-source-server=s" => \$option_forward_source_server,
-	 "help!" => \$option_help,
-	 "help-build-servers!" => \$option_help_build_servers,
-	 "help-commands!" => \$option_help_commands,
-	 "help-field-project-name!" => \$option_help_field_project_name,
-	 "help-options!" => \$option_help_options,
-	 "help-packages!" => \$option_help_packages,
-	 "help-projects!" => \$option_help_projects,
-	 "help-targets!" => \$option_help_targets,
-	 "incremental!" => \$option_incremental,
-	 "interactions!" => \$option_interactions,
-	 "interactions-all!" => \$option_interactions_all,
-	 "interactions-module!" => \$option_interactions_module,
-	 "package=s" => $option_packages,
-	 "ssh-port=s" => \$option_ssh_port,
-	 "ssh-server=s" => \$option_ssh_server,
-	 "ssh-user=s" => \$option_ssh_user,
-	 "target=s" => \$option_target,
-	 "tftp-directory=s" => \$option_tftp_directory,
-	 "v|verbose+" => \$option_verbose,
-	);
+    my $result = GetOptionsFromArray(\@ARGV, %$global_options);
 
     if (!$result)
     {
@@ -2430,30 +2430,16 @@ sub parse_command_line
     # 		       or $option_help_projects
     # 		       or $option_help_targets);
 
-    if (scalar @ARGV eq 0)
-    {
-	# obsolete
-    }
-    elsif (scalar @ARGV eq 1)
+    if (not defined $option_target
+	and scalar @ARGV)
     {
 	$option_target = shift @ARGV;
     }
-    elsif (scalar @ARGV eq 2)
+
+    if (not defined $option_commands->[0]
+	and scalar @ARGV)
     {
-	# giving both a target option and a target argument on the command line is an error, we can only take commands for one target
-
-	if (defined $option_target)
-	{
-	    die "$0: *** Error: both a --target option and an target argument given, try --help";
-	}
-
-	$option_target = shift @ARGV;
-
-	$option_commands->[scalar @$option_commands] = $ARGV[0];
-    }
-    else
-    {
-        die "$0: *** error in argument processing, try --help";
+	$option_commands->[0] = shift @ARGV;
     }
 
     if ($option_help)
@@ -2462,9 +2448,11 @@ sub parse_command_line
             "
 $0: support for workflow design for embedded software engineers.
 
-OVERRIDE_SRCDIR delivered packages for Buildroot targets are recognized.
+SYNOPSIS
 
-examples -- first try these with the --dry-run to understand what they do:
+$0 <options> <target> <command> -- < ... command specific options and arguments ... >
+
+EXAMPLES -- first try these with the --dry-run to understand what they do:
 
   \$ $0 ssp build                                            # 'build' the 'ssp' target (if it exists for your local configuration).
 
@@ -2512,6 +2500,11 @@ options:
     --target                        the target to apply the given commands to.
     --tftp-directory                the target tftp directory (eg. where your device will find its kernel and rootfs).
     --verbose                       set verbosity level.
+
+NOTES
+
+OVERRIDE_SRCDIR delivered packages for Buildroot targets are recognized.
+
 ";
 
 	exit 0;
@@ -2658,7 +2651,7 @@ options:
 	       verbose => $option_verbose,
 	      };
 
-	print Dump( { "options" => $options, }, );
+	print Dump( { "global_options" => $global_options, }, );
 
 	exit 0;
     }

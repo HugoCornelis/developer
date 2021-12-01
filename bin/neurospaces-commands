@@ -149,8 +149,25 @@ sub ip_routing_all
 }
 
 
+our $option_bash_completion;
+
+our $command_options
+    = {
+       "bash-completion=s" => \$option_bash_completion,
+      };
+
 sub ip_routing_developer_laptop
 {
+    use Getopt::Long qw(GetOptionsFromArray);
+
+    my $arguments = shift;
+
+    my $result = GetOptionsFromArray($arguments, %$command_options);
+
+    use Data::Dumper;
+
+    print Dumper($arguments, $command_options, $option_bash_completion);
+
     my $commands
 	= [
 	   "netstat -rn",
