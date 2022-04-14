@@ -255,13 +255,11 @@ sub execute_shell_script_remote
 }
 
 
-sub _init
+sub _init_command_filenames_found
 {
-    my $commands_seen;
-
     my $field_project_name = $global_field_project_configuration->{field_project_name};
 
-    my $command_filenames_found
+    my $result
 	= [
 	   grep
 	   {
@@ -274,7 +272,19 @@ sub _init
 	   `ls $global_program_rel_directory/$field_project_name-commands*`,
 	  ];
 
-    my $command_filenames_configured
+    # use Data::Dumper;
+
+    # print STDERR Dumper( { _init_command_filenames_found => $result, }, );
+
+    return $result;
+}
+
+
+sub _init_command_filenames_configured
+{
+    my $field_project_name = $global_field_project_configuration->{field_project_name};
+
+    my $result
 	= [
 	   grep
 	   {
@@ -286,6 +296,24 @@ sub _init
 	   }
 	   @{ $global_technical_project_configuration->{command_filenames} },
 	  ];
+
+    # use Data::Dumper;
+
+    # print STDERR Dumper( { _init_command_filenames_configured => $result, }, );
+
+    return $result;
+}
+
+
+sub _init
+{
+    my $commands_seen;
+
+    my $field_project_name = $global_field_project_configuration->{field_project_name};
+
+    my $command_filenames_found = _init_command_filenames_found();
+
+    my $command_filenames_configured = _init_command_filenames_configured();
 
     my $command_filenames
 	= [
@@ -1807,21 +1835,23 @@ sub _init_get_field_project_configuration
 
     # try to determine the field_project_name from the executable name
 
-    if ($0 =~ m(.*/(.*)-workflow))
+    if ($0 =~ m((.*)/(.*)-workflow))
     {
 	# set result
 
 	$result
 	    = {
-	       field_project_name => $1,
+	       field_project_name => $2,
 	       from_executable => "dynamically_generated from the executable script name",
+	       field_project_configuration_directory => $1,
+	       field_project_configuration_filename => "$1/$2-configuration",
 	      };
     }
     else
     {
 	# try to determine the field project name for a field_project_configuration file
 
-	my $field_project_configuration_filename = "project.pl";
+	my $field_project_configuration_filename = "workflow-project.pl";
 
 	# loop over the possible field project configuration directories
 
@@ -1881,6 +1911,8 @@ sub _init_get_field_project_configuration
 		= {
 		   %$field_project_configuration,
 		   from_directory => $field_project_configuration_directory,
+		   field_project_configuration_directory => $field_project_configuration_directory,
+		   field_project_configuration_filename => $field_project_configuration_filename,
 		  };
 	}
 
