@@ -151,6 +151,45 @@ our $global_technical_project_configuration;
 package Command;
 
 
+sub all_install_scripts
+{
+    # generate list of scripts
+
+    # my $command_filenames_configured = _init_command_filenames_configured();
+
+    my $command_filenames_configured = $global_technical_project_configuration->{command_filenames};
+
+    my $field_configuration = FieldProject::_init_get_field_project_configuration();
+
+    my $configuration_filename = "$field_configuration->{field_project_configuration_directory}/$field_configuration->{field_project_configuration_filename}";
+
+    my $command = "ln -sf /usr/local/bin/workflow $ENV{HOME}/bin";
+
+    execute_shell_command($command);
+
+    # install each script to the ~/bin directory
+
+    my $commands
+	= [
+	   map
+	   {
+	       # $_ =~ m(.*/(.*)$);
+
+	       my $command_filename = $_;
+
+	       my $result = "ln -sf $_ $ENV{HOME}/bin/$command_filename";
+
+	       $result;
+	   }
+	   @$command_filenames_configured,
+	   $configuration_filename,
+	  ];
+
+    execute_shell_command_array($commands);
+
+}
+
+
 sub execute_shell_command
 {
     return Engine::execute_shell_command(@_);
