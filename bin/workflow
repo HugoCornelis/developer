@@ -198,6 +198,15 @@ sub execute_shell_command
 
 sub execute_shell_command_array
 {
+    if (not ref $_[0] eq 'ARRAY')
+    {
+	die "$0: *** Error: execute_shell_command_array() requires an ARRAY reference as its first argument";
+    }
+    elsif (defined $_[1] and not ref $_[1] eq 'HASH')
+    {
+	die "$0: *** Error: execute_shell_command_array() requires a HASH reference as its second argument";
+    }
+
     return Engine::execute_shell_command_array(@_);
 }
 
