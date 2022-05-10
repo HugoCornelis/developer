@@ -54,6 +54,7 @@ our $option_help;
 our $option_help_build_servers;
 our $option_help_commands;
 our $option_help_field_project_name;
+our $option_help_module;
 our $option_help_options;
 our $option_help_packages;
 our $option_help_projects;
@@ -95,6 +96,7 @@ our $global_options
        "help-build-servers!" => \$option_help_build_servers,
        "help-commands!" => \$option_help_commands,
        "help-field-project-name!" => \$option_help_field_project_name,
+       "help-module!" => \$option_help_module,
        "help-options!" => \$option_help_options,
        "help-packages!" => \$option_help_packages,
        "help-projects!" => \$option_help_projects,
@@ -2170,6 +2172,7 @@ sub bash_completion_generate_options
 			--help-build-servers
 			--help-commands
 			--help-field-project-name
+			--help-module
 			--help-options
 			--help-packages
 			--help-projects
@@ -2225,6 +2228,8 @@ sub generate_command_hash
 
 sub generate_command_list
 {
+    my $with_help_subs = shift;
+
     # generate a list of the available command subroutines
 
     my $subroutines = [
@@ -2283,6 +2288,13 @@ sub generate_command_list
 			}
 
 			$_;
+		    }
+
+		    # no help subroutines
+
+		    grep
+		    {
+			$with_help_subs or $_ !~ /_help$/;
 		    }
 
 		    # all internal commands
@@ -2503,6 +2515,11 @@ sub main
 	}
 	else
 	{
+	    if ($option_help)
+	    {
+		$command .= "_help";
+	    }
+
 	    my $command_implementation = "Command::${target}_${command}";
 
 	    if ($option_verbose)
@@ -2510,9 +2527,20 @@ sub main
 		print "Invoking ($command_implementation)\n";
 	    }
 
-	    no strict "refs";
+	    my $command_list = generate_command_list('with help subs');
 
-	    &$command_implementation(\@ARGV);
+	    my $command_hash = { map { $_ => 1, } @$command_list, };
+
+	    if (exists $command_hash->{"$target $command"})
+	    {
+		no strict "refs";
+
+		&$command_implementation(\@ARGV);
+	    }
+	    else
+	    {
+		die "$0: *** Error: target '$target' does not provide command '$command'.";
+	    }
 	}
 
 	Engine::execute_all_scheduled_commands();
@@ -2548,7 +2576,7 @@ sub parse_command_line
 	$option_commands->[0] = shift @ARGV;
     }
 
-    if ($option_help)
+    if ($option_help and (not $option_target) and (not $option_commands->[0]))
     {
         print
             "
@@ -2590,6 +2618,7 @@ options:
     --help                          display usage information and stop execution.
     --help-build-servers            display the known build servers.
     --help-commands                 display the available commands (requires the installation of Devel::Symdump with 'sudo cpanm Devel::Symdump').
+    --help-module                   display all the available help information about the commands of the module.
     --help-field-project-name       print the field project name and exit.
     --help-options                  print the option values.
     --help-packages                 display known package and overriden package information and stop execution.
@@ -2740,6 +2769,7 @@ OVERRIDE_SRCDIR delivered packages for Buildroot targets are recognized.
 	       help_build_servers => $option_help_build_servers,
 	       help_commands => $option_help_commands,
 	       help_field_project_name => $option_help_field_project_name,
+	       help_module => $option_help_module,
 	       help_options => $option_help_options,
 	       help_packages => $option_help_packages,
 	       help_projects => $option_help_projects,
