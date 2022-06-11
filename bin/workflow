@@ -373,7 +373,11 @@ sub _init
 
     my $field_project_name = $global_field_project_configuration->{field_project_name};
 
+    # all the command files, including those not in mentioned in the configuration
+
     my $command_filenames_found = _init_command_filenames_found();
+
+    # only those command files mentioned in the configuration
 
     my $command_filenames_configured = _init_command_filenames_configured();
 
@@ -381,6 +385,8 @@ sub _init
 	= [
 	   grep
 	   {
+	       # TODO: what was this for again?
+
 	       not $commands_seen->{$_}++;
 	   }
 	   @$command_filenames_configured,
