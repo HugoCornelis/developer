@@ -61,7 +61,7 @@ my $text2;
 	= Neurospaces::Tester::Comparators::numerical
 	    (
 	     {
-	      description => "Testing two files",
+	      description => "Testing two files ('$ARGV[0]' ==? '$ARGV[1]')",
 	     },
 	     $text1,
 	     $text2,
