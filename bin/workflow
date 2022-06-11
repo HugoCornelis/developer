@@ -309,6 +309,12 @@ sub _init_command_filenames_found
 {
     my $field_project_name = $global_field_project_configuration->{field_project_name};
 
+    # when invoked as just 'workflow' the directory where to search
+    # for command files will not necessarily be /usr/local/bin'
+    # it may also be the current working directory
+
+    my $command_filename_directory = $global_program_rel_directory;
+
     my $result
 	= [
 	   grep
@@ -319,7 +325,7 @@ sub _init_command_filenames_found
 	   {
 	       chomp; $_;
 	   }
-	   `ls $global_program_rel_directory/$field_project_name-commands*`,
+	   `ls $command_filename_directory/$field_project_name-commands*`,
 	  ];
 
     # use Data::Dumper;
@@ -334,6 +340,12 @@ sub _init_command_filenames_configured
 {
     my $field_project_name = $global_field_project_configuration->{field_project_name};
 
+    # when invoked as just 'workflow' the directory where to search
+    # for command files will not necessarily be /usr/local/bin'
+    # it may also be the current working directory
+
+    my $command_filename_directory = $global_program_rel_directory;
+
     my $result
 	= [
 	   grep
@@ -342,7 +354,7 @@ sub _init_command_filenames_configured
 	   }
 	   map
 	   {
-	       "$global_program_rel_directory/$_";
+	       "$command_filename_directory/$_";
 	   }
 	   @{ $global_technical_project_configuration->{command_filenames} },
 	  ];
