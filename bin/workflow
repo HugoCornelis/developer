@@ -143,6 +143,15 @@ our $global_scheduled_commands = [];
 }
 
 
+our $all_path_globals
+    = {
+       global_command_line => $global_command_line,
+       global_program_abs_directory => $global_program_abs_directory,
+       global_program_rel_directory => $global_program_rel_directory,
+       global_program_name => $global_program_name,
+      };
+
+
 our $global_target_command;
 
 our $global_field_project_configuration;
@@ -331,6 +340,7 @@ sub _init_command_filenames_found
     # use Data::Dumper;
 
     # print STDERR Dumper( { _init_command_filenames_found => $result, }, );
+    # print STDERR Dumper( { all_path_globals => $all_path_globals, }, );
 
     return $result;
 }
@@ -366,6 +376,8 @@ sub _init_command_filenames_configured
     return $result;
 }
 
+
+# initialize the command module
 
 sub _init
 {
@@ -1868,6 +1880,8 @@ package FieldProject;
 
 our $status;
 
+
+# initiallize field project related global configuration
 
 sub _init
 {
