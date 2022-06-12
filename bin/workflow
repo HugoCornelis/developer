@@ -990,28 +990,54 @@ sub compute_sudo
 
     if ($option_sudo)
     {
-	my $sudo_pattern
-	    = (exists $option_sudo->{pattern}
-	       ? $option_sudo->{pattern}
-	       : '.*');
+	# default: sudo the command
 
-	# if we need to skip sudo information
+	my $sudo_skip = 0;
 
-	if (exists $option_sudo->{skip}
-	    and $command =~ /$option_sudo->{skip}/)
+	# default: all commands are sudo'd
+
+	my $sudo_pattern = '.*';
+
+	# default: no additional sudo options
+
+	my $sudo_options = "";
+
+	# if there are specific sudo options
+
+	if (ref $option_sudo eq 'HASH')
 	{
-	}
+	    # get the specific sudo command pattern
 
-	# else construct the sudo command
+	    $sudo_pattern
+		= (exists $option_sudo->{pattern}
+		   ? $option_sudo->{pattern}
+		   : '.*');
 
-	elsif ($command =~ /$sudo_pattern/)
-	{
-	    $result .= "sudo ";
+	    # if we need to skip sudo information
+
+	    if (exists $option_sudo->{skip}
+		and $command =~ /$option_sudo->{skip}/)
+	    {
+		# remember to skip
+
+		$sudo_skip = 1;
+	    }
+
+	    # remember the sudo options
 
 	    if (exists $option_sudo->{options})
 	    {
-		$result .= "$option_sudo->{options} ";
+		$sudo_options = $option_sudo->{options};
 	    }
+	}
+
+	# if the command matches the sudo pattern
+
+	if ($command =~ /$sudo_pattern/)
+	{
+	    # construct the sudo command prefix
+
+	    $result .= "sudo $sudo_options ";
 	}
     }
 
