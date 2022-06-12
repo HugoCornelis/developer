@@ -164,19 +164,44 @@ package Command;
 
 sub all_install_scripts
 {
+    my $force = defined $ARGV[0] ? $ARGV[0] : '';
+
+    # need to do four things:
+    #
+    # 1. Install to ~/bin: symbolic link for the workflow engine with correct name
+    # 2. Install to ~/bin: symbolic links for commands
+    # 3. Install to .bashrc: text addition for aliases (add to ~/.bash_aliases?) and for bash completion
+    # 4. Install to /etc/grc.conf: text addition
+    # 5. Install to /usr/share/grc/: symbolic links
+
+    # 1. Install to ~/bin: symbolic link for the workflow engine with correct name
+
+    my $field_configuration = FieldProject::_init_get_field_project_configuration();
+
+    # $configuration_filename normally becomes 'workflow-project.pl'
+
+    my $configuration_filename = "$field_configuration->{field_project_configuration_directory}/$field_configuration->{field_project_configuration_filename}";
+
+    my $source = "/usr/local/bin/workflow";
+
+    my $project_name = $field_configuration->{field_project_name};
+
+    my $target = "$ENV{HOME}/bin/$project_name-workflow";
+
+    my $command = "ln -sf $source $target";
+
+    if ($force or (not -e $target))
+    {
+	execute_shell_command($command);
+    }
+
+    # 2. Install to ~/bin: symbolic links for commands
+
     # generate list of scripts
 
     # my $command_filenames_configured = _init_command_filenames_configured();
 
     my $command_filenames_configured = $global_technical_project_configuration->{command_filenames};
-
-    my $field_configuration = FieldProject::_init_get_field_project_configuration();
-
-    my $configuration_filename = "$field_configuration->{field_project_configuration_directory}/$field_configuration->{field_project_configuration_filename}";
-
-    my $command = "ln -sf /usr/local/bin/workflow $ENV{HOME}/bin";
-
-    execute_shell_command($command);
 
     # install each script to the ~/bin directory
 
@@ -188,16 +213,124 @@ sub all_install_scripts
 
 	       my $command_filename = $_;
 
-	       my $result = "ln -sf $_ $ENV{HOME}/bin/$command_filename";
+	       my $source = $command_filename;
+
+	       my $target = "$ENV{HOME}/bin/$command_filename";
+
+	       my $result = "ln -sf $source $target";
 
 	       $result;
 	   }
+	   grep
+	   {
+	       my $command_filename = $_;
+
+	       my $target = "$ENV{HOME}/bin/$command_filename";
+
+	       not -e $target;
+	   }
 	   @$command_filenames_configured,
-	   $configuration_filename,
+	   # $configuration_filename,
 	  ];
 
     execute_shell_command_array($commands);
 
+    # 3. Install to .bashrc: text addition for aliases (add to ~/.bash_aliases?) and for bash completion
+
+    if (not _file_contains_regex("$ENV{HOME}/.bashrc", 'alias neurospaces-workflow="grc neurospaces-workflow"'))
+    {
+	{
+	    my $alias_additions
+		= "
+alias $project_name-workflow=\"grc $project_name-workflow\"
+alias $project_name-configuration=\"grc $project_name-configuration\"
+
+";
+
+	    _file_append_string("$ENV{HOME}/.bashrc", $alias_additions);
+	}
+
+	my $command_filename_directory = $global_field_project_configuration->{field_project_configuration_directory};
+
+	use Cwd;
+
+	my $abs_command_filename_directory = Cwd::abs_path($command_filename_directory);
+
+	my $bash_completion_filename = "$abs_command_filename_directory/$project_name-bash-completion.sh";
+
+	if (-e $bash_completion_filename)
+	{
+	    my $bash_completion_additions
+		= "
+. $bash_completion_filename
+";
+
+	    _file_append_string("$ENV{HOME}/.bashrc", $bash_completion_additions);
+	}
+    }
+
+    # 4. Install to /etc/grc.conf: text addition
+
+    my $etc_grc_conf_filename = "/etc/grc.conf";
+
+    my $etc_grc_conf_marker = "$project_name-workflow";
+
+    if (not _file_contains_regex($etc_grc_conf_filename, $etc_grc_conf_marker))
+    {
+	my $etc_grc_conf_additions
+	    = "
+# $project_name-workflow
+(^|[/\\w\\.]+/)$project_name-workflow\\s?
+conf.$project_name-workflow
+
+# $project_name-configuration
+(^|[/\\w\\.]+/)$project_name-configuration\\s?
+conf.$project_name-configuration
+
+";
+
+	_file_append_string($etc_grc_conf_filename, $etc_grc_conf_additions, { sudo => 1, }, );
+    }
+
+    # 5. Install to /usr/share/grc/: symbolic links
+
+    {
+	my $grc_configuration = "conf.$project_name-configuration";
+
+	my $grc_workflow = "conf.$project_name-workflow";
+
+	my $source_directory = $field_configuration->{field_project_configuration_directory};
+
+	use Cwd;
+
+	my $abs_source_directory = Cwd::abs_path($source_directory);
+
+	my $target_directory = "/usr/share/grc";
+
+	my $source_file_configuration = "$abs_source_directory/$grc_configuration";
+
+	my $target_file_configuration = "$target_directory/$grc_configuration";
+
+	if (-e $source_file_configuration
+	    and not -e $target_file_configuration)
+	{
+	    my $command = "ln -sf $source_file_configuration $target_file_configuration";
+
+	    execute_shell_command($command, { sudo => 1, }, );
+	}
+
+	my $source_file_workflow = "$abs_source_directory/$grc_workflow";
+
+	my $target_file_workflow = "$target_directory/$grc_workflow";
+
+	if (-e $source_file_workflow
+	    and not -e $target_file_workflow)
+	{
+	    my $command = "ln -sf $source_file_workflow $target_file_workflow";
+
+	    execute_shell_command($command, { sudo => 1, }, );
+	}
+    }
 }
 
 
@@ -314,6 +447,43 @@ sub execute_shell_script_remote
 }
 
 
+sub _file_append_string
+{
+    my $filename = shift;
+
+    my $string = shift;
+
+    my $options = shift;
+
+    my $command = "bash -c \"echo '$string' | cat >>$filename\"";
+
+    execute_shell_command($command, $options);
+
+    # open(my $fh, ">>$filename");
+
+    # print $fh $string;
+
+    # close $fh;
+}
+
+
+sub _file_contains_regex
+{
+    my $filename = shift;
+
+    my $string = shift;
+
+    my $data
+	= do {
+	    open my $fh, '<', $filename;
+	    local $/;
+	    <$fh>;
+	};
+
+    return ($data =~ /$string/);
+}
+
+
 sub _init_command_filenames_found
 {
     my $field_project_name = $global_field_project_configuration->{field_project_name};
@@ -322,7 +492,7 @@ sub _init_command_filenames_found
     # for command files will not necessarily be /usr/local/bin'
     # it may also be the current working directory
 
-    my $command_filename_directory = $global_program_rel_directory;
+    my $command_filename_directory = $global_field_project_configuration->{field_project_configuration_directory};
 
     my $result
 	= [
@@ -354,7 +524,9 @@ sub _init_command_filenames_configured
     # for command files will not necessarily be /usr/local/bin'
     # it may also be the current working directory
 
-    my $command_filename_directory = $global_program_rel_directory;
+    # default to the directory with the main executable
+
+    my $command_filename_directory = $global_field_project_configuration->{field_project_configuration_directory};
 
     my $result
 	= [
