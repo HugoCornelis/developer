@@ -98,6 +98,9 @@ dist-keywords:
 # The variable EXTRA_DIST could also be used here.
 
 EXTRA_DIST = \
+	bin/conf.workflow \
+	bin/conf.neurospaces-configuration \
+	bin/conf.neurospaces-workflow \
 	cpan \
 	docs \
 	tests \
