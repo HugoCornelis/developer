@@ -205,6 +205,9 @@ sub all_install_scripts
 
     # install each script to the ~/bin directory
 
+    # TODO: use case if a script exists but does not have a symbolic
+    # link in ~/bin yet, a script that has been created.
+
     my $commands
 	= [
 	   map
@@ -1535,15 +1538,13 @@ sub execute_option_export_sh
 	chmod 0755, $global_exported_sh_filename;
     }
 
+    # 'cd' commands must both be exported and executed
+
     if ($export_sh_command =~ /cd\s+(.*)$/)
     {
 	my $arguments = $1;
 
 	my $exit_status = not chdir $arguments;
-    }
-    else
-    {
-	#! should die here?
     }
 
     if ($export_sh_command =~ /^'/
