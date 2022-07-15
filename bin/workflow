@@ -587,10 +587,17 @@ sub _init
 	if ($@)
 	{
 	    die "$0: *** Error: no valid commands file '$command_filename' found ($@)\n";
+
+	    print "$0: *** Error: while trying to configure the project '$global_field_project_configuration->{field_project_name}: \n";
+
+           #     if ($global_field_project_configuration
+           # and $global_technical_project_configuration)
 	}
 
 	if ($!)
 	{
+	    print "$0: *** Error: while trying to configure the project '$global_field_project_configuration->{field_project_name}: \n";
+
 	    die "$0: *** Error: no commands file '$command_filename' found ($!)\n";
 	}
     }
