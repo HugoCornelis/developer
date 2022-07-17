@@ -4,13 +4,13 @@ dnl neuroscience.
 dnl
 
 dnl ##########################################################################
-dnl 
+dnl
 dnl The neurospaces project
-dnl 
+dnl
 dnl Copyright (C) 2007-2008 Hugo Cornelis
-dnl 
+dnl
 dnl Hugo Cornelis, hugo.cornelis@gmail.com
-dnl 
+dnl
 dnl ##########################################################################
 
 # Process this file with autoconf to produce a configure script.
@@ -32,7 +32,7 @@ dnl if test "x$PERL" = xfalse
 dnl then
 dnl   AC_MSG_ERROR([Perl not found; check your \$PATH.])
 dnl fi
- 
+
 dnl # N.B. ${var#pattern} will not work with some shells, such as
 dnl # Solaris 10's /bin/sh :-(
 dnl #
@@ -51,7 +51,7 @@ dnl   $PERL -MConfig \
 dnl         -wle '($_ = $Config{installsitelib})
 dnl               =~ s!^\Q$Config{siteprefix}/!!; \
 dnl               print'`
- 
+
 dnl AC_ARG_WITH(
 dnl     [pmdir],
 dnl     AS_HELP_STRING(
@@ -62,7 +62,7 @@ dnl     [PMDIR='${prefix}'/"$pmdir_relative_path"])
 dnl AC_CONFIG_COMMANDS_POST([[
 dnl   eval pmdir="$PMDIR"
 dnl   cat <<EOF
- 
+
 dnl # Perl modules will be installed to $PMDIR
 dnl EOF
 dnl   if [ "$pmdir" != "$PMDIR" ]; then
@@ -113,7 +113,7 @@ case "$host_os" in
 
   darwin*)
     dnl On the MAC we will only look for perl in the standard location for the Apple
-    dnl native perl. 
+    dnl native perl.
     AC_CHECK_PROG(PERL, perl, NULL, [/usr/bin/perl],[/usr/local/bin/perl /opt/local/bin/perl])
     AC_SUBST(PERL)
 
@@ -138,7 +138,7 @@ case "$host_os" in
         -wle '($_ = $Config{installsitelib})
               =~ s!^\Q$Config{siteprefix}/!!; \
               print'`
- 
+
     AC_ARG_WITH(
       [pmdir],
     AS_HELP_STRING(
@@ -159,13 +159,13 @@ case "$host_os" in
     AC_SUBST(PERL)
 
     #-- Here we determine the install path for perl modules --
-    AC_MSG_CHECKING([Checking the perl module installation path])	
+    AC_MSG_CHECKING([Checking the perl module installation path])
     pmdir_relative_path=`\
       $PERL -MConfig \
         -wle '($_ = $Config{installsitelib})
               =~ s!^\Q$Config{siteprefix}/!!; \
               print'`
- 
+
     AC_ARG_WITH(
       [pmdir],
     AS_HELP_STRING(
@@ -184,14 +184,17 @@ esac
 
 
 
+# note that this leads to an infinite configure loop on my laptop (Ubuntu 21.10)
+
+dnl # $Format: "AC_INIT(${package}, ${major}.${minor}.${micro}-${label})"$
+dnl AC_INIT(developer, 0.0.0-alpha)
+dnl AC_CONFIG_SRCDIR([Makefile.am])
+dnl AM_INIT_AUTOMAKE
+
 AC_CONFIG_SRCDIR([Makefile.am])
-
-dnl dnl all subdirs
-
-dnl AC_CONFIG_SUBDIRS()
-
 # $Format: "AM_INIT_AUTOMAKE(${package}, ${major}.${minor}.${micro}-${label})"$
 AM_INIT_AUTOMAKE(developer, 0.0.0-alpha)
+
 
 PERL_MODULES=`(cd perl && find . -name "*.pm" | perl -pe 's/\n/ /g')`
 AC_SUBST(PERL_MODULES)
@@ -202,11 +205,11 @@ AC_SUBST(PERL_DATA)
 # Checks for programs.
 
 #   need to have this bail out when MTN = NULL
-#   since it's required. 
+#   since it's required.
 AC_CHECK_PROGS([MTN],mtn monotone,[NULL])
 
 #   check for packaging programs for debian and red hat.
-#   no need to bail out if these are missing since they're optional. 
+#   no need to bail out if these are missing since they're optional.
 AC_CHECK_PROGS([DPKG_BUILDPACKAGE],dpkg-buildpackage,[NULL])
 AC_CHECK_PROGS([DH],dh,[NULL])
 AC_CHECK_PROGS([RPMBUILD],rpmbuild,[NULL])

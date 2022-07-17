@@ -8,6 +8,7 @@
 _MTN/
 bin/cscope.files
 bin/neurospaces_harness.ptkdb
+bin/neurospaces_harness.trs
 neurospaces_cpan_modules
 tests/html/
 try-graph.pl

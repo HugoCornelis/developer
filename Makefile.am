@@ -121,7 +121,7 @@ clean-local:
 	$(RM) $(top_srcdir)/developer-*.tar.gz
 	$(RM) -rf $(top_srcdir)/developer-*
 
-dist-hook: 
+dist-hook:
 	$(srcdir)/install-sh -d $(distdir)/tests
 	$(srcdir)/install-sh -d $(distdir)/tests/html
 	( cd $(distdir)/tests && chmod -R u+w . && ../bin/neurospaces_harness_2_html --introduction introduction.html )
@@ -135,7 +135,7 @@ neurospaces_cpan_modules:
 
 test: check
 
-#TESTS = $(srcdir)/tests/neurospaces_harness
+TESTS = bin/neurospaces_harness
 
 html-upload-prepare:
 	rm -fr html/htdocs/neurospaces_project/$(PACKAGE)
