@@ -2435,7 +2435,9 @@ sub bash_completion_generate_options
 
 sub generate_command_hash
 {
-    my $commands = generate_command_list();
+    my $with_help_subs = shift;
+
+    my $commands = generate_command_list($with_help_subs);
 
     # set default result
 
@@ -2694,7 +2696,7 @@ sub main
 	{
 	    # generate the list of all commands
 
-	    my $all_commands = generate_command_hash();
+	    my $all_commands = generate_command_hash('with help subs');
 
 	    # reference subroutine names specific for the given target: they belong together
 
@@ -2722,13 +2724,25 @@ sub main
 		    print "Invoking ($command_implementation)\n";
 		}
 
+		if ($command_implementation =~ /_help$/)
+		{
+		    next;
+		}
+
+		my $has_help = '';
+
+		if (grep(/^${command_implementation}_help$/, @$command_implementations))
+		{
+		    $has_help = " (use --help to see the help page)";
+		}
+
 		$command_implementation =~ /Command::(.*)/;
 
 		my $short_command = $1;
 
 		my $scheduled_command
 		    = {
-		       command => "---\nCOMMAND: $short_command",
+		       command => "---\nCOMMAND: $short_command$has_help",
 		       dry_run => $dry_run_module_commands,
 		       interaction_role => 'none',
 		      };
@@ -2753,8 +2767,12 @@ sub main
 	}
 	else
 	{
+	    # if help was requested for this command
+
 	    if ($option_help)
 	    {
+		# call the subroutine that implements the help function
+
 		$command .= "_help";
 	    }
 
