@@ -604,6 +604,102 @@ sub _init
 }
 
 
+package Command::Net::IPerf;
+
+
+my $iperf_configuration
+    = {
+       command => "iperf3",
+       server => {
+		  command => "/home/fio/iperf3-arm32v7",
+		  options_old => "-s -f K -D",
+		  options => "-s -D",
+		 },
+       client => {
+		  options_old => "-f M",
+		  options => "-i 1 -t 5 -b 0",
+		 },
+      };
+
+
+sub _iperf_test
+{
+    my $test_file = shift;
+
+    my $server = shift;
+
+    my $client = shift;
+
+    if ($client eq 'local')
+    {
+	$client = undef;
+    }
+
+    if ($server eq 'local')
+    {
+	$server = undef;
+    }
+
+    my $iperf_command = $iperf_configuration->{command};
+
+    my $iperf_command_server = $iperf_configuration->{server}->{command} || $iperf_command;
+
+    my $iperf_command_client = $iperf_configuration->{client}->{command} || $iperf_command;
+
+    my $iperf_server_options = $iperf_configuration->{server}->{options};
+
+    my $schedule_server
+	= {
+	   commands => [
+			"$iperf_command_server $iperf_server_options",
+		       ],
+	   options => [
+		       {
+			remote => $server,
+		       },
+		      ],
+	  };
+
+    my $iperf_client_options = $iperf_configuration->{client}->{options};
+
+    my $ip_server = $server ? $server->{ssh_server} : '127.0.0.1';
+
+    my $schedule_client
+	= {
+	   commands => [
+			"$iperf_command_client $iperf_client_options -c $ip_server",
+		       ],
+	   options => [
+		       {
+			remote => $client,
+		       },
+		      ],
+	  };
+
+    my $schedule_terminate_server
+	= {
+	   commands => [
+			"killall $iperf_command_server",
+		       ],
+	   options => [
+		       {
+			remote => $server,
+		       },
+		      ],
+	  };
+
+    Command::execute_shell_command_schedule_array
+	(
+	 [
+	  $schedule_server,
+	  $schedule_client,
+	  $schedule_terminate_server,
+	 ],
+	);
+
+}
+
+
 package Engine;
 
 
