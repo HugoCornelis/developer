@@ -337,6 +337,19 @@ conf.$project_name-configuration
 }
 
 
+sub all_install_scripts_help
+{
+    my $command = shift;
+
+    return "$command : upgrade the workflow scripts for this project
+
+arguments:
+
+    force: force the upgrade
+";
+}
+
+
 sub execute_shell_command
 {
     return Engine::execute_shell_command(@_);
@@ -2885,9 +2898,45 @@ sub main
 
 	    if (exists $command_hash->{"$target $command"})
 	    {
-		no strict "refs";
+		# --help invocations have special handling
 
-		&$command_implementation(\@ARGV);
+		if ($option_help)
+		{
+		    no strict "refs";
+
+		    my $command_name = $command_implementation;
+
+		    $command_name =~ s(^Command::)();
+		    $command_name =~ s(^([a-z0-9]+?)_)($1 );
+		    $command_name =~ s(_help$)();
+
+		    my $help_string = &$command_implementation($command_name, \@ARGV);
+
+		    # old style help pages ...
+
+		    if ($help_string =~ /^[0-9]*$/)
+		    {
+			# ... are printed by the help function
+		    }
+
+		    # new style help pages ...
+
+		    else
+		    {
+			# ... are printed by us
+
+			print "$0 $help_string\n";
+		    }
+		}
+
+		# regular invocation of a command
+
+		else
+		{
+		    no strict "refs";
+
+		    &$command_implementation(\@ARGV);
+		}
 	    }
 	    else
 	    {
