@@ -585,7 +585,7 @@ sub _init
 	= [
 	   grep
 	   {
-	       # TODO: what was this for again?
+	       # remove duplicate filenames to avoid duplicate command definitions
 
 	       not $commands_seen->{$_}++;
 	   }
