@@ -1441,9 +1441,14 @@ sub identify_interaction_roles
 
     my $indent_delta = 40;
 
+    # either we have already inserted a descriptive record for this interaction role
+
     if (exists $interaction_roles->{$current_interaction_role})
     {
     }
+
+    # or we show the interaction diagram with all the interaction roles in the configuration.
+
     elsif ($option_interactions_all)
     {
 	my $target_servers = $global_technical_project_configuration->{target_servers};
@@ -1452,8 +1457,12 @@ sub identify_interaction_roles
 
 	my $interaction_number = 1;
 
+	# create a hash with a descriptive record for each interaction role
+
 	$interaction_roles
 	    = {
+	       # map each human readable role to a descriptive record with appropriate indent
+
 	       map
 	       {
 		   my $target = $_;
@@ -1474,6 +1483,9 @@ sub identify_interaction_roles
 
 		   %$result;
 	       }
+
+	       # sort roles in a intuitive order
+
 	       sort
 	       {
 		   # make sure that localhost always comes first
@@ -1491,6 +1503,9 @@ sub identify_interaction_roles
 		       $a cmp $b;
 		   }
 	       }
+
+	       # convert each target server to a human readable role
+
 	       map
 	       {
 		   my $target_server_key = $_;
@@ -1515,9 +1530,15 @@ sub identify_interaction_roles
 
 		   $result;
 	       }
+
+	       # based on the target servers
+
 	       keys %$target_servers,
 	      };
     }
+
+    # or we show only the interaction roles used in this workflow
+
     else
     {
 	my $sorted_roles = [ keys %$interaction_roles, ];
@@ -1547,6 +1568,8 @@ sub execute_option_interactions
 
     my $interaction_role_arg = $scheduled_command->{interaction_role};
 
+    # we must have a valid interaction role
+
     if (not defined $interaction_role_arg)
     {
 	# use Data::Dumper;
@@ -1556,8 +1579,12 @@ sub execute_option_interactions
 	die "*** Error: $0: option_interactions cannot compute an indentation level without a valid interaction role (is '$interaction_role_arg')";
     }
 
+    # if we are printing all interaction roles in the configuration
+
     if ($all)
     {
+	# print the interaction header for all the configured roles
+
 	foreach my $interaction_role_name (sort
 					   {
 					       $interaction_roles->{$a}->{number} <=> $interaction_roles->{$b}->{number};
@@ -1573,18 +1600,29 @@ sub execute_option_interactions
 	}
     }
 
+    # if there is no interaction role
+
     if ($interaction_role_arg eq 'none')
     {
+	# print the command without indentation
+
 	print "$command\n";
     }
+
+    # else with a defined interaction_role
+
     else
     {
 	my $interaction_role = $interaction_roles->{$interaction_role_arg};
+
+	# print the interaction_role header if this was not printed yet
 
 	if ($interaction_role->{is_new_and_needs_header} eq 'yes')
 	{
 	    _print_interaction_header($interaction_role);
 	}
+
+	# print the command with indentation
 
 	if ($executable_command !~ /^\s*$/)
 	{
@@ -1602,6 +1640,8 @@ sub _print_interaction_header
 {
     my $interaction_role = shift;
 
+    # calculate the indentation level
+
     my $interaction_role_name = $interaction_role->{name};
 
     my $interaction_indent = $interaction_roles->{$interaction_role_name}->{indent};
@@ -1610,9 +1650,13 @@ sub _print_interaction_header
 
     my $header = "${indent}ROLE: '$interaction_role_name'";
 
-    $interaction_role->{is_new_and_needs_header} = $header;
+    # print the header
 
     print "$header\n\n";
+
+    # remember that the header for this interaction_role has been printed
+
+    $interaction_role->{is_new_and_needs_header} = $header;
 }
 
 
@@ -2035,7 +2079,7 @@ sub execute_shell_command
 
     my $remote_prefix = $remote_and_interaction_role->{remote_prefix};
 
-    # define the interaction roles
+    # identify the interaction roles
 
     identify_interaction_roles($command, $executable_command);
 
