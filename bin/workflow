@@ -1636,6 +1636,18 @@ sub execute_option_interactions
 }
 
 
+# see https://sequencediagram.org/
+
+sub _print_sequence_diagram_header
+{
+    my $interaction_role = shift;
+
+    my $interaction_role_name = $interaction_role->{name};
+
+    print "participant $interaction_role_name\n\n";
+}
+
+
 sub _print_interaction_header
 {
     my $interaction_role = shift;
