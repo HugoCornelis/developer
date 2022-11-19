@@ -1263,7 +1263,7 @@ sub compute_remote_and_interaction_role
 
     return
     {
-     interaction_role => $current_interaction_role,
+     interaction_role => $interaction_role,
      interaction_role_with_policy_syntax => $interaction_role_with_policy_syntax,
      remote_prefix => $remote_prefix,
      ssh_options => $ssh_options,
@@ -1930,6 +1930,8 @@ sub schedule_real_command
 
     my $executable_command = shift;
 
+    my $interaction_role = shift;
+
     my $options = shift;
 
     my $dry_run = shift;
@@ -1945,7 +1947,7 @@ sub schedule_real_command
 	   executable_command => $executable_command,
 	   export_sh => $export_sh,
 	   export_sh_command => $export_sh_command,
-	   interaction_role => $current_interaction_role,
+	   interaction_role => $interaction_role,
 	   options => $options,
 	  };
 
@@ -2160,6 +2162,7 @@ sub execute_shell_command
 	  (
 	   $command,
 	   $executable_command,
+	   $current_interaction_role,
 	   $options,
 	   $dry_run,
 	   $export_sh,
