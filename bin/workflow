@@ -1002,6 +1002,8 @@ sub display_commented_command
 }
 
 
+# TODO: this needs refactoring to appear as an argument to function calls
+
 our $interaction_roles = {};
 
 my $current_interaction_role;
