@@ -3070,9 +3070,9 @@ options:
     --help-projects                 display known project information and stop execution.
     --help-targets                  display known targets and stop execution.
     --incremental                   assume an incremental build (default is " . ($option_incremental ? "yes" : "no") . "
-    --interactions                   show the interaction diagram of the commands.
-    --interactions-all               show the interaction diagram of the commands using all the found interaction roles in the configuration.
-    --interactions-module            show the interaction diagram of all the commands in the module.
+    --interactions                  show the interaction diagram of the commands.
+    --interactions-all              show the interaction diagram of the commands using all the found interaction roles in the configuration.
+    --interactions-module           show the interaction diagram of all the commands in the module.
     --packages                      packages to operate on, can be given multiple times.
     --ssh-port                      the ssh port.
     --ssh-server                    the used ssh build server.
@@ -3189,48 +3189,6 @@ OVERRIDE_SRCDIR delivered packages for Buildroot targets are recognized.
     if ($option_help_options)
     {
 	use YAML;
-
-	my $options
-	    = {
-	       bash_completion => $option_bash_completion,
-	       branch => $option_branch,
-	       build_server => $option_build_server,
-	       built_image_directory => $option_built_image_directory,
-	       commands => $option_commands,
-	       dry_run => $option_dry_run,
-	       dump_all_interaction_roles => $option_dump_all_interaction_roles,
-	       dump_interaction_roles => $option_dump_interaction_roles,
-	       dump_module_interaction_roles => $option_dump_module_interaction_roles,
-	       dump_schedule => $option_dump_schedule,
-	       export_remote => $option_export_remote,
-	       export_sh => $option_export_sh,
-	       export_sudo => $option_export_sudo,
-	       export_times => $option_export_times,
-	       export_verbose => $option_export_verbose,
-	       force_rebuild => $option_force_rebuild,
-	       forward_destination_server => $option_forward_destination_server,
-	       forward_source_server => $option_forward_source_server,
-	       help => $option_help,
-	       help_build_servers => $option_help_build_servers,
-	       help_commands => $option_help_commands,
-	       help_field_project_name => $option_help_field_project_name,
-	       help_module => $option_help_module,
-	       help_options => $option_help_options,
-	       help_packages => $option_help_packages,
-	       help_projects => $option_help_projects,
-	       help_targets => $option_help_targets,
-	       incremental => $option_incremental,
-	       interactions => $option_interactions,
-	       interactions_all => $option_interactions_all,
-	       interactions_module => $option_interactions_module,
-	       packages => $option_packages,
-	       ssh_port => $option_ssh_port,
-	       ssh_server => $option_ssh_server,
-	       ssh_user => $option_ssh_user,
-	       target => $option_target,
-	       tftp_directory => $option_tftp_directory,
-	       verbose => $option_verbose,
-	      };
 
 	print Dump( { "global_options" => $global_options, }, );
 
