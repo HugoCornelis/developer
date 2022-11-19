@@ -1004,7 +1004,7 @@ sub display_commented_command
 
 # TODO: this needs refactoring to appear as an argument to function calls
 
-our $interaction_roles = {};
+our $global_interaction_roles = {};
 
 my $current_interaction_role;
 
@@ -1013,6 +1013,8 @@ my $current_interaction_role;
 
 sub apply_remote_record_exported_command
 {
+    my $interaction_roles = shift;
+
     my $remote_prefix = shift;
 
     my $command = shift;
@@ -1445,7 +1447,7 @@ sub identify_interaction_roles
 
     # either we have already inserted a descriptive record for this interaction role
 
-    if (exists $interaction_roles->{$current_interaction_role})
+    if (exists $global_interaction_roles->{$current_interaction_role})
     {
     }
 
@@ -1461,7 +1463,7 @@ sub identify_interaction_roles
 
 	# create a hash with a descriptive record for each interaction role
 
-	$interaction_roles
+	$global_interaction_roles
 	    = {
 	       # map each human readable role to a descriptive record with appropriate indent
 
@@ -1543,11 +1545,11 @@ sub identify_interaction_roles
 
     else
     {
-	my $sorted_roles = [ keys %$interaction_roles, ];
+	my $sorted_roles = [ keys %$global_interaction_roles, ];
 
 	my $interaction_indent = 4 + scalar @$sorted_roles * $indent_delta;
 
-	$interaction_roles->{$current_interaction_role}
+	$global_interaction_roles->{$current_interaction_role}
 	    = {
 	       indent => $interaction_indent,
 	       is_new_and_needs_header => 'yes',
@@ -1560,6 +1562,8 @@ sub identify_interaction_roles
 
 sub execute_option_interactions
 {
+    my $interaction_roles = shift;
+
     my $scheduled_command = shift;
 
     my $all = shift;
@@ -1658,7 +1662,14 @@ sub _print_interaction_header
 
     my $interaction_role_name = $interaction_role->{name};
 
-    my $interaction_indent = $interaction_roles->{$interaction_role_name}->{indent};
+    my $interaction_indent = $global_interaction_roles->{$interaction_role_name}->{indent};
+
+    # TODO: this is here to figure out whether the above use of $global_interaction_roles can be removed.
+
+    if ($interaction_indent != $interaction_role->{indent})
+    {
+	print "$0: *** Warning: Inconsistent interaction_indent ($interaction_indent != $interaction_role->{indent})\n";
+    }
 
     my $indent = " " x $interaction_indent;
 
@@ -1676,6 +1687,8 @@ sub _print_interaction_header
 
 sub execute_option_export_sh
 {
+    my $interaction_roles = shift;
+
     my $scheduled_command = shift;
 
     my $executable_command = $scheduled_command->{executable_command};
@@ -1942,6 +1955,8 @@ sub schedule_real_command
 
 sub execute_all_scheduled_commands
 {
+    my $interaction_roles = shift;
+
     if ($option_dump_schedule)
     {
 	use Data::Dumper;
@@ -1975,14 +1990,14 @@ sub execute_all_scheduled_commands
 		   or $option_interactions_all
 		   or $option_interactions_module)
 	    {
-		execute_option_interactions($scheduled_command, $option_interactions_all);
+		execute_option_interactions($interaction_roles, $scheduled_command, $option_interactions_all);
 	    }
 
 	    # ... or exporting to an executable shell script ...
 
 	    elsif (defined $option_export_sh)
 	    {
-		execute_option_export_sh($scheduled_command);
+		execute_option_export_sh($interaction_roles, $scheduled_command);
 	    }
 
 	    # or real-time executing the scheduled command
@@ -2132,7 +2147,7 @@ sub execute_shell_command
 
     # apply the remoting prefix, always local
 
-    ($command, $export_sh_command) = apply_remote_record_exported_command($remote_prefix, $command, $option_export_remote, $export_sh_command);
+    ($command, $export_sh_command) = apply_remote_record_exported_command($global_interaction_roles, $remote_prefix, $command, $option_export_remote, $export_sh_command);
 
     # apply the timeout prefix, always local
 
@@ -3002,7 +3017,7 @@ sub main
 	    }
 	}
 
-	Engine::execute_all_scheduled_commands();
+	Engine::execute_all_scheduled_commands($global_interaction_roles);
     }
 }
 
