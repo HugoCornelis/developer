@@ -866,7 +866,7 @@ sub build_tree_needs_rebuild
 	if ($option_verbose
 	    and $option_verbose > 1)
 	{
-	    print STDERR "build_tree_needs_rebuild(): option_force_rebuild is set\n";
+	    print "build_tree_needs_rebuild(): option_force_rebuild is set\n";
 	}
 
 	return "option_force_rebuild";
@@ -900,7 +900,7 @@ sub build_tree_needs_rebuild
 	    if ($option_verbose
 		and $option_verbose > 1)
 	    {
-		print STDERR "build_tree_needs_rebuild(): source_stat_output: $source_stat_output ($source)\n";
+		print "build_tree_needs_rebuild(): source_stat_output: $source_stat_output ($source)\n";
 	    }
 
 	    if ($?)
@@ -939,7 +939,7 @@ sub build_tree_needs_rebuild
 	    if ($option_verbose
 		and $option_verbose > 1)
 	    {
-		print STDERR "build_tree_needs_rebuild(): target_stat_output: $target_stat_output ($target)\n";
+		print "build_tree_needs_rebuild(): target_stat_output: $target_stat_output ($target)\n";
 	    }
 
 	    if ($?)
@@ -976,7 +976,7 @@ sub build_tree_needs_rebuild
 	if ($option_verbose
 	    and $option_verbose > 1)
 	{
-	    print STDERR "build_tree_needs_rebuild(): source_youngest: $source_youngest, target_oldest: $target_oldest ==> needs_rebuild: $result\n";
+	    print "build_tree_needs_rebuild(): source_youngest: $source_youngest, target_oldest: $target_oldest ==> needs_rebuild: $result\n";
 	}
 
     }
@@ -3361,7 +3361,7 @@ sub buildroot_parse_packages_directories
 
 	if ($option_verbose)
 	{
-	    print STDERR "$0: *** added for package $package_name OVERRIDE_SRCDIR $package_directory\n";
+	    print "$0: *** added for package $package_name OVERRIDE_SRCDIR $package_directory\n";
 	}
     }
 
