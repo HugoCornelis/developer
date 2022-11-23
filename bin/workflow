@@ -206,7 +206,9 @@ sub all_install_scripts
     # install each script to the ~/bin directory
 
     # TODO: use case if a script exists but does not have a symbolic
-    # link in ~/bin yet, a script that has been created.
+    # link in ~/bin yet, a new script that just created:
+    # 1. requires adding the symbolic link.
+    # 2. requires adding the targets defined in the script to the configuration.
 
     my $commands
 	= [
@@ -216,11 +218,26 @@ sub all_install_scripts
 
 	       my $command_filename = $_;
 
-	       my $source = $command_filename;
+	       use Cwd;
+
+	       my $source = Cwd::abs_path($command_filename);
 
 	       my $target = "$ENV{HOME}/bin/$command_filename";
 
 	       my $result = "ln -sf $source $target";
+
+	       $result;
+	   }
+	   grep
+	   {
+	       my $command_filename = $_;
+
+	       my $result = ($command_filename =~ m(-commands));
+
+	       if (not $result)
+	       {
+		   print STDERR "$0: *** Error: $command_filename does not follow command filename conventions (must have '-commands')\n";
+	       }
 
 	       $result;
 	   }
@@ -240,16 +257,32 @@ sub all_install_scripts
 
     # 3. Install to .bashrc: text addition for aliases (add to ~/.bash_aliases?) and for bash completion
 
-    if (not _file_contains_regex("$ENV{HOME}/.bashrc", 'alias neurospaces-workflow="grc neurospaces-workflow"'))
-    {
-	{
-	    my $alias_additions
-		= "
+    my $alias_marker = "alias $project_name-workflow=\"grc $project_name-workflow\"";
+
+    my $alias_additions
+	= "
 alias $project_name-workflow=\"grc $project_name-workflow\"
 alias $project_name-configuration=\"grc $project_name-configuration\"
 
 ";
 
+    my $bashrc_matches = _file_contains_regex("$ENV{HOME}/.bashrc", $alias_marker);
+
+    if ($option_verbose)
+    {
+	if (not $bashrc_matches)
+	{
+	    print "$0: all_install_scripts: .bashrc does not match\n";
+	}
+	else
+	{
+	    print "$0: all_install_scripts: .bashrc matches\n";
+	}
+    }
+
+    if (not $bashrc_matches)
+    {
+	{
 	    _file_append_string("$ENV{HOME}/.bashrc", $alias_additions);
 	}
 
@@ -278,7 +311,21 @@ alias $project_name-configuration=\"grc $project_name-configuration\"
 
     my $etc_grc_conf_marker = "$project_name-workflow";
 
-    if (not _file_contains_regex($etc_grc_conf_filename, $etc_grc_conf_marker))
+    my $grc_conf_matches = _file_contains_regex($etc_grc_conf_filename, $etc_grc_conf_marker);
+
+    if ($option_verbose)
+    {
+	if (not $grc_conf_matches)
+	{
+	    print "$0: all_install_scripts: grc_conf does not match\n";
+	}
+	else
+	{
+	    print "$0: all_install_scripts: grc_conf matches\n";
+	}
+    }
+
+    if (not $grc_conf_matches)
     {
 	my $etc_grc_conf_additions
 	    = "
@@ -496,7 +543,22 @@ sub _file_contains_regex
 	    <$fh>;
 	};
 
-    return ($data =~ /$string/);
+    my $result = ($data =~ /$string/);
+
+    if ($option_verbose
+	and $option_verbose > 1)
+    {
+	if ($result)
+	{
+	    print "$0: _file_contains_regex(): match file '$filename' with '$string' (result is $result)\n";
+	}
+	else
+	{
+	    print "$0: _file_contains_regex(): no match file '$filename' with '$string' (result is $result)\n";
+	}
+    }
+
+    return $result;
 }
 
 
@@ -525,6 +587,8 @@ sub _init_command_filenames_found
 
     # use Data::Dumper;
 
+    # print STDERR "ls $command_filename_directory/$field_project_name-commands*\n";
+
     # print STDERR Dumper( { _init_command_filenames_found => $result, }, );
     # print STDERR Dumper( { all_path_globals => $all_path_globals, }, );
 
@@ -549,6 +613,19 @@ sub _init_command_filenames_configured
 	   grep
 	   {
 	       /$field_project_name-commands[-a-z0-9]*$/;
+	   }
+	   grep
+	   {
+	       my $command_filename = $_;
+
+	       my $result = ($command_filename =~ m(-commands));
+
+	       if (not $result)
+	       {
+		   print STDERR "$0: *** Error: $command_filename does not follow command filename conventions (must have '-commands')\n";
+	       }
+
+	       $result;
 	   }
 	   map
 	   {
@@ -577,9 +654,15 @@ sub _init
 
     my $command_filenames_found = _init_command_filenames_found();
 
+    use Data::Dumper;
+
+    # print STDERR Dumper( { command_filenames_found => $command_filenames_found, }, );
+
     # only those command files mentioned in the configuration
 
     my $command_filenames_configured = _init_command_filenames_configured();
+
+    # print STDERR Dumper( { command_filenames_configured => $command_filenames_configured, } );
 
     my $command_filenames
 	= [
@@ -595,6 +678,8 @@ sub _init
 
     foreach my $command_filename (@$command_filenames)
     {
+	# print STDERR "Executing $command_filename\n";
+
 	my $commands = do $command_filename;
 
 	if ($@)
