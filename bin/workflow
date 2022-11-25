@@ -164,7 +164,27 @@ package Command;
 
 sub all_install_scripts
 {
-    my $force = defined $ARGV[0] ? $ARGV[0] : '';
+    use Data::Dumper;
+
+    print Dumper(\@_);
+
+    my $option_install_bash_completion;
+    my $option_install_force;
+
+    our $install_options
+      = {
+	 "bash-completion=s" => \$option_install_bash_completion,
+	 "force!" => \$option_install_force,
+	};
+
+    use Getopt::Long qw(GetOptionsFromArray);;
+
+    my $result = GetOptionsFromArray(\@ARGV, %$install_options);
+
+    if (!$result)
+    {
+        die "$0: *** error in option processing, try --help";
+    }
 
     # need to do four things:
     #
@@ -190,25 +210,71 @@ sub all_install_scripts
 
     my $command = "ln -sf $source $target";
 
-    if ($force or (not -e $target))
+    if ($option_install_force or (not -e $target))
     {
 	execute_shell_command($command);
     }
 
     # 2. Install to ~/bin: symbolic links for commands
 
+    # 2.a. from files found in the commands directory to configuration.
+    # 2.b. from configured filenames to symbolic links.
+
+    # 2.a. from files found in the commands directory to configuration.
+
+    my $command_filenames
+      = [
+	 `ls "$project_name"-commands-*[^~]`,
+	];
+
+    # all the command files, including those not in mentioned in the configuration
+
+    my $command_filenames_found_2
+	= {
+	   map
+	   {
+	       $_ => 1,
+	   }
+	   _init_command_filenames_found(''),
+	  };
+
+    # only those command files mentioned in the configuration
+
+    my $command_filenames_configured_2
+	= [
+	   map
+	   {
+	       $_ => 1,
+	   }
+	   _init_command_filenames_configured(''),
+	  ];
+
+    my $command_filenames_set_difference
+	= {
+	   grep
+	   {
+	       not $command_filenames_configured_2->{$_};
+	   }
+	   @$command_filenames_found_2,
+	  };
+
+    my $field_project_configuration = do "$field_project_configuration_directory/$field_project_configuration_filename";
+
+    # 2.b. from configured filenames to symbolic links.
+
     # generate list of scripts
 
-    # my $command_filenames_configured = _init_command_filenames_configured();
+    # my $command_filenames_configured = _init_command_filenames_configured('');
 
     my $command_filenames_configured = $global_technical_project_configuration->{command_filenames};
 
     # install each script to the ~/bin directory
 
     # TODO: use case if a script exists but does not have a symbolic
-    # link in ~/bin yet, a new script that just created:
+    # link in ~/bin yet, a new script that was just created:
     # 1. requires adding the symbolic link.
-    # 2. requires adding the targets defined in the script to the configuration.
+    # 2. requires adding the targets defined in the script to the configuration
+    # -- this requires to guess the targets.
 
     my $commands
 	= [
@@ -250,7 +316,6 @@ sub all_install_scripts
 	       not -e $target;
 	   }
 	   @$command_filenames_configured,
-	   # $configuration_filename,
 	  ];
 
     execute_shell_command_array($commands);
@@ -564,6 +629,8 @@ sub _file_contains_regex
 
 sub _init_command_filenames_found
 {
+    my $full_paths = shift;
+
     my $field_project_name = $global_field_project_configuration->{field_project_name};
 
     # when invoked as just 'workflow' the directory where to search
@@ -574,9 +641,19 @@ sub _init_command_filenames_found
 
     my $result
 	= [
+	   sort
 	   grep
 	   {
 	       /$field_project_name-commands[-a-z0-9]*$/;
+	   }
+	   map
+	   {
+	       if ($full_paths)
+	       {
+		   s($command_filename_directory/)();
+	       }
+
+	       $_;
 	   }
 	   map
 	   {
@@ -598,6 +675,8 @@ sub _init_command_filenames_found
 
 sub _init_command_filenames_configured
 {
+    my $full_paths = shift;
+
     my $field_project_name = $global_field_project_configuration->{field_project_name};
 
     # when invoked as just 'workflow' the directory where to search
@@ -610,6 +689,7 @@ sub _init_command_filenames_configured
 
     my $result
 	= [
+	   sort
 	   grep
 	   {
 	       /$field_project_name-commands[-a-z0-9]*$/;
@@ -629,7 +709,7 @@ sub _init_command_filenames_configured
 	   }
 	   map
 	   {
-	       "$command_filename_directory/$_";
+	       $full_paths ? "$command_filename_directory/$_" : "$_";
 	   }
 	   @{ $global_technical_project_configuration->{command_filenames} },
 	  ];
@@ -652,15 +732,15 @@ sub _init
 
     # all the command files, including those not in mentioned in the configuration
 
-    my $command_filenames_found = _init_command_filenames_found();
+    my $command_filenames_found = _init_command_filenames_found('full-paths');
 
-    use Data::Dumper;
+    # use Data::Dumper;
 
     # print STDERR Dumper( { command_filenames_found => $command_filenames_found, }, );
 
     # only those command files mentioned in the configuration
 
-    my $command_filenames_configured = _init_command_filenames_configured();
+    my $command_filenames_configured = _init_command_filenames_configured('full-paths');
 
     # print STDERR Dumper( { command_filenames_configured => $command_filenames_configured, } );
 
@@ -669,6 +749,11 @@ sub _init
 	   grep
 	   {
 	       # remove duplicate filenames to avoid duplicate command definitions
+
+	       if ($commands_seen->{$_})
+	       {
+		   print "$0: *** Warning: $_ is mentioned $commands_seen->{$_} time(s) in the configuration (hint: sort your filenames to spot such errors quickly).\n";
+	       }
 
 	       not $commands_seen->{$_}++;
 	   }
