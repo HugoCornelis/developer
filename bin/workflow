@@ -166,7 +166,7 @@ sub all_install_scripts
 {
     use Data::Dumper;
 
-    print Dumper(\@_);
+#     print Dumper(\@_);
 
     my $option_install_bash_completion;
     my $option_install_force;
