@@ -235,30 +235,45 @@ sub all_install_scripts
 	   {
 	       $_ => 1,
 	   }
-	   _init_command_filenames_found(''),
+	   @{ _init_command_filenames_found('full-paths') },
 	  };
 
     # only those command files mentioned in the configuration
 
     my $command_filenames_configured_2
-	= [
+	= {
 	   map
 	   {
 	       $_ => 1,
 	   }
-	   _init_command_filenames_configured(''),
-	  ];
+	   @{ _init_command_filenames_configured('full-paths') },
+	  };
 
-    my $command_filenames_set_difference
+    my $command_filenames_found_but_not_configured
 	= {
+	   map
+	   {
+	       $_ => 1,
+	   }
 	   grep
 	   {
 	       not $command_filenames_configured_2->{$_};
 	   }
-	   @$command_filenames_found_2,
+	   keys %$command_filenames_found_2,
 	  };
 
-    my $field_project_configuration = do "$field_project_configuration_directory/$field_project_configuration_filename";
+    my $commands_found = _init_filenames_2_symlink_commands( [ keys %$command_filenames_found_but_not_configured, ], );
+
+    execute_shell_command_array($commands_found);
+
+    use Data::Dumper;
+
+    print Dumper( {
+		   command_filenames_found_2 => $command_filenames_found_2,
+		   command_filenames_configured_2 => $command_filenames_configured_2,
+		   command_filenames_found_but_not_configured => $command_filenames_found_but_not_configured,
+		   commands_found => $commands_found,
+		  }, );
 
     # 2.b. from configured filenames to symbolic links.
 
@@ -276,49 +291,9 @@ sub all_install_scripts
     # 2. requires adding the targets defined in the script to the configuration
     # -- this requires to guess the targets.
 
-    my $commands
-	= [
-	   map
-	   {
-	       # $_ =~ m(.*/(.*)$);
+    my $commands_configured = _init_filenames_2_symlink_commands($command_filenames_configured);
 
-	       my $command_filename = $_;
-
-	       use Cwd;
-
-	       my $source = Cwd::abs_path($command_filename);
-
-	       my $target = "$ENV{HOME}/bin/$command_filename";
-
-	       my $result = "ln -sf $source $target";
-
-	       $result;
-	   }
-	   grep
-	   {
-	       my $command_filename = $_;
-
-	       my $result = ($command_filename =~ m(-commands));
-
-	       if (not $result)
-	       {
-		   print STDERR "$0: *** Error: $command_filename does not follow command filename conventions (must have '-commands')\n";
-	       }
-
-	       $result;
-	   }
-	   grep
-	   {
-	       my $command_filename = $_;
-
-	       my $target = "$ENV{HOME}/bin/$command_filename";
-
-	       not -e $target;
-	   }
-	   @$command_filenames_configured,
-	  ];
-
-    execute_shell_command_array($commands);
+    execute_shell_command_array($commands_configured);
 
     # 3. Install to .bashrc: text addition for aliases (add to ~/.bash_aliases?) and for bash completion
 
@@ -648,7 +623,7 @@ sub _init_command_filenames_found
 	   }
 	   map
 	   {
-	       if ($full_paths)
+	       if (not $full_paths)
 	       {
 		   s($command_filename_directory/)();
 	       }
@@ -662,14 +637,75 @@ sub _init_command_filenames_found
 	   `ls $command_filename_directory/$field_project_name-commands*`,
 	  ];
 
-    # use Data::Dumper;
+    use Data::Dumper;
 
-    # print STDERR "ls $command_filename_directory/$field_project_name-commands*\n";
+    print STDERR "ls $command_filename_directory/$field_project_name-commands*\n";
 
-    # print STDERR Dumper( { _init_command_filenames_found => $result, }, );
-    # print STDERR Dumper( { all_path_globals => $all_path_globals, }, );
+    print STDERR Dumper(
+			{
+			 global_field_project_configuration => $global_field_project_configuration,
+			 _init_command_filenames_found => $result,
+			 all_path_globals => $all_path_globals,
+			},
+		       );
 
     return $result;
+}
+
+
+sub _init_filenames_2_symlink_commands
+{
+    my $filenames = shift;
+
+    use Data::Dumper;
+
+    print Dumper( { filenames => $filenames, }, );
+
+    my $commands
+	= [
+	   map
+	   {
+	       # $_ =~ m(.*/(.*)$);
+
+	       my $command_filename = $_;
+
+	       use Cwd;
+
+	       my $source = Cwd::abs_path($command_filename);
+
+	       my $target = "$ENV{HOME}/bin/$command_filename";
+
+	       print "$command_filename: ln -sf $source $target";
+
+	       my $result = "ln -sf $source $target";
+
+	       $result;
+	   }
+	   grep
+	   {
+	       my $command_filename = $_;
+
+	       my $result = ($command_filename =~ m(-commands));
+
+	       if (not $result)
+	       {
+		   print STDERR "$0: *** Error: $command_filename does not follow command filename conventions (must have '-commands')\n";
+	       }
+
+	       $result;
+	   }
+	   grep
+	   {
+	       my $command_filename = $_;
+
+	       my $target = "$ENV{HOME}/bin/$command_filename";
+
+	       not -e $target;
+	   }
+	   @$filenames,
+	  ];
+
+    return $commands;
 }
 
 
