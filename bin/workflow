@@ -637,17 +637,17 @@ sub _init_command_filenames_found
 	   `ls $command_filename_directory/$field_project_name-commands*`,
 	  ];
 
-    use Data::Dumper;
+    # use Data::Dumper;
 
-    print STDERR "ls $command_filename_directory/$field_project_name-commands*\n";
+    # print STDERR "ls $command_filename_directory/$field_project_name-commands*\n";
 
-    print STDERR Dumper(
-			{
-			 global_field_project_configuration => $global_field_project_configuration,
-			 _init_command_filenames_found => $result,
-			 all_path_globals => $all_path_globals,
-			},
-		       );
+    # print STDERR Dumper(
+    # 			{
+    # 			 global_field_project_configuration => $global_field_project_configuration,
+    # 			 _init_command_filenames_found => $result,
+    # 			 all_path_globals => $all_path_globals,
+    # 			},
+    # 		       );
 
     return $result;
 }
