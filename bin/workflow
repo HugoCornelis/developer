@@ -162,6 +162,30 @@ our $global_technical_project_configuration;
 package Command;
 
 
+sub _all_install_scripts_execute_shell_command_array
+{
+    my $install_force = shift;
+
+    my $install_report = shift;
+
+    my $description = shift;
+
+    my $commands = shift;
+
+    if ($install_force)
+    {
+	if ($install_report)
+	{
+	    print $description;
+	}
+	else
+	{
+	    execute_shell_command_array($commands);
+	}
+    }
+}
+
+
 sub all_install_scripts
 {
     use Data::Dumper;
@@ -170,11 +194,13 @@ sub all_install_scripts
 
     my $option_install_bash_completion;
     my $option_install_force;
+    my $option_install_report;
 
     our $install_options
       = {
 	 "bash-completion=s" => \$option_install_bash_completion,
 	 "force!" => \$option_install_force,
+	 "report!" => \$option_install_report,
 	};
 
     use Getopt::Long qw(GetOptionsFromArray);;
@@ -210,9 +236,9 @@ sub all_install_scripts
 
     my $command = "ln -sf $source $target";
 
-    if ($option_install_force or (not -e $target))
+    if (not -e $target)
     {
-	execute_shell_command($command);
+	_all_install_scripts_execute_shell_command_array($option_install_force, $option_install_report, "    # 1. Install to ~/bin: symbolic link for the workflow engine with correct name\n", [ $command, ], );
     }
 
     # 2. Install to ~/bin: symbolic links for commands
@@ -264,7 +290,10 @@ sub all_install_scripts
 
     my $commands_found = _init_filenames_2_symlink_commands( [ keys %$command_filenames_found_but_not_configured, ], );
 
-    execute_shell_command_array($commands_found);
+    _all_install_scripts_execute_shell_command_array($option_install_force, $option_install_report, "    # 2. Install to ~/bin: symbolic links for commands
+
+    # 2.a. from files found in the commands directory to configuration.
+", $commands_found);
 
     use Data::Dumper;
 
@@ -293,7 +322,10 @@ sub all_install_scripts
 
     my $commands_configured = _init_filenames_2_symlink_commands($command_filenames_configured);
 
-    execute_shell_command_array($commands_configured);
+    _all_install_scripts_execute_shell_command_array($option_install_force, $option_install_report, "    # 2. Install to ~/bin: symbolic links for commands
+
+    # 2.b. from configured filenames to symbolic links.
+", $commands_configured);
 
     # 3. Install to .bashrc: text addition for aliases (add to ~/.bash_aliases?) and for bash completion
 
