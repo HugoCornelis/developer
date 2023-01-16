@@ -3332,7 +3332,7 @@ options:
     --forward-source                the target file forward source to copy from.
     --help                          display usage information and stop execution.
     --help-build-servers            display the known build servers.
-    --help-commands                 display the available commands (requires the installation of Devel::Symdump with 'sudo cpanm Devel::Symdump').
+    --help-commands                 display the available commands, add a target name for restricted output.
     --help-module                   display all the available help information about the commands of the module.
     --help-field-project-name       print the field project name and exit.
     --help-options                  print the option values.
