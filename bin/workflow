@@ -1367,6 +1367,22 @@ sub compute_remote_and_interaction_role
 
     my $ssh_options;
 
+    if ($option_verbose)
+    {
+	use Data::Dumper;
+
+	print Dumper
+	    (
+	     {
+	      compute_remote_and_interaction_role => {
+						      command => $command,
+						      option_remote => $option_remote,
+						      remote_policy => $remote_policy,
+						     },
+	     },
+	    );
+    }
+
     # remote_policy should be 'ssh', 'scp', or something with docker exec
 
     # 'ssh' is used for regular ssh remote execution
@@ -1407,6 +1423,9 @@ sub compute_remote_and_interaction_role
 
 	else
 	{
+	    # a hardcoded remote policy in the configuration options
+	    # overrides any configuration options for ssh or scp
+
 	    if (exists $option_remote->{remote_policy})
 	    {
 		$remote_policy = $option_remote->{remote_policy};
@@ -1416,6 +1435,9 @@ sub compute_remote_and_interaction_role
 		$interaction_role = $option_remote->{name};
 
 	    }
+
+	    # no hardcoded remote_policy, try something ssh / scp related
+
 	    else
 	    {
 		if (exists $option_remote->{ssh_password})
@@ -1427,54 +1449,62 @@ sub compute_remote_and_interaction_role
 
 		if (exists $option_remote->{ssh_options})
 		{
+		    $ssh_options = "$option_remote->{ssh_options} ";
+		}
+		else
+		{
+		    $ssh_options = '';
+		}
+
+		if (exists $option_remote->{ssh_server})
+		{
 		    $interaction_role = "";
 
-		    $ssh_options = $option_remote->{ssh_options};
+		    my $ssh_server = $option_remote->{ssh_server};
 
-		    if (exists $option_remote->{ssh_server})
+		    my $remote_role = exists $option_remote->{name} ? $option_remote->{name} : $ssh_server;
+
+		    if (exists $option_remote->{ssh_user})
 		    {
-			my $ssh_server = $option_remote->{ssh_server};
+			my $ssh_user = $option_remote->{ssh_user};
 
-			my $remote_role = exists $option_remote->{name} ? $option_remote->{name} : $ssh_server;
+			$interaction_role = "$ssh_user\@$remote_role";
 
-			if (exists $option_remote->{ssh_user})
+			#t where is the scp use case?
+
+			#t execute_shell_script_remote seems to be a use case?
+
+			$remote_prefix .= "$remote_policy $ssh_options$ssh_user\@$ssh_server ";
+
+			# either ssh syntax ...
+
+			if ($remote_policy eq 'ssh')
 			{
-			    my $ssh_user = $option_remote->{ssh_user};
-
-			    $interaction_role = "$ssh_user\@$remote_role";
-
-			    $remote_prefix .= "$remote_policy $ssh_options $ssh_user\@$ssh_server ";
-
-			    # either ssh syntax ...
-
-			    if ($remote_policy eq 'ssh')
-			    {
-				$interaction_role_with_policy_syntax = "$ssh_user\@$ssh_server";
-			    }
-
-			    # ... or scp syntax (the filename should be appended -- is this clumsy?)
-
-			    else
-			    {
-				$interaction_role_with_policy_syntax = "$ssh_user\@$ssh_server:";
-			    }
+			    $interaction_role_with_policy_syntax = "$ssh_user\@$ssh_server";
 			}
+
+			# ... or scp syntax (the filename should be appended -- is this clumsy?)
+
+			#t where is the scp use case?
+
 			else
 			{
-			    $interaction_role = $remote_role;
-
-			    $remote_prefix .= "$remote_policy $ssh_options $ssh_server ";
+			    $interaction_role_with_policy_syntax = "$ssh_user\@$ssh_server:";
 			}
 		    }
 		    else
 		    {
-			$interaction_role = "localuser\@localhost";
+			$interaction_role = $remote_role;
 
-			$remote_prefix .= "$remote_policy $ssh_options ";
+			$remote_prefix .= "$remote_policy $ssh_options$ssh_server ";
+
+			# $remote_prefix .= "$remote_policy $ssh_options";
 		    }
 		}
 		else
 		{
+		    #t we could have a case here where we have a local user and no ssh_server
+
 		    $interaction_role = "localuser\@localhost";
 		}
 	    }
