@@ -28,7 +28,7 @@ regexp=laptop_developer
 colours=yellow
 -
 # target
-regexp=ccr
+regexp=neurospaces
 colours=yellow
 -
 # descriptions

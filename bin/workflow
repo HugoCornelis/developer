@@ -63,6 +63,7 @@ our $option_incremental = 1;
 our $option_interactions;
 our $option_interactions_all;
 our $option_interactions_module;
+our $option_interactions_module_all_roles;
 our $option_packages = [];
 our $option_remote = "gitlab";
 our $option_ssh_server;
@@ -105,6 +106,7 @@ our $global_options
        "interactions!" => \$option_interactions,
        "interactions-all!" => \$option_interactions_all,
        "interactions-module!" => \$option_interactions_module,
+       "interactions-module-all-roles!" => \$option_interactions_module_all_roles,
        "package=s" => $option_packages,
        "ssh-port=s" => \$option_ssh_port,
        "ssh-server=s" => \$option_ssh_server,
@@ -186,19 +188,908 @@ sub _all_install_scripts_execute_shell_command_array
 }
 
 
-sub all_install_scripts
+sub _builtin_project_bash_completion_create
+{
+    my $project_name = shift;
+
+    my $project_name_dash = $project_name;
+
+    $project_name_dash =~ s(_)(-)g;
+
+    my $project_name_underscore = $project_name;
+
+    $project_name_underscore =~ s(-)(_)g;
+
+    my $bash_completion_code
+	= "#/usr/bin/env bash
+_${project_name_underscore}_configuration_completions()
+{
+    COMPLETIONS=`${project_name_dash}-workflow --bash-completion \"\$COMP_LINE\" \$COMP_CWORD \$COMP_POINT | sed 's/\x1b\[[0-9;]*m//g'`
+
+    COMPREPLY=(\$(compgen -W \"\$COMPLETIONS\" -- \"\${COMP_WORDS[\$COMP_CWORD]}\"))
+}
+
+complete -F _${project_name_underscore}_configuration_completions ${project_name_dash}-configuration
+complete -F _${project_name_underscore}_configuration_completions ./${project_name_dash}-configuration
+
+
+_${project_name_underscore}_workflow_completions()
+{
+    COMPLETIONS=`${project_name_dash}-workflow --bash-completion \"\$COMP_LINE\" \$COMP_CWORD \$COMP_POINT | sed 's/\x1b\[[0-9;]*m//g'`
+
+    COMPREPLY=(\$(compgen -W \"\$COMPLETIONS\" -- \"\${COMP_WORDS[\$COMP_CWORD]}\"))
+}
+
+complete -F _${project_name_underscore}_workflow_completions ${project_name_dash}-workflow
+complete -F _${project_name_underscore}_workflow_completions ./${project_name_dash}-workflow
+
+";
+
+    my $error = '';
+
+    use IO::File;
+
+    my $file = IO::File->new("> $project_name-bash-completion.sh");
+
+    if (defined $file)
+    {
+	print $file $bash_completion_code;
+
+	$file->close();
+
+	chmod 0700, "$project_name-bash-completion.sh";
+    }
+    else
+    {
+	$error = "cannot open $project_name-bash-completion.sh";
+    }
+
+    return $error;
+}
+
+
+sub _builtin_configuration_browser_code
+{
+    my $code = '($0 =~ m(.*/(\S+)));
+
+my $program_name = $1;
+
+
+if ($program_name =~ m(configuration$))
+{
+    # loop over the command line arguments
+
+    while (@ARGV)
+    {
+	my $argument = shift @ARGV;
+
+	# "--" means list keys
+
+	if ($argument eq "--")
+	{
+	    $configuration = [ sort keys %$configuration, ];
+	}
+
+	# "-1" means list keys one level deep
+
+	elsif ($argument eq "-1")
+	{
+	    if (ref $configuration eq "HASH")
+	    {
+		$configuration
+		    = {
+		       map
+		       {
+			   my $result;
+
+			   if (ref $configuration eq "HASH")
+			   {
+			       $result = "$configuration->{$_}";
+			   }
+			   elsif (ref $configuration eq "ARRAY")
+			   {
+			       $result = join ", ", map { "$_" } @$configuration;
+			   }
+			   else
+			   {
+			       $result = "$configuration";
+			   }
+
+			   $_ => $result;
+		       }
+		       keys %$configuration,
+		      };
+	    }
+	}
+
+	# "-2" means list keys two levels deep
+
+	elsif ($argument eq "-2")
+	{
+	    $configuration
+		= {
+		   map
+		   {
+		       my $result;
+
+		       my $configuration_snippet = $configuration->{$_};
+
+		       if (ref $configuration_snippet eq "HASH")
+		       {
+			   $result
+			       = {
+				  map
+				  {
+				      my $result;
+
+				      if (ref $configuration_snippet eq "HASH")
+				      {
+					  $result = "$configuration_snippet->{$_}";
+				      }
+				      elsif (ref $configuration_snippet eq "ARRAY")
+				      {
+					  $result = join ", ", map { "$_" } @$configuration_snippet;
+				      }
+				      else
+				      {
+					  $result = "$configuration_snippet";
+				      }
+
+				      $_ => $result;
+				  }
+				  keys %$configuration_snippet,
+				 };
+		       }
+		       else
+		       {
+			   $result = "$configuration";
+		       }
+
+		       $_ => $result;
+		   }
+		   keys %$configuration,
+		  };
+	}
+
+	# "-3" means list keys three levels deep
+
+	elsif ($argument eq "-3")
+	{
+	    $configuration
+		= {
+		   map
+		   {
+		       my $result;
+
+		       my $configuration_snippet_a = $configuration->{$_};
+
+		       if (ref $configuration_snippet_a eq "HASH")
+		       {
+			   $result
+			       = {
+				  map
+				  {
+				      my $result;
+
+				      my $configuration_snippet_b = $configuration_snippet_a->{$_};
+
+				      if (ref $configuration_snippet_b eq "HASH")
+				      {
+					  $result
+					      = {
+						 map
+						 {
+						     my $result;
+
+						     if (ref $configuration_snippet_b eq "HASH")
+						     {
+							 $result = "$configuration_snippet_b->{$_}";
+						     }
+						     elsif (ref $configuration_snippet_b eq "ARRAY")
+						     {
+							 $result = join ", ", map { "$_" } @$configuration_snippet_b;
+						     }
+						     else
+						     {
+							 $result = "$configuration_snippet_b";
+						     }
+
+						     $_ => $result;
+						 }
+						 keys %$configuration_snippet_b,
+						};
+				      }
+				      else
+				      {
+					  $result = "$configuration_snippet_b";
+				      }
+
+				      $_ => $result;
+				  }
+				  keys %$configuration_snippet_a,
+				 };
+		       }
+		       else
+		       {
+			   $result = "$configuration_snippet_a";
+		       }
+
+		       $_ => $result;
+		   }
+		   keys %$configuration,
+		  };
+	}
+
+	# else use the argument to descend in the hierarchy
+
+	else
+	{
+	    if (ref $configuration eq "HASH")
+	    {
+		#! note that regex selection will only work for the
+		#! last argument because the rest of the selection code
+		#! assumes there is a single result
+
+		if ($argument =~ /\*|\+/)
+		{
+		    $configuration
+			= {
+			   map
+			   {
+			       $_ => $configuration->{$_}
+			   }
+			   grep
+			   {
+			       $_ =~ /$argument/
+			   }
+			   keys %$configuration,
+			  };
+		}
+		else
+		{
+		    $configuration = $configuration->{$argument};
+		}
+	    }
+	    elsif (ref $configuration eq "ARRAY")
+	    {
+		# give output consistent with other use cases
+
+		$configuration = $argument;
+	    }
+	}
+    }
+
+    # choose one of "Data::Dumper", "yaml", "json", "json_pretty"
+
+    my $output_format = "yaml";
+
+    if ($output_format eq "yaml")
+    {
+	require YAML;
+
+	print YAML::Dump($configuration);
+    }
+    elsif ($output_format eq "json")
+    {
+	require JSON;
+
+        my $json = JSON->new(); # ->allow_nonref;
+
+	$json->allow_unknown(1);
+
+	my $encoded = $json->encode($configuration);
+
+	print $encoded;
+    }
+    elsif ($output_format eq "json_pretty")
+    {
+	require JSON;
+
+        my $json = JSON->new(); # ->allow_nonref;
+
+	$json->allow_unknown(1);
+
+	my $encoded = $json->pretty()->encode($configuration);
+
+	print $encoded;
+    }
+    else
+    {
+	require Data::Dumper;
+
+	no warnings;
+
+	$Data::Dumper::Sortkeys = "always";
+
+	print Data::Dumper::Dumper($configuration);
+    }
+}
+else
+{
+    return $configuration;
+}
+
+
+';
+
+    return $code;
+}
+
+
+sub _builtin_project_commands_template_create
+{
+    my $project_name = shift;
+
+    my $commands_template_code
+	= "#!/usr/bin/perl -w
+
+use strict;
+
+use warnings;
+
+
+package main;
+
+our \$option_verbose;
+
+our \$global_technical_project_configuration;
+
+
+package Command;
+
+
+sub examples_single_command
+{
+    my \$force = \$ARGV[0] || \"\";
+
+    my \$command = 'echo an example of the invocation of a single command';
+
+    execute_shell_command(\$command);
+
+    # Some options to command execution:
+    #   allow_fail: allow execution of this command to fail.
+    #   dry_run: do not execute this command.
+    #   remote: a remote that is defined in $project_name-configuration.
+    #   silent: do not provide feedback to the terminal about this command.
+    #   sudo: invoke the command prefixed with sudo.
+    #   timeout: this command will fail after the given timeout.
+    #
+    # execute_shell_command(\$command, { remote => '<name of a remote that is defined in $project_name-configuration>, } );
+    #
+    # These options can given to any of the functions that execute commands.
+}
+
+
+sub examples_single_command_help
+{
+    my \$command = shift;
+
+    return \"\$command: an example of the invocation a single command.
+
+arguments:
+
+    force: command arguments can be parsed from \@ARGV.
+\";
+}
+
+
+sub examples_array_of_commands
+{
+    my \$force = \$ARGV[0] || \"\";
+
+    my \$local_commands
+	= [
+	   'echo an example of the invocation of an array of commands',
+	   'echo this is the second command in the array',
+	  ];
+
+    execute_shell_command_array(\$local_commands);
+}
+
+
+sub examples_array_of_commands_help
+{
+    my \$command = shift;
+
+    return \"\$command: an example of the invocation an array of commands.
+
+arguments:
+
+    force: command arguments can be parsed from \\\@ARGV.
+\";
+}
+
+
+our \$target_servers = \$::global_technical_project_configuration->{target_servers};
+
+sub examples_array_of_commands_remote_execution
+{
+    my \$force = \$ARGV[0] || \"\";
+
+    my \$remote = \$target_servers->{build};
+
+    my \$remote_commands
+	= [
+	   'echo',
+	   'echo an example of the invocation of an array of remote commands',
+	   'echo this is the second command in the array',
+	   'echo',
+	  ];
+
+    execute_shell_command_array
+	(
+	 \$remote_commands,
+	 {
+	  remote => \$remote,
+	 },
+	);
+
+    my \$local_commands
+	= [
+	   'echo a few locally executed commands',
+	   'echo more locally executed commands',
+	  ];
+
+    execute_shell_command_array(\$local_commands);
+
+    execute_shell_command_array
+	(
+	 \$remote_commands,
+	 {
+	  remote => \$remote,
+	 },
+	);
+}
+
+
+sub examples_array_of_commands_remote_execution_help
+{
+    my \$command = shift;
+
+    return \"\$command: an example of the invocation an array of commands that are executed on a remote machine.
+
+arguments:
+
+    none.
+\";
+}
+
+
+sub examples_sequencing_and_composition
+{
+    my \$force = \$ARGV[0] || \"\";
+
+    my \$local_commands
+	= [
+	   'echo this examples composes other examples into one sequence of commands',
+	  ];
+
+    execute_shell_command_array(\$local_commands);
+
+    examples_single_command();
+    examples_array_of_commands();
+}
+
+
+sub examples_sequencing_and_composition_help
+{
+    my \$command = shift;
+
+    return \"\$command: an example that composes other examples into one sequence of commands.
+
+arguments:
+
+    none.
+\";
+}
+
+
+# return success
+
+1;
+
+
+";
+
+    my $error = '';
+
+    use IO::File;
+
+    my $file = IO::File->new("> $project_name-commands");
+
+    if (defined $file)
+    {
+	print $file $commands_template_code;
+
+	$file->close();
+
+	chmod 0700, "$project_name-commands";
+    }
+    else
+    {
+	$error = "cannot open $project_name-commands";
+    }
+
+    return $error;
+}
+
+
+sub _builtin_project_configuration_create
+{
+    my $project_name = shift;
+
+    # create a configuration file
+
+    my $user = `whoami`;
+
+    my $configuration_file_part
+	= "#!/usr/bin/perl -w
+
+use strict;
+
+use warnings;
+
+
+my \$build_servers
+    = {
+       laptop => {
+		  built_image_directory => 'master',
+		  description => 'local laptop',
+		  name => 'laptop',
+		  ssh_port => '22',
+		  ssh_server => 'localhost',
+		  ssh_user => '$user',
+		 },
+      };
+
+my \$command_filenames
+    = [
+       '$project_name-commands',
+      ];
+
+my \$node_configuration
+    = {
+       '0_concepts' => {
+			description00 => 'The design goals of this IP address plan is to separate administration networks from operations networks.',
+                       },
+      };
+
+my \$target_servers
+    = {
+       build => {
+		 description => 'your build server that does builds and is used for testing',
+		 name => 'build',
+		 ssh_server => 'build.your.local.domain',
+		 ssh_user => 'tester',
+		},
+       docker_build => {
+			description => 'interaction with the docker build container',
+			name => 'docker_build',
+			remote_policy => 'sudo docker exec -it --workdir ~/projects/digital-engineering/source/build gitlab_interactive ',
+		       },
+       laptop => {
+		  description => 'the local computer of the developer',
+		  localuser => 'yes',
+		  name => 'laptop',		  ssh_port => '22',
+		  ssh_server => '192.168.4.70',
+		  ssh_user => 'hugo',
+		 },
+      };
+
+my \$targets
+    = {
+       all => {
+	       description => 'used for processing of target files that are produced by other targets',
+	      },
+       docker => {
+		  description => 'interaction with the docker build container',
+		 },
+       examples => {
+		    description => 'these are examples that explain how to use the APIs',
+		   },
+       source_code => {
+		       description => 'operations on the source code that is used for testing',
+		      },
+       wiki_gitlab => {
+		       description => 'pulls the wiki pages from gitlab (and possibly other sources) and converts them PDF (or other formats)',
+		      },
+      };
+
+my \$configuration = {
+		     build_servers => \$build_servers,
+		     command_filenames => \$command_filenames,
+		     node_configuration => \$node_configuration,
+		     target_servers => \$target_servers,
+		     targets => \$targets,
+		    };
+
+";
+
+    my $error = '';
+
+    use IO::File;
+
+    my $file = IO::File->new("> $project_name-configuration");
+
+    if (defined $file)
+    {
+	print $file $configuration_file_part;
+
+	my $configuration_browser = _builtin_configuration_browser_code();
+
+	print $file $configuration_browser;
+
+	$file->close();
+
+	chmod 0700, "$project_name-configuration";
+    }
+    else
+    {
+	$error = "cannot open $project_name-configuration";
+    }
+
+    return $error;
+}
+
+
+sub _builtin_project_gc_configuration_create
+{
+    my $project_name = shift;
+
+    my $conf_gc_project_configuration
+	= "# this file should be copied to /usr/share/grc/
+#
+# Colors available for configuration are:
+#
+#    Black
+#    Red
+#    Green
+#    Yellow
+#    Blue
+#    Magenta
+#    Cyan
+#    White
+#
+# add this at the top of /etc/grc.conf
+#
+#
+# # $project_name configuration
+# (^|[/\\w\\.]+/)$project_name-configuration
+# conf.$project_name-configuration
+#
+#
+# maintainance laptop according to the documentation
+regexp=laptop_slave
+colours=yellow
+-
+# trusted laptop according to the documentation
+regexp=laptop_developer
+colours=yellow
+-
+# target
+regexp=$project_name
+colours=yellow
+-
+# descriptions
+regexp=^ *description:.*\$
+colours=green
+-
+# IP addresses
+regexp=([0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3})
+colours=green bold
+-
+# MAC addresses
+regexp=(([a-zA-Z0-9][a-zA-Z0-9]:){5}[a-zA-Z0-9][a-zA-Z0-9])
+colours=blue
+-
+# vlans
+regexp=(vlan_id: [0-9]{1,4})
+colours=cyan bold
+-
+# interfaces
+regexp=(enp[03456]\\w*)
+colours=white underline
+-
+regexp=(eth[012]\\w*)
+colours=white underline
+-
+regexp=(lan[1234]\\w*)
+colours=white underline
+-
+regexp=(enx............)
+colours=white underline
+-
+regexp=wlp1s0
+colours=white underline
+-
+regexp=wlo1
+colours=white underline
+";
+
+    my $error = '';
+
+    use IO::File;
+
+    my $file = IO::File->new("> conf.$project_name-configuration");
+
+    if (defined $file)
+    {
+	print $file $conf_gc_project_configuration;
+
+	$file->close();
+    }
+    else
+    {
+	$error = "cannot open conf.$project_name-configuration";
+    }
+
+    return $error;
+}
+
+
+sub _builtin_project_gc_workflow_create
+{
+    my $project_name = shift;
+
+    my $conf_gc_project_workflow
+	= "# this file should be copied to /usr/share/grc/
+#
+#    Black: \\u001b[30m.
+#    Red: \\u001b[31m.
+#    Green: \\u001b[32m.
+#    Yellow: \\u001b[33m.
+#    Blue: \\u001b[34m.
+#    Magenta: \\u001b[35m.
+#    Cyan: \\u001b[36m.
+#    White: \\u001b[37m.
+#
+# targets
+# -
+# regexp=all
+# colours=green bold
+# -
+# regexp=cr(?!-workflow)
+# colours=green bold
+# -
+# commands
+regexp=(\\S+) --dry
+colours=yellow bold
+-
+regexp= --dry
+colours=white
+-
+# specific IP addresses
+regexp=^.*192\\.168\\.[345]\\..*\$
+colours=green bold
+-
+# MAC addresses
+regexp=(([a-zA-Z0-9][a-zA-Z0-9]:){5}[a-zA-Z0-9][a-zA-Z0-9])
+colours=blue
+-
+# vlans
+regexp=(vlan_id: [0-9]{1,4})
+colours=cyan bold
+-
+# devices and interfaces
+regexp=(enp[03456]\\w*)
+colours=white underline
+-
+regexp=(eth[012]\\w*)
+colours=white underline
+-
+regexp=(lan[1234]\\w*)
+colours=white underline
+-
+regexp=(enx............)
+colours=white underline
+-
+regexp=wlp1s0
+colours=white underline
+-
+regexp=wlo1
+colours=white underline
+-
+regexp=/dev/\\S*
+colours=yellow underline
+count=more
+-
+regexp=/mnt/\\S*
+colours=magenta underline
+count=more
+-
+regexp=/media/\\S*
+colours=magenta underline
+count=more
+-
+# interaction diagram
+regexp=ROLE:.*\$
+colours=magenta bold underline
+-
+regexp=COMMAND:.*\$
+colours=cyan underline
+
+
+";
+
+    my $error = '';
+
+    use IO::File;
+
+    my $file = IO::File->new("> conf.$project_name-workflow");
+
+    if (defined $file)
+    {
+	print $file $conf_gc_project_workflow;
+
+	$file->close();
+    }
+    else
+    {
+	$error = "cannot open conf.$project_name-workflow";
+    }
+
+    return $error;
+}
+
+
+sub _builtin_project_template_create
+{
+    my $project_name = shift;
+
+    my $project_file
+	= "#!/usr/bin/perl -w
+
+use strict;
+
+use warnings;
+
+my \$configuration
+    = {
+       field_project_name => '$project_name',
+      };
+
+return \$configuration;
+
+";
+
+    my $error = '';
+
+    use IO::File;
+
+    my $file = IO::File->new("> workflow-project-template.pl");
+
+    if (defined $file)
+    {
+	print $file $project_file;
+
+	$file->close();
+    }
+    else
+    {
+	$error = "cannot open workflow-project-template.pl";
+    }
+
+    return $error;
+}
+
+
+sub builtin_install_scripts
 {
     use Data::Dumper;
 
 #     print Dumper(\@_);
 
     my $option_install_bash_completion;
+    my $option_install_commands;
+    my $option_install_engine;
     my $option_install_force;
     my $option_install_report;
 
     our $install_options
       = {
 	 "bash-completion=s" => \$option_install_bash_completion,
+	 "commands!" => \$option_install_commands,
+	 "engine!" => \$option_install_engine,
 	 "force!" => \$option_install_force,
 	 "report!" => \$option_install_report,
 	};
@@ -214,19 +1105,15 @@ sub all_install_scripts
 
     # need to do four things:
     #
-    # 1. Install to ~/bin: symbolic link for the workflow engine with correct name
+    # 1. Install to ~/bin: symbolic link for the workflow engine with correct name and the configuration of the project
     # 2. Install to ~/bin: symbolic links for commands
     # 3. Install to .bashrc: text addition for aliases (add to ~/.bash_aliases?) and for bash completion
     # 4. Install to /etc/grc.conf: text addition
     # 5. Install to /usr/share/grc/: symbolic links
 
-    # 1. Install to ~/bin: symbolic link for the workflow engine with correct name
+    # 1. Install to ~/bin: symbolic link for the workflow engine with correct name and the configuration of the project
 
     my $field_configuration = FieldProject::_init_get_field_project_configuration();
-
-    # $configuration_filename normally becomes 'workflow-project.pl'
-
-    my $configuration_filename = "$field_configuration->{field_project_configuration_directory}/$field_configuration->{field_project_configuration_filename}";
 
     my $source = "/usr/local/bin/workflow";
 
@@ -238,8 +1125,40 @@ sub all_install_scripts
 
     if (not -e $target)
     {
-	_all_install_scripts_execute_shell_command_array($option_install_force, $option_install_report, "    # 1. Install to ~/bin: symbolic link for the workflow engine with correct name\n", [ $command, ], );
+	if ($option_verbose)
+	{
+	    print "$0: executing installation of the workflow engine with (force == $option_install_engine)\n";
+	}
+
+	_all_install_scripts_execute_shell_command_array($option_install_engine, $option_install_report, "    # 1. Install to ~/bin: symbolic link for the workflow engine with correct name\n", [ $command, ], );
     }
+    else
+    {
+	if ($option_verbose)
+	{
+	    print "$0: NOT executing installation of the workflow engine with (force == $option_install_engine)\n";
+	}
+    }
+
+    # $configuration_filename normally becomes 'workflow-project.pl'
+
+    # my $configuration_filename = "$field_configuration->{field_project_configuration_directory}/$field_configuration->{field_project_configuration_filename}";
+
+    my $configuration_filenames_found_2
+	= {
+	   map
+	   {
+	       $_ => 1,
+	   }
+	   @{ _init_command_filenames_found('full-paths-configuration') },
+	  };
+
+    # print Dumper( { configuration_filenames_found_2 => $configuration_filenames_found_2, }, );
+
+    my $configurations_found = _init_filenames_2_symlink_commands( [ keys %$configuration_filenames_found_2, ], );
+
+    _all_install_scripts_execute_shell_command_array($option_install_commands, $option_install_report, "    # 1. Install to ~/bin: symbolic links for workflow engine configuration
+", $configurations_found);
 
     # 2. Install to ~/bin: symbolic links for commands
 
@@ -250,7 +1169,7 @@ sub all_install_scripts
 
     my $command_filenames
       = [
-	 `ls "$project_name"-commands-*[^~]`,
+	 `ls 2>/dev/null "$project_name"-commands-*[^~]`,
 	];
 
     # all the command files, including those not in mentioned in the configuration
@@ -288,21 +1207,33 @@ sub all_install_scripts
 	   keys %$command_filenames_found_2,
 	  };
 
-    my $commands_found = _init_filenames_2_symlink_commands( [ keys %$command_filenames_found_but_not_configured, ], );
+    # print Dumper(
+    # 		 {
+    # 		  command_filenames_found_2 => $command_filenames_found_2,
+    # 		  command_filenames_configured_2 => $command_filenames_configured_2,
+    # 		  command_filenames_found_but_not_configured => $command_filenames_found_but_not_configured,
+    # 		 },
+    # 		);
 
-    _all_install_scripts_execute_shell_command_array($option_install_force, $option_install_report, "    # 2. Install to ~/bin: symbolic links for commands
+    my $commands_found = _init_filenames_2_symlink_commands( [ keys %$command_filenames_configured_2, ], );
+
+    _all_install_scripts_execute_shell_command_array($option_install_commands, $option_install_report, "    # 2. Install to ~/bin: symbolic links for commands
 
     # 2.a. from files found in the commands directory to configuration.
 ", $commands_found);
 
-    use Data::Dumper;
+    if (defined $option_verbose
+	and $option_verbose > 2)
+    {
+	use Data::Dumper;
 
-    print Dumper( {
-		   command_filenames_found_2 => $command_filenames_found_2,
-		   command_filenames_configured_2 => $command_filenames_configured_2,
-		   command_filenames_found_but_not_configured => $command_filenames_found_but_not_configured,
-		   commands_found => $commands_found,
-		  }, );
+	print Dumper( {
+		       command_filenames_found_2 => $command_filenames_found_2,
+		       command_filenames_configured_2 => $command_filenames_configured_2,
+		       command_filenames_found_but_not_configured => $command_filenames_found_but_not_configured,
+		       commands_found => $commands_found,
+		      }, );
+    }
 
     # 2.b. from configured filenames to symbolic links.
 
@@ -332,10 +1263,10 @@ sub all_install_scripts
     my $alias_marker = "alias $project_name-workflow=\"grc $project_name-workflow\"";
 
     my $alias_additions
-	= "
+	= "# $project_name-workflow
+
 alias $project_name-workflow=\"grc $project_name-workflow\"
 alias $project_name-configuration=\"grc $project_name-configuration\"
-
 ";
 
     my $bashrc_matches = _file_contains_regex("$ENV{HOME}/.bashrc", $alias_marker);
@@ -369,8 +1300,7 @@ alias $project_name-configuration=\"grc $project_name-configuration\"
 	if (-e $bash_completion_filename)
 	{
 	    my $bash_completion_additions
-		= "
-. $bash_completion_filename
+		= ". $bash_completion_filename
 ";
 
 	    _file_append_string("$ENV{HOME}/.bashrc", $bash_completion_additions);
@@ -456,15 +1386,111 @@ conf.$project_name-configuration
 }
 
 
-sub all_install_scripts_help
+sub builtin_install_scripts_help
 {
     my $command = shift;
 
-    return "$command : upgrade the workflow scripts for this project
+    return "$command : upgrade the workflow scripts for this project.
 
 arguments:
 
     force: force the upgrade
+";
+}
+
+
+sub builtin_start_project
+{
+    my $command_files = [ split '\n', `ls -1 2>/dev/null *-commands*`, ];
+
+    if (not $::option_dry_run)
+    {
+	my $project_name = $ARGV[0] || $command_files->[0];
+
+	if (not defined $project_name)
+	{
+	    die "$0: *** Error: no suitable project name could be determined, please give one as argument";
+	}
+
+	$project_name =~ s((.*)-commands*)($1);
+
+	print "Using '$project_name' as name for your project.\n";
+
+	my $error = _builtin_project_template_create($project_name);
+
+	if (not $error)
+	{
+	    $error = _builtin_project_configuration_create($project_name);
+	}
+
+	if (not $error)
+	{
+	    $error = _builtin_project_commands_template_create($project_name);
+	}
+
+	if (not $error)
+	{
+	    $error = _builtin_project_gc_configuration_create($project_name);
+	}
+
+	if (not $error)
+	{
+	    $error = _builtin_project_gc_workflow_create($project_name);
+	}
+
+	if (not $error)
+	{
+	    $error = _builtin_project_bash_completion_create($project_name);
+	}
+
+	if (not $error)
+	{
+	    print "Created a template configuration file for project '$project_name'\n";
+
+	    print "Created a template workflow-project in 'workflow-project-template.pl' with contents:\n---\n";
+
+	    print `cat 'workflow-project-template.pl'`;
+
+	    print "---\nIf this looks good, please rename it to 'workflow-project.pl' using the command:\n\n";
+	    print "  mv 'workflow-project-template.pl' 'workflow-project.pl'\n\n";
+	    print "And test it with the command:\n\n";
+	    print "  workflow --help-field-project-name\n\n";
+	    print "Afterwards install the scripts on your system using the command:\n\n";
+	    print "  workflow builtin install_scripts -- --engine --commands\n\n";
+	    print "Then check if they work by inspecting the examples they provide (with various options):\n\n";
+	    print "  $project_name-workflow examples array_of_commands_remote_execution --interactions\n\n";
+	    print "  $project_name-workflow examples sequencing_and_composition --interactions-module\n\n";
+	    print "  $project_name-workflow examples single_command --dry-run\n\n";
+	    print "  $project_name-workflow examples array_of_commands --help\n\n";
+	}
+	else
+	{
+	    print STDERR "$0: *** Error: could not initialize the project $project_name ($error)\n";
+	}
+    }
+    else
+    {
+	# schedule one shell command such that it is visible in diagrams for this command
+
+	my $commands = [ "cat 'workflow-project-template.pl'", ];
+
+	execute_shell_command_array($commands);
+    }
+}
+
+
+sub builtin_start_project_help
+{
+    my $command = shift;
+
+    return "$command : start a new project with a given name in the current directory.
+
+This will install a project descriptor, a configuration file and an
+empty command file.
+
+arguments:
+
+    name: name of the new project.
 ";
 }
 
@@ -590,6 +1616,8 @@ sub _file_append_string
 
     my $options = shift;
 
+    $string =~ s(")(\\")g;
+
     my $command = "bash -c \"echo '$string' | cat >>$filename\"";
 
     execute_shell_command($command, $options);
@@ -651,7 +1679,9 @@ sub _init_command_filenames_found
 	   sort
 	   grep
 	   {
-	       /$field_project_name-commands[-a-z0-9]*$/;
+	       ($full_paths =~ "configuration"
+		? m/$field_project_name-configuration[-a-z0-9]*$/
+		: m/$field_project_name-commands[-a-z0-9]*$/);
 	   }
 	   map
 	   {
@@ -666,8 +1696,13 @@ sub _init_command_filenames_found
 	   {
 	       chomp; $_;
 	   }
-	   `ls $command_filename_directory/$field_project_name-commands*`,
+	   ($full_paths =~ "configuration"
+	    ? `ls 2>/dev/null $command_filename_directory/$field_project_name-configuration*`
+	    : `ls 2>/dev/null $command_filename_directory/$field_project_name-commands*`),
 	  ];
+
+    # system "ls 2>/dev/null $command_filename_directory/$field_project_name-configuration*";
+    # system "ls 2>/dev/null $command_filename_directory/$field_project_name-commands*";
 
     # use Data::Dumper;
 
@@ -691,7 +1726,11 @@ sub _init_filenames_2_symlink_commands
 
     use Data::Dumper;
 
-    print Dumper( { filenames => $filenames, }, );
+    if (defined $option_verbose
+	and $option_verbose > 2)
+    {
+	print Dumper( { _init_filenames_2_symlink_commands_filenames => $filenames, }, );
+    }
 
     my $commands
 	= [
@@ -707,7 +1746,11 @@ sub _init_filenames_2_symlink_commands
 
 	       my $target = "$ENV{HOME}/bin/$command_filename";
 
-	       print "$command_filename: ln -sf $source $target";
+	       if (defined $option_verbose
+		   and $option_verbose > 2)
+	       {
+		   print "$command_filename: ln -sf $source $target";
+	       }
 
 	       my $result = "ln -sf $source $target";
 
@@ -717,11 +1760,11 @@ sub _init_filenames_2_symlink_commands
 	   {
 	       my $command_filename = $_;
 
-	       my $result = ($command_filename =~ m(-commands));
+	       my $result = ($command_filename =~ m(-commands|-configuration));
 
 	       if (not $result)
 	       {
-		   print STDERR "$0: *** Error: $command_filename does not follow command filename conventions (must have '-commands')\n";
+		   print STDERR "$0: *** Error: $command_filename does not follow command filename conventions (must have '-commands|-configuration')\n";
 	       }
 
 	       $result;
@@ -784,7 +1827,12 @@ sub _init_command_filenames_configured
 
     # use Data::Dumper;
 
-    # print STDERR Dumper( { _init_command_filenames_configured => $result, }, );
+    # print STDERR Dumper(
+    # 			{
+    # 			 command_filenames => $global_technical_project_configuration->{command_filenames},
+    # 			 _init_command_filenames_configured => $result,
+    # 			},
+    # 		       );
 
     return $result;
 }
@@ -833,23 +1881,16 @@ sub _init
     {
 	# print STDERR "Executing $command_filename\n";
 
-	my $commands = do $command_filename;
+	my ($commands, $eval_status) = FieldProject::_init_do_eval_perl_file($command_filename);
 
-	if ($@)
+	if ($eval_status)
 	{
-	    die "$0: *** Error: no valid commands file '$command_filename' found ($@)\n";
+	    die "$0: *** Error: no valid commands file '$command_filename' found ($eval_status)\n";
 
 	    print "$0: *** Error: while trying to configure the project '$global_field_project_configuration->{field_project_name}: \n";
 
            #     if ($global_field_project_configuration
            # and $global_technical_project_configuration)
-	}
-
-	if ($!)
-	{
-	    print "$0: *** Error: while trying to configure the project '$global_field_project_configuration->{field_project_name}: \n";
-
-	    die "$0: *** Error: no commands file '$command_filename' found ($!)\n";
 	}
     }
 }
@@ -1663,7 +2704,7 @@ sub compute_timeout
 }
 
 
-sub execute_option_dry_run
+sub execute_scheduled_command_option_dry_run
 {
     my $scheduled_command = shift;
 
@@ -1687,6 +2728,8 @@ sub execute_option_dry_run
 	print map { "$dry_run_prefix$_\n" } split "\n", $export_sh->{prefix};
     }
 
+    #! when is this option a simple number?
+
     if ($dry_run =~ /^[0-9]+$/)
     {
 	print "$0: *** Running in dry_run $dry_run mode, not executing: '$command'\n";
@@ -1700,7 +2743,6 @@ sub execute_option_dry_run
     }
     else
     {
-	#! should die here?
     }
 }
 
@@ -1721,7 +2763,7 @@ sub identify_interaction_roles
 
     # or we show the interaction diagram with all the interaction roles in the configuration.
 
-    elsif ($option_interactions_all)
+    elsif ($option_interactions_module_all_roles)
     {
 	my $target_servers = $global_technical_project_configuration->{target_servers};
 
@@ -2065,7 +3107,7 @@ sub execute_scheduled_command
     }
     elsif ($dry_run)
     {
-	execute_option_dry_run($scheduled_command);
+	execute_scheduled_command_option_dry_run($scheduled_command);
     }
     else
     {
@@ -2251,16 +3293,17 @@ sub execute_all_scheduled_commands
 
 	    if ($option_dry_run =~ /^[0-9]+$/)
 	    {
-		execute_option_dry_run($scheduled_command);
+		execute_scheduled_command_option_dry_run($scheduled_command);
 	    }
 
 	    # ... or printing an interaction diagram
 
 	    elsif ($option_interactions
 		   or $option_interactions_all
-		   or $option_interactions_module)
+		   or $option_interactions_module
+		   or $option_interactions_module_all_roles)
 	    {
-		execute_option_interactions($interaction_roles, $scheduled_command, $option_interactions_all);
+		execute_option_interactions($interaction_roles, $scheduled_command, $option_interactions_module_all_roles || $option_interactions_all);
 	    }
 
 	    # ... or exporting to an executable shell script ...
@@ -2562,9 +3605,67 @@ sub _init
 	$result_technical = _init_get_technical_configuration($result_field->{field_project_name});
     }
 
+    # add what is builtin
+
+    {
+	# add the builtin targets, they are always available and possibly override the configured targets of the same name
+
+	$result_technical->{targets}->{builtin}->{description} = "the builtin target allows to start a new project and upgrade existing projects";
+
+    }
+
     # return field project configuration data
 
     return ($result_field, $result_technical);
+}
+
+
+sub _init_do_eval_perl_file
+{
+    my $filename = shift;
+
+    my $status;
+
+    # check if the field project configuration file exists
+
+    if (not -r "$filename")
+    {
+	$status = "$0: *** Error: no valid configuration file '$filename' found (because the file does not exist)\n";
+
+	return undef;
+    }
+
+    # read the field project configuration
+
+    # set the global variable with the field_project data
+
+    if ($filename =~ m(^[^/]))
+    {
+	$filename = "./$filename";
+    }
+
+    # read the perlf file
+
+    my $result = do $filename;
+
+    # do error processing: perl problems
+
+    if ($@)
+    {
+	$status = "$0: *** Error: no valid configuration file '$filename' found (syntax error: $@)\n";
+    }
+
+    # do error processing: file problems.
+
+    if (not defined $result
+	and $!)
+    {
+	$status = "$0: *** Error: no configuration file '$filename' found ($!)\n";
+    }
+
+    # return configuration and status
+
+    return ($result, $status);
 }
 
 
@@ -2627,24 +3728,9 @@ sub _init_get_field_project_configuration
 	{
 	    # read the field project configuration
 
-	    # set the global variable with the field_project data
+	    my ($field_project_configuration, $eval_status) = _init_do_eval_perl_file("$field_project_configuration_directory/$field_project_configuration_filename");
 
-	    my $field_project_configuration = do "$field_project_configuration_directory/$field_project_configuration_filename";
-
-	    if ($@)
-	    {
-		$status = "$0: *** Error: no valid configuration file '$field_project_configuration_directory/$field_project_configuration_filename' found ($@)\n";
-
-		return undef;
-	    }
-
-	    if (not defined $field_project_configuration
-		and $!)
-	    {
-		$status = "$0: *** Error: no configuration file '$field_project_configuration_directory/$field_project_configuration_filename' found ($!)\n";
-
-		return undef;
-	    }
+	    $status = $eval_status;
 
 	    # set result: field project name, it is used to find configuration and command files
 
@@ -2711,22 +3797,9 @@ sub _init_get_technical_configuration
 
     my $technical_configuration_filename = "$technical_project_configuration_directory/$project_name-configuration";
 
-    my $technical_configuration = do $technical_configuration_filename;
+    my ($technical_configuration, $eval_status) = _init_do_eval_perl_file($technical_configuration_filename);
 
-    if ($@)
-    {
-	$status = "$0: *** Error: no valid configuration file '$technical_configuration_filename' found ($@)\n";
-
-	return undef;
-    }
-
-    if (not defined $technical_configuration
-	and $!)
-    {
-	$status = "$0: *** Error: no configuration file '$technical_configuration_filename' found ($!)\n";
-
-	return undef;
-    }
+    $status = $eval_status;
 
     return $technical_configuration;
 }
@@ -2872,6 +3945,7 @@ sub bash_completion_generate_options
 			--interactions
 			--interactions-all
 			--interactions-module
+			--interactions-module-all-roles
 			--packages
 			--ssh-port
 			--ssh-server
@@ -2957,6 +4031,14 @@ sub generate_command_list
 
     my $targets = $global_technical_project_configuration->{targets};
 
+    if (defined $option_verbose
+	and $option_verbose > 2)
+    {
+	use Data::Dumper;
+
+	print Dumper( { global_technical_project_configuration_targets => $targets, }, );
+    }
+
     my $commands = [
 		    # alphabatically group and make sense
 
@@ -2994,6 +4076,14 @@ sub generate_command_list
 
 		    sort @$subroutines,
 		   ];
+
+    if (defined $option_verbose
+	and $option_verbose > 2)
+    {
+	use Data::Dumper;
+
+	print Dumper( { all_targets => $targets, }, );
+    }
 
     return $commands;
 }
@@ -3042,18 +4132,18 @@ sub main
 
     # figure out the target and the command
 
-    my $target = $option_target;
+    my $requested_target = (defined $option_interactions_all ? '.*' : $option_target);
 
     my $command = $option_commands->[0] || "";
 
     # we allow finger laziness: the shift key is not necessary for the underscore
 
-    $target =~ s/-/_/g;
+    $requested_target =~ s/-/_/g;
     $command =~ s/-/_/g;
 
-    $global_target_command = "$target-$command";
+    $global_target_command = "$requested_target-$command";
 
-    # given the target and the command generate a useful filename for exporting commands to a shell script
+    # given the requested target and the command generate a useful filename for exporting commands to a shell script
 
     if (defined $option_export_sh)
     {
@@ -3072,7 +4162,7 @@ sub main
 	$option_export_sh =~ s/_/-/g;
     }
 
-    # given the target and the command generate a useful filename for exporting execution times to a log file
+    # given the requested target and the command generate a useful filename for exporting execution times to a log file
 
     if (defined $option_export_times)
     {
@@ -3121,13 +4211,20 @@ sub main
 	# but I will likely also need to use sendkeys to detach from the session
 	# also need to cd to the correct directory
 
-	Engine::execute_shell_command("ssh $build_source tmux new-session -d 'neurospaces-workflow $target $command && bash'");
+	Engine::execute_shell_command("ssh $build_source tmux new-session -d 'neurospaces-workflow $requested_target $command && bash'");
     }
+
+    # we are not using a build server
+
     else
     {
+	# are we dry running all the commands of a module (target)?
+
 	my $dry_run_module_commands;
 
-	if ($option_interactions_module)
+	if ($option_interactions_all
+	    or $option_interactions_module
+	    or $option_interactions_module_all_roles)
 	{
 	    $dry_run_module_commands = 'option_interactions_module';
 
@@ -3151,71 +4248,90 @@ sub main
 
 	    my $all_commands = generate_command_hash('with help subs');
 
-	    # reference subroutine names specific for the given target: they belong together
+	    # loop over all the matching targets
 
-	    my $target_subroutines = $all_commands->{$target};
+	    my $all_defined_targets = $global_technical_project_configuration->{targets};
 
-	    # collect the subroutine names
-
-	    my $command_implementations
-		= [
-		   map
-		   {
-		       my $subroutine = $_;
-
-		       "Command::${target}_${subroutine}";
-		   }
-		   keys %$target_subroutines,
-		  ];
-
-	    # invoke all these subroutines in dry run mode to have them either generate or report the module roles
-
-	    foreach my $command_implementation (sort @$command_implementations)
+	    foreach my $defined_target (
+					grep
+					{
+					    m(^$requested_target$);
+					}
+					keys %$all_defined_targets
+				       )
 	    {
-		if ($option_verbose)
+		# reference subroutine names specific for the given target: they belong together
+
+		my $target_subroutines = $all_commands->{$defined_target};
+
+		# collect the subroutine names
+
+		my $command_implementations
+		    = [
+		       map
+		       {
+			   my $subroutine = $_;
+
+			   "Command::${defined_target}_${subroutine}";
+		       }
+		       keys %$target_subroutines,
+		      ];
+
+		# invoke all these subroutines in dry run mode to have them either generate or report the module roles
+
+		foreach my $command_implementation (sort @$command_implementations)
 		{
-		    print "Invoking ($command_implementation)\n";
+		    if ($option_verbose)
+		    {
+			print "Invoking ($command_implementation)\n";
+		    }
+
+		    if ($command_implementation =~ /_help$/)
+		    {
+			next;
+		    }
+
+		    my $has_help = '';
+
+		    if (grep(/^${command_implementation}_help$/, @$command_implementations))
+		    {
+			$has_help = " (use --help to see the help page)";
+		    }
+
+		    $command_implementation =~ /Command::(.*)/;
+
+		    my $short_command = $1;
+
+		    # add a header to the schedule / diagram for this command
+
+		    my $scheduled_command
+			= {
+			   command => "---\nCOMMAND: $short_command$has_help",
+			   dry_run => $dry_run_module_commands,
+			   interaction_role => 'none',
+			  };
+
+		    push @$global_scheduled_commands, $scheduled_command;
+
+		    # add the command to the schedule / diagram
+
+		    {
+			no strict "refs";
+
+			&$command_implementation();
+		    }
+
+		    # end the command in the schedule / diagram
+
+		    $scheduled_command
+			= {
+			   command => "\n\n---\n",
+			   dry_run => $dry_run_module_commands,
+			   interaction_role => 'none',
+			  };
+
+		    push @$global_scheduled_commands, $scheduled_command;
 		}
-
-		if ($command_implementation =~ /_help$/)
-		{
-		    next;
-		}
-
-		my $has_help = '';
-
-		if (grep(/^${command_implementation}_help$/, @$command_implementations))
-		{
-		    $has_help = " (use --help to see the help page)";
-		}
-
-		$command_implementation =~ /Command::(.*)/;
-
-		my $short_command = $1;
-
-		my $scheduled_command
-		    = {
-		       command => "---\nCOMMAND: $short_command$has_help",
-		       dry_run => $dry_run_module_commands,
-		       interaction_role => 'none',
-		      };
-
-		push @$global_scheduled_commands, $scheduled_command;
-
-		{
-		    no strict "refs";
-
-		    &$command_implementation();
-		}
-
-		$scheduled_command
-		    = {
-		       command => "\n\n---\n",
-		       dry_run => $dry_run_module_commands,
-		       interaction_role => 'none',
-		      };
-
-		push @$global_scheduled_commands, $scheduled_command;
 	    }
 	}
 	else
@@ -3229,7 +4345,7 @@ sub main
 		$command .= "_help";
 	    }
 
-	    my $command_implementation = "Command::${target}_${command}";
+	    my $command_implementation = "Command::${requested_target}_${command}";
 
 	    if ($option_verbose)
 	    {
@@ -3240,7 +4356,7 @@ sub main
 
 	    my $command_hash = { map { $_ => 1, } @$command_list, };
 
-	    if (exists $command_hash->{"$target $command"})
+	    if (exists $command_hash->{"$requested_target $command"})
 	    {
 		# --help invocations have special handling
 
@@ -3284,7 +4400,7 @@ sub main
 	    }
 	    else
 	    {
-		die "$0: *** Error: target '$target' does not provide command '$command'.";
+		die "$0: *** Error: target '$requested_target' does not provide command '$command'.";
 	    }
 	}
 
@@ -3371,8 +4487,9 @@ options:
     --help-targets                  display known targets and stop execution.
     --incremental                   assume an incremental build (default is " . ($option_incremental ? "yes" : "no") . "
     --interactions                  show the interaction diagram of the commands.
-    --interactions-all              show the interaction diagram of the commands using all the found interaction roles in the configuration.
+    --interactions-all              show a diagram with all the commands and all the interaction roles.
     --interactions-module           show the interaction diagram of all the commands in the module.
+    --interactions-module-all-roles show the interaction diagram of the commands using all the found interaction roles in the configuration.
     --packages                      packages to operate on, can be given multiple times.
     --ssh-port                      the ssh port.
     --ssh-server                    the used ssh build server.
@@ -3476,12 +4593,12 @@ OVERRIDE_SRCDIR delivered packages for Buildroot targets are recognized.
 	    = [
 	       map
 	       {
-		   "$global_program_name $_ --dry-run";
+		   "$global_program_name $_ --help";
 	       }
 	       @$commands,
 	      ];
 
-	print Dump( { "available_commands (copy-paste the one you would like to execute, try it with the --dry-run option, execute it without this option)" => $commands, }, );
+	print Dump( { "available_commands (copy-paste the one you would like to execute, try it with the --help or the --dry-run option, execute it without these options)" => $commands, }, );
 
 	exit 0;
     }
@@ -3548,19 +4665,30 @@ OVERRIDE_SRCDIR delivered packages for Buildroot targets are recognized.
 	exit 0;
     }
 
-    if (not defined $option_target)
+    if ((not defined $option_interactions_all
+	 and not defined $option_interactions_module_all_roles)
+	and not defined $option_target)
     {
 	die "$0: *** Error: neither a target option nor target argument given, try --help";
     }
 
     if ($FieldProject::status)
     {
-	die $FieldProject::status;
+	$status = $FieldProject::status;
     }
 
-    if ($status)
+    # always allow to start a new project
+
+    if ($option_target eq 'builtin'
+	and $option_commands->[0] eq 'start_project')
     {
-	die $status;
+    }
+    else
+    {
+	if ($status)
+	{
+	    die $status;
+	}
     }
 }
 
