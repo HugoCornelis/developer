@@ -4036,7 +4036,7 @@ sub generate_command_list
     {
 	use Data::Dumper;
 
-	print Dumper( { global_technical_project_configuration_targets => $targets, }, );
+	print STDERR Dumper( { global_technical_project_configuration_targets => $targets, }, );
     }
 
     my $commands = [
