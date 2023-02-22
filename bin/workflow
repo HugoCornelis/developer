@@ -714,6 +714,36 @@ arguments:
 }
 
 
+sub _builtin_create_directories
+{
+    my $pathname = shift;
+
+    use File::Basename;
+    use File::Path qw/make_path/;
+
+    my $directory = dirname($pathname);
+
+    make_path($directory);
+
+    my $filename = basename($pathname);
+
+    return ($directory, $filename);
+}
+
+
+sub _builtin_create_directory
+{
+    my $directory = shift;
+
+    my $error = '';
+
+    if (not mkdir $directory)
+    {
+	$error = "error: $!";
+    }
+}
+
+
 sub _builtin_project_configuration_create
 {
     my $project_name = shift;
@@ -722,6 +752,8 @@ sub _builtin_project_configuration_create
 
     my $user = `whoami`;
 
+    my $configuration_data_directory = "$project_name-configuration-data";
+
     my $configuration_file_part
 	= "#!/usr/bin/perl -w
 
@@ -729,83 +761,59 @@ use strict;
 
 use warnings;
 
+require YAML;
 
-my \$build_servers
-    = {
-       laptop => {
-		  built_image_directory => 'master',
-		  description => 'local laptop',
-		  name => 'laptop',
-		  ssh_port => '22',
-		  ssh_server => 'localhost',
-		  ssh_user => '$user',
-		 },
-      };
+my \$build_servers = YAML::LoadFile('$configuration_data_directory/build_servers.yml');
 
-my \$command_filenames
-    = [
-       '$project_name-commands',
-      ];
+my \$command_filenames = YAML::LoadFile('$configuration_data_directory/command_filenames.yml');
 
-my \$node_configuration
-    = {
-       '0_concepts' => {
-			description00 => 'The design goals of this IP address plan is to separate administration networks from operations networks.',
-                       },
-      };
+my \$node_configuration = YAML::LoadFile('$configuration_data_directory/node_configuration.yml');
 
-my \$target_servers
-    = {
-       build => {
-		 description => 'your build server that does builds and is used for testing',
-		 name => 'build',
-		 ssh_server => 'build.your.local.domain',
-		 ssh_user => 'tester',
-		},
-       docker_build => {
-			description => 'interaction with the docker build container',
-			name => 'docker_build',
-			remote_policy => 'sudo docker exec -it --workdir ~/projects/digital-engineering/source/build gitlab_interactive ',
-		       },
-       laptop => {
-		  description => 'the local computer of the developer',
-		  localuser => 'yes',
-		  name => 'laptop',		  ssh_port => '22',
-		  ssh_server => '192.168.4.70',
-		  ssh_user => 'hugo',
-		 },
-      };
+my \$target_servers = YAML::LoadFile('$configuration_data_directory/target_servers.yml');
 
-my \$targets
-    = {
-       all => {
-	       description => 'used for processing of target files that are produced by other targets',
-	      },
-       docker => {
-		  description => 'interaction with the docker build container',
-		 },
-       examples => {
-		    description => 'these are examples that explain how to use the APIs',
-		   },
-       source_code => {
-		       description => 'operations on the source code that is used for testing',
-		      },
-       wiki_gitlab => {
-		       description => 'pulls the wiki pages from gitlab (and possibly other sources) and converts them PDF (or other formats)',
-		      },
-      };
+my \$targets = YAML::LoadFile('$configuration_data_directory/targets.yml');
 
 my \$configuration = {
-		     build_servers => \$build_servers,
-		     command_filenames => \$command_filenames,
-		     node_configuration => \$node_configuration,
-		     target_servers => \$target_servers,
-		     targets => \$targets,
-		    };
+		      \%\$build_servers,
+		      \%\$command_filenames,
+		      \%\$node_configuration,
+		      \%\$target_servers,
+		      \%\$targets,
+		     };
 
 ";
 
     my $error = '';
+
+    if (not $error)
+    {
+	$error = _builtin_create_directory($configuration_data_directory);
+    }
+
+    if (not $error)
+    {
+	$error = _builtin_project_configuration_targets_create($project_name, $configuration_data_directory);
+    }
+
+    if (not $error)
+    {
+	$error = _builtin_project_configuration_build_servers_create($project_name, $configuration_data_directory, $user);
+    }
+
+    if (not $error)
+    {
+	$error = _builtin_project_configuration_command_filenames_create($project_name, $configuration_data_directory);
+    }
+
+    if (not $error)
+    {
+	$error = _builtin_project_configuration_node_configuration_create($project_name, $configuration_data_directory);
+    }
+
+    if (not $error)
+    {
+	$error = _builtin_project_configuration_target_servers_create($project_name, $configuration_data_directory, $user);
+    }
 
     use IO::File;
 
@@ -826,6 +834,206 @@ my \$configuration = {
     else
     {
 	$error = "cannot open $project_name-configuration";
+    }
+
+    return $error;
+}
+
+
+sub _builtin_project_configuration_build_servers_create
+{
+    my $project_name = shift;
+
+    my $configuration_data_directory = shift;
+
+    my $user = shift;
+
+    my $configuration_file_part
+	= "---
+build_servers:
+  laptop:
+    description: local laptop
+    name: laptop
+    ssh_port: 22
+    ssh_server: localhost
+    ssh_user: $user
+";
+
+    my $error = '';
+
+    use IO::File;
+
+    my $file = IO::File->new("> $configuration_data_directory/build_servers.yml");
+
+    if (defined $file)
+    {
+	print $file $configuration_file_part;
+
+	$file->close();
+    }
+    else
+    {
+	$error = "cannot open $project_name-configuration/build_servers.yml";
+    }
+
+    return $error;
+}
+
+
+sub _builtin_project_configuration_command_filenames_create
+{
+    my $project_name = shift;
+
+    my $configuration_data_directory = shift;
+
+    my $configuration_file_part
+	= "---
+---
+command_filenames:
+  - $project_name-commands
+";
+
+    my $error = '';
+
+    use IO::File;
+
+    my $file = IO::File->new("> $configuration_data_directory/command_filenames.yml");
+
+    if (defined $file)
+    {
+	print $file $configuration_file_part;
+
+	$file->close();
+    }
+    else
+    {
+	$error = "cannot open $project_name-configuration/command_filenames.yml";
+    }
+
+    return $error;
+}
+
+
+sub _builtin_project_configuration_node_configuration_create
+{
+    my $project_name = shift;
+
+    my $configuration_data_directory = shift;
+
+    my $configuration_file_part
+	= "---
+node_configuration:
+  0_concepts:
+    description00: The design goals of this IP address plan is to separate administration networks from operations networks.
+";
+
+    my $error = '';
+
+    use IO::File;
+
+    my $file = IO::File->new("> $configuration_data_directory/node_configuration.yml");
+
+    if (defined $file)
+    {
+	print $file $configuration_file_part;
+
+	$file->close();
+    }
+    else
+    {
+	$error = "cannot open $project_name-configuration/node_configuration.yml";
+    }
+
+    return $error;
+}
+
+
+sub _builtin_project_configuration_targets_create
+{
+    my $project_name = shift;
+
+    my $configuration_data_directory = shift;
+
+    my $configuration_file_part
+	= "---
+targets:
+  all:
+    description: used for processing of target files that are produced by other targets
+  docker:
+    description: interaction with the docker build container
+  examples:
+    description: these are examples that explain how to use the APIs
+  source_code:
+    description: operations on the source code that is used for testing
+  wiki_gitlab:
+    description: pulls the wiki pages from gitlab (and possibly other sources) and converts them PDF (or other formats)
+";
+
+    my $error = '';
+
+    use IO::File;
+
+    my $file = IO::File->new("> $configuration_data_directory/targets.yml");
+
+    if (defined $file)
+    {
+	print $file $configuration_file_part;
+
+	$file->close();
+    }
+    else
+    {
+	$error = "cannot open $project_name-configuration/targets.yml";
+    }
+
+    return $error;
+}
+
+
+sub _builtin_project_configuration_target_servers_create
+{
+    my $project_name = shift;
+
+    my $configuration_data_directory = shift;
+
+    my $user = shift;
+
+    my $configuration_file_part
+	= "---
+target_servers:
+  build:
+    description: your build server that does builds and is used for testing
+    name: build
+    ssh_server: build.your.local.domain
+    ssh_user: tester
+  docker_build:
+    description: interaction with the docker build container
+    name: docker_build
+    remote_policy: 'sudo docker exec -it --workdir ~/projects/digital-engineering/source/build gitlab_interactive '
+  laptop:
+    description: the local computer of the developer
+    localuser: yes
+    name: laptop
+    ssh_port: 22
+    ssh_server: 192.168.4.70
+    ssh_user: $user
+";
+
+    my $error = '';
+
+    use IO::File;
+
+    my $file = IO::File->new("> $configuration_data_directory/target_servers.yml");
+
+    if (defined $file)
+    {
+	print $file $configuration_file_part;
+
+	$file->close();
+    }
+    else
+    {
+	$error = "cannot open $project_name-configuration/target_servers.yml";
     }
 
     return $error;
@@ -1070,6 +1278,43 @@ return \$configuration;
     }
 
     return $error;
+}
+
+
+sub builtin_add_target
+{
+    my $project_name = shift;
+
+    my $error = '';
+
+    #t read the targets json configuration file
+
+    #t add the target in $ARGV[0]
+
+    #t write the targets json configuration file
+
+    #t read the commands json configuration file
+
+    #t add the commands filename corresponding to the new target name
+
+    #t write the commands json configuration file
+
+    #t add a template commands file with the given name
+
+    return $error;
+}
+
+
+sub builtin_add_target_help
+{
+    my $command = shift;
+
+    return "$command : add a new target and update the configuration to integrate it.
+
+arguments:
+
+    target_name: name of the new target.
+";
 }
 
 
@@ -1395,6 +1640,29 @@ sub builtin_install_scripts_help
 arguments:
 
     force: force the upgrade
+";
+}
+
+
+sub builtin_print_configuration_directory
+{
+    my $project_name = shift;
+
+    my $error = '';
+
+    return $error;
+}
+
+
+sub builtin_print_configuration_directory_help
+{
+    my $command = shift;
+
+    return "$command : print the directory where the configuration of this project is found.
+
+arguments:
+
+    none.
 ";
 }
 
