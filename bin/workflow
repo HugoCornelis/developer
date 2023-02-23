@@ -520,6 +520,10 @@ sub _builtin_project_commands_template_create
 {
     my $project_name = shift;
 
+    my $target_name = shift;
+
+    my $filename_suffix = shift;
+
     my $commands_template_code
 	= "#!/usr/bin/perl -w
 
@@ -538,7 +542,7 @@ our \$global_technical_project_configuration;
 package Command;
 
 
-sub examples_single_command
+sub ${target_name}_single_command
 {
     my \$force = \$ARGV[0] || \"\";
 
@@ -560,7 +564,7 @@ sub examples_single_command
 }
 
 
-sub examples_single_command_help
+sub ${target_name}_single_command_help
 {
     my \$command = shift;
 
@@ -573,7 +577,7 @@ arguments:
 }
 
 
-sub examples_array_of_commands
+sub ${target_name}_array_of_commands
 {
     my \$force = \$ARGV[0] || \"\";
 
@@ -587,7 +591,7 @@ sub examples_array_of_commands
 }
 
 
-sub examples_array_of_commands_help
+sub ${target_name}_array_of_commands_help
 {
     my \$command = shift;
 
@@ -602,7 +606,7 @@ arguments:
 
 our \$target_servers = \$::global_technical_project_configuration->{target_servers};
 
-sub examples_array_of_commands_remote_execution
+sub ${target_name}_array_of_commands_remote_execution
 {
     my \$force = \$ARGV[0] || \"\";
 
@@ -642,7 +646,7 @@ sub examples_array_of_commands_remote_execution
 }
 
 
-sub examples_array_of_commands_remote_execution_help
+sub ${target_name}_array_of_commands_remote_execution_help
 {
     my \$command = shift;
 
@@ -655,7 +659,7 @@ arguments:
 }
 
 
-sub examples_sequencing_and_composition
+sub ${target_name}_sequencing_and_composition
 {
     my \$force = \$ARGV[0] || \"\";
 
@@ -671,7 +675,7 @@ sub examples_sequencing_and_composition
 }
 
 
-sub examples_sequencing_and_composition_help
+sub ${target_name}_sequencing_and_composition_help
 {
     my \$command = shift;
 
@@ -695,7 +699,12 @@ arguments:
 
     use IO::File;
 
-    my $file = IO::File->new("> $project_name-commands");
+    if ($filename_suffix)
+    {
+	$filename_suffix = "-$filename_suffix";
+    }
+
+    my $file = IO::File->new("> $project_name-commands$filename_suffix");
 
     if (defined $file)
     {
@@ -703,11 +712,11 @@ arguments:
 
 	$file->close();
 
-	chmod 0700, "$project_name-commands";
+	chmod 0700, "$project_name-commands$filename_suffix";
     }
     else
     {
-	$error = "cannot open $project_name-commands";
+	$error = "cannot open $project_name-commands$filename_suffix";
     }
 
     return $error;
@@ -888,7 +897,6 @@ sub _builtin_project_configuration_command_filenames_create
 
     my $configuration_file_part
 	= "---
----
 command_filenames:
   - $project_name-commands
 ";
@@ -1283,23 +1291,86 @@ return \$configuration;
 
 sub builtin_add_target
 {
-    my $project_name = shift;
+    my $target_name = $ARGV[0];
+
+    my $target_description = $ARGV[1];
+
+    use Data::Dumper;
+
+#     print Dumper($global_technical_project_configuration);
+
+#     print Dumper($global_field_project_configuration);
+
+    my $field_project_name = $global_field_project_configuration->{field_project_name};
+
+    my $configuration_data_directory = $global_field_project_configuration->{true_field_project_data_configuration_directory};
 
     my $error = '';
 
-    #t read the targets json configuration file
+    use YAML;
 
-    #t add the target in $ARGV[0]
+    # read the targets configuration file
 
-    #t write the targets json configuration file
+    my $targets_configuration_filename = "$configuration_data_directory/targets.yml";
 
-    #t read the commands json configuration file
+    my $targets = YAML::LoadFile($targets_configuration_filename);
 
-    #t add the commands filename corresponding to the new target name
+    if (not $error)
+    {
+	if (exists $targets->{targets}->{$target_name})
+	{
+	    $error = "target $target_name already exists";
+	}
+    }
 
-    #t write the commands json configuration file
+    # add the new target
 
-    #t add a template commands file with the given name
+    if (not $error)
+    {
+	$targets->{targets}->{$target_name} = $target_description;
+    }
+
+    # write the new targets configuration file
+
+    if (not $error)
+    {
+	YAML::DumpFile($targets_configuration_filename, $targets);
+    }
+
+    # read the commands json configuration file
+
+    my $command_filenames;
+
+    my $command_filenames_configuration_filename = "$configuration_data_directory/command_filenames.yml";
+
+    if (not $error)
+    {
+	$command_filenames = YAML::LoadFile($command_filenames_configuration_filename);
+    }
+
+    # add the commands filename corresponding to the new target name
+
+    if (not $error)
+    {
+	my $new_command_filename = "$field_project_name-commands-$target_name";
+
+	my $command_filenames_array = $command_filenames->{command_filenames};
+
+	push @$command_filenames_array, $new_command_filename;
+    }
+
+    # write the commands configuration file
+
+    if (not $error)
+    {
+	YAML::DumpFile($command_filenames_configuration_filename, $command_filenames);
+    }
+
+    # add a template commands file with the given name
+
+    $error = _builtin_project_commands_template_create($field_project_name, $target_name, $target_name);
+
+    # return errors
 
     return $error;
 }
@@ -1313,7 +1384,8 @@ sub builtin_add_target_help
 
 arguments:
 
-    target_name: name of the new target.
+    ARGV[0]: name of the new target.
+    ARGV[1]: description of the new target.
 ";
 }
 
@@ -1693,7 +1765,7 @@ sub builtin_start_project
 
 	if (not $error)
 	{
-	    $error = _builtin_project_commands_template_create($project_name);
+	    $error = _builtin_project_commands_template_create($project_name, "examples");
 	}
 
 	if (not $error)
@@ -3947,14 +4019,33 @@ sub _init_get_field_project_configuration
 
     if ($0 =~ m((.*)/(.*)-workflow))
     {
+	my $field_project_name = $2;
+
+	my $field_project_configuration_directory = $1;
+
+	my $field_project_configuration_filename = "$1/$2-configuration";
+
+	use Cwd 'abs_path';
+
+	my $true_field_project_configuration_filename = abs_path($field_project_configuration_filename) ;
+
+	$true_field_project_configuration_filename =~ m((.*)/(.*)-configuration);
+
+	my $true_field_project_configuration_directory = $1;
+
+	my $true_field_project_data_configuration_directory = "$true_field_project_configuration_directory/$field_project_name-configuration-data";
+
 	# set result
 
 	$result
 	    = {
-	       field_project_name => $2,
+	       field_project_name => $field_project_name,
 	       from_executable => "dynamically_generated from the executable script name",
-	       field_project_configuration_directory => $1,
-	       field_project_configuration_filename => "$1/$2-configuration",
+	       field_project_configuration_directory => $field_project_configuration_directory,
+	       field_project_configuration_filename => $field_project_configuration_filename,
+	       true_field_project_configuration_directory => $true_field_project_configuration_directory,
+	       true_field_project_configuration_filename => $true_field_project_configuration_filename,
+	       true_field_project_data_configuration_directory => $true_field_project_data_configuration_directory,
 	      };
     }
     else
