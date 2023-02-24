@@ -2146,11 +2146,11 @@ sub _init
 
     # only those command files mentioned in the configuration
 
-    my $command_filenames_configured = _init_command_filenames_configured('full-paths');
+    my $command_filenames_configured = _init_command_filenames_configured('true-paths');
 
     # print STDERR Dumper( { command_filenames_configured => $command_filenames_configured, } );
 
-    my $command_filenames
+    my $command_filenames_to_use
 	= [
 	   grep
 	   {
@@ -2167,20 +2167,42 @@ sub _init
 	   #        @$command_filenames_found,
 	  ];
 
-    foreach my $command_filename (@$command_filenames)
+    foreach my $command_filename (@$command_filenames_to_use)
     {
 	# print STDERR "Executing $command_filename\n";
 
-	my ($commands, $eval_status) = FieldProject::_init_do_eval_perl_file($command_filename);
+	my $file_type;
 
-	if ($eval_status)
+	if ($command_filename =~ m(\.yml$))
 	{
-	    die "$0: *** Error: no valid commands file '$command_filename' found ($eval_status)\n";
+	    $file_type = 'yaml';
+	}
+	else
+	{
+	    $file_type = 'perl';
+	}
 
-	    print "$0: *** Error: while trying to configure the project '$global_field_project_configuration->{field_project_name}: \n";
+	if ($file_type eq 'perl')
+	{
+	    my ($commands, $eval_status) = FieldProject::_init_do_eval_perl_file($command_filename);
 
-           #     if ($global_field_project_configuration
-           # and $global_technical_project_configuration)
+	    if ($eval_status)
+	    {
+		die "$0: *** Error: no valid commands file '$command_filename' found ($eval_status)\n";
+	    }
+	}
+	elsif ($file_type eq 'yaml')
+	{
+	    my ($commands, $eval_status) = FieldProject::_init_do_eval_yaml_command_file($command_filename);
+
+	    if ($eval_status)
+	    {
+		die "$0: *** Error: no valid commands file '$command_filename' found ($eval_status)\n";
+	    }
+	}
+	else
+	{
+	    die "$0: *** Error: invalid file type $file_type for commands file '$command_filename'\n";
 	}
     }
 }
@@ -2188,6 +2210,8 @@ sub _init
 
 sub _init_command_filenames_configured
 {
+    # full_paths is either the empty string '' or 'full-paths' or 'true-paths'.
+
     my $full_paths = shift;
 
     my $field_project_name = $global_field_project_configuration->{field_project_name};
@@ -2203,13 +2227,32 @@ sub _init_command_filenames_configured
     my $result
 	= [
 	   sort
+	   map
+	   {
+	       # map the command filename to its true path if this was requested
+
+	       my $command_filename = $_;
+
+	       if ($full_paths eq 'true-paths')
+	       {
+		   use Cwd;
+
+		   $command_filename = Cwd::abs_path($command_filename);
+	       }
+
+	       $command_filename;
+	   }
 	   grep
 	   {
+	       # select filenames with the correct project name prefix
+
 	       /$field_project_name-commands[-a-z0-9]*$/;
 	   }
 	   grep
 	   {
 	       my $command_filename = $_;
+
+	       # select filenames that have the string -commands
 
 	       my $result = ($command_filename =~ m(-commands));
 
@@ -2222,6 +2265,8 @@ sub _init_command_filenames_configured
 	   }
 	   map
 	   {
+	       # map the command filename to its full path
+
 	       $full_paths ? "$command_filename_directory/$_" : "$_";
 	   }
 	   @{ $global_technical_project_configuration->{command_filenames} },
@@ -2248,6 +2293,8 @@ sub _init_command_filenames_configured
 
 sub _init_command_filenames_found
 {
+    # full_paths is either the empty string '' or 'full-paths' or 'full-paths-configuration' or 'true-paths'.
+
     my $full_paths = shift;
 
     my $field_project_name = $global_field_project_configuration->{field_project_name};
@@ -2261,6 +2308,21 @@ sub _init_command_filenames_found
     my $result
 	= [
 	   sort
+	   map
+	   {
+	       # map the command filename to its true path if this was requested
+
+	       my $command_filename = $_;
+
+	       if ($full_paths eq 'true-paths')
+	       {
+		   use Cwd;
+
+		   $command_filename = Cwd::abs_path($command_filename);
+	       }
+
+	       $command_filename;
+	   }
 	   grep
 	   {
 	       ($full_paths =~ "configuration"
