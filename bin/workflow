@@ -4160,25 +4160,23 @@ sub _init_do_eval_perl_file
 
     my $status;
 
-    # check if the field project configuration file exists
+    # check if the file exists
 
     if (not -r "$filename")
     {
-	$status = "$0: *** Error: no valid configuration file '$filename' found (because the file does not exist)\n";
+	$status = "$0: *** Error: file '$filename' not found (because the file does not exist)\n";
 
 	return undef;
     }
 
-    # read the field project configuration
-
-    # set the global variable with the field_project data
+    # make sure perl does not complain about '.' not in the INC path
 
     if ($filename =~ m(^[^/]))
     {
 	$filename = "./$filename";
     }
 
-    # read the perlf file
+    # read and execute the perl file
 
     my $result = do $filename;
 
@@ -4186,7 +4184,7 @@ sub _init_do_eval_perl_file
 
     if ($@)
     {
-	$status = "$0: *** Error: no valid configuration file '$filename' found (syntax error: $@)\n";
+	$status = "$0: *** Error: no valid configuration file '$filename' (syntax error: $@)\n";
     }
 
     # do error processing: file problems.
@@ -4194,7 +4192,7 @@ sub _init_do_eval_perl_file
     if (not defined $result
 	and $!)
     {
-	$status = "$0: *** Error: no configuration file '$filename' found ($!)\n";
+	$status = "$0: *** Error: no configuration file '$filename' ($!)\n";
     }
 
     # return configuration and status
