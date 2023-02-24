@@ -703,6 +703,10 @@ arguments:
     {
 	$filename_suffix = "-$filename_suffix";
     }
+    else
+    {
+	$filename_suffix = '';
+    }
 
     my $file = IO::File->new("> $project_name-commands$filename_suffix");
 
