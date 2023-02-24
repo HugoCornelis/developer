@@ -2286,14 +2286,20 @@ sub _init_command_filenames_configured
 	   @{ $global_technical_project_configuration->{command_filenames} },
 	  ];
 
-    # use Data::Dumper;
+    #! options haven't been processed yet
 
-    # print STDERR Dumper(
-    # 			{
-    # 			 command_filenames => $global_technical_project_configuration->{command_filenames},
-    # 			 _init_command_filenames_configured => $result,
-    # 			},
-    # 		       );
+    # if ($option_verbose
+    # 	and $option_verbose > 1)
+    # {
+    # 	use Data::Dumper;
+
+    # 	print STDERR Dumper(
+    # 			    {
+    # 			     command_filenames => $global_technical_project_configuration->{command_filenames},
+    # 			     _init_command_filenames_configured => $result,
+    # 			    },
+    # 			   );
+    # }
 
     return $result;
 }
@@ -2310,6 +2316,11 @@ sub _init
     # all the command files, including those not in mentioned in the configuration
 
     my $command_filenames_found = _init_command_filenames_found('full-paths');
+
+    #! options haven't been processed yet
+
+    # if ($option_verbose
+    # 	and $option_verbose > 1)
 
     # use Data::Dumper;
 
