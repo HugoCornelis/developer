@@ -1601,9 +1601,9 @@ sub builtin_install_scripts
     # 2.a. from files found in the commands directory to configuration.
 
     my $command_filenames
-      = [
-	 `ls 2>/dev/null "$project_name"-commands-*[^~]`,
-	];
+	= [
+	   `ls 2>/dev/null "$project_name"-commands-*[^~]`,
+	  ];
 
     # all the command files, including those not in mentioned in the configuration
 
