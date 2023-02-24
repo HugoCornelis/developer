@@ -2123,6 +2123,129 @@ sub _file_contains_regex
 }
 
 
+# initialize the command module
+
+sub _init
+{
+    my $commands_seen;
+
+    my $field_project_name = $global_field_project_configuration->{field_project_name};
+
+    # all the command files, including those not in mentioned in the configuration
+
+    my $command_filenames_found = _init_command_filenames_found('full-paths');
+
+    #! options haven't been processed yet
+
+    # if ($option_verbose
+    # 	and $option_verbose > 1)
+
+    # use Data::Dumper;
+
+    # print STDERR Dumper( { command_filenames_found => $command_filenames_found, }, );
+
+    # only those command files mentioned in the configuration
+
+    my $command_filenames_configured = _init_command_filenames_configured('full-paths');
+
+    # print STDERR Dumper( { command_filenames_configured => $command_filenames_configured, } );
+
+    my $command_filenames
+	= [
+	   grep
+	   {
+	       # remove duplicate filenames to avoid duplicate command definitions
+
+	       if ($commands_seen->{$_})
+	       {
+		   print "$0: *** Warning: $_ is mentioned $commands_seen->{$_} time(s) in the configuration (hint: sort your filenames to spot such errors quickly).\n";
+	       }
+
+	       not $commands_seen->{$_}++;
+	   }
+	   @$command_filenames_configured,
+	   #        @$command_filenames_found,
+	  ];
+
+    foreach my $command_filename (@$command_filenames)
+    {
+	# print STDERR "Executing $command_filename\n";
+
+	my ($commands, $eval_status) = FieldProject::_init_do_eval_perl_file($command_filename);
+
+	if ($eval_status)
+	{
+	    die "$0: *** Error: no valid commands file '$command_filename' found ($eval_status)\n";
+
+	    print "$0: *** Error: while trying to configure the project '$global_field_project_configuration->{field_project_name}: \n";
+
+           #     if ($global_field_project_configuration
+           # and $global_technical_project_configuration)
+	}
+    }
+}
+
+
+sub _init_command_filenames_configured
+{
+    my $full_paths = shift;
+
+    my $field_project_name = $global_field_project_configuration->{field_project_name};
+
+    # when invoked as just 'workflow' the directory where to search
+    # for command files will not necessarily be /usr/local/bin'
+    # it may also be the current working directory
+
+    # default to the directory with the main executable
+
+    my $command_filename_directory = $global_field_project_configuration->{field_project_configuration_directory};
+
+    my $result
+	= [
+	   sort
+	   grep
+	   {
+	       /$field_project_name-commands[-a-z0-9]*$/;
+	   }
+	   grep
+	   {
+	       my $command_filename = $_;
+
+	       my $result = ($command_filename =~ m(-commands));
+
+	       if (not $result)
+	       {
+		   print STDERR "$0: *** Error: $command_filename does not follow command filename conventions (must have '-commands')\n";
+	       }
+
+	       $result;
+	   }
+	   map
+	   {
+	       $full_paths ? "$command_filename_directory/$_" : "$_";
+	   }
+	   @{ $global_technical_project_configuration->{command_filenames} },
+	  ];
+
+    #! options haven't been processed yet
+
+    # if ($option_verbose
+    # 	and $option_verbose > 1)
+    # {
+    # 	use Data::Dumper;
+
+    # 	print STDERR Dumper(
+    # 			    {
+    # 			     command_filenames => $global_technical_project_configuration->{command_filenames},
+    # 			     _init_command_filenames_configured => $result,
+    # 			    },
+    # 			   );
+    # }
+
+    return $result;
+}
+
+
 sub _init_command_filenames_found
 {
     my $full_paths = shift;
@@ -2242,129 +2365,6 @@ sub _init_filenames_2_symlink_commands
 	  ];
 
     return $commands;
-}
-
-
-sub _init_command_filenames_configured
-{
-    my $full_paths = shift;
-
-    my $field_project_name = $global_field_project_configuration->{field_project_name};
-
-    # when invoked as just 'workflow' the directory where to search
-    # for command files will not necessarily be /usr/local/bin'
-    # it may also be the current working directory
-
-    # default to the directory with the main executable
-
-    my $command_filename_directory = $global_field_project_configuration->{field_project_configuration_directory};
-
-    my $result
-	= [
-	   sort
-	   grep
-	   {
-	       /$field_project_name-commands[-a-z0-9]*$/;
-	   }
-	   grep
-	   {
-	       my $command_filename = $_;
-
-	       my $result = ($command_filename =~ m(-commands));
-
-	       if (not $result)
-	       {
-		   print STDERR "$0: *** Error: $command_filename does not follow command filename conventions (must have '-commands')\n";
-	       }
-
-	       $result;
-	   }
-	   map
-	   {
-	       $full_paths ? "$command_filename_directory/$_" : "$_";
-	   }
-	   @{ $global_technical_project_configuration->{command_filenames} },
-	  ];
-
-    #! options haven't been processed yet
-
-    # if ($option_verbose
-    # 	and $option_verbose > 1)
-    # {
-    # 	use Data::Dumper;
-
-    # 	print STDERR Dumper(
-    # 			    {
-    # 			     command_filenames => $global_technical_project_configuration->{command_filenames},
-    # 			     _init_command_filenames_configured => $result,
-    # 			    },
-    # 			   );
-    # }
-
-    return $result;
-}
-
-
-# initialize the command module
-
-sub _init
-{
-    my $commands_seen;
-
-    my $field_project_name = $global_field_project_configuration->{field_project_name};
-
-    # all the command files, including those not in mentioned in the configuration
-
-    my $command_filenames_found = _init_command_filenames_found('full-paths');
-
-    #! options haven't been processed yet
-
-    # if ($option_verbose
-    # 	and $option_verbose > 1)
-
-    # use Data::Dumper;
-
-    # print STDERR Dumper( { command_filenames_found => $command_filenames_found, }, );
-
-    # only those command files mentioned in the configuration
-
-    my $command_filenames_configured = _init_command_filenames_configured('full-paths');
-
-    # print STDERR Dumper( { command_filenames_configured => $command_filenames_configured, } );
-
-    my $command_filenames
-	= [
-	   grep
-	   {
-	       # remove duplicate filenames to avoid duplicate command definitions
-
-	       if ($commands_seen->{$_})
-	       {
-		   print "$0: *** Warning: $_ is mentioned $commands_seen->{$_} time(s) in the configuration (hint: sort your filenames to spot such errors quickly).\n";
-	       }
-
-	       not $commands_seen->{$_}++;
-	   }
-	   @$command_filenames_configured,
-	   #        @$command_filenames_found,
-	  ];
-
-    foreach my $command_filename (@$command_filenames)
-    {
-	# print STDERR "Executing $command_filename\n";
-
-	my ($commands, $eval_status) = FieldProject::_init_do_eval_perl_file($command_filename);
-
-	if ($eval_status)
-	{
-	    die "$0: *** Error: no valid commands file '$command_filename' found ($eval_status)\n";
-
-	    print "$0: *** Error: while trying to configure the project '$global_field_project_configuration->{field_project_name}: \n";
-
-           #     if ($global_field_project_configuration
-           # and $global_technical_project_configuration)
-	}
-    }
 }
 
 
