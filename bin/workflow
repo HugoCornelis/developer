@@ -2133,7 +2133,7 @@ sub _init
 
     # all the command files, including those not in mentioned in the configuration
 
-    my $command_filenames_found = _init_command_filenames_found('full-paths');
+    # my $command_filenames_found = _init_command_filenames_found('true-paths');
 
     #! options haven't been processed yet
 
