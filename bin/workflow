@@ -4201,6 +4201,52 @@ sub _init_do_eval_perl_file
 }
 
 
+sub _init_do_eval_yaml_command_file
+{
+    my $filename = shift;
+
+    my $status;
+
+    # check if the file exists
+
+    if (not -r "$filename")
+    {
+	$status = "$0: *** Error: file '$filename' not found (because the file does not exist)\n";
+
+	return undef;
+    }
+
+    print "using $filename\n";
+
+    # read the yaml file
+
+    use YAML;
+
+    my $result = YAML::LoadFile($filename);
+
+    #t this needs more work
+
+    # do error processing: perl problems
+
+    if ($@)
+    {
+	$status = "$0: *** Error: no valid configuration file '$filename' found (syntax error: $@)\n";
+    }
+
+    # do error processing: file problems.
+
+    if (not defined $result
+	and $!)
+    {
+	$status = "$0: *** Error: no configuration file '$filename' found ($!)\n";
+    }
+
+    # return configuration and status
+
+    return ($result, $status);
+}
+
+
 sub _init_get_field_project_configuration
 {
     # set default result: undefined
