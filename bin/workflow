@@ -882,7 +882,7 @@ build_servers:
     }
     else
     {
-	$error = "cannot open $project_name-configuration/build_servers.yml";
+	$error = "cannot open $configuration_data_directory/build_servers.yml";
     }
 
     return $error;
@@ -915,7 +915,7 @@ command_filenames:
     }
     else
     {
-	$error = "cannot open $project_name-configuration/command_filenames.yml";
+	$error = "cannot open $configuration_data_directory/command_filenames.yml";
     }
 
     return $error;
@@ -949,7 +949,7 @@ node_configuration:
     }
     else
     {
-	$error = "cannot open $project_name-configuration/node_configuration.yml";
+	$error = "cannot open $configuration_data_directory/node_configuration.yml";
     }
 
     return $error;
@@ -991,7 +991,7 @@ targets:
     }
     else
     {
-	$error = "cannot open $project_name-configuration/targets.yml";
+	$error = "cannot open $configuration_data_directory/targets.yml";
     }
 
     return $error;
@@ -1041,7 +1041,7 @@ target_servers:
     }
     else
     {
-	$error = "cannot open $project_name-configuration/target_servers.yml";
+	$error = "cannot open $configuration_data_directory/target_servers.yml";
     }
 
     return $error;
