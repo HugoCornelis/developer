@@ -1508,7 +1508,7 @@ sub builtin_add_target
 
     my $field_project_name = $global_field_project_configuration->{field_project_name};
 
-    my $configuration_data_directory = $global_field_project_configuration->{true_field_project_data_configuration_directory};
+    my $configuration_data_directory = $global_field_project_configuration->{true_technical_project_data_configuration_directory};
 
     my $error = '';
 
@@ -1886,7 +1886,7 @@ conf.$project_name-configuration
 
 	my $grc_workflow = "conf.$project_name-workflow";
 
-	my $source_directory = $field_configuration->{field_project_configuration_directory};
+	my $source_directory = $field_configuration->{technical_project_configuration_directory};
 
 	use Cwd;
 
@@ -2334,7 +2334,7 @@ sub _init_command_filenames_configured
 
     # default to the directory with the main executable
 
-    my $command_filename_directory = $global_field_project_configuration->{field_project_configuration_directory};
+    my $command_filename_directory = $global_field_project_configuration->{technical_project_configuration_directory};
 
     my $result
 	= [
@@ -2415,7 +2415,7 @@ sub _init_command_filenames_found
     # for command files will not necessarily be /usr/local/bin'
     # it may also be the current working directory
 
-    my $command_filename_directory = $global_field_project_configuration->{field_project_configuration_directory};
+    my $command_filename_directory = $global_field_project_configuration->{technical_project_configuration_directory};
 
     my $result
 	= [
@@ -4371,19 +4371,21 @@ sub _init_get_field_project_configuration
     {
 	my $field_project_name = $2;
 
-	my $field_project_configuration_directory = $1;
+	my $technical_project_configuration_directory = $1;
 
-	my $field_project_configuration_filename = "$1/$2-configuration";
+	my $technical_project_configuration_filename = "$1/$2-configuration";
 
 	use Cwd 'abs_path';
 
-	my $true_field_project_configuration_filename = abs_path($field_project_configuration_filename) ;
+	my $true_technical_project_configuration_filename = abs_path($technical_project_configuration_filename) ;
 
-	$true_field_project_configuration_filename =~ m((.*)/(.*)-configuration);
+	$true_technical_project_configuration_filename =~ m((.*)/(.*)-configuration);
 
-	my $true_field_project_configuration_directory = $1;
+	my $true_technical_project_configuration_directory = $1;
 
-	my $true_field_project_data_configuration_directory = "$true_field_project_configuration_directory/$field_project_name-configuration-data";
+	my $true_technical_project_data_configuration_directory = "$true_technical_project_configuration_directory/$field_project_name-configuration-data";
+
+	my $true_technical_project_data_commands_directory = "$true_technical_project_configuration_directory/$field_project_name-commands-data";
 
 	# set result
 
@@ -4391,11 +4393,12 @@ sub _init_get_field_project_configuration
 	    = {
 	       field_project_name => $field_project_name,
 	       from_executable => "dynamically_generated from the executable script name",
-	       field_project_configuration_directory => $field_project_configuration_directory,
-	       field_project_configuration_filename => $field_project_configuration_filename,
-	       true_field_project_configuration_directory => $true_field_project_configuration_directory,
-	       true_field_project_configuration_filename => $true_field_project_configuration_filename,
-	       true_field_project_data_configuration_directory => $true_field_project_data_configuration_directory,
+	       technical_project_configuration_directory => $technical_project_configuration_directory,
+	       technical_project_configuration_filename => $technical_project_configuration_filename,
+	       true_technical_project_configuration_directory => $true_technical_project_configuration_directory,
+	       true_technical_project_configuration_filename => $true_technical_project_configuration_filename,
+	       true_technical_project_data_commands_directory => $true_technical_project_data_commands_directory,
+	       true_technical_project_data_configuration_directory => $true_technical_project_data_configuration_directory,
 	      };
     }
     else
@@ -4406,18 +4409,18 @@ sub _init_get_field_project_configuration
 
 	# loop over the possible field project configuration directories
 
-	my $field_project_configuration_directories
+	my $technical_project_configuration_directories
 	    = [
 	       ".",
 	       $global_program_rel_directory,
 	       $global_program_abs_directory,
 	      ];
 
-	my $field_project_configuration_directory;
+	my $technical_project_configuration_directory;
 
-	foreach my $tmp (@$field_project_configuration_directories)
+	foreach my $tmp (@$technical_project_configuration_directories)
 	{
-	    # if a field_project_configuration file can be found
+	    # if a technical_project_configuration file can be found
 
 	    if (-d $tmp
 		and -e "$tmp/$field_project_configuration_filename"
@@ -4425,30 +4428,49 @@ sub _init_get_field_project_configuration
 	    {
 		# this is the one we use
 
-		$field_project_configuration_directory = $tmp;
+		$technical_project_configuration_directory = $tmp;
 
 		last;
 	    }
 	}
 
-	# if the field_project_configuration_directory was found
+	# if the technical_project_configuration_directory was found
 
-	if (defined $field_project_configuration_directory)
+	if (defined $technical_project_configuration_directory)
 	{
 	    # read the field project configuration
 
-	    my ($field_project_configuration, $eval_status) = _init_do_eval_perl_file("$field_project_configuration_directory/$field_project_configuration_filename");
+	    my ($field_project_configuration, $eval_status) = _init_do_eval_perl_file("$technical_project_configuration_directory/$field_project_configuration_filename");
+
+	    my $field_project_name = $field_project_configuration->{field_project_name};
 
 	    $status = $eval_status;
+
+	    use Cwd 'abs_path';
+
+	    my $true_technical_project_configuration_filename = abs_path($field_project_configuration_filename) ;
+
+	    $true_technical_project_configuration_filename =~ m((.*)/$field_project_configuration_filename);
+
+	    my $true_technical_project_configuration_directory = $1;
+
+	    my $true_technical_project_data_configuration_directory = "$true_technical_project_configuration_directory/$field_project_name-configuration-data";
+
+	    my $true_technical_project_data_commands_directory = "$true_technical_project_configuration_directory/$field_project_name-commands-data";
 
 	    # set result: field project name, it is used to find configuration and command files
 
 	    $result
 		= {
 		   %$field_project_configuration,
-		   from_directory => $field_project_configuration_directory,
-		   field_project_configuration_directory => $field_project_configuration_directory,
 		   field_project_configuration_filename => $field_project_configuration_filename,
+		   from_directory => $technical_project_configuration_directory,
+		   from_executable => "workflow on the command line",
+		   technical_project_configuration_directory => $technical_project_configuration_directory,
+		   true_technical_project_configuration_directory => $true_technical_project_configuration_directory,
+		   true_technical_project_configuration_filename => $true_technical_project_configuration_filename,
+		   true_technical_project_data_commands_directory => $true_technical_project_data_commands_directory,
+		   true_technical_project_data_configuration_directory => $true_technical_project_data_configuration_directory,
 		  };
 	}
 
