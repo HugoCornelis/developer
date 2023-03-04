@@ -21,7 +21,6 @@ dist_bin_SCRIPTS = \
 	bin/mcad2doxy \
 	bin/mtn-ancestors \
 	bin/neurospaces-commands \
-	bin/neurospaces-configuration \
 	bin/neurospaces-manager-gui \
 	bin/neurospaces_build \
 	bin/neurospaces_check \
@@ -98,9 +97,10 @@ dist-keywords:
 # The variable EXTRA_DIST could also be used here.
 
 EXTRA_DIST = \
-	bin/conf.workflow \
-	bin/conf.neurospaces-configuration \
-	bin/conf.neurospaces-workflow \
+	bin/workflow-files/conf.neurospaces-configuration \
+	bin/workflow-files/conf.neurospaces-workflow \
+	bin/workflow-files/conf.workflow \
+	bin/workflow-files/neurospaces-configuration \
 	cpan \
 	docs \
 	tests \
