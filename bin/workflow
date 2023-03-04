@@ -4669,6 +4669,8 @@ sub bash_completion_generate_options
 }
 
 
+# generate a hash mapping targets and subroutine names to their full names.
+
 sub generate_command_hash
 {
     my $with_help_subs = shift;
@@ -4702,7 +4704,88 @@ sub generate_command_hash
 }
 
 
+sub generate_command_hash_2
+{
+    my $with_help_subs = shift;
+
+    my $command_list = generate_command_list($with_help_subs);
+
+    my $command_hash = { map { $_ => 1, } @$command_list, };
+
+    return $command_hash;
+}
+
+
 sub generate_command_list
+{
+    my $result = [];
+
+    my $commands_subs = generate_command_list_subs();
+
+    push @$result, @$commands_subs;
+
+    my $commands_shell = generate_command_list_shell();
+
+    push @$result, @$commands_shell;
+
+    my $commands_yaml = generate_command_list_yaml();
+
+    push @$result, @$commands_yaml;
+
+    return $result;
+}
+
+
+sub generate_command_list_data_directory
+{
+    my $type = shift;
+
+    my $result = [];
+
+    if (defined $global_field_project_configuration)
+    {
+	my $commands_data_directory = $global_field_project_configuration->{true_technical_project_data_commands_directory};
+
+	$result
+	    = [
+	       sort
+	       map
+	       {
+		   s($commands_data_directory/)();
+
+		   s((.*)/(.*).$type)($1 $2);
+
+		   $_
+	       }
+	       map
+	       {
+		   chomp; $_;
+	       }
+	       `ls 2>/dev/null $commands_data_directory/*/*.$type`,
+	      ];
+    }
+
+    return $result;
+}
+
+
+sub generate_command_list_shell
+{
+    my $result = generate_command_list_data_directory('sh');
+
+    return $result;
+}
+
+
+sub generate_command_list_yaml
+{
+    my $result = generate_command_list_data_directory('yml');
+
+    return $result;
+}
+
+
+sub generate_command_list_subs
 {
     my $with_help_subs = shift;
 
@@ -5061,13 +5144,13 @@ sub main
 		print "Invoking ($command_implementation)\n";
 	    }
 
-	    my $command_list = generate_command_list('with help subs');
+	    # if this command exists ...
 
-	    my $command_hash = { map { $_ => 1, } @$command_list, };
+	    my $command_hash = generate_command_hash_2('with help subs');
 
 	    if (exists $command_hash->{"$requested_target $command"})
 	    {
-		# --help invocations have special handling
+		# ... either invoke the --help sub
 
 		if ($option_help)
 		{
@@ -5098,7 +5181,7 @@ sub main
 		    }
 		}
 
-		# regular invocation of a command
+		# ... or invoke the implementation sub of the command
 
 		else
 		{
