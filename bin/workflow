@@ -1872,7 +1872,12 @@ sub builtin_start_project
 
 	print "Using '$project_name' as name for your project.\n";
 
-	my $error = _builtin_project_template_create($project_name);
+	my $error;
+
+	if (not $error)
+	{
+	    $error = _builtin_project_template_create($project_name);
+	}
 
 	if (not $error)
 	{
@@ -4465,22 +4470,22 @@ sub bash_completion_generate
 
     my $arguments = shift;
 
-    my $configuration = shift;
+    my $configuration_or_commands = shift;
 
-    # search the given arguments in the configuration
+    # search the given arguments in the configuration by following its path in the hash
 
     while (@$arguments)
     {
-	if (ref $configuration eq 'HASH')
+	if (ref $configuration_or_commands eq 'HASH')
 	{
 	    my $argument = shift @$arguments;
 
-	    if (exists $configuration->{$argument})
+	    if (exists $configuration_or_commands->{$argument})
 	    {
-		$configuration = $configuration->{$argument};
+		$configuration_or_commands = $configuration_or_commands->{$argument};
 	    }
 	}
-	elsif (ref $configuration eq 'ARRAY')
+	elsif (ref $configuration_or_commands eq 'ARRAY')
 	{
 	    last;
 	}
@@ -4492,13 +4497,13 @@ sub bash_completion_generate
 
     # return the result depending on its type
 
-    if (ref $configuration eq 'HASH')
+    if (ref $configuration_or_commands eq 'HASH')
     {
-	return [ keys %$configuration, ];
+	return [ keys %$configuration_or_commands, ];
     }
-    elsif (ref $configuration eq 'ARRAY')
+    elsif (ref $configuration_or_commands eq 'ARRAY')
     {
-	return [ @$configuration, ];
+	return [ @$configuration_or_commands, ];
     }
     else
     {
