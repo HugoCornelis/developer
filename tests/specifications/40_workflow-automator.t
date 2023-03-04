@@ -79,7 +79,7 @@ OVERRIDE_SRCDIR delivered packages for Buildroot targets are recognized.
 ',
 						  },
 						 ],
-				description => "download from a non-existent download server.",
+				description => "Basic tests of the workflow automator.",
 			       },
 			      ],
        description => "testing of the workflow automation engine",
@@ -87,7 +87,7 @@ OVERRIDE_SRCDIR delivered packages for Buildroot targets are recognized.
 			 explanation => "
 
 The workflow script enables the automation of customizable modular
-project-specific workflows.
+project-specific workflows that use shell commands.
 
 ",
 			 purpose => "This module tests the workflow automation engine.",
