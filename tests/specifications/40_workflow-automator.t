@@ -11,24 +11,24 @@ my $test
 				arguments => [
 					      '--help',
 					     ],
-				command => 'bin/workflow',
+				command => '../bin/workflow',
 				command_tests => [
 						  {
-						   description => "Do we get a help page ?",
+						   description => "Do we get the main help page ?",
 						   read => '
-bin/workflow: support for workflow design for embedded software engineers.
+../bin/workflow: support for workflow design for embedded software engineers.
 
 SYNOPSIS
 
-bin/workflow <options> <target> <command> -- < ... command specific options and arguments ... >
+../bin/workflow <options> <target> <command> -- < ... command specific options and arguments ... >
 
 EXAMPLES -- first try these with the --dry-run to understand what they do:
 
-  $ bin/workflow ssp build                                            # \'build\' the \'ssp\' target (if it exists for your local configuration).
+  $ ../bin/workflow ssp build                                            # \'build\' the \'ssp\' target (if it exists for your local configuration).
 
-  $ bin/workflow --dry-run ssp build                                  # display the shell commands that would be executed to \'build\' the \'ssp\' target.
+  $ ../bin/workflow --dry-run ssp build                                  # display the shell commands that would be executed to \'build\' the \'ssp\' target.
 
-  $ bin/workflow --help-targets                                       # display the available targets that are found in the configuration file.
+  $ ../bin/workflow --help-targets                                       # display the available targets that are found in the configuration file.
 
 options:
     --bash-completion               compute bash completion for the given command line.
@@ -81,6 +81,44 @@ OVERRIDE_SRCDIR delivered packages for Buildroot targets are recognized.
 						 ],
 				description => "Basic tests of the workflow automator.",
 			       },
+			       {
+				arguments => [
+					      '--help-commands',
+					     ],
+				command => '../bin/workflow',
+				command_tests => [
+						  {
+						   comment => 'note that the expect module does not easily allow the read string to be started with yaml\'s \'---\'',
+						   description => "Do we get the builtin commands help page ?",
+						   read => '
+\'available_commands (copy-paste the one you would like to execute, try it with the --help or the --dry-run option, or execute it without these options)\':
+  - workflow builtin add_target --help
+  - workflow builtin install_scripts --help
+  - workflow builtin print_configuration_directory --help
+  - workflow builtin start_project --help
+',
+						  },
+						 ],
+				description => "Basic tests of the workflow automator.",
+			       },
+			       {
+				arguments => [
+					      '--help-targets',
+					     ],
+				command => '../bin/workflow',
+				command_tests => [
+						  {
+						   comment => 'note that the expect module does not easily allow the read string to be started with yaml\'s \'---\'',
+						   description => "Do we get the builtin targets help page ?",
+						   read => '
+targets:
+  builtin:
+    description: the builtin target allows to start a new project and upgrade existing projects
+',
+						  },
+						 ],
+				description => "Help pages of the workflow automator.",
+			       },
 			      ],
        description => "testing of the workflow automation engine",
        documentation => {
@@ -92,6 +130,35 @@ project-specific workflows that use shell commands.
 ",
 			 purpose => "This module tests the workflow automation engine.",
 			},
+       harnessing => {
+		      preparation => {
+				      description => "create and enter the directory for running the tests",
+				      preparer =>
+				      sub
+				      {
+					  system "rm -fr tmp";
+					  system "mkdir tmp";
+					  chdir "tmp";
+
+					  # return no errors
+
+					  return '';
+				      },
+				     },
+		      reparation => {
+				     description => "leave and remove the directory for running the tests",
+				     reparer =>
+				     sub
+				     {
+					 chdir "..";
+					 # system "rm -fr tmp";
+
+					 # return no errors
+
+					 return '';
+				     },
+				    },
+		     },
        name => '40_workflow-automator.t',
       };
 
