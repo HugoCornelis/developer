@@ -79,7 +79,7 @@ OVERRIDE_SRCDIR delivered packages for Buildroot targets are recognized.
 ',
 						  },
 						 ],
-				description => "Basic tests of the workflow automator.",
+				description => "the main help page",
 			       },
 			       {
 				arguments => [
@@ -99,7 +99,7 @@ OVERRIDE_SRCDIR delivered packages for Buildroot targets are recognized.
 ',
 						  },
 						 ],
-				description => "Basic tests of the workflow automator.",
+				description => "default builtin commands",
 			       },
 			       {
 				arguments => [
@@ -117,7 +117,7 @@ targets:
 ',
 						  },
 						 ],
-				description => "Help pages of the workflow automator.",
+				description => "default builtin targets",
 			       },
 			      ],
        description => "testing of the workflow automation engine",
