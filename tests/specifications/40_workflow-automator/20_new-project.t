@@ -8,12 +8,7 @@ my $test
     = {
        command_definitions => [
 			       {
-				arguments => [
-					      'builtin',
-					      'start_project',
-					      'workflow-tests',
-					     ],
-				command => '../bin/workflow',
+				command => '../bin/workflow builtin start_project workflow-tests',
 				command_tests => [
 						  {
 						   description => "Can we start a new project ?",
@@ -62,33 +57,43 @@ Then check if they work by inspecting the examples they provide (with various op
 				description => "start of a new project",
 			       },
 			       {
-				arguments => [
-					      '-1',
-					     ],
-				command => 'ls',
+				command => 'find .',
 				command_tests => [
 						  {
 						   description => "Have the project files been created ?",
-						   read => 'conf.workflow-tests-configuration
-conf.workflow-tests-workflow
-workflow-project-template.pl
-workflow-tests-bash-completion.sh
-workflow-tests-commands
-workflow-tests-commands-data
-workflow-tests-configuration
-workflow-tests-configuration-data
+						   read => '.
+./workflow-project-template.pl
+./workflow-tests-bash-completion.sh
+./workflow-tests-configuration-data
+./workflow-tests-configuration-data/targets.yml
+./workflow-tests-configuration-data/command_filenames.yml
+./workflow-tests-configuration-data/target_servers.yml
+./workflow-tests-configuration-data/build_servers.yml
+./workflow-tests-configuration-data/node_configuration.yml
+./conf.workflow-tests-workflow
+./conf.workflow-tests-configuration
+./workflow-tests-commands-data
+./workflow-tests-commands-data/examples_sh
+./workflow-tests-commands-data/examples_sh/sh_array_of_commands.sh
+./workflow-tests-commands-data/examples_sh/sh_single_command.sh
+./workflow-tests-commands-data/examples_sh/sh_remote_execution.sh
+./workflow-tests-commands-data/examples_yml
+./workflow-tests-commands-data/examples_yml/remote_execution.yml
+./workflow-tests-commands-data/examples_yml/array_of_commands.yml
+./workflow-tests-commands-data/examples_yml/single_command.yml
+./workflow-tests-configuration
+./docker
+./docker/docker-build.bash
+./docker/docker-run.bash
+./docker/Dockerfile.neurospaces-testing
+./workflow-tests-commands
 ',
 						  },
 						 ],
 				description => "correct creation of the field project file",
 			       },
 			       {
-				arguments => [
-					      '--verbose',
-					      'workflow-project-template.pl',
-					      'workflow-project.pl',
-					     ],
-				command => 'mv',
+				command => 'mv --verbose workflow-project-template.pl workflow-project.pl',
 				command_tests => [
 						  {
 						   description => "Have the project files been created ?",
@@ -99,10 +104,7 @@ workflow-tests-configuration-data
 				description => "rename the field project file to its final name",
 			       },
 			       {
-				arguments => [
-					      '--help-field-project-name',
-					     ],
-				command => '../bin/workflow',
+				command => '../bin/workflow --help-field-project-name',
 				command_tests => [
 						  {
 						   description => "Has the project been correctly initialized ?",
@@ -125,6 +127,78 @@ global_field_project_configuration:
 						 ],
 				description => "correct creation of the field project file",
 			       },
+			       {
+				command => '../bin/workflow builtin install_scripts -- --engine --commands',
+				command_tests => [
+						  {
+						   description => "Have the project files been correctly installed ?",
+						   disabled => ($ENV{PWD} eq '/home/hugo/projects/developer/source/snapshots/master'
+								? ''
+								: "the currenct directory must be '/home/hugo/projects/developer/source/snapshots/master' to enable this test"),
+						   read => '# ln -sf /usr/local/bin/workflow /home/hugo/bin/workflow-tests-workflow
+#
+# ln -sf /home/hugo/projects/developer/source/snapshots/master/tmp/workflow-tests-configuration /home/hugo/bin/./workflow-tests-configuration
+#
+# ln -sf /home/hugo/projects/developer/source/snapshots/master/tmp/workflow-tests-commands /home/hugo/bin/./workflow-tests-commands
+#
+# bash -c "echo \'# workflow-tests-workflow
+
+alias workflow-tests-workflow=\"grc workflow-tests-workflow\"
+alias workflow-tests-configuration=\"grc workflow-tests-configuration\"
+\' | cat >>/home/hugo/.bashrc"
+#
+# bash -c "echo \'. /home/hugo/projects/developer/source/snapshots/master/tmp/workflow-tests-bash-completion.sh
+\' | cat >>/home/hugo/.bashrc"
+#
+# sudo     bash -c "echo \'
+# workflow-tests-workflow
+(^|[/\w\.]+/)workflow-tests-workflow\s?
+conf.workflow-tests-workflow
+
+# workflow-tests-configuration
+(^|[/\w\.]+/)workflow-tests-configuration\s?
+conf.workflow-tests-configuration
+
+\' | cat >>/etc/grc.conf"
+#
+# sudo     ln -sf /home/hugo/projects/developer/source/snapshots/master/tmp/conf.workflow-tests-configuration /usr/share/grc/conf.workflow-tests-configuration
+#
+# sudo     ln -sf /home/hugo/projects/developer/source/snapshots/master/tmp/conf.workflow-tests-workflow /usr/share/grc/conf.workflow-tests-workflow
+#
+',
+						  },
+						 ],
+				description => "correct installation of the new project files",
+			       },
+			       {
+				command => 'workflow-tests-workflow --help-commands',
+				command_tests => [
+						  {
+						   description => "Have the project specific commands been correctly installed ?",
+						   disabled => ($ENV{PWD} eq '/home/hugo/projects/developer/source/snapshots/master'
+								? ''
+								: "the currenct directory must be '/home/hugo/projects/developer/source/snapshots/master' to enable this test"),
+						   read => '
+\'available_commands (copy-paste the one you would like to execute, try it with the --help or the --dry-run option, or execute it without these options)\':
+  - workflow-tests-workflow builtin add_target --help
+  - workflow-tests-workflow builtin install_scripts --help
+  - workflow-tests-workflow builtin print_configuration_directory --help
+  - workflow-tests-workflow builtin start_project --help
+  - workflow-tests-workflow examples array_of_commands --help
+  - workflow-tests-workflow examples array_of_commands_remote_execution --help
+  - workflow-tests-workflow examples sequencing_and_composition --help
+  - workflow-tests-workflow examples single_command --help
+  - workflow-tests-workflow examples_sh sh_array_of_commands --help
+  - workflow-tests-workflow examples_sh sh_remote_execution --help
+  - workflow-tests-workflow examples_sh sh_single_command --help
+  - workflow-tests-workflow examples_yml array_of_commands --help
+  - workflow-tests-workflow examples_yml remote_execution --help
+  - workflow-tests-workflow examples_yml single_command --help
+',
+						  },
+						 ],
+				description => "correct installation of the new project commands",
+			       },
 			      ],
        description => "testing of the workflow automation engine",
        documentation => {
@@ -138,13 +212,27 @@ project-specific workflows that use shell commands.
 			},
        harnessing => {
 		      preparation => {
-				      description => "create and enter the directory for running the tests",
+				      description => "create the Docker image and create and enter the directory for running the tests",
 				      preparer =>
 				      sub
 				      {
 					  system "rm -fr tmp";
-					  system "mkdir tmp";
+					  system "mkdir --parents tmp/docker";
+
+					  system "cp -a tests/specifications/40_workflow-automator/Dockerfile.neurospaces-testing tmp/docker";
+					  system "cp -a tests/specifications/40_workflow-automator/docker-build.bash tmp/docker";
+					  system "cp -a tests/specifications/40_workflow-automator/docker-run.bash tmp/docker";
+
 					  chdir "tmp";
+
+					  system "cp -a ~/.bashrc ~/.bashrc-preparation";
+					  system "sudo cp -a /etc/grc.conf /etc/grc.conf-preparation";
+
+					  chdir "docker";
+
+					  system "./docker-build.bash";
+
+					  chdir "..";
 
 					  # return no errors
 
@@ -152,10 +240,28 @@ project-specific workflows that use shell commands.
 				      },
 				     },
 		      reparation => {
-				     description => "leave and remove the directory for running the tests",
+				     description => "leave the directory for running the tests",
 				     reparer =>
 				     sub
 				     {
+					 system "rm ~/bin/workflow-tests*";
+
+					 # system "sed -i '\$d' ~/.bashrc";
+					 # system "sed -i '\$d' ~/.bashrc";
+					 # system "sed -i '\$d' ~/.bashrc";
+					 # system "sed -i '\$d' ~/.bashrc";
+					 # system "sed -i '\$d' ~/.bashrc";
+					 # system "sed -i '\$d' ~/.bashrc";
+
+					 system "cp -a ~/.bashrc ~/.bashrc-reparation";
+					 system "sudo cp -a /etc/grc.conf /etc/grc.conf-reparation";
+
+					 system "cp -a ~/.bashrc-preparation ~/.bashrc";
+					 system "sudo cp -a /etc/grc.conf-preparation /etc/grc.conf";
+
+					 system "sudo rm /usr/share/grc/conf.workflow-tests-configuration";
+					 system "sudo rm /usr/share/grc/conf.workflow-tests-workflow";
+
 					 chdir "..";
 					 # system "rm -fr tmp";
 
