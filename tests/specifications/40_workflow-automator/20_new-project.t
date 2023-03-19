@@ -131,6 +131,7 @@ global_field_project_configuration:
 				command => '../bin/workflow builtin install_scripts -- --engine --commands',
 				command_tests => [
 						  {
+						   comment => "The workflow engine emits its output about commands to be executed before executing those commnands, a wait clause in this test is required as a work around between the test engine and the workflow engine under test.",
 						   description => "Have the project files been correctly installed ?",
 						   disabled => ($ENV{PWD} eq '/home/hugo/projects/developer/source/snapshots/master'
 								? ''
@@ -166,6 +167,7 @@ conf.workflow-tests-configuration
 # sudo     ln -sf /home/hugo/projects/developer/source/snapshots/master/tmp/conf.workflow-tests-workflow /usr/share/grc/conf.workflow-tests-workflow
 #
 ',
+						   wait => 0.1,
 						  },
 						 ],
 				description => "correct installation of the new project files",
@@ -259,8 +261,11 @@ project-specific workflows that use shell commands.
 					 system "cp -a ~/.bashrc-preparation ~/.bashrc";
 					 system "sudo cp -a /etc/grc.conf-preparation /etc/grc.conf";
 
+					 system "ls -1 /usr/share/grc/*test*";
 					 system "sudo rm /usr/share/grc/conf.workflow-tests-configuration";
+					 system "ls -1 /usr/share/grc/*test*";
 					 system "sudo rm /usr/share/grc/conf.workflow-tests-workflow";
+					 system "ls -1 /usr/share/grc/*test*";
 
 					 chdir "..";
 					 # system "rm -fr tmp";
