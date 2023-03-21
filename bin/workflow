@@ -5524,6 +5524,10 @@ OVERRIDE_SRCDIR delivered packages for Buildroot targets are recognized.
 
 	$commands
 	    = [
+	       sort
+	       {
+		   $a cmp $b;
+	       }
 	       map
 	       {
 		   "$global_program_name $_ --help";
