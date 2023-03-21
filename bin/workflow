@@ -754,6 +754,8 @@ sub _builtin_project_commands_sh_create
 	print $file $sh_string;
 
 	$file->close();
+
+	chmod 0755, $filename;
     }
     else
     {
