@@ -8,10 +8,7 @@ my $test
     = {
        command_definitions => [
 			       {
-				arguments => [
-					      '--help',
-					     ],
-				command => '../bin/workflow',
+				command => '../bin/workflow --help',
 				command_tests => [
 						  {
 						   description => "Do we get the main help page ?",
@@ -82,10 +79,7 @@ OVERRIDE_SRCDIR delivered packages for Buildroot targets are recognized.
 				description => "the main help page",
 			       },
 			       {
-				arguments => [
-					      '--help-commands',
-					     ],
-				command => '../bin/workflow',
+				command => '../bin/workflow --help-commands',
 				command_tests => [
 						  {
 						   comment => 'note that the expect module does not easily allow the read string to be started with yaml\'s \'---\'',
@@ -102,10 +96,7 @@ OVERRIDE_SRCDIR delivered packages for Buildroot targets are recognized.
 				description => "default builtin commands",
 			       },
 			       {
-				arguments => [
-					      '--help-targets',
-					     ],
-				command => '../bin/workflow',
+				command => '../bin/workflow --help-targets',
 				command_tests => [
 						  {
 						   comment => 'note that the expect module does not easily allow the read string to be started with yaml\'s \'---\'',
