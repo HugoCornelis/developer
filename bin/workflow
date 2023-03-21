@@ -5287,13 +5287,48 @@ sub main
 		    }
 		}
 
-		# ... or invoke the implementation sub of the command
+		# ... or invoke the implementation sub of the command ...
 
 		else
 		{
-		    no strict "refs";
+		    # ... depending on the type of the requested command ...
 
-		    &$command_implementation(\@ARGV);
+		    my $type = $command_hash->{"$requested_target $command"};
+
+		    # ... either as a regular perl sub ...
+
+		    if ($type eq 'sub')
+		    {
+			no strict "refs";
+
+			&$command_implementation(\@ARGV);
+		    }
+
+		    # ... or as a shell script ...
+
+		    elsif ($type eq 'sh')
+		    {
+			# invoke the script as a single command
+
+			my $commands_data_directory = $global_field_project_configuration->{true_technical_project_data_commands_directory};
+
+			my $shell_script = "$commands_data_directory/$requested_target/$command";
+
+			Command::execute_shell_command("$shell_script.sh");
+		    }
+
+		    # ... or as a yaml script ...
+
+		    elsif ($type eq 'yml')
+		    {
+		    }
+
+		    # ... or we have an error
+
+		    else
+		    {
+			die "$0: *** Error: unknown command type $type when invoking command '$requested_target $command'";
+		    }
 		}
 	    }
 	    else
