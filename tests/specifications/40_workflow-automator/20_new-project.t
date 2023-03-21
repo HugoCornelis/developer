@@ -40,7 +40,7 @@ And test it with the command:
 
 Afterwards install the scripts on your system using the command:
 
-  workflow builtin install_scripts -- --engine --commands
+  workflow builtin install_scripts -- --engine --commands --git
 
 Then check if they work by inspecting the examples they provide (with various options):
 

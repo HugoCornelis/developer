@@ -1620,6 +1620,7 @@ sub builtin_install_scripts
     my $option_install_commands;
     my $option_install_engine;
     my $option_install_force;
+    my $option_install_git;
     my $option_install_report;
 
     our $install_options
@@ -1628,6 +1629,7 @@ sub builtin_install_scripts
 	 "commands!" => \$option_install_commands,
 	 "engine!" => \$option_install_engine,
 	 "force!" => \$option_install_force,
+	 "git!" => \$option_install_git,
 	 "report!" => \$option_install_report,
 	};
 
@@ -1647,6 +1649,7 @@ sub builtin_install_scripts
     # 3. Install to .bashrc: text addition for aliases (add to ~/.bash_aliases?) and for bash completion
     # 4. Install to /etc/grc.conf: text addition
     # 5. Install to /usr/share/grc/: symbolic links
+    # 6. Create and populate the git repository
 
     # 1. Install to ~/bin: symbolic link for the workflow engine with correct name and the configuration of the project
 
@@ -1920,6 +1923,28 @@ conf.$project_name-configuration
 	    execute_shell_command($command, { sudo => 1, }, );
 	}
     }
+
+    {
+	# 6. Create and populate the git repository
+
+	if ($option_install_git)
+	{
+	    my $command = "git init -b master";
+
+	    execute_shell_command($command, );
+	}
+
+	if ($option_install_git)
+    	{
+	    my $commands
+		= [
+		   "git add --all",
+		   "git commit --quiet --message 'Default workflow engine configuration for project $project_name.'",
+		  ];
+
+	    execute_shell_command_array($commands);
+	}
+    }
 }
 
 
@@ -2031,12 +2056,16 @@ sub builtin_start_project
 	    print "And test it with the command:\n\n";
 	    print "  workflow --help-field-project-name\n\n";
 	    print "Afterwards install the scripts on your system using the command:\n\n";
-	    print "  workflow builtin install_scripts -- --engine --commands\n\n";
+	    print "  workflow builtin install_scripts -- --engine --commands --git\n\n";
 	    print "Then check if they work by inspecting the examples they provide (with various options):\n\n";
 	    print "  $project_name-workflow examples array_of_commands_remote_execution --interactions\n\n";
 	    print "  $project_name-workflow examples sequencing_and_composition --interactions-module\n\n";
 	    print "  $project_name-workflow examples single_command --dry-run\n\n";
 	    print "  $project_name-workflow examples array_of_commands --help\n\n";
+	    print "To enable bash completion after installation of the scripts, either execute:\n\n";
+	    print "  . ~/.bashrc\n\n";
+	    print "Or:\n\n";
+	    print "  . $project_name-bash-completion.sh\n\n";
 	}
 	else
 	{
