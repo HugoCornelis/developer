@@ -1502,7 +1502,7 @@ sub builtin_add_target
 
     my $target_description = $ARGV[1];
 
-    use Data::Dumper;
+#     use Data::Dumper;
 
 #     print Dumper($global_technical_project_configuration);
 
