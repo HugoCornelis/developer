@@ -4626,7 +4626,7 @@ sub bash_completion
 	}
 	else
 	{
-	    my $internal_commands = generate_command_hash();
+	    my $internal_commands = generate_command_hash_with_structure();
 
 	    $result = bash_completion_generate($command, $arguments, $internal_commands);
 
@@ -4740,7 +4740,7 @@ sub bash_completion_generate_options
 
 # generate a hash mapping targets and subroutine names to their full names.
 
-sub generate_command_hash
+sub generate_command_hash_with_structure
 {
     my $with_help_subs = shift;
 
@@ -4773,50 +4773,70 @@ sub generate_command_hash
 }
 
 
-sub generate_command_hash_2
+sub generate_command_hash_typed
 {
     my $with_help_subs = shift;
 
-    my $command_list = generate_command_list($with_help_subs);
+    my $result = {};
 
-    my $command_hash = { map { $_ => 1, } @$command_list, };
+    my $commands_subs = generate_command_hash_subs($with_help_subs);
 
-    return $command_hash;
-}
+    $result
+	= {
+	   %$result,
+	   %$commands_subs,
+	  };
 
+    my $commands_shell = generate_command_hash_shell($with_help_subs);
 
-sub generate_command_list
-{
-    my $result = [];
+    $result
+	= {
+	   %$result,
+	   %$commands_shell,
+	  };
 
-    my $commands_subs = generate_command_list_subs();
+    my $commands_yaml = generate_command_hash_yaml($with_help_subs);
 
-    push @$result, @$commands_subs;
-
-    my $commands_shell = generate_command_list_shell();
-
-    push @$result, @$commands_shell;
-
-    my $commands_yaml = generate_command_list_yaml();
-
-    push @$result, @$commands_yaml;
+    $result
+	= {
+	   %$result,
+	   %$commands_yaml,
+	  };
 
     return $result;
 }
 
 
-sub generate_command_list_data_directory
+sub generate_command_list
+{
+    my $with_help_subs = shift;
+
+    my $command_hash = generate_command_hash_typed($with_help_subs);
+
+    my $result = [ keys %$command_hash, ];
+
+    return $result;
+}
+
+
+sub generate_command_hash_data_directory
 {
     my $type = shift;
 
-    my $result = [];
+    my $with_help_subs = shift;
+
+    my $result = {};
 
     if (defined $global_field_project_configuration)
     {
 	my $commands_data_directory = $global_field_project_configuration->{true_technical_project_data_commands_directory};
 
 	$result
-	    = [
+	    = {
+	       map
+	       {
+		   $_ => $type,
+	       }
 	       sort
 	       map
 	       {
@@ -4831,30 +4851,34 @@ sub generate_command_list_data_directory
 		   chomp; $_;
 	       }
 	       `ls 2>/dev/null $commands_data_directory/*/*.$type`,
-	      ];
+	      };
     }
 
     return $result;
 }
 
 
-sub generate_command_list_shell
+sub generate_command_hash_shell
 {
-    my $result = generate_command_list_data_directory('sh');
+    my $with_help_subs = shift;
+
+    my $result = generate_command_hash_data_directory('sh', $with_help_subs);
 
     return $result;
 }
 
 
-sub generate_command_list_yaml
+sub generate_command_hash_yaml
 {
-    my $result = generate_command_list_data_directory('yml');
+    my $with_help_subs = shift;
+
+    my $result = generate_command_hash_data_directory('yml', $with_help_subs);
 
     return $result;
 }
 
 
-sub generate_command_list_subs
+sub generate_command_hash_subs
 {
     my $with_help_subs = shift;
 
@@ -4900,7 +4924,12 @@ sub generate_command_list_subs
 	print STDERR Dumper( { global_technical_project_configuration_targets => $targets, }, );
     }
 
-    my $commands = [
+    my $commands = {
+		    map
+		    {
+			$_ => 'sub';
+		    }
+
 		    # alphabatically group and make sense
 
 		    sort
@@ -4912,7 +4941,7 @@ sub generate_command_list_subs
 			$_ !~ /Command::/;
 		    }
 
-		    # remove Command:: package name and rework target prefixes
+		    # remove Command:: package name and split target name from operation name on that target
 
 		    map
 		    {
@@ -4926,7 +4955,7 @@ sub generate_command_list_subs
 			$_;
 		    }
 
-		    # no help subroutines
+		    # no help subroutines if so asked
 
 		    grep
 		    {
@@ -4936,7 +4965,7 @@ sub generate_command_list_subs
 		    # all internal commands
 
 		    sort @$subroutines,
-		   ];
+		   };
 
     if (defined $option_verbose
 	and $option_verbose > 2)
@@ -5107,7 +5136,7 @@ sub main
 	{
 	    # generate the list of all commands
 
-	    my $all_commands = generate_command_hash('with help subs');
+	    my $all_commands = generate_command_hash_with_structure('with help subs');
 
 	    # loop over all the matching targets
 
@@ -5215,7 +5244,15 @@ sub main
 
 	    # if this command exists ...
 
-	    my $command_hash = generate_command_hash_2('with help subs');
+	    my $command_hash = generate_command_hash_typed('with help subs');
+
+	    if (defined $option_verbose
+		and $option_verbose > 2)
+	    {
+		use Data::Dumper;
+
+		print Dumper( { command_hash => $command_hash, }, );
+	    }
 
 	    if (exists $command_hash->{"$requested_target $command"})
 	    {
