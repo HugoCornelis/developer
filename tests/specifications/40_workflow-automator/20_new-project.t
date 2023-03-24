@@ -217,6 +217,38 @@ conf.workflow-tests-configuration
 						 ],
 				description => "correct installation of the new project commands",
 			       },
+			       {
+				command => 'workflow-tests-workflow examples_sh sh_single_command --dry-run',
+				command_tests => [
+						  {
+						   description => "Have the project specific commands been correctly installed ?",
+						   disabled => ($ENV{PWD} eq '/home/hugo/projects/developer/source/snapshots/master'
+								? ''
+								: "the currenct directory must be '/home/hugo/projects/developer/source/snapshots/master' to enable this test"),
+						   read => '/home/hugo/bin/workflow-tests-workflow: *** Running in dry_run 1 mode, not executing: \'/home/hugo/projects/developer/source/snapshots/master/tmp/workflow-tests-commands-data/examples_sh/sh_single_command.sh\'
+',
+						  },
+						 ],
+				description => 'are the shell command templates installed and executed, --dry-run ?',
+			       },
+			       {
+				command => 'workflow-tests-workflow examples_sh sh_single_command',
+				command_tests => [
+						  {
+						   description => "Have the project specific commands been correctly installed ?",
+						   disabled => ($ENV{PWD} eq '/home/hugo/projects/developer/source/snapshots/master'
+								? ''
+								: "the currenct directory must be '/home/hugo/projects/developer/source/snapshots/master' to enable this test"),
+						   read => '# /home/hugo/projects/developer/source/snapshots/master/tmp/workflow-tests-commands-data/examples_sh/sh_single_command.sh
+#
+an example of the invocation of a single command
+',
+						  },
+						 ],
+				description => 'are the shell command templates installed and executed ?',
+			       },
+			       #t try executing workflow-tests-workflow examples_sh sh_single_command
+			       #t change to a different directory, then try any command to check whether the configuration files are correctly loaded (build_servers.yml ao.).
 			      ],
        description => "testing of the workflow automation engine",
        documentation => {
