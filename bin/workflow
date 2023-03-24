@@ -1550,7 +1550,7 @@ sub builtin_add_target
 
     if (not $error)
     {
-	$targets->{targets}->{$target_name} = $target_description;
+	$targets->{targets}->{$target_name}->{description} = $target_description;
     }
 
     # write the new targets configuration file
