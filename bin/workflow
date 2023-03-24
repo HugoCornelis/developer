@@ -5358,7 +5358,12 @@ sub main
 		    {
 			no strict "refs";
 
-			&$command_implementation(\@ARGV);
+			my $error = &$command_implementation(\@ARGV);
+
+			if ($error)
+			{
+			    die "$0: *** Error: $error";
+			}
 		    }
 
 		    # ... or as a shell script ...
