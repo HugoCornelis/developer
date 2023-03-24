@@ -93,6 +93,22 @@ Then check if they work by inspecting the examples they provide (with various op
 				description => "correct creation of the field project file",
 			       },
 			       {
+				command_notused => 'test -x workflow-tests-commands-data/examples_sh/sh_single_command.sh',
+				command =>
+				sub
+				{
+				    if (-x "workflow-tests-commands-data/examples_sh/sh_single_command.sh")
+				    {
+					return undef;
+				    }
+				    else
+				    {
+					return "workflow-tests-commands-data/examples_sh/sh_single_command.sh does not have its execute bit set"
+				    }
+				},
+				description => "check the execute bit of the generated shell scripts",
+			       },
+			       {
 				command => 'mv --verbose workflow-project-template.pl workflow-project.pl',
 				command_tests => [
 						  {
