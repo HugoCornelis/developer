@@ -970,6 +970,8 @@ sub _builtin_project_configuration_create
 
     my $configuration_data_directory = "$project_name-configuration-data";
 
+    # note that the relative pathnames are correct by a matching cd when reading the project configuration
+
     my $configuration_file_part
 	= "#!/usr/bin/perl -w
 
@@ -4332,7 +4334,7 @@ sub _init
 
     if ($result_field)
     {
-	$result_technical = _init_get_technical_configuration($result_field->{field_project_name});
+	$result_technical = _init_get_technical_configuration($result_field, $result_field->{field_project_name});
     }
 
     # add what is builtin
@@ -4576,6 +4578,8 @@ sub _init_get_field_project_configuration
 
 sub _init_get_technical_configuration
 {
+    my $field_project_configuration = shift;
+
     my $project_name = shift;
 
     my $technical_project_configuration_directories
@@ -4612,7 +4616,23 @@ sub _init_get_technical_configuration
 
     my $technical_configuration_filename = "$technical_project_configuration_directory/$project_name-configuration";
 
-    my ($technical_configuration, $eval_status) = _init_do_eval_perl_file($technical_configuration_filename);
+    # to ensure that the relative filenames in the configuration work,
+    # record the current workding directory
+    # cd to the configuration directory
+    # read the file using _init_do_eval_perl_file()
+    # cd back to the previous directory
+
+    my ($technical_configuration, $eval_status);
+
+    {
+	use File::chdir;
+
+	my $true_technical_project_configuration_directory = $field_project_configuration->{true_technical_project_configuration_directory};
+
+	local $CWD = $true_technical_project_configuration_directory;
+
+	($technical_configuration, $eval_status) = _init_do_eval_perl_file($technical_configuration_filename);
+    }
 
     $status = $eval_status;
 
