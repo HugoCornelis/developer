@@ -5083,10 +5083,10 @@ sub main
 
     my $command = $option_commands->[0] || "";
 
-    # we allow finger laziness: the shift key is not necessary for the underscore
+    # # we allow finger laziness: the shift key is not necessary for the underscore
 
-    $requested_target =~ s/-/_/g;
-    $command =~ s/-/_/g;
+    # $requested_target =~ s/-/_/g;
+    # $command =~ s/-/_/g;
 
     $global_target_command = "$requested_target-$command";
 
