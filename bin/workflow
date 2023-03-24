@@ -1498,6 +1498,26 @@ return \$configuration;
 
 sub builtin_add_target
 {
+    my $option_install_command_pl;
+    my $option_install_command_sh;
+    my $option_install_command_yml;
+
+    our $install_options
+      = {
+	 "install-commands-pl!" => \$option_install_command_pl,
+	 "install-commands-sh!" => \$option_install_command_sh,
+	 "install-commands-yml!" => \$option_install_command_yml,
+	};
+
+    use Getopt::Long qw(GetOptionsFromArray);;
+
+    my $result = GetOptionsFromArray(\@ARGV, %$install_options);
+
+    if (!$result)
+    {
+        die "$0: *** error in option processing, try --help";
+    }
+
     my $target_name = $ARGV[0];
 
     my $target_description = $ARGV[1];
@@ -1560,50 +1580,59 @@ sub builtin_add_target
 	YAML::DumpFile($targets_configuration_filename, $targets);
     }
 
-    # read the commands json configuration file
-
-    my $command_filenames;
-
-    my $command_filenames_configuration_filename = "$configuration_data_directory/command_filenames.yml";
-
-    if (not $error)
+    if ($option_install_command_pl)
     {
-	$command_filenames = YAML::LoadFile($command_filenames_configuration_filename);
+	# read the commands configuration file
+
+	my $command_filenames;
+
+	my $command_filenames_configuration_filename = "$configuration_data_directory/command_filenames.yml";
+
+	if (not $error)
+	{
+	    $command_filenames = YAML::LoadFile($command_filenames_configuration_filename);
+	}
+
+	# add the commands filename corresponding to the new target name
+
+	if (not $error)
+	{
+	    my $new_command_filename = "$field_project_name-commands-$target_name";
+
+	    my $command_filenames_array = $command_filenames->{command_filenames};
+
+	    push @$command_filenames_array, $new_command_filename;
+	}
+
+	# write the commands configuration file
+
+	if (not $error)
+	{
+	    YAML::DumpFile($command_filenames_configuration_filename, $command_filenames);
+	}
+
+	# add a template commands file with the given name
+
+	if (not $error)
+	{
+	    $error = _builtin_project_commands_template_create($field_project_name, $target_name, $target_name);
+	}
     }
 
-    # add the commands filename corresponding to the new target name
-
-    if (not $error)
+    if ($option_install_command_sh)
     {
-	my $new_command_filename = "$field_project_name-commands-$target_name";
-
-	my $command_filenames_array = $command_filenames->{command_filenames};
-
-	push @$command_filenames_array, $new_command_filename;
+	if (not $error)
+	{
+	    $error = _builtin_project_commands_sh_template_create($field_project_name, $target_name);
+	}
     }
 
-    # write the commands configuration file
-
-    if (not $error)
+    if ($option_install_command_yml)
     {
-	YAML::DumpFile($command_filenames_configuration_filename, $command_filenames);
-    }
-
-    # add a template commands file with the given name
-
-    if (not $error)
-    {
-	$error = _builtin_project_commands_template_create($field_project_name, $target_name, $target_name);
-    }
-
-    if (not $error)
-    {
-	$error = _builtin_project_commands_sh_template_create($field_project_name, $target_name);
-    }
-
-    if (not $error)
-    {
-	$error = _builtin_project_commands_yml_template_create($field_project_name, $target_name);
+	if (not $error)
+	{
+	    $error = _builtin_project_commands_yml_template_create($field_project_name, $target_name);
+	}
     }
 
     # return errors
@@ -1616,12 +1645,20 @@ sub builtin_add_target_help
 {
     my $command = shift;
 
-    return "$command : add a new target and update the configuration to integrate it.
+    return "$command: add a new target and update the configuration to integrate it.
+synopsis:
+
+$command <target-name> <target-description> [-- <options>]
 
 arguments:
 
     ARGV[0]: name of the new target.
     ARGV[1]: description of the new target.
+
+options:
+
+    --install-commands-pl: install a perl command file template.
+    --install-commands-sh: install a shell command file template.
 ";
 }
 
