@@ -108,6 +108,14 @@ Then check if they work by inspecting the examples they provide (with various op
 				},
 				description => "check the execute bit of the generated shell scripts",
 			       },
+			       # {
+			       # 	class => "Heterarch::Test::CommandDefinition::IsFileExecutable",
+			       # 	arguments => {
+			       # 		      error => "workflow-tests-commands-data/examples_sh/sh_single_command.sh does not have its execute bit set",
+			       # 		      filename => "workflow-tests-commands-data/examples_sh/sh_single_command.sh",
+			       # 		     },
+			       # 	description => "check the execute bit of the generated shell scripts",
+			       # },
 			       {
 				command => 'mv --verbose workflow-project-template.pl workflow-project.pl',
 				command_tests => [
