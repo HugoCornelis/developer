@@ -5362,7 +5362,9 @@ sub main
 
 			if ($error)
 			{
-			    die "$0: *** Error: $error";
+			    # die "$0: *** Error: $error";
+
+			    warn "$0: *** Warning: $requested_target $command generated an warning response ($error)";
 			}
 		    }
 
