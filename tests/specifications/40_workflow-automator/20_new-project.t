@@ -255,8 +255,27 @@ an example of the invocation of a single command
 						 ],
 				description => 'are the shell command templates installed and executed ?',
 			       },
-			       #t try executing workflow-tests-workflow examples_sh sh_single_command
-			       #t change to a different directory, then try any command to check whether the configuration files are correctly loaded (build_servers.yml ao.).
+			       {
+				arguments => [
+					      '-c',
+					      "cd .. && workflow-tests-workflow examples_sh sh_single_command",
+					     ],
+				command => 'bash',
+				command_tests => [
+						  {
+						   comment => "This test is the same as the previous one except for the cd command.",
+						   description => "Have the project specific commands been correctly installed and are they executed when invoked from a different directory ?",
+						   disabled => ($ENV{PWD} eq '/home/hugo/projects/developer/source/snapshots/master'
+								? ''
+								: "the currenct directory must be '/home/hugo/projects/developer/source/snapshots/master' to enable this test"),
+						   read => '# /home/hugo/projects/developer/source/snapshots/master/tmp/workflow-tests-commands-data/examples_sh/sh_single_command.sh
+#
+an example of the invocation of a single command
+',
+						  },
+						 ],
+				description => 'are the shell command templates installed and executed from a different directory?',
+			       },
 			      ],
        description => "testing of the workflow automation engine",
        documentation => {
