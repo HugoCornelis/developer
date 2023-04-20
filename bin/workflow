@@ -1958,6 +1958,12 @@ conf.$project_name-configuration
 
 	my $target_file_configuration = "$target_directory/$grc_configuration";
 
+	if (not -e $target_directory)
+	{
+		my $command = "mkdir -p $target_directory";
+		execute_shell_command($command, { sudo => 1, }, );
+	}
+
 	if (-e $source_file_configuration
 	    and not -e $target_file_configuration)
 	{
