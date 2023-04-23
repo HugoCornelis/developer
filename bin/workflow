@@ -1751,9 +1751,19 @@ sub builtin_install_scripts
 
     my $field_configuration = FieldProject::_init_get_field_project_configuration();
 
+    if (!$field_configuration)
+    {
+        die "$0: *** error: no valid field_configuration found";
+    }
+
     my $source = "/usr/local/bin/workflow";
 
     my $project_name = $field_configuration->{field_project_name};
+
+    if (!$project_name)
+    {
+        die "$0: *** error: no valid project_name in the field_configuration found";
+    }
 
     my $target = "$ENV{HOME}/bin/$project_name-workflow";
 
