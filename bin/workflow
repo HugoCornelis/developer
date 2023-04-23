@@ -1520,9 +1520,36 @@ sub builtin_add_target
         die "$0: *** error in option processing, try --help";
     }
 
+    if ($option_verbose)
+    {
+	use Data::Dumper;
+
+	print "$0: builtin_add_target, installation options:\n";
+
+	print Dumper( { install_options => $install_options, }, );
+    }
+
+    my $error = '';
+
     my $target_name = $ARGV[0];
 
+    if (not $error)
+    {
+	if (not defined $target_name)
+	{
+	    $error = 'no target_name found on the command line';
+	}
+    }
+
     my $target_description = $ARGV[1];
+
+    if (not $error)
+    {
+	if (not defined $target_description)
+	{
+	    $error = 'no target_description found on the command line';
+	}
+    }
 
 #     use Data::Dumper;
 
@@ -1532,9 +1559,23 @@ sub builtin_add_target
 
     my $field_project_name = $global_field_project_configuration->{field_project_name};
 
+    if (not $error)
+    {
+	if (not $field_project_name)
+	{
+	    $error = 'no valid field_project_name found in the field_project_configuration';
+	}
+    }
+
     my $configuration_data_directory = $global_field_project_configuration->{true_technical_project_data_configuration_directory};
 
-    my $error = '';
+    if (not $error)
+    {
+	if (not $configuration_data_directory)
+	{
+	    $error = 'no valid configuration_data_directory found in the field_project_configuration';
+	}
+    }
 
     use YAML;
 
