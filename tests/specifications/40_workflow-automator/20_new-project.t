@@ -276,6 +276,57 @@ an example of the invocation of a single command
 						 ],
 				description => 'are the shell command templates installed and executed from a different directory?',
 			       },
+			       {
+				arguments => [
+					      'builtin',
+					      'add_target',
+					      '--',
+					      'new_target',
+					      "Add commands to this new target that do new things",
+					      '--install-commands-sh',
+					     ],
+				command => 'workflow-tests-workflow',
+				command_tests => [
+						  {
+						   description => "Can we add a new target and a template for new shell commands for this target?",
+						   disabled => ($ENV{PWD} eq '/home/hugo/projects/developer/source/snapshots/master'
+								? ''
+								: "the currenct directory must be '/home/hugo/projects/developer/source/snapshots/master' to enable this test"),
+						   wait => 1,
+						   read => 'workflow-tests-workflow: added target new_target to /home/hugo/projects/developer/source/snapshots/master/tmp/workflow-tests-configuration-data/targets.yml
+workflow-tests-workflow: created the shell command file for target new_target',
+						  },
+						 ],
+				description => 'can we add new targets with a shell template file for their commands ?',
+			       },
+			       {
+				arguments => [
+					      'builtin',
+					      'add_target',
+					      '--',
+					      'new_target2',
+					      "Add commands to this new target2 that do new things2",
+					      '--install-commands-sh',
+					     ],
+				command => 'workflow-tests-workflow',
+				command_tests => [
+						  {
+						   description => "Can we add a new target and a template for new shell commands for this target2?",
+						   disabled => ($ENV{PWD} eq '/home/hugo/projects/developer/source/snapshots/master'
+								? ''
+								: "the currenct directory must be '/home/hugo/projects/developer/source/snapshots/master' to enable this test"),
+						   wait => 1,
+						   read => {
+							    application_output_file => './workflow-tests-configuration-data/targets.yml',
+							    comment => "note that the '../' is required because the preparation clause switches to the './tmp' directory",
+							    expected_output_file => "../$::global_config->{tests_directory}/strings/two-targets-added.txt",
+							   },
+						   read_not_used => 'workflow-tests-workflow: added target new_target2 to /home/hugo/projects/developer/source/snapshots/master/tmp/workflow-tests-configuration-data/targets.yml
+workflow-tests-workflow: created the shell command file for target new_target2',
+						  },
+						 ],
+				description => 'can we add new targets2 with a shell template file for their commands ?',
+			       },
 			      ],
        description => "testing of the workflow automation engine",
        documentation => {
