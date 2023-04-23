@@ -1621,6 +1621,8 @@ sub builtin_add_target
     if (not $error)
     {
 	YAML::DumpFile($targets_configuration_filename, $targets);
+
+	print "$global_program_name: added target $target_name to $targets_configuration_filename\n";
     }
 
     if ($option_install_command_pl)
@@ -1638,10 +1640,10 @@ sub builtin_add_target
 
 	# add the commands filename corresponding to the new target name
 
+	my $new_command_filename = "$field_project_name-commands-$target_name";
+
 	if (not $error)
 	{
-	    my $new_command_filename = "$field_project_name-commands-$target_name";
-
 	    my $command_filenames_array = $command_filenames->{command_filenames};
 
 	    push @$command_filenames_array, $new_command_filename;
@@ -1652,6 +1654,8 @@ sub builtin_add_target
 	if (not $error)
 	{
 	    YAML::DumpFile($command_filenames_configuration_filename, $command_filenames);
+
+	    print "$global_program_name: registered the perl command file name $new_command_filename for target $target_name\n";
 	}
 
 	# add a template commands file with the given name
@@ -1659,6 +1663,8 @@ sub builtin_add_target
 	if (not $error)
 	{
 	    $error = _builtin_project_commands_template_create($field_project_name, $target_name, $target_name);
+
+	    print "$global_program_name: created the perl command file $new_command_filename for target $target_name\n";
 	}
     }
 
@@ -1667,6 +1673,8 @@ sub builtin_add_target
 	if (not $error)
 	{
 	    $error = _builtin_project_commands_sh_template_create($field_project_name, $target_name);
+
+	    print "$global_program_name: created the shell command file for target $target_name\n";
 	}
     }
 
@@ -1675,6 +1683,8 @@ sub builtin_add_target
 	if (not $error)
 	{
 	    $error = _builtin_project_commands_yml_template_create($field_project_name, $target_name);
+
+	    print "$global_program_name: created the yml command file for target $target_name\n";
 	}
     }
 
@@ -5729,10 +5739,21 @@ OVERRIDE_SRCDIR delivered packages for Buildroot targets are recognized.
 	$status = $FieldProject::status;
     }
 
-    # always allow to start a new project
+    # always allow the builtin commands (start a new project, add a new target, ...)
+
+    #! they should do their own checking for a valid
+    #! field_configuration, project_name as required.
+
+    my $builtin_commands
+	= {
+	   add_target => 1,
+	   install_scripts => 1,
+	   print_configuration_directory => 1,
+	   start_project => 1,
+	  };
 
     if ($option_target eq 'builtin'
-	and $option_commands->[0] eq 'start_project')
+	and exists $builtin_commands->{$option_commands->[0]})
     {
     }
     else
