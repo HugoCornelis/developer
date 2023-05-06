@@ -100,5 +100,7 @@ RUN mkdir --parents ${WORKING_DIRECTORY}
 
 RUN mkdir --parents /home/${USER_NAME}/projects/developer/source/snapshots/master
 
-COPY --chown=${USER_NAME} ~/projects/developer/source/snapshots/master /home/${USER_NAME}/projects/developer/source/snapshots/master
+# COPY --chown=${USER_NAME} /home/hugo/projects/developer/source/snapshots/master /home/${USER_NAME}/projects/developer/source/snapshots/master
+
+COPY --chown=${USER_NAME} . /home/${USER_NAME}/projects/developer/source/snapshots/master
 

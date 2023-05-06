@@ -8,18 +8,20 @@ GROUP_ID=`id -g`
 
 WORKING_DIRECTORY=`pwd`
 
-echo "Creating a Docker image for $USER_NAME ($USER_ID, $GROUP_ID) for working_directory $WORKING_DIRECTORY"
+echo "Creating a Docker image for $USER_NAME ($USER_ID, $GROUP_ID) for working_directory $WORKING_DIRECTORY from directory $SCRIPTPATH"
 
-pushd $SCRIPTPATH &> /dev/null
+echo "Docker file is "`ls ./tests/specifications/40_workflow-automator/Dockerfile*`
+
+# pushd $SCRIPTPATH &> /dev/null
 
     sudo docker image prune -f
     sudo docker build \
          --tag neurospaces_image \
-	 --file Dockerfile.neurospaces-testing \
+	 --file ./tests/specifications/40_workflow-automator/Dockerfile.neurospaces-testing \
 	 --build-arg USER_NAME=$USER_NAME \
 	 --build-arg USER_ID=$USER_ID \
 	 --build-arg GROUP_ID=$GROUP_ID \
 	 --build-arg WORKING_DIRECTORY=$WORKING_DIRECTORY \
 	 .
 
-popd &> /dev/null
+# popd &> /dev/null

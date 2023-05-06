@@ -6,9 +6,34 @@ use strict;
 
 my $test
     = {
+       disabled => 'the docker image needs additional packages.  Enter the docker image with "sudo docker exec -it neurospaces_harness bash"',
        command_definitions => [
 			       {
-				command => '../bin/workflow builtin start_project workflow-tests',
+				command => 'pwd',
+				command_tests => [
+						  {
+						   description => "Are we in the correct working directory ?",
+						   read => '/home/hugo/projects/developer/source/snapshots/master
+',
+						   wait => 1,
+						  },
+						 ],
+				description => "showing that the container works: working directory",
+			       },
+			       {
+				command => 'ls -1',
+				command_tests => [
+						  {
+						   description => "Can we list the current directory ?",
+						   read => 'Makefile
+',
+						   wait => 1,
+						  },
+						 ],
+				description => "showing that the container works: current directory contents",
+			       },
+			       {
+				command => 'bin/workflow builtin start_project workflow-tests',
 				command_tests => [
 						  {
 						   description => "Can we start a new project ?",
@@ -128,7 +153,7 @@ Then check if they work by inspecting the examples they provide (with various op
 				description => "rename the field project file to its final name",
 			       },
 			       {
-				command => '../bin/workflow --help-field-project-name',
+				command => 'bin/workflow --help-field-project-name',
 				command_tests => [
 						  {
 						   description => "Has the project been correctly initialized ?",
@@ -152,7 +177,7 @@ global_field_project_configuration:
 				description => "correct creation of the field project file",
 			       },
 			       {
-				command => '../bin/workflow builtin install_scripts -- --engine --commands',
+				command => 'bin/workflow builtin install_scripts -- --engine --commands',
 				command_tests => [
 						  {
 						   comment => "The workflow engine emits its output about commands to be executed before executing those commnands, a wait clause in this test is required as a work around between the test engine and the workflow engine under test.",
@@ -318,8 +343,8 @@ workflow-tests-workflow: created the shell command file for target new_target',
 						   wait => 1,
 						   read => {
 							    application_output_file => './workflow-tests-configuration-data/targets.yml',
-							    comment => "note that the '../' is required because the preparation clause switches to the './tmp' directory",
-							    expected_output_file => "../$::global_config->{tests_directory}/strings/two-targets-added.txt",
+							    # comment => "note that the '../' is required because the preparation clause switches to the './tmp' directory",
+							    expected_output_file => "$::global_config->{tests_directory}/strings/two-targets-added.txt",
 							   },
 						   read_not_used => 'workflow-tests-workflow: added target new_target2 to /home/hugo/projects/developer/source/snapshots/master/tmp/workflow-tests-configuration-data/targets.yml
 workflow-tests-workflow: created the shell command file for target new_target2',
@@ -344,23 +369,28 @@ project-specific workflows that use shell commands.
 				      preparer =>
 				      sub
 				      {
-					  system "rm -fr tmp";
-					  system "mkdir --parents tmp/docker";
+					  # system "rm -fr tmp";
+					  # system "mkdir --parents tmp/docker";
 
-					  system "cp -a tests/specifications/40_workflow-automator/Dockerfile.neurospaces-testing tmp/docker";
-					  system "cp -a tests/specifications/40_workflow-automator/docker-build.bash tmp/docker";
-					  system "cp -a tests/specifications/40_workflow-automator/docker-run.bash tmp/docker";
+					  # system "cp -a tests/specifications/40_workflow-automator/Dockerfile.neurospaces-testing tmp/docker";
+					  # system "cp -a tests/specifications/40_workflow-automator/docker-build.bash tmp/docker";
+					  # system "cp -a tests/specifications/40_workflow-automator/docker-run.bash tmp/docker";
 
-					  chdir "tmp";
+					  # system "cp -a ~/.bashrc ~/.bashrc-preparation";
+					  # system "sudo cp -a /etc/grc.conf /etc/grc.conf-preparation";
 
-					  system "cp -a ~/.bashrc ~/.bashrc-preparation";
-					  system "sudo cp -a /etc/grc.conf /etc/grc.conf-preparation";
+					  # chdir "tmp";
 
-					  chdir "docker";
+					  # chdir "docker";
 
-					  system "./docker-build.bash";
+					  system "./tests/specifications/40_workflow-automator/docker-build.bash";
 
-					  chdir "..";
+					  system "sudo docker container stop neurospaces_harness";
+					  system "sudo docker container rm neurospaces_harness";
+
+					  system "sudo docker run -d -t --name neurospaces_harness neurospaces_image";
+
+					  # chdir "..";
 
 					  # return no errors
 
@@ -372,7 +402,7 @@ project-specific workflows that use shell commands.
 				     reparer =>
 				     sub
 				     {
-					 system "rm ~/bin/workflow-tests*";
+					 # system "rm ~/bin/workflow-tests*";
 
 					 # system "sed -i '\$d' ~/.bashrc";
 					 # system "sed -i '\$d' ~/.bashrc";
@@ -381,19 +411,19 @@ project-specific workflows that use shell commands.
 					 # system "sed -i '\$d' ~/.bashrc";
 					 # system "sed -i '\$d' ~/.bashrc";
 
-					 system "cp -a ~/.bashrc ~/.bashrc-reparation";
-					 system "sudo cp -a /etc/grc.conf /etc/grc.conf-reparation";
+					 # system "cp -a ~/.bashrc ~/.bashrc-reparation";
+					 # system "sudo cp -a /etc/grc.conf /etc/grc.conf-reparation";
 
-					 system "cp -a ~/.bashrc-preparation ~/.bashrc";
-					 system "sudo cp -a /etc/grc.conf-preparation /etc/grc.conf";
+					 # system "cp -a ~/.bashrc-preparation ~/.bashrc";
+					 # system "sudo cp -a /etc/grc.conf-preparation /etc/grc.conf";
 
-					 system "ls -1 /usr/share/grc/*test*";
-					 system "sudo rm /usr/share/grc/conf.workflow-tests-configuration";
-					 system "ls -1 /usr/share/grc/*test*";
-					 system "sudo rm /usr/share/grc/conf.workflow-tests-workflow";
-					 system "ls -1 /usr/share/grc/*test*";
+					 # system "ls -1 /usr/share/grc/*test*";
+					 # system "sudo rm /usr/share/grc/conf.workflow-tests-configuration";
+					 # system "ls -1 /usr/share/grc/*test*";
+					 # system "sudo rm /usr/share/grc/conf.workflow-tests-workflow";
+					 # system "ls -1 /usr/share/grc/*test*";
 
-					 chdir "..";
+					 # chdir "..";
 					 # system "rm -fr tmp";
 
 					 # return no errors
@@ -402,7 +432,7 @@ project-specific workflows that use shell commands.
 				     },
 				    },
 		     },
-       name => '40_workflow-automator/20_new-project.t',
+       name => '40_workflow-automator/25_new-project-docker.t',
       };
 
 
