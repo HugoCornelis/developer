@@ -6,31 +6,308 @@ use strict;
 
 my $test
     = {
-       disabled => 'the docker image needs additional packages.  Enter the docker image with "sudo docker exec -it neurospaces_harness bash"',
+#       disabled => 'the docker image needs additional packages.  Enter the docker image with "sudo docker exec -it neurospaces_harness bash"',
        command_definitions => [
 			       {
-				command => 'pwd',
+				arguments => [
+					      'docker',
+					      'exec',
+					      '-it',
+					      'neurospaces_harness',
+					      'pwd',
+					     ],
+				command => 'sudo',
 				command_tests => [
 						  {
-						   description => "Are we in the correct working directory ?",
-						   read => '/home/hugo/projects/developer/source/snapshots/master
+						   description => "Are we in the correct working directory in the Docker container ?",
+						   read => '/home/hugo
 ',
 						   wait => 1,
+						   white_space => 'convert seen 0a to 0d 0a newlines',
+						   white_space1 => 'convert seen \\x0d \\x0a to \\x0a newlines',
 						  },
 						 ],
 				description => "showing that the container works: working directory",
 			       },
 			       {
-				command => 'ls -1',
+				arguments => [
+					      'docker',
+					      'exec',
+					      '-it',
+					      'neurospaces_harness',
+					      'ls',
+					      '-1',
+					     ],
+				command => 'sudo',
 				command_tests => [
 						  {
-						   description => "Can we list the current directory ?",
-						   read => 'Makefile
+						   description => "Can we list the current directory in the Docker container ?",
+						   read => 'projects
 ',
 						   wait => 1,
+						   white_space => 'convert seen 0a to 0d 0a newlines',
 						  },
 						 ],
 				description => "showing that the container works: current directory contents",
+			       },
+			       {
+				arguments => [
+					      'docker',
+					      'exec',
+					      '-it',
+					      'neurospaces_harness',
+					      'bash',
+					      '-c',
+					      'cd projects/developer/source/snapshots/master/ && ./autogen.sh',
+					     ],
+				command => 'sudo',
+				command_tests => [
+						  {
+						   description => "Can generate configure scripts in the Docker container ?",
+						   wait => 1,
+						   white_space => 'convert seen 0a to 0d 0a newlines',
+						  },
+						 ],
+				description => "showing that the container works: generation of configure scripts",
+			       },
+			       {
+				arguments => [
+					      'docker',
+					      'exec',
+					      '-it',
+					      'neurospaces_harness',
+					      'bash',
+					      '-c',
+					      'cd projects/developer/source/snapshots/master/ && ./configure',
+					     ],
+				command => 'sudo',
+				command_tests => [
+						  {
+						   description => "Can we configure the developer package in the Docker container ?",
+						   read => 'checking build system type... x86_64-pc-linux-gnu
+checking host system type... x86_64-pc-linux-gnu
+checking target system type... x86_64-pc-linux-gnu
+checking whether we build universal binaries.... no
+checking OS specifics...... Host is running linux-gnu.
+checking for perl5... no
+checking for perl... perl
+checking Checking the perl module installation path...  ${prefix}/share/perl/5.32.1 
+checking for a BSD-compatible install... /usr/bin/install -c
+checking whether build environment is sane... yes
+checking for a thread-safe mkdir -p... /bin/mkdir -p
+checking for gawk... gawk
+checking whether make sets $(MAKE)... yes
+checking whether make supports nested variables... yes
+checking for mtn... no
+checking for monotone... no
+checking for dpkg-buildpackage... dpkg-buildpackage
+checking for dh... no
+checking for rpmbuild... no
+checking for python... no
+checking for python2... no
+checking for python3... /usr/bin/python3
+checking for python version... 3.9
+checking for python platform... linux
+checking for python script directory... ${prefix}/lib/python3.9/site-packages
+checking for python extension module directory... ${exec_prefix}/lib/python3.9/site-packages
+checking Python prefix is ... \'${prefix}\'
+find: \'tests/data\': No such file or directory
+checking that generated files are newer than configure... done
+configure: creating ./config.status
+config.status: creating Makefile
+config.status: creating perl/Makefile
+config.status: creating python/Makefile
+',
+						   timeout => 5,
+						   white_space => 'convert seen 0a to 0d 0a newlines',
+						  },
+						 ],
+				description => "showing that the container works: configuration of the developer package",
+			       },
+			       {
+				arguments => [
+					      'docker',
+					      'exec',
+					      '-it',
+					      'neurospaces_harness',
+					      'bash',
+					      '-c',
+					      'cd projects/developer/source/snapshots/master/ && make',
+					     ],
+				command => 'sudo',
+				command_tests => [
+						  {
+						   description => "Can we build the developer package in the Docker container ?",
+						   read => 'Making all in perl
+make[1]: Entering directory \'/home/hugo/projects/developer/source/snapshots/master/perl\'
+make[1]: Nothing to be done for \'all\'.
+make[1]: Leaving directory \'/home/hugo/projects/developer/source/snapshots/master/perl\'
+Making all in python
+make[1]: Entering directory \'/home/hugo/projects/developer/source/snapshots/master/python\'
+echo "No need to build in python"
+No need to build in python
+make[1]: Leaving directory \'/home/hugo/projects/developer/source/snapshots/master/python\'
+make[1]: Entering directory \'/home/hugo/projects/developer/source/snapshots/master\'
+make[1]: Nothing to be done for \'all-am\'.
+make[1]: Leaving directory \'/home/hugo/projects/developer/source/snapshots/master\'
+',
+						   timeout => 5,
+						   white_space => 'convert seen 0a to 0d 0a newlines',
+						  },
+						 ],
+				description => "showing that the container works: build of the developer package",
+			       },
+			       {
+				arguments => [
+					      'docker',
+					      'exec',
+					      '-it',
+					      'neurospaces_harness',
+					      'bash',
+					      '-c',
+					      'cd projects/developer/source/snapshots/master/ && sudo make install',
+					     ],
+				command => 'sudo',
+				command_tests => [
+						  {
+						   description => "Can we install the developer package in the Docker container ?",
+						   read => 'Making install in perl
+make[1]: Entering directory \'/home/hugo/projects/developer/source/snapshots/master/perl\'
+make[2]: Entering directory \'/home/hugo/projects/developer/source/snapshots/master/perl\'
+make[2]: Nothing to be done for \'install-exec-am\'.
+ /bin/mkdir -p \'/usr/local/share/perl/5.32.1\'
+ /bin/mkdir -p \'/usr/local/share/perl/5.32.1/Neurospaces/Developer\'
+ /usr/bin/install -c -m 644  ./Neurospaces/Developer/Operations.pm ./Neurospaces/Developer/Packages.pm \'/usr/local/share/perl/5.32.1/Neurospaces/Developer\'
+ /bin/mkdir -p \'/usr/local/share/perl/5.32.1/Neurospaces/Developer/Manager\'
+ /usr/bin/install -c -m 644  ./Neurospaces/Developer/Manager/GUI.pm \'/usr/local/share/perl/5.32.1/Neurospaces/Developer/Manager\'
+ /bin/mkdir -p \'/usr/local/share/perl/5.32.1/Neurospaces\'
+ /usr/bin/install -c -m 644  ./Neurospaces/Tester.pm ./Neurospaces/Developer.pm \'/usr/local/share/perl/5.32.1/Neurospaces\'
+make[2]: Leaving directory \'/home/hugo/projects/developer/source/snapshots/master/perl\'
+make[1]: Leaving directory \'/home/hugo/projects/developer/source/snapshots/master/perl\'
+Making install in python
+make[1]: Entering directory \'/home/hugo/projects/developer/source/snapshots/master/python\'
+make[2]: Entering directory \'/home/hugo/projects/developer/source/snapshots/master/python\'
+make  install-exec-hook
+make[3]: Entering directory \'/home/hugo/projects/developer/source/snapshots/master/python\'
+echo "No install"
+No install
+make[3]: Leaving directory \'/home/hugo/projects/developer/source/snapshots/master/python\'
+make[2]: Nothing to be done for \'install-data-am\'.
+make[2]: Leaving directory \'/home/hugo/projects/developer/source/snapshots/master/python\'
+make[1]: Leaving directory \'/home/hugo/projects/developer/source/snapshots/master/python\'
+make[1]: Entering directory \'/home/hugo/projects/developer/source/snapshots/master\'
+make[2]: Entering directory \'/home/hugo/projects/developer/source/snapshots/master\'
+ /bin/mkdir -p \'/usr/local/bin\'
+ /usr/bin/install -c bin/data_2_figure bin/mcad2doxy bin/mtn-ancestors bin/neurospaces-commands bin/neurospaces-manager-gui bin/neurospaces_build bin/neurospaces_check bin/neurospaces_clean bin/neurospaces_clone bin/neurospaces_configure bin/neurospaces_countcode bin/neurospaces_create_directories bin/neurospaces_cron bin/neurospaces_describe bin/neurospaces_dev_uninstall bin/neurospaces_diff bin/neurospaces_dist bin/neurospaces_docs bin/neurospaces_docs-level7 bin/neurospaces_harness bin/neurospaces_harness_2_html bin/neurospaces_history bin/neurospaces_init bin/neurospaces_install bin/neurospaces_kill_servers bin/neurospaces_migrate bin/neurospaces_mtn_2_git bin/neurospaces_new_component bin/neurospaces_packages bin/neurospaces_pkgdeb bin/neurospaces_pkgrpm bin/neurospaces_pkgtar bin/neurospaces_profile_set bin/neurospaces_pull bin/neurospaces_push bin/neurospaces_repo_keys bin/neurospaces_repositories bin/neurospaces_revert bin/neurospaces_serve bin/neurospaces_setup \'/usr/local/bin\'
+ /usr/bin/install -c bin/neurospaces_status bin/neurospaces_sync bin/neurospaces_tags bin/neurospaces_tools_propagate bin/neurospaces_uninstall bin/neurospaces_update bin/neurospaces_upgrade bin/neurospaces_versions bin/neurospaces_website_prepare bin/nspkg-deb bin/nspkg-osx bin/nspkg-rpm bin/nstest_query bin/numerical_compare bin/release-expand bin/release-extract bin/signal_voltage_characteristics bin/td-labels bin/td-majors bin/workflow \'/usr/local/bin\'
+ /bin/mkdir -p \'/usr/local/neurospaces/developer\'
+ /bin/mkdir -p \'/usr/local/neurospaces/developer/tests/specifications/40_workflow-automator\'
+ /usr/bin/install -c -m 644  tests/specifications/40_workflow-automator/20_new-project.t tests/specifications/40_workflow-automator/25_new-project-docker.t tests/specifications/40_workflow-automator/10_help-pages.t \'/usr/local/neurospaces/developer/tests/specifications/40_workflow-automator\'
+ /bin/mkdir -p \'/usr/local/neurospaces/developer/tests\'
+ /usr/bin/install -c -m 644  tests/introduction.html \'/usr/local/neurospaces/developer/tests\'
+ /bin/mkdir -p \'/usr/local/neurospaces/developer/tests/specifications/strings\'
+ /usr/bin/install -c -m 644  tests/specifications/strings/neurospaces_build--no-compile--no-configure--no-install--regex-developer--dry-run--developer--verbose--verbose--verbose.txt tests/specifications/strings/two-targets-added.txt tests/specifications/strings/neurospaces_build--tag-build-10--no-compile--no-configure--no-install--regex-developer--dry-run--developer--verbose--verbose--verbose.txt \'/usr/local/neurospaces/developer/tests/specifications/strings\'
+ /bin/mkdir -p \'/usr/local/neurospaces/developer/tests/specifications/70_harness\'
+ /usr/bin/install -c -m 644  tests/specifications/70_harness/70_preparation.t tests/specifications/70_harness/75_preparation_checker.t tests/specifications/70_harness/10_help.t \'/usr/local/neurospaces/developer/tests/specifications/70_harness\'
+ /bin/mkdir -p \'/usr/local/neurospaces/developer/tests/specifications\'
+ /usr/bin/install -c -m 644  tests/specifications/50_downloads.t tests/specifications/10_global.t tests/specifications/30_developer.t \'/usr/local/neurospaces/developer/tests/specifications\'
+ /bin/mkdir -p \'/usr/local/neurospaces/developer/tests/specifications/90_yaml\'
+ /usr/bin/install -c -m 644  tests/specifications/90_yaml/50_downloads.t tests/specifications/90_yaml/10_global.t tests/specifications/90_yaml/30_developer.t \'/usr/local/neurospaces/developer/tests/specifications/90_yaml\'
+ /bin/mkdir -p \'/usr/local/neurospaces/developer/tests/specifications/91_json/70_harness\'
+ /usr/bin/install -c -m 644  tests/specifications/91_json/70_harness/70_preparation.t tests/specifications/91_json/70_harness/75_preparation_checker.t tests/specifications/91_json/70_harness/10_help.t \'/usr/local/neurospaces/developer/tests/specifications/91_json/70_harness\'
+ /bin/mkdir -p \'/usr/local/neurospaces/developer/tests/specifications/91_json\'
+ /usr/bin/install -c -m 644  tests/specifications/91_json/50_downloads.t tests/specifications/91_json/10_global.t tests/specifications/91_json/30_developer.t \'/usr/local/neurospaces/developer/tests/specifications/91_json\'
+ /bin/mkdir -p \'/usr/local/neurospaces/developer/tests/specifications/90_yaml/70_harness\'
+ /usr/bin/install -c -m 644  tests/specifications/90_yaml/70_harness/70_preparation.t tests/specifications/90_yaml/70_harness/75_preparation_checker.t tests/specifications/90_yaml/70_harness/10_help.t \'/usr/local/neurospaces/developer/tests/specifications/90_yaml/70_harness\'
+make[2]: Leaving directory \'/home/hugo/projects/developer/source/snapshots/master\'
+make[1]: Leaving directory \'/home/hugo/projects/developer/source/snapshots/master\'
+',
+						   timeout => 5,
+						   white_space => 'convert seen 0a to 0d 0a newlines',
+						  },
+						 ],
+				description => "showing that the container works: installation of the developer package",
+			       },
+			       {
+				arguments => [
+					      'docker',
+					      'exec',
+					      '-it',
+					      'neurospaces_harness',
+					      'workflow',
+					      '--help',
+					     ],
+				command => 'sudo',
+				command_tests => [
+						  {
+						   description => "Can we get the help page of the workflow engine in the Docker container ?",
+						   read => '
+/usr/local/bin/workflow: support for workflow design for embedded software engineers.
+
+SYNOPSIS
+
+/usr/local/bin/workflow <options> <target> <command> -- < ... command specific options and arguments ... >
+
+EXAMPLES -- first try these with the --dry-run to understand what they do:
+
+  $ /usr/local/bin/workflow ssp build                                            # \'build\' the \'ssp\' target (if it exists for your local configuration).
+
+  $ /usr/local/bin/workflow --dry-run ssp build                                  # display the shell commands that would be executed to \'build\' the \'ssp\' target.
+
+  $ /usr/local/bin/workflow --help-targets                                       # display the available targets that are found in the configuration file.
+
+options:
+    --bash-completion               compute bash completion for the given command line.
+                                    hint: the bash completion script implements completion for options, targets and commands.
+    --branch                        git branch to work with.
+    --build-server                  the build server profile to work with.
+    --built-image-directory         the directory on the build server where the built images are to be found.
+    --command                       commands to execute, hyphens (-) in the command will be replaced with underscores (_).
+    --dry-run                       if set, do not execute system shell commands but print them to STDOUT.
+    --dump-all-interaction-roles    dump all the interaction roles found in the configuration.
+    --dump-interaction-roles        dump the found interaction roles (note that they depend on the scheduled commands).
+    --dump-module-interaction-roles dump all the interaction roles found in the module of the given command.
+    --dump-schedule                 dump the constructed schedule to standard output without executing the scheduled commands.
+    --export-remote                 include the remote access part of exported commands.
+                                    this option takes a number: 0 means all roles are exported, any other number exports only that respective role.
+    --export-sh                     export the commands to a file with the given name.
+    --export-sudo                   include the sudo commands when exporting commands to a file.
+    --export-times                  export the times when commands are started and ended to a file with the given name.
+    --export-verbose                when exporting the commands to a file, interleave them with echo commands.
+    --force-rebuild                 force a rebuild regardless of the existence and build date of previously built artefacts.
+    --forward-destination           the target file forward destination to copy to.
+    --forward-source                the target file forward source to copy from.
+    --help                          display usage information and stop execution.
+    --help-build-servers            display the known build servers.
+    --help-commands                 display the available commands, add a target name for restricted output.
+    --help-module                   display all the available help information about the commands of the module.
+    --help-field-project-name       print the field project name and exit.
+    --help-options                  print the option values.
+    --help-packages                 display known package and overriden package information and stop execution.
+    --help-projects                 display known project information and stop execution.
+    --help-targets                  display known targets and stop execution.
+    --incremental                   assume an incremental build (default is yes
+    --interactions                  show the interaction diagram of the commands.
+    --interactions-all              show a diagram with all the commands and all the interaction roles.
+    --interactions-module           show the interaction diagram of all the commands in the module.
+    --interactions-module-all-roles show the interaction diagram of the commands using all the found interaction roles in the configuration.
+    --packages                      packages to operate on, can be given multiple times.
+    --ssh-port                      the ssh port.
+    --ssh-server                    the used ssh build server.
+    --ssh-user                      ssh-user on the build server (please configure your public key).
+    --target                        the target to apply the given commands to.
+    --tftp-directory                the target tftp directory (eg. where your device will find its kernel and rootfs).
+    --verbose                       set verbosity level.
+
+NOTES
+
+OVERRIDE_SRCDIR delivered packages for Buildroot targets are recognized.
+
+',
+						   white_space => 'convert seen 0a to 0d 0a newlines',
+						  },
+						 ],
+				description => "showing that the container works: help page of the workflow engine",
 			       },
 			       {
 				command => 'bin/workflow builtin start_project workflow-tests',
@@ -80,6 +357,7 @@ Then check if they work by inspecting the examples they provide (with various op
 						  },
 						 ],
 				description => "start of a new project",
+				disabled => 'must be adapted for the Docker container',
 			       },
 			       {
 				command => 'find .',
@@ -116,6 +394,7 @@ Then check if they work by inspecting the examples they provide (with various op
 						  },
 						 ],
 				description => "correct creation of the field project file",
+				disabled => 'must be adapted for the Docker container',
 			       },
 			       {
 				command_notused => 'test -x workflow-tests-commands-data/examples_sh/sh_single_command.sh',
@@ -132,6 +411,7 @@ Then check if they work by inspecting the examples they provide (with various op
 				    }
 				},
 				description => "check the execute bit of the generated shell scripts",
+				disabled => 'must be adapted for the Docker container',
 			       },
 			       # {
 			       # 	class => "Heterarch::Test::CommandDefinition::IsFileExecutable",
@@ -151,6 +431,7 @@ Then check if they work by inspecting the examples they provide (with various op
 						  },
 						 ],
 				description => "rename the field project file to its final name",
+				disabled => 'must be adapted for the Docker container',
 			       },
 			       {
 				command => 'bin/workflow --help-field-project-name',
@@ -175,6 +456,7 @@ global_field_project_configuration:
 						  },
 						 ],
 				description => "correct creation of the field project file",
+				disabled => 'must be adapted for the Docker container',
 			       },
 			       {
 				command => 'bin/workflow builtin install_scripts -- --engine --commands',
@@ -220,6 +502,7 @@ conf.workflow-tests-configuration
 						  },
 						 ],
 				description => "correct installation of the new project files",
+				disabled => 'must be adapted for the Docker container',
 			       },
 			       {
 				command => 'workflow-tests-workflow --help-commands',
@@ -249,6 +532,7 @@ conf.workflow-tests-configuration
 						  },
 						 ],
 				description => "correct installation of the new project commands",
+				disabled => 'must be adapted for the Docker container',
 			       },
 			       {
 				command => 'workflow-tests-workflow examples_sh sh_single_command --dry-run',
@@ -263,6 +547,7 @@ conf.workflow-tests-configuration
 						  },
 						 ],
 				description => 'are the shell command templates installed and executed, --dry-run ?',
+				disabled => 'must be adapted for the Docker container',
 			       },
 			       {
 				command => 'workflow-tests-workflow examples_sh sh_single_command',
@@ -279,6 +564,7 @@ an example of the invocation of a single command
 						  },
 						 ],
 				description => 'are the shell command templates installed and executed ?',
+				disabled => 'must be adapted for the Docker container',
 			       },
 			       {
 				arguments => [
@@ -300,6 +586,7 @@ an example of the invocation of a single command
 						  },
 						 ],
 				description => 'are the shell command templates installed and executed from a different directory?',
+				disabled => 'must be adapted for the Docker container',
 			       },
 			       {
 				arguments => [
@@ -323,6 +610,7 @@ workflow-tests-workflow: created the shell command file for target new_target',
 						  },
 						 ],
 				description => 'can we add new targets with a shell template file for their commands ?',
+				disabled => 'must be adapted for the Docker container',
 			       },
 			       {
 				arguments => [
@@ -351,6 +639,7 @@ workflow-tests-workflow: created the shell command file for target new_target2',
 						  },
 						 ],
 				description => 'can we add new targets2 with a shell template file for their commands ?',
+				disabled => 'must be adapted for the Docker container',
 			       },
 			      ],
        description => "testing of the workflow automation engine",
@@ -365,32 +654,16 @@ project-specific workflows that use shell commands.
 			},
        harnessing => {
 		      preparation => {
-				      description => "create the Docker image and create and enter the directory for running the tests",
+				      description => "create the Docker image and start it as a container for running the tests",
 				      preparer =>
 				      sub
 				      {
-					  # system "rm -fr tmp";
-					  # system "mkdir --parents tmp/docker";
-
-					  # system "cp -a tests/specifications/40_workflow-automator/Dockerfile.neurospaces-testing tmp/docker";
-					  # system "cp -a tests/specifications/40_workflow-automator/docker-build.bash tmp/docker";
-					  # system "cp -a tests/specifications/40_workflow-automator/docker-run.bash tmp/docker";
-
-					  # system "cp -a ~/.bashrc ~/.bashrc-preparation";
-					  # system "sudo cp -a /etc/grc.conf /etc/grc.conf-preparation";
-
-					  # chdir "tmp";
-
-					  # chdir "docker";
-
 					  system "./tests/specifications/40_workflow-automator/docker-build.bash";
 
 					  system "sudo docker container stop neurospaces_harness";
 					  system "sudo docker container rm neurospaces_harness";
 
 					  system "sudo docker run -d -t --name neurospaces_harness neurospaces_image";
-
-					  # chdir "..";
 
 					  # return no errors
 
@@ -402,30 +675,6 @@ project-specific workflows that use shell commands.
 				     reparer =>
 				     sub
 				     {
-					 # system "rm ~/bin/workflow-tests*";
-
-					 # system "sed -i '\$d' ~/.bashrc";
-					 # system "sed -i '\$d' ~/.bashrc";
-					 # system "sed -i '\$d' ~/.bashrc";
-					 # system "sed -i '\$d' ~/.bashrc";
-					 # system "sed -i '\$d' ~/.bashrc";
-					 # system "sed -i '\$d' ~/.bashrc";
-
-					 # system "cp -a ~/.bashrc ~/.bashrc-reparation";
-					 # system "sudo cp -a /etc/grc.conf /etc/grc.conf-reparation";
-
-					 # system "cp -a ~/.bashrc-preparation ~/.bashrc";
-					 # system "sudo cp -a /etc/grc.conf-preparation /etc/grc.conf";
-
-					 # system "ls -1 /usr/share/grc/*test*";
-					 # system "sudo rm /usr/share/grc/conf.workflow-tests-configuration";
-					 # system "ls -1 /usr/share/grc/*test*";
-					 # system "sudo rm /usr/share/grc/conf.workflow-tests-workflow";
-					 # system "ls -1 /usr/share/grc/*test*";
-
-					 # chdir "..";
-					 # system "rm -fr tmp";
-
 					 # return no errors
 
 					 return '';
