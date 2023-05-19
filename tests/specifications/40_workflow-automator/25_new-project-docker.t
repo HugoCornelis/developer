@@ -57,7 +57,7 @@ my $test
 					      '-it',
 					      'neurospaces_harness',
 					      'bash',
-					      '-c',
+					      '-ic',
 					      'cd projects/developer/source/snapshots/master/ && ./autogen.sh',
 					     ],
 				command => 'sudo',
@@ -77,7 +77,7 @@ my $test
 					      '-it',
 					      'neurospaces_harness',
 					      'bash',
-					      '-c',
+					      '-ic',
 					      'cd projects/developer/source/snapshots/master/ && ./configure',
 					     ],
 				command => 'sudo',
@@ -131,7 +131,7 @@ config.status: creating python/Makefile
 					      '-it',
 					      'neurospaces_harness',
 					      'bash',
-					      '-c',
+					      '-ic',
 					      'cd projects/developer/source/snapshots/master/ && make',
 					     ],
 				command => 'sudo',
@@ -164,7 +164,7 @@ make[1]: Leaving directory \'/home/hugo/projects/developer/source/snapshots/mast
 					      '-it',
 					      'neurospaces_harness',
 					      'bash',
-					      '-c',
+					      '-ic',
 					      'cd projects/developer/source/snapshots/master/ && sudo make install',
 					     ],
 				command => 'sudo',
@@ -234,8 +234,9 @@ make[1]: Leaving directory \'/home/hugo/projects/developer/source/snapshots/mast
 					      'exec',
 					      '-it',
 					      'neurospaces_harness',
-					      'workflow',
-					      '--help',
+					      'bash',
+					      '-ic',
+					      'workflow --help',
 					     ],
 				command => 'sudo',
 				command_tests => [
@@ -310,10 +311,19 @@ OVERRIDE_SRCDIR delivered packages for Buildroot targets are recognized.
 				description => "showing that the container works: help page of the workflow engine",
 			       },
 			       {
-				command => 'bin/workflow builtin start_project workflow-tests',
+				arguments => [
+					      'docker',
+					      'exec',
+					      '-it',
+					      'neurospaces_harness',
+					      'bash',
+					      '-ic',
+					      'mkdir workflow-test && cd workflow-test && workflow builtin start_project workflow-tests',
+					     ],
+				command => 'sudo',
 				command_tests => [
 						  {
-						   description => "Can we start a new project ?",
+						   description => "Can we start a new project in the Docker container ?",
 						   read => 'Using \'workflow-tests\' as name for your project.
 Created a template configuration file for project \'workflow-tests\'
 Created a template workflow-project in \'workflow-project-template.pl\' with contents:
@@ -354,16 +364,25 @@ Then check if they work by inspecting the examples they provide (with various op
 
   workflow-tests-workflow examples array_of_commands --help
 ',
+						   white_space => 'convert seen 0a to 0d 0a newlines',
 						  },
 						 ],
-				description => "start of a new project",
-				disabled => 'must be adapted for the Docker container',
+				description => "showing that the container works: start of a new project",
 			       },
 			       {
-				command => 'find .',
+				arguments => [
+					      'docker',
+					      'exec',
+					      '-it',
+					      'neurospaces_harness',
+					      'bash',
+					      '-ic',
+					      'cd workflow-test && find .',
+					     ],
+				command => 'sudo',
 				command_tests => [
 						  {
-						   description => "Have the project files been created ?",
+						   description => "Have the project files been created inside the Docker container?",
 						   read => '.
 ./workflow-project-template.pl
 ./workflow-tests-bash-completion.sh
@@ -385,16 +404,12 @@ Then check if they work by inspecting the examples they provide (with various op
 ./workflow-tests-commands-data/examples_yml/array_of_commands.yml
 ./workflow-tests-commands-data/examples_yml/single_command.yml
 ./workflow-tests-configuration
-./docker
-./docker/docker-build.bash
-./docker/docker-run.bash
-./docker/Dockerfile.neurospaces-testing
 ./workflow-tests-commands
 ',
+						   white_space => 'convert seen 0a to 0d 0a newlines',
 						  },
 						 ],
-				description => "correct creation of the field project file",
-				disabled => 'must be adapted for the Docker container',
+				description => "showing that the container works: correct creation of the field project file",
 			       },
 			       {
 				command_notused => 'test -x workflow-tests-commands-data/examples_sh/sh_single_command.sh',
@@ -422,25 +437,40 @@ Then check if they work by inspecting the examples they provide (with various op
 			       # 	description => "check the execute bit of the generated shell scripts",
 			       # },
 			       {
-				command => 'mv --verbose workflow-project-template.pl workflow-project.pl',
+				arguments => [
+					      'docker',
+					      'exec',
+					      '-it',
+					      'neurospaces_harness',
+					      'bash',
+					      '-ic',
+					      'cd workflow-test && mv --verbose workflow-project-template.pl workflow-project.pl',
+					     ],
+				command => 'sudo',
 				command_tests => [
 						  {
-						   description => "Have the project files been created ?",
+						   description => "Can we rename the project configuration files to activate the project inside the container ?",
 						   read => 'renamed \'workflow-project-template.pl\' -> \'workflow-project.pl\'
 ',
+						   white_space => 'convert seen 0a to 0d 0a newlines',
 						  },
 						 ],
-				description => "rename the field project file to its final name",
-				disabled => 'must be adapted for the Docker container',
+				description => "showing that the container works: rename the field project file to its final name",
 			       },
 			       {
-				command => 'bin/workflow --help-field-project-name',
+				arguments => [
+					      'docker',
+					      'exec',
+					      '-it',
+					      'neurospaces_harness',
+					      'bash',
+					      '-ic',
+					      'cd workflow-test && workflow --help-field-project-name',
+					     ],
+				command => 'sudo',
 				command_tests => [
 						  {
-						   description => "Has the project been correctly initialized ?",
-						   disabled => ($ENV{PWD} eq '/home/hugo/projects/developer/source/snapshots/master'
-								? ''
-								: "the currenct directory must be '/home/hugo/projects/developer/source/snapshots/master' to enable this test"),
+						   description => "Has the project been correctly initialized inside the container?",
 						   read => '
 global_field_project_configuration:
   field_project_configuration_filename: workflow-project.pl
@@ -448,30 +478,36 @@ global_field_project_configuration:
   from_directory: .
   from_executable: workflow on the command line
   technical_project_configuration_directory: .
-  true_technical_project_configuration_directory: /home/hugo/projects/developer/source/snapshots/master/tmp
-  true_technical_project_configuration_filename: /home/hugo/projects/developer/source/snapshots/master/tmp/workflow-project.pl
-  true_technical_project_data_commands_directory: /home/hugo/projects/developer/source/snapshots/master/tmp/workflow-tests-commands-data
-  true_technical_project_data_configuration_directory: /home/hugo/projects/developer/source/snapshots/master/tmp/workflow-tests-configuration-data
+  true_technical_project_configuration_directory: /home/hugo/workflow-test
+  true_technical_project_configuration_filename: /home/hugo/workflow-test/workflow-project.pl
+  true_technical_project_data_commands_directory: /home/hugo/workflow-test/workflow-tests-commands-data
+  true_technical_project_data_configuration_directory: /home/hugo/workflow-test/workflow-tests-configuration-data
 ',
+						   white_space => 'convert seen 0a to 0d 0a newlines',
 						  },
 						 ],
-				description => "correct creation of the field project file",
-				disabled => 'must be adapted for the Docker container',
+				description => "showing that the container works: correct creation of the field project file",
 			       },
 			       {
-				command => 'bin/workflow builtin install_scripts -- --engine --commands',
+				arguments => [
+					      'docker',
+					      'exec',
+					      '-it',
+					      'neurospaces_harness',
+					      'bash',
+					      '-ic',
+					      'cd workflow-test && workflow builtin install_scripts -- --engine --commands',
+					     ],
+				command => 'sudo',
 				command_tests => [
 						  {
 						   comment => "The workflow engine emits its output about commands to be executed before executing those commnands, a wait clause in this test is required as a work around between the test engine and the workflow engine under test.",
-						   description => "Have the project files been correctly installed ?",
-						   disabled => ($ENV{PWD} eq '/home/hugo/projects/developer/source/snapshots/master'
-								? ''
-								: "the currenct directory must be '/home/hugo/projects/developer/source/snapshots/master' to enable this test"),
+						   description => "Have the project files been correctly installed inside the container ?",
 						   read => '# ln -sf /usr/local/bin/workflow /home/hugo/bin/workflow-tests-workflow
 #
-# ln -sf /home/hugo/projects/developer/source/snapshots/master/tmp/workflow-tests-configuration /home/hugo/bin/./workflow-tests-configuration
+# ln -sf /home/hugo/workflow-test/workflow-tests-configuration /home/hugo/bin/./workflow-tests-configuration
 #
-# ln -sf /home/hugo/projects/developer/source/snapshots/master/tmp/workflow-tests-commands /home/hugo/bin/./workflow-tests-commands
+# ln -sf /home/hugo/workflow-test/workflow-tests-commands /home/hugo/bin/./workflow-tests-commands
 #
 # bash -c "echo \'# workflow-tests-workflow
 
@@ -479,7 +515,7 @@ alias workflow-tests-workflow=\"grc workflow-tests-workflow\"
 alias workflow-tests-configuration=\"grc workflow-tests-configuration\"
 \' | cat >>/home/hugo/.bashrc"
 #
-# bash -c "echo \'. /home/hugo/projects/developer/source/snapshots/master/tmp/workflow-tests-bash-completion.sh
+# bash -c "echo \'. /home/hugo/workflow-test/workflow-tests-bash-completion.sh
 \' | cat >>/home/hugo/.bashrc"
 #
 # sudo     bash -c "echo \'
@@ -493,25 +529,51 @@ conf.workflow-tests-configuration
 
 \' | cat >>/etc/grc.conf"
 #
-# sudo     ln -sf /home/hugo/projects/developer/source/snapshots/master/tmp/conf.workflow-tests-configuration /usr/share/grc/conf.workflow-tests-configuration
+# sudo     ln -sf /home/hugo/workflow-test/conf.workflow-tests-configuration /usr/share/grc/conf.workflow-tests-configuration
 #
-# sudo     ln -sf /home/hugo/projects/developer/source/snapshots/master/tmp/conf.workflow-tests-workflow /usr/share/grc/conf.workflow-tests-workflow
+# sudo     ln -sf /home/hugo/workflow-test/conf.workflow-tests-workflow /usr/share/grc/conf.workflow-tests-workflow
 #
 ',
 						   wait => 0.1,
+						   white_space => 'convert seen 0a to 0d 0a newlines',
 						  },
 						 ],
-				description => "correct installation of the new project files",
-				disabled => 'must be adapted for the Docker container',
+				description => "showing that the container works: correct installation of the new project files",
 			       },
 			       {
-				command => 'workflow-tests-workflow --help-commands',
+				arguments => [
+					      'docker',
+					      'exec',
+					      '-it',
+					      'neurospaces_harness',
+					      'bash',
+					      '-ic',
+					      'echo "export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/home/hugo/bin" >~/.bashrc',
+					     ],
+				command => 'sudo',
 				command_tests => [
 						  {
-						   description => "Have the project specific commands been correctly installed ?",
-						   disabled => ($ENV{PWD} eq '/home/hugo/projects/developer/source/snapshots/master'
-								? ''
-								: "the currenct directory must be '/home/hugo/projects/developer/source/snapshots/master' to enable this test"),
+						   description => "Can we update .bashrc to make sure that the project specific workflow engine is found inside the container ?",
+						   wait => 0.1,
+						   white_space => 'convert seen 0a to 0d 0a newlines',
+						  },
+						 ],
+				description => "showing that the container works: update .bashrc to make sure that the project specific workflow engine is found",
+			       },
+			       {
+				arguments => [
+					      'docker',
+					      'exec',
+					      '-it',
+					      'neurospaces_harness',
+					      'bash',
+					      '-ic',
+					      'cd workflow-test && workflow-tests-workflow --help-commands',
+					     ],
+				command => 'sudo',
+				command_tests => [
+						  {
+						   description => "Have the project specific commands been correctly installed inside the container ?",
 						   read => '
 \'available_commands (copy-paste the one you would like to execute, try it with the --help or the --dry-run option, or execute it without these options)\':
   - workflow-tests-workflow builtin add_target --help
@@ -529,117 +591,128 @@ conf.workflow-tests-configuration
   - workflow-tests-workflow examples_yml remote_execution --help
   - workflow-tests-workflow examples_yml single_command --help
 ',
+						   white_space => 'convert seen 0a to 0d 0a newlines',
 						  },
 						 ],
-				description => "correct installation of the new project commands",
-				disabled => 'must be adapted for the Docker container',
-			       },
-			       {
-				command => 'workflow-tests-workflow examples_sh sh_single_command --dry-run',
-				command_tests => [
-						  {
-						   description => "Have the project specific commands been correctly installed ?",
-						   disabled => ($ENV{PWD} eq '/home/hugo/projects/developer/source/snapshots/master'
-								? ''
-								: "the currenct directory must be '/home/hugo/projects/developer/source/snapshots/master' to enable this test"),
-						   read => '/home/hugo/bin/workflow-tests-workflow: *** Running in dry_run 1 mode, not executing: \'/home/hugo/projects/developer/source/snapshots/master/tmp/workflow-tests-commands-data/examples_sh/sh_single_command.sh\'
-',
-						  },
-						 ],
-				description => 'are the shell command templates installed and executed, --dry-run ?',
-				disabled => 'must be adapted for the Docker container',
-			       },
-			       {
-				command => 'workflow-tests-workflow examples_sh sh_single_command',
-				command_tests => [
-						  {
-						   description => "Have the project specific commands been correctly installed ?",
-						   disabled => ($ENV{PWD} eq '/home/hugo/projects/developer/source/snapshots/master'
-								? ''
-								: "the currenct directory must be '/home/hugo/projects/developer/source/snapshots/master' to enable this test"),
-						   read => '# /home/hugo/projects/developer/source/snapshots/master/tmp/workflow-tests-commands-data/examples_sh/sh_single_command.sh
-#
-an example of the invocation of a single command
-',
-						  },
-						 ],
-				description => 'are the shell command templates installed and executed ?',
-				disabled => 'must be adapted for the Docker container',
+				description => "showing that the container works: correct installation of the new project commands",
 			       },
 			       {
 				arguments => [
-					      '-c',
+					      'docker',
+					      'exec',
+					      '-it',
+					      'neurospaces_harness',
+					      'bash',
+					      '-ic',
+					      'workflow-tests-workflow examples_sh sh_single_command --dry-run',
+					     ],
+				command => 'sudo',
+				command_tests => [
+						  {
+						   description => "Have the project specific commands been correctly installed inside the container ?",
+						   read => '/home/hugo/bin/workflow-tests-workflow: *** Running in dry_run 1 mode, not executing: \'/home/hugo/workflow-test/workflow-tests-commands-data/examples_sh/sh_single_command.sh\'
+',
+						   white_space => 'convert seen 0a to 0d 0a newlines',
+						  },
+						 ],
+				description => 'showing that the container works: are the shell command templates installed and executed, --dry-run ?',
+			       },
+			       {
+				arguments => [
+					      'docker',
+					      'exec',
+					      '-it',
+					      'neurospaces_harness',
+					      'bash',
+					      '-ic',
+					      'workflow-tests-workflow examples_sh sh_single_command',
+					     ],
+				command => 'sudo',
+				command_tests => [
+						  {
+						   description => "Have the project specific commands been correctly installed inside the container ?",
+						   read => '# /home/hugo/workflow-test/workflow-tests-commands-data/examples_sh/sh_single_command.sh
+#
+an example of the invocation of a single command
+',
+						   white_space => 'convert seen 0a to 0d 0a newlines',
+						  },
+						 ],
+				description => 'showing that the container works: are the shell command templates installed and executed ?',
+			       },
+			       {
+				arguments => [
+					      'docker',
+					      'exec',
+					      '-it',
+					      'neurospaces_harness',
+					      'bash',
+					      '-ic',
 					      "cd .. && workflow-tests-workflow examples_sh sh_single_command",
 					     ],
-				command => 'bash',
+				command => 'sudo',
 				command_tests => [
 						  {
 						   comment => "This test is the same as the previous one except for the cd command.",
-						   description => "Have the project specific commands been correctly installed and are they executed when invoked from a different directory ?",
-						   disabled => ($ENV{PWD} eq '/home/hugo/projects/developer/source/snapshots/master'
-								? ''
-								: "the currenct directory must be '/home/hugo/projects/developer/source/snapshots/master' to enable this test"),
-						   read => '# /home/hugo/projects/developer/source/snapshots/master/tmp/workflow-tests-commands-data/examples_sh/sh_single_command.sh
+						   description => "Have the project specific commands been correctly installed and are they executed when invoked from a different directory, inside the container ?",
+						   read => '# /home/hugo/workflow-test/workflow-tests-commands-data/examples_sh/sh_single_command.sh
 #
 an example of the invocation of a single command
 ',
+						   white_space => 'convert seen 0a to 0d 0a newlines',
 						  },
 						 ],
-				description => 'are the shell command templates installed and executed from a different directory?',
-				disabled => 'must be adapted for the Docker container',
+				description => 'showing that the container works: are the shell command templates installed and executed from a different directory?',
 			       },
 			       {
 				arguments => [
-					      'builtin',
-					      'add_target',
-					      '--',
-					      'new_target',
-					      "Add commands to this new target that do new things",
-					      '--install-commands-sh',
+					      'docker',
+					      'exec',
+					      '-it',
+					      'neurospaces_harness',
+					      'bash',
+					      '-ic',
+					      'workflow-tests-workflow builtin add_target -- new_target "Add commands to this new target that do new things" --install-commands-sh',
 					     ],
-				command => 'workflow-tests-workflow',
+				command => 'sudo',
 				command_tests => [
 						  {
-						   description => "Can we add a new target and a template for new shell commands for this target?",
-						   disabled => ($ENV{PWD} eq '/home/hugo/projects/developer/source/snapshots/master'
-								? ''
-								: "the currenct directory must be '/home/hugo/projects/developer/source/snapshots/master' to enable this test"),
+						   description => "Can we add a new target and a template for new shell commands for this target inside the container ?",
 						   wait => 1,
-						   read => 'workflow-tests-workflow: added target new_target to /home/hugo/projects/developer/source/snapshots/master/tmp/workflow-tests-configuration-data/targets.yml
+						   read => 'workflow-tests-workflow: added target new_target to /home/hugo/workflow-test/workflow-tests-configuration-data/targets.yml
 workflow-tests-workflow: created the shell command file for target new_target',
+						   white_space => 'convert seen 0a to 0d 0a newlines',
 						  },
 						 ],
-				description => 'can we add new targets with a shell template file for their commands ?',
-				disabled => 'must be adapted for the Docker container',
+				description => 'showing that the container works: can we add new targets with a shell template file for their commands ?',
 			       },
 			       {
 				arguments => [
-					      'builtin',
-					      'add_target',
-					      '--',
-					      'new_target2',
-					      "Add commands to this new target2 that do new things2",
-					      '--install-commands-sh',
+					      'docker',
+					      'exec',
+					      '-it',
+					      'neurospaces_harness',
+					      'bash',
+					      '-ic',
+					      'workflow-tests-workflow builtin add_target -- new_target2 "Add commands to this new target2 that do new things2" --install-commands-sh',
 					     ],
-				command => 'workflow-tests-workflow',
+				command => 'sudo',
 				command_tests => [
 						  {
-						   description => "Can we add a new target and a template for new shell commands for this target2?",
-						   disabled => ($ENV{PWD} eq '/home/hugo/projects/developer/source/snapshots/master'
-								? ''
-								: "the currenct directory must be '/home/hugo/projects/developer/source/snapshots/master' to enable this test"),
+						   description => "Can we add a new target and a template for new shell commands for this target2, inside the container ?",
+						   disabled => "we cannot read an output file inside the container yet, but this tests wants to check for it",
 						   wait => 1,
 						   read => {
 							    application_output_file => './workflow-tests-configuration-data/targets.yml',
 							    # comment => "note that the '../' is required because the preparation clause switches to the './tmp' directory",
 							    expected_output_file => "$::global_config->{tests_directory}/strings/two-targets-added.txt",
 							   },
-						   read_not_used => 'workflow-tests-workflow: added target new_target2 to /home/hugo/projects/developer/source/snapshots/master/tmp/workflow-tests-configuration-data/targets.yml
+						   read_not_used => 'workflow-tests-workflow: added target new_target2 to /home/hugo/workflow-test/workflow-tests-configuration-data/targets.yml
 workflow-tests-workflow: created the shell command file for target new_target2',
+						   white_space => 'convert seen 0a to 0d 0a newlines',
 						  },
 						 ],
-				description => 'can we add new targets2 with a shell template file for their commands ?',
-				disabled => 'must be adapted for the Docker container',
+				description => 'showing that the container works: can we add new targets2 with a shell template file for their commands ?',
 			       },
 			      ],
        description => "testing of the workflow automation engine",
