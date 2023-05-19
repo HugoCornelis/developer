@@ -1775,6 +1775,10 @@ sub builtin_install_scripts
         die "$0: *** error: no valid project_name in the field_configuration found";
     }
 
+    my $command_mkdir = "mkdir --parents $ENV{HOME}/bin";
+
+    execute_shell_command($command_mkdir);
+
     my $target = "$ENV{HOME}/bin/$project_name-workflow";
 
     my $command = "ln -sf $source $target";
