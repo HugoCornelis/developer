@@ -2108,6 +2108,8 @@ sub builtin_start_project
 {
     my $command_files = [ split '\n', `ls -1 2>/dev/null *-commands*`, ];
 
+    my $result;
+
     if (not $::option_dry_run)
     {
 	my $project_name = $ARGV[0] || $command_files->[0];
@@ -2190,6 +2192,8 @@ sub builtin_start_project
 	else
 	{
 	    print STDERR "$0: *** Error: could not initialize the project $project_name ($error)\n";
+
+	    $result = "$0: *** Error: could not initialize the project $project_name ($error)\n";
 	}
     }
     else
@@ -2200,6 +2204,8 @@ sub builtin_start_project
 
 	execute_shell_command_array($commands);
     }
+
+    return $result;
 }
 
 
