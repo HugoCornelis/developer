@@ -73,7 +73,7 @@ ENV LC_ALL en_US.UTF-8
 
 # note that the values given here are defaults, the --build-arg arguments on the command line may become the actual values
 
-ARG GROUP_ID=neurospaces
+ARG GROUP_ID=1000
 ARG USER_NAME=neurospaces
 ARG USER_ID=1000
 
@@ -91,7 +91,7 @@ WORKDIR /home/${USER_NAME}
 
 # make sure the user working directory exists
 
-ARG WORKING_DIRECTORY=/tmp
+ARG WORKING_DIRECTORY=/home/${USER_NAME}
 
 RUN mkdir --parents ${WORKING_DIRECTORY}
 

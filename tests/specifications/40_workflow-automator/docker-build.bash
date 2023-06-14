@@ -18,10 +18,11 @@ echo "Docker file is "`ls ./tests/specifications/40_workflow-automator/Dockerfil
     sudo docker build \
          --tag neurospaces_image \
 	 --file ./tests/specifications/40_workflow-automator/Dockerfile.neurospaces-testing \
-	 --build-arg USER_NAME=$USER_NAME \
-	 --build-arg USER_ID=$USER_ID \
-	 --build-arg GROUP_ID=$GROUP_ID \
-	 --build-arg WORKING_DIRECTORY=$WORKING_DIRECTORY \
 	 .
+
+	 # --build-arg USER_NAME=$USER_NAME \
+	 # --build-arg USER_ID=$USER_ID \
+	 # --build-arg GROUP_ID=$GROUP_ID \
+	 # --build-arg WORKING_DIRECTORY=$WORKING_DIRECTORY \
 
 # popd &> /dev/null

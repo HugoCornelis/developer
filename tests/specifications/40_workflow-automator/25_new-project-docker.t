@@ -20,7 +20,7 @@ my $test
 				command_tests => [
 						  {
 						   description => "Are we in the correct working directory in the Docker container ?",
-						   read => '/home/hugo
+						   read => '/home/neurospaces
 ',
 						   wait => 1,
 						   white_space => 'convert seen 0a to 0d 0a newlines',
@@ -139,17 +139,17 @@ config.status: creating python/Makefile
 						  {
 						   description => "Can we build the developer package in the Docker container ?",
 						   read => 'Making all in perl
-make[1]: Entering directory \'/home/hugo/projects/developer/source/snapshots/master/perl\'
+make[1]: Entering directory \'/home/neurospaces/projects/developer/source/snapshots/master/perl\'
 make[1]: Nothing to be done for \'all\'.
-make[1]: Leaving directory \'/home/hugo/projects/developer/source/snapshots/master/perl\'
+make[1]: Leaving directory \'/home/neurospaces/projects/developer/source/snapshots/master/perl\'
 Making all in python
-make[1]: Entering directory \'/home/hugo/projects/developer/source/snapshots/master/python\'
+make[1]: Entering directory \'/home/neurospaces/projects/developer/source/snapshots/master/python\'
 echo "No need to build in python"
 No need to build in python
-make[1]: Leaving directory \'/home/hugo/projects/developer/source/snapshots/master/python\'
-make[1]: Entering directory \'/home/hugo/projects/developer/source/snapshots/master\'
+make[1]: Leaving directory \'/home/neurospaces/projects/developer/source/snapshots/master/python\'
+make[1]: Entering directory \'/home/neurospaces/projects/developer/source/snapshots/master\'
 make[1]: Nothing to be done for \'all-am\'.
-make[1]: Leaving directory \'/home/hugo/projects/developer/source/snapshots/master\'
+make[1]: Leaving directory \'/home/neurospaces/projects/developer/source/snapshots/master\'
 ',
 						   timeout => 5,
 						   white_space => 'convert seen 0a to 0d 0a newlines',
@@ -172,8 +172,8 @@ make[1]: Leaving directory \'/home/hugo/projects/developer/source/snapshots/mast
 						  {
 						   description => "Can we install the developer package in the Docker container ?",
 						   read => 'Making install in perl
-make[1]: Entering directory \'/home/hugo/projects/developer/source/snapshots/master/perl\'
-make[2]: Entering directory \'/home/hugo/projects/developer/source/snapshots/master/perl\'
+make[1]: Entering directory \'/home/neurospaces/projects/developer/source/snapshots/master/perl\'
+make[2]: Entering directory \'/home/neurospaces/projects/developer/source/snapshots/master/perl\'
 make[2]: Nothing to be done for \'install-exec-am\'.
  /bin/mkdir -p \'/usr/local/share/perl/5.32.1\'
  /bin/mkdir -p \'/usr/local/share/perl/5.32.1/Neurospaces/Developer\'
@@ -182,21 +182,21 @@ make[2]: Nothing to be done for \'install-exec-am\'.
  /usr/bin/install -c -m 644  ./Neurospaces/Developer/Manager/GUI.pm \'/usr/local/share/perl/5.32.1/Neurospaces/Developer/Manager\'
  /bin/mkdir -p \'/usr/local/share/perl/5.32.1/Neurospaces\'
  /usr/bin/install -c -m 644  ./Neurospaces/Tester.pm ./Neurospaces/Developer.pm \'/usr/local/share/perl/5.32.1/Neurospaces\'
-make[2]: Leaving directory \'/home/hugo/projects/developer/source/snapshots/master/perl\'
-make[1]: Leaving directory \'/home/hugo/projects/developer/source/snapshots/master/perl\'
+make[2]: Leaving directory \'/home/neurospaces/projects/developer/source/snapshots/master/perl\'
+make[1]: Leaving directory \'/home/neurospaces/projects/developer/source/snapshots/master/perl\'
 Making install in python
-make[1]: Entering directory \'/home/hugo/projects/developer/source/snapshots/master/python\'
-make[2]: Entering directory \'/home/hugo/projects/developer/source/snapshots/master/python\'
+make[1]: Entering directory \'/home/neurospaces/projects/developer/source/snapshots/master/python\'
+make[2]: Entering directory \'/home/neurospaces/projects/developer/source/snapshots/master/python\'
 make  install-exec-hook
-make[3]: Entering directory \'/home/hugo/projects/developer/source/snapshots/master/python\'
+make[3]: Entering directory \'/home/neurospaces/projects/developer/source/snapshots/master/python\'
 echo "No install"
 No install
-make[3]: Leaving directory \'/home/hugo/projects/developer/source/snapshots/master/python\'
+make[3]: Leaving directory \'/home/neurospaces/projects/developer/source/snapshots/master/python\'
 make[2]: Nothing to be done for \'install-data-am\'.
-make[2]: Leaving directory \'/home/hugo/projects/developer/source/snapshots/master/python\'
-make[1]: Leaving directory \'/home/hugo/projects/developer/source/snapshots/master/python\'
-make[1]: Entering directory \'/home/hugo/projects/developer/source/snapshots/master\'
-make[2]: Entering directory \'/home/hugo/projects/developer/source/snapshots/master\'
+make[2]: Leaving directory \'/home/neurospaces/projects/developer/source/snapshots/master/python\'
+make[1]: Leaving directory \'/home/neurospaces/projects/developer/source/snapshots/master/python\'
+make[1]: Entering directory \'/home/neurospaces/projects/developer/source/snapshots/master\'
+make[2]: Entering directory \'/home/neurospaces/projects/developer/source/snapshots/master\'
  /bin/mkdir -p \'/usr/local/bin\'
  /usr/bin/install -c bin/data_2_figure bin/mcad2doxy bin/mtn-ancestors bin/neurospaces-commands bin/neurospaces-manager-gui bin/neurospaces_build bin/neurospaces_check bin/neurospaces_clean bin/neurospaces_clone bin/neurospaces_configure bin/neurospaces_countcode bin/neurospaces_create_directories bin/neurospaces_cron bin/neurospaces_describe bin/neurospaces_dev_uninstall bin/neurospaces_diff bin/neurospaces_dist bin/neurospaces_docs bin/neurospaces_docs-level7 bin/neurospaces_harness bin/neurospaces_harness_2_html bin/neurospaces_history bin/neurospaces_init bin/neurospaces_install bin/neurospaces_kill_servers bin/neurospaces_migrate bin/neurospaces_mtn_2_git bin/neurospaces_new_component bin/neurospaces_packages bin/neurospaces_pkgdeb bin/neurospaces_pkgrpm bin/neurospaces_pkgtar bin/neurospaces_profile_set bin/neurospaces_pull bin/neurospaces_push bin/neurospaces_repo_keys bin/neurospaces_repositories bin/neurospaces_revert bin/neurospaces_serve bin/neurospaces_setup \'/usr/local/bin\'
  /usr/bin/install -c bin/neurospaces_status bin/neurospaces_sync bin/neurospaces_tags bin/neurospaces_tools_propagate bin/neurospaces_uninstall bin/neurospaces_update bin/neurospaces_upgrade bin/neurospaces_versions bin/neurospaces_website_prepare bin/nspkg-deb bin/nspkg-osx bin/nspkg-rpm bin/nstest_query bin/numerical_compare bin/release-expand bin/release-extract bin/signal_voltage_characteristics bin/td-labels bin/td-majors bin/workflow \'/usr/local/bin\'
@@ -219,8 +219,8 @@ make[2]: Entering directory \'/home/hugo/projects/developer/source/snapshots/mas
  /usr/bin/install -c -m 644  tests/specifications/91_json/50_downloads.t tests/specifications/91_json/10_global.t tests/specifications/91_json/30_developer.t \'/usr/local/neurospaces/developer/tests/specifications/91_json\'
  /bin/mkdir -p \'/usr/local/neurospaces/developer/tests/specifications/90_yaml/70_harness\'
  /usr/bin/install -c -m 644  tests/specifications/90_yaml/70_harness/70_preparation.t tests/specifications/90_yaml/70_harness/75_preparation_checker.t tests/specifications/90_yaml/70_harness/10_help.t \'/usr/local/neurospaces/developer/tests/specifications/90_yaml/70_harness\'
-make[2]: Leaving directory \'/home/hugo/projects/developer/source/snapshots/master\'
-make[1]: Leaving directory \'/home/hugo/projects/developer/source/snapshots/master\'
+make[2]: Leaving directory \'/home/neurospaces/projects/developer/source/snapshots/master\'
+make[1]: Leaving directory \'/home/neurospaces/projects/developer/source/snapshots/master\'
 ',
 						   timeout => 5,
 						   white_space => 'convert seen 0a to 0d 0a newlines',
@@ -478,10 +478,10 @@ global_field_project_configuration:
   from_directory: .
   from_executable: workflow on the command line
   technical_project_configuration_directory: .
-  true_technical_project_configuration_directory: /home/hugo/workflow-test
-  true_technical_project_configuration_filename: /home/hugo/workflow-test/workflow-project.pl
-  true_technical_project_data_commands_directory: /home/hugo/workflow-test/workflow-tests-commands-data
-  true_technical_project_data_configuration_directory: /home/hugo/workflow-test/workflow-tests-configuration-data
+  true_technical_project_configuration_directory: /home/neurospaces/workflow-test
+  true_technical_project_configuration_filename: /home/neurospaces/workflow-test/workflow-project.pl
+  true_technical_project_data_commands_directory: /home/neurospaces/workflow-test/workflow-tests-commands-data
+  true_technical_project_data_configuration_directory: /home/neurospaces/workflow-test/workflow-tests-configuration-data
 ',
 						   white_space => 'convert seen 0a to 0d 0a newlines',
 						  },
@@ -503,20 +503,20 @@ global_field_project_configuration:
 						  {
 						   comment => "The workflow engine emits its output about commands to be executed before executing those commnands, a wait clause in this test is required as a work around between the test engine and the workflow engine under test.",
 						   description => "Have the project files been correctly installed inside the container ?",
-						   read => '# ln -sf /usr/local/bin/workflow /home/hugo/bin/workflow-tests-workflow
+						   read => '# ln -sf /usr/local/bin/workflow /home/neurospaces/bin/workflow-tests-workflow
 #
-# ln -sf /home/hugo/workflow-test/workflow-tests-configuration /home/hugo/bin/./workflow-tests-configuration
+# ln -sf /home/neurospaces/workflow-test/workflow-tests-configuration /home/neurospaces/bin/./workflow-tests-configuration
 #
-# ln -sf /home/hugo/workflow-test/workflow-tests-commands /home/hugo/bin/./workflow-tests-commands
+# ln -sf /home/neurospaces/workflow-test/workflow-tests-commands /home/neurospaces/bin/./workflow-tests-commands
 #
 # bash -c "echo \'# workflow-tests-workflow
 
 alias workflow-tests-workflow=\"grc workflow-tests-workflow\"
 alias workflow-tests-configuration=\"grc workflow-tests-configuration\"
-\' | cat >>/home/hugo/.bashrc"
+\' | cat >>/home/neurospaces/.bashrc"
 #
-# bash -c "echo \'. /home/hugo/workflow-test/workflow-tests-bash-completion.sh
-\' | cat >>/home/hugo/.bashrc"
+# bash -c "echo \'. /home/neurospaces/workflow-test/workflow-tests-bash-completion.sh
+\' | cat >>/home/neurospaces/.bashrc"
 #
 # sudo     bash -c "echo \'
 # workflow-tests-workflow
@@ -529,9 +529,9 @@ conf.workflow-tests-configuration
 
 \' | cat >>/etc/grc.conf"
 #
-# sudo     ln -sf /home/hugo/workflow-test/conf.workflow-tests-configuration /usr/share/grc/conf.workflow-tests-configuration
+# sudo     ln -sf /home/neurospaces/workflow-test/conf.workflow-tests-configuration /usr/share/grc/conf.workflow-tests-configuration
 #
-# sudo     ln -sf /home/hugo/workflow-test/conf.workflow-tests-workflow /usr/share/grc/conf.workflow-tests-workflow
+# sudo     ln -sf /home/neurospaces/workflow-test/conf.workflow-tests-workflow /usr/share/grc/conf.workflow-tests-workflow
 #
 ',
 						   wait => 0.1,
@@ -548,7 +548,7 @@ conf.workflow-tests-configuration
 					      'neurospaces_harness',
 					      'bash',
 					      '-ic',
-					      'echo "export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/home/hugo/bin" >~/.bashrc',
+					      'echo "export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/home/neurospaces/bin" >~/.bashrc',
 					     ],
 				command => 'sudo',
 				command_tests => [
@@ -610,7 +610,7 @@ conf.workflow-tests-configuration
 				command_tests => [
 						  {
 						   description => "Have the project specific commands been correctly installed inside the container ?",
-						   read => '/home/hugo/bin/workflow-tests-workflow: *** Running in dry_run 1 mode, not executing: \'/home/hugo/workflow-test/workflow-tests-commands-data/examples_sh/sh_single_command.sh\'
+						   read => '/home/neurospaces/bin/workflow-tests-workflow: *** Running in dry_run 1 mode, not executing: \'/home/neurospaces/workflow-test/workflow-tests-commands-data/examples_sh/sh_single_command.sh\'
 ',
 						   white_space => 'convert seen 0a to 0d 0a newlines',
 						  },
@@ -631,7 +631,7 @@ conf.workflow-tests-configuration
 				command_tests => [
 						  {
 						   description => "Have the project specific commands been correctly installed inside the container ?",
-						   read => '# /home/hugo/workflow-test/workflow-tests-commands-data/examples_sh/sh_single_command.sh
+						   read => '# /home/neurospaces/workflow-test/workflow-tests-commands-data/examples_sh/sh_single_command.sh
 #
 an example of the invocation of a single command
 ',
@@ -655,7 +655,7 @@ an example of the invocation of a single command
 						  {
 						   comment => "This test is the same as the previous one except for the cd command.",
 						   description => "Have the project specific commands been correctly installed and are they executed when invoked from a different directory, inside the container ?",
-						   read => '# /home/hugo/workflow-test/workflow-tests-commands-data/examples_sh/sh_single_command.sh
+						   read => '# /home/neurospaces/workflow-test/workflow-tests-commands-data/examples_sh/sh_single_command.sh
 #
 an example of the invocation of a single command
 ',
@@ -679,7 +679,7 @@ an example of the invocation of a single command
 						  {
 						   description => "Can we add a new target and a template for new shell commands for this target inside the container ?",
 						   wait => 1,
-						   read => 'workflow-tests-workflow: added target new_target to /home/hugo/workflow-test/workflow-tests-configuration-data/targets.yml
+						   read => 'workflow-tests-workflow: added target new_target to /home/neurospaces/workflow-test/workflow-tests-configuration-data/targets.yml
 workflow-tests-workflow: created the shell command file for target new_target',
 						   white_space => 'convert seen 0a to 0d 0a newlines',
 						  },
@@ -707,7 +707,7 @@ workflow-tests-workflow: created the shell command file for target new_target',
 							    # comment => "note that the '../' is required because the preparation clause switches to the './tmp' directory",
 							    expected_output_file => "$::global_config->{tests_directory}/strings/two-targets-added.txt",
 							   },
-						   read_not_used => 'workflow-tests-workflow: added target new_target2 to /home/hugo/workflow-test/workflow-tests-configuration-data/targets.yml
+						   read_not_used => 'workflow-tests-workflow: added target new_target2 to /home/neurospaces/workflow-test/workflow-tests-configuration-data/targets.yml
 workflow-tests-workflow: created the shell command file for target new_target2',
 						   white_space => 'convert seen 0a to 0d 0a newlines',
 						  },
