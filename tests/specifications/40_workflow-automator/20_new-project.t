@@ -201,9 +201,6 @@ conf.workflow-tests-configuration
 				command_tests => [
 						  {
 						   description => "Have the project specific commands been correctly installed ?",
-						   disabled => ($ENV{PWD} eq '/home/hugo/projects/developer/source/snapshots/master'
-								? ''
-								: "the currenct directory must be '/home/hugo/projects/developer/source/snapshots/master' to enable this test"),
 						   read => '
 \'available_commands (copy-paste the one you would like to execute, try it with the --help or the --dry-run option, or execute it without these options)\':
   - workflow-tests-workflow builtin add_target --help
@@ -224,29 +221,29 @@ conf.workflow-tests-configuration
 						  },
 						 ],
 				description => "correct installation of the new project commands",
+				disabled => ($ENV{PWD} eq '/home/hugo/projects/developer/source/snapshots/master'
+					     ? ''
+					     : "the currenct directory must be '/home/hugo/projects/developer/source/snapshots/master' to enable this test"),
 			       },
 			       {
 				command => 'workflow-tests-workflow examples_sh sh_single_command --dry-run',
 				command_tests => [
 						  {
 						   description => "Have the project specific commands been correctly installed ?",
-						   disabled => ($ENV{PWD} eq '/home/hugo/projects/developer/source/snapshots/master'
-								? ''
-								: "the currenct directory must be '/home/hugo/projects/developer/source/snapshots/master' to enable this test"),
 						   read => '/home/hugo/bin/workflow-tests-workflow: *** Running in dry_run 1 mode, not executing: \'/home/hugo/projects/developer/source/snapshots/master/tmp/workflow-tests-commands-data/examples_sh/sh_single_command.sh\'
 ',
 						  },
 						 ],
 				description => 'are the shell command templates installed and executed, --dry-run ?',
+				disabled => ($ENV{PWD} eq '/home/hugo/projects/developer/source/snapshots/master'
+					     ? ''
+					     : "the currenct directory must be '/home/hugo/projects/developer/source/snapshots/master' to enable this test"),
 			       },
 			       {
 				command => 'workflow-tests-workflow examples_sh sh_single_command',
 				command_tests => [
 						  {
 						   description => "Have the project specific commands been correctly installed ?",
-						   disabled => ($ENV{PWD} eq '/home/hugo/projects/developer/source/snapshots/master'
-								? ''
-								: "the currenct directory must be '/home/hugo/projects/developer/source/snapshots/master' to enable this test"),
 						   read => '# /home/hugo/projects/developer/source/snapshots/master/tmp/workflow-tests-commands-data/examples_sh/sh_single_command.sh
 #
 an example of the invocation of a single command
@@ -254,6 +251,9 @@ an example of the invocation of a single command
 						  },
 						 ],
 				description => 'are the shell command templates installed and executed ?',
+				disabled => ($ENV{PWD} eq '/home/hugo/projects/developer/source/snapshots/master'
+					     ? ''
+					     : "the currenct directory must be '/home/hugo/projects/developer/source/snapshots/master' to enable this test"),
 			       },
 			       {
 				arguments => [
@@ -265,9 +265,6 @@ an example of the invocation of a single command
 						  {
 						   comment => "This test is the same as the previous one except for the cd command.",
 						   description => "Have the project specific commands been correctly installed and are they executed when invoked from a different directory ?",
-						   disabled => ($ENV{PWD} eq '/home/hugo/projects/developer/source/snapshots/master'
-								? ''
-								: "the currenct directory must be '/home/hugo/projects/developer/source/snapshots/master' to enable this test"),
 						   read => '# /home/hugo/projects/developer/source/snapshots/master/tmp/workflow-tests-commands-data/examples_sh/sh_single_command.sh
 #
 an example of the invocation of a single command
@@ -275,6 +272,9 @@ an example of the invocation of a single command
 						  },
 						 ],
 				description => 'are the shell command templates installed and executed from a different directory?',
+				disabled => ($ENV{PWD} eq '/home/hugo/projects/developer/source/snapshots/master'
+					     ? ''
+					     : "the currenct directory must be '/home/hugo/projects/developer/source/snapshots/master' to enable this test"),
 			       },
 			       {
 				arguments => [
@@ -289,15 +289,15 @@ an example of the invocation of a single command
 				command_tests => [
 						  {
 						   description => "Can we add a new target and a template for new shell commands for this target?",
-						   disabled => ($ENV{PWD} eq '/home/hugo/projects/developer/source/snapshots/master'
-								? ''
-								: "the currenct directory must be '/home/hugo/projects/developer/source/snapshots/master' to enable this test"),
 						   wait => 1,
 						   read => 'workflow-tests-workflow: added target new_target to /home/hugo/projects/developer/source/snapshots/master/tmp/workflow-tests-configuration-data/targets.yml
 workflow-tests-workflow: created the shell command file for target new_target',
 						  },
 						 ],
 				description => 'can we add new targets with a shell template file for their commands ?',
+				disabled => ($ENV{PWD} eq '/home/hugo/projects/developer/source/snapshots/master'
+					     ? ''
+					     : "the currenct directory must be '/home/hugo/projects/developer/source/snapshots/master' to enable this test"),
 			       },
 			       {
 				arguments => [
@@ -312,9 +312,6 @@ workflow-tests-workflow: created the shell command file for target new_target',
 				command_tests => [
 						  {
 						   description => "Can we add a new target and a template for new shell commands for this target2?",
-						   disabled => ($ENV{PWD} eq '/home/hugo/projects/developer/source/snapshots/master'
-								? ''
-								: "the currenct directory must be '/home/hugo/projects/developer/source/snapshots/master' to enable this test"),
 						   wait => 1,
 						   read => {
 							    application_output_file => './workflow-tests-configuration-data/targets.yml',
@@ -326,6 +323,9 @@ workflow-tests-workflow: created the shell command file for target new_target2',
 						  },
 						 ],
 				description => 'can we add new targets2 with a shell template file for their commands ?',
+				disabled => ($ENV{PWD} eq '/home/hugo/projects/developer/source/snapshots/master'
+					     ? ''
+					     : "the currenct directory must be '/home/hugo/projects/developer/source/snapshots/master' to enable this test"),
 			       },
 			      ],
        description => "testing of the workflow automation engine",
