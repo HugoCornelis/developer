@@ -160,7 +160,9 @@ global_field_project_configuration:
 						   disabled => ($ENV{PWD} eq '/home/hugo/projects/developer/source/snapshots/master'
 								? ''
 								: "the currenct directory must be '/home/hugo/projects/developer/source/snapshots/master' to enable this test"),
-						   read => '# ln -sf /usr/local/bin/workflow /home/hugo/bin/workflow-tests-workflow
+						   read => '# mkdir --parents /home/hugo/bin
+#
+# ln -sf /usr/local/bin/workflow /home/hugo/bin/workflow-tests-workflow
 #
 # ln -sf /home/hugo/projects/developer/source/snapshots/master/tmp/workflow-tests-configuration /home/hugo/bin/./workflow-tests-configuration
 #
