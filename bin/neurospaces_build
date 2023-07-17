@@ -1292,7 +1292,7 @@ options related to behavior of external applications:
 	use YAML;
 
 	print Dump( { $0 => { descriptions => $descriptions, }, }, );
-	
+
 	exit 1;
     }
 
