@@ -75,8 +75,7 @@ dist_bin_SCRIPTS = \
 	bin/release-extract \
 	bin/signal_voltage_characteristics \
 	bin/td-labels \
-	bin/td-majors \
-	bin/workflow
+	bin/td-majors
 
 developertestdir=$(prefix)/neurospaces/developer
 nobase_dist_developertest_DATA=@TEST_SPECIFICATION_FILES@
