@@ -160,7 +160,7 @@ sub ip_routing_developer_laptop
 {
     use Getopt::Long qw(GetOptionsFromArray);
 
-    my $arguments = shift;
+    my $arguments = shift || [];
 
     my $result = GetOptionsFromArray($arguments, %$command_options);
 
