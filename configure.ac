@@ -15,10 +15,10 @@ dnl ##########################################################################
 
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ(2.59)
+AC_PREREQ([2.71])
 
-# $Format: "AC_INIT(${package}, ${major}.${minor}.${micro}-${label}, ${email})"$
-AC_INIT(developer, 0.0.0-alpha, hugo.cornelis@gmail.com)
+# $Format: "AC_INIT([${package}],[${major}.${minor}.${micro}-${label}],[${email}])"$
+AC_INIT([developer],[0.0.0-alpha],[hugo.cornelis@gmail.com])
 
 dnl Obtain operating system information.
 AC_CANONICAL_TARGET
@@ -123,7 +123,7 @@ case "$host_os" in
         echo ""
         echo "Error, the standard version of perl for Mac OSX is not found."
         echo "Non standard versions of perl are known to cause problems."
-        AC_ERROR([Perl for Mac OSX is not found.])
+        AC_MSG_ERROR(Perl for Mac OSX is not found.)
         ;;
       *)
         AC_MSG_RESULT([ $PERL ])
@@ -186,8 +186,8 @@ esac
 
 # note that this leads to an infinite configure loop on my laptop (Ubuntu 21.10)
 
-dnl # $Format: "AC_INIT(${package}, ${major}.${minor}.${micro}-${label})"$
-dnl AC_INIT(developer, 0.0.0-alpha)
+dnl # $Format: "AC_INIT([${package}],[${major}.${minor}.${micro}-${label}])"$
+dnl AC_INIT([developer],[0.0.0-alpha])
 dnl AC_CONFIG_SRCDIR([Makefile.am])
 dnl AM_INIT_AUTOMAKE
 
