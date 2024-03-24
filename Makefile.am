@@ -130,6 +130,9 @@ dist-hook:
 
 install-data-local: neurospaces_cpan_modules
 
+install-data-hook:
+	@echo "Developer package installation finished"
+
 neurospaces_cpan_modules:
 	@echo "======================== Installing CPAN modules"
 	( cd cpan ; ./cpan_install *.gz )
