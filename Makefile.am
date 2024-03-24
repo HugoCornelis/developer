@@ -80,6 +80,9 @@ dist_bin_SCRIPTS = \
 developertestdir=$(prefix)/neurospaces/developer
 nobase_dist_developertest_DATA=@TEST_SPECIFICATION_FILES@
 
+developerimagesdir=$(prefix)/neurospaces/images
+nobase_dist_developerimages_DATA = images/ns-main-logo-dark2.jpg
+
 RELEASE_MAJOR=`release-extract --major`
 RELEASE_MINOR=`release-extract --minor`
 RELEASE_MICRO=`release-extract --micro`
