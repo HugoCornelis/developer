@@ -177,6 +177,28 @@ sub ip_routing_developer_laptop
 }
 
 
+sub model_container_cscope
+{
+    my $commands
+	= [
+	   "cd $ENV{HOME}/projects/model-container/source/snapshots/master",
+	   "make -k cscope",
+	  ];
+
+    execute_shell_command_array($commands);
+}
+
+
+sub model_container_cscope_help
+{
+    my $command = shift;
+
+    return "$command: generate a cscope database for the model-container source code.
+
+";
+}
+
+
 sub ssp_build_manual
 {
     my $commands
