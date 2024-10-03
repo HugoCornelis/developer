@@ -1,0 +1,22 @@
+---
+node_configuration:
+  0_concepts:
+    description00: The design goals of the IP address plan are to be explained here
+    description01: The design goals of this IP address plan is to separate administration networks from operations networks.
+  laptop_developer:
+    description: development laptop
+    network:
+      enp1s0:
+        comment: the first ethernet interface of the developer laptop
+        ip_address: 192.168.5.70
+      wlp2s0:
+        comment: ip_address assigned through DHCP
+        ip_address: 192.168.0.200
+  laptop_slave:
+    description: non-development laptop, slave
+    network:
+      enp0s25:
+        ip_address: 192.168.20.10
+      wlo1:
+        comment: ip_address assigned through DHCP
+        ip_address: 192.168.0.204

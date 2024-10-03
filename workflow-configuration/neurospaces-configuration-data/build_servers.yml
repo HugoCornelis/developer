@@ -1,0 +1,10 @@
+---
+build_servers:
+  laptop:
+    built_image_directory: master
+    description: local laptop
+    name: laptop
+    ssh_port: 22
+    ssh_server: localhost
+    ssh_user: hugo
+    tftp_directory: /srv/tftp/genesis

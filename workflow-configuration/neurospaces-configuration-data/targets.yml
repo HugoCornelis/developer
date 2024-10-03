@@ -1,0 +1,16 @@
+---
+targets:
+  all:
+    description: used for processing of target files that are produced by other targets
+  docker:
+    description: interaction with the docker build container
+  heccer:
+    description: commands related to the Heccer compartmental solver
+  ip_routing:
+    description: ip_routing reporting
+  source_code:
+    description: operations on the source code that is used for testing
+  ssp:
+    description: commands related to the SSP scheduler
+  wiki_gitlab:
+    description: pulls the wiki pages from gitlab (and possibly other sources) and converts them PDF (or other formats)

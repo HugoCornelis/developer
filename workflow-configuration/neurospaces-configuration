@@ -4,6 +4,25 @@ use strict;
 
 use warnings;
 
+my $build_servers = YAML::LoadFile('neurospaces-configuration-data/build_servers.yml');
+
+my $command_filenames = YAML::LoadFile('neurospaces-configuration-data/command_filenames.yml');
+
+my $node_configuration = YAML::LoadFile('neurospaces-configuration-data/node_configuration.yml');
+
+my $target_servers = YAML::LoadFile('neurospaces-configuration-data/target_servers.yml');
+
+my $targets = YAML::LoadFile('neurospaces-configuration-data/targets.yml');
+
+
+my $configuration = {
+		      %$build_servers,
+		      %$command_filenames,
+		      %$node_configuration,
+		      %$target_servers,
+		      %$targets,
+		     };
+
 
 my $usb_2_ethernet_interfaces
     = [
@@ -11,53 +30,8 @@ my $usb_2_ethernet_interfaces
        "enxd03745888035",  # the white usb_2_ethernet adapter with three extra usb interfaces
       ];
 
-my $global_node_configuration = {
-				 "0_concepts" => {
-						  description00 => "The design goals of the IP address plan are to be explained here.",
-						 },
-				 laptop_developer => {
-						      description => "development laptop",
-						      network => {
-								  "enp1s0" => {
-									       comment => "the first ethernet interface of the developer laptop",
-									       ip_address => "192.168.5.70",
-									      },
-								  "wlp2s0" => {
-									       comment => "ip_address assigned through DHCP",
-									       ip_address => "192.168.0.200",
-									      },
-								 },
-						     },
-				 laptop_slave => {
-						  description => "non-development laptop, slave",
-						  network => {
-							      "enp0s25" => {
-									    ip_address => "192.168.20.10",
-									   },
-							      "wlo1" => {
-									 comment => "ip_address assigned through DHCP",
-									 ip_address => "192.168.0.204",
-									},
-							     },
-						 },
-				};
-
-my $configuration = {
-		     build_servers => {
-				       laptop => {
-						  built_image_directory => "master",
-						  description => "local laptop",
-						  name => "laptop",
-						  ssh_port => "22",
-						  ssh_server => "localhost",
-						  ssh_user => "hugo",
-						  tftp_directory => "/srv/tftp/genesis",
-						 },
-				      },
-		     command_filenames => [
-					   "neurospaces-commands",
-					  ],
-		     node_configuration => $global_node_configuration,
+$configuration = {
+		  %$configuration,
 		     packages => {
 				 },
 		     projects => {
@@ -88,28 +62,6 @@ my $configuration = {
 					],
 		     target_files => [
 				     ],
-		     targets => {
-				 all => {
-					 description => "used for processing of target files that are produced by any of the other targets",
-					},
-				 heccer => {
-					    description => "commands related to the Heccer compartmental solver",
-					   },
-				 ip_routing => {
-						description => "ip_routing reporting",
-					       },
-				 ssp => {
-					 description => "commands related to the SSP scheduler",
-					},
-				},
-		     target_servers => {
-					laptop_slave => {
-							 description => "non-development laptop, slave",
-							 name => "laptop_slave",
-							 ssh_port => "22",
-							 ssh_server => "192.168.0.204",
-							},
-				       },
 		    };
 
 
