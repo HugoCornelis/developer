@@ -226,41 +226,101 @@ sub command_module_create
 	die "$0: *** Error: $command expects an argument for the name of the new module";
     }
 
-    my $summary_text
-	= "---
-description: <description of your module>
-documentation:
-  explanation: |+2
-    
-    <a few sentences that explain the purpose of the program being tested>
-    
-  purpose: |+2
-    
-    <a description of the purpose of this test module>
-    
-name: <the full pathname of this test module, relative to the test specifications directory>
-";
-
-    my $command_definition_text
-	= "---
-command: <the command with its single space seperated arguments to be tested>
-command_tests:
- - description: <a single line description of the specific test, it can be a question that asks what is tested>
-   read: <the output that is expected from running the test>
-description: <a single line description of the command being tested>
-";
-
     my $summary
 	= {
+	   comment => "This type of comment element can be inserted at any level in the YAML files that define tests.
+
+The top level summary file of a test module gives general information about the module without specifying any tests.
+
+Recognized key words are:
+
+description: Gives a general description of the test module.
+disable: Gives the reason why this test module is disabled.
+documentation: Has keywords with information for inclusion in documents.  They are not considered druing tests.
+error: Gives the reason why this test module will always fail.
+harnessing: A harnessing key word defines the container that is used to run the commands to be tested.
+
+In most cases the harnessing keyword has one subkeyword 'class' that defines:
+
+    default_user: The name of the user inside the container running the tests.
+    dockerfile: A relative pathname to the Dockerfile that defines the docker image.
+    identifier: An internal Docker container identifier.
+    name_container: The public name of the Docker container.
+    name_image: The public name of the Docker image that is used to instantiate the container.
+    type: The internal type of the code that is used to manage the container, most commonly 'Heterarch::Test::ExecutionContext::Harness::Docker'.
+
+name: The name of the module, this must match with the pathname of the module.  It is used for error reporting.
+numerical_compare: Allow small arithmetic differences during the comparison of the expected result with the produced result.
+tag: An array of tags associated with this test module.  These are matched with the tags given on the command line.
+
+",
 	   description => "<description of your module>",
 	   documentation => {
 			     explanation => "<a few sentences that explain the purpose of the program being tested>",
-			     purpose => "<a description of the purpose of this test module>",
+			     purpose => "<a single line description of the purpose of this test module>",
 			    },
 	   name => "<the full pathname of this test module, relative to the test specifications directory>",
 	  };
 
-    my $command_definition
+    my $command_definition1
+	= {
+	   comment => "This type of comment element can be inserted at any level in the YAML files that define tests.
+
+For a concise example, see the second command definition that was generated with this one.
+
+The tests are defined with arrays of command definitions that each can have an array of command tests.
+
+Recognized key words at the level of the command definitions are:
+
+class: The name of a perl class that will execute the tests.
+command: The command the must be tested, with space seperated arguments and options.
+command_tests: An array of the tests executed against the command.
+disable: Gives the reason why this test command is disabled.
+description: A single line description of all the tests for the given command.
+error: Gives the reason why this test command will always fail.
+numerical_compare: Allow small arithmetic differences during the comparison of the expected result with the produced result.
+tag: An array of tags associated with this command.  These are matched with the tags given on the command line.
+
+",
+	   command => "<the command with its single space seperated arguments to be tested>",
+	   command_tests => [
+			     {
+			      comment => "This type of comment element can be inserted at any level in the YAML files that define tests.
+
+The command tests defines an array of tests that must be executed against the command.
+
+Possible keywords are:
+
+application_output_file: The pathname of a file that will be produced by the test.
+description: A single line description: of the executed test.
+disable: Gives the reason why this command test is disabled.
+error: Gives the reason why this command test will always fail.
+expected_output_file: The pathname of a file with the contents that is expected.
+read: The expected output on STDOUT of the command.  This can be a regular expression (take a look at the examples).
+tag: An array of tags associated with this command test.  These are matched with the tags given on the command line.
+tester: A shell command that will be run after the command has produced output (likely to be combined with a wait keyword for reliability and reproducibility).
+timeout: An optional timeout after which the test will fail if the expected output is not seen yet.
+wait: An optional number of seconds to wait before attempting to read from STDIN of the command.
+white_space: If this has the value 'convert seen 0a to 0d 0a newlines', that is what it will do.  This is used when running the tests inside a Docker container.
+write: An optional string to write to STDIN of the command, where the command is then expected to produce the expected output.
+
+
+Note that more keywords have been defined, including for running C and perl code.  They are currently not documented.
+
+",
+			      description => "<a single line description of the specific test, it can be a question that asks what is tested>",
+			      read => "<the output that is expected from running the test>",
+			     },
+			     {
+			      description => "<a single line description of the specific test, it can be a question that asks what is tested>",
+			      read => "<a string that is expected from running the test after writing to STDOUT what is specified with the 'write' keyword>",
+			      write => "<a string that must be written to STDIN>",
+			     },
+			    ],
+	   description => "<a single line description of the command being tested>",
+	  };
+
+    my $command_definition2
 	= {
 	   command => "<the command with its single space seperated arguments to be tested>",
 	   command_tests => [
@@ -268,11 +328,18 @@ description: <a single line description of the command being tested>
 			      description => "<a single line description of the specific test, it can be a question that asks what is tested>",
 			      read => "<the output that is expected from running the test>",
 			     },
+			     {
+			      description => "<a single line description of the specific test, it can be a question that asks what is tested>",
+			      read => "<a string that is expected from running the test after writing to STDOUT what is specified with the 'write' keyword>",
+			      timeout => "<the number of seconds to wait before failing the test>",
+			      wait => "<the number of seconds to wait before attempting to read from STDIN>",
+			      write => "<a string that must be written to STDIN>",
+			     },
 			    ],
 	   description => "<a single line description of the command being tested>",
 	  };
 
-    $summary->{command_definitions} = [ $command_definition, ];
+    $summary->{command_definitions} = [ $command_definition1, $command_definition2, ];
 
     # my $path_name_prefix = $global_config->{tests_directory} || "tests/specifications";
 
