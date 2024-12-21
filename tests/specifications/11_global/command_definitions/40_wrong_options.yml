@@ -1,0 +1,6 @@
+---
+command: bin/neurospaces_build --tag build-10 --verbose --verbose --verbose --no-compile --no-configure --no-install --regex developer --enable developer --dry-run
+command_tests:
+ - description: Is an error message given when invoking the build script with wrong options ?
+   read: bin/neurospaces_build: *** Error: you must set option_src_dir and option_src_tag when working in client mode
+description: wrong options

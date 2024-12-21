@@ -1,0 +1,16 @@
+---
+description: build testing logic, and operations not specific to user or developer mode
+documentation:
+  explanation: |+2
+    
+    The scripts to build a Neurospaces based simulator download specific
+    software packages from the Internet, compile them and integrate them
+    into a comprehensive simulator.  They are used to configure a computer
+    for simulator development, for running simulations and to configure a
+    simulation server.
+    
+  purpose: |+2
+    
+    This test module defines general tests that are not specific to simulator users (client mode) or simulator developers (developer mode).
+    
+name: 11_global/summary.yml
