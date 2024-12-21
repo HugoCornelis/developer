@@ -1,0 +1,168 @@
+#!/usr/bin/perl -w
+
+use strict;
+
+use warnings;
+
+
+package main;
+
+our $option_verbose;
+
+our $global_technical_project_configuration;
+
+
+package Command;
+
+
+sub harness_test_perl_2_yaml
+{
+    my $old_test_pathname = $ARGV[0];
+
+    my $replace = $ARGV[1] || '';
+
+    if (! $old_test_pathname)
+    {
+	die "$0: *** Error: expected a single argument for the test_pathname.";
+    }
+
+    my $new_test_pathname = $old_test_pathname;
+
+    $new_test_pathname =~ s(.t$)();
+
+    my $conversion_commands
+	= [
+	   "neurospaces_harness --regex $old_test_pathname --dump-yaml-structured",
+	   "echo The result of the conversion is found as",
+	   "echo",
+	   "echo     /tmp/tests/specifications/$new_test_pathname/summary.yml",
+	   "echo     /tmp/tests/specifications/$new_test_pathname/command_definitions/*",
+	   "echo",
+	   (not $replace) ? ("echo Use a second argument for the command you just used, to automatically replace the previous test with its converted version.") : (),
+	  ];
+
+    execute_shell_command_array
+	(
+	 $conversion_commands,
+	 {
+	  allow_fail => 'if some of the tests fail, neurospaces_harness returns a failure code',
+	  quiet => 'for better visual output',
+	 },
+	);
+
+    if ($replace)
+    {
+	my $option_config_filename = './tests.config';
+	my $test_config = do $option_config_filename;
+
+	if (not exists $test_config->{tests_directory})
+	{
+	    $test_config->{tests_directory} = "./tests/specifications";
+	}
+
+	my $tests_directory = $test_config->{tests_directory};
+
+	my $replace_commands
+	    = [
+	       "rm -fr $tests_directory/$old_test_pathname*",
+	       "mv /tmp/$tests_directory/$new_test_pathname $tests_directory/$new_test_pathname",
+	      ];
+
+	execute_shell_command_array($replace_commands);
+    }
+
+}
+
+
+sub harness_single_command
+{
+    my $force = $ARGV[0] || "";
+
+    my $command = 'echo an example of the invocation of a single command';
+
+    execute_shell_command($command);
+
+    # Some options to command execution:
+    #   allow_fail: allow execution of this command to fail.
+    #   dry_run: do not execute this command.
+    #   remote: a remote that is defined in neurospaces-configuration.
+    #   quiet: do not provide feedback to the terminal about this command.
+    #   sudo: invoke the command prefixed with sudo.
+    #   timeout: this command will fail after the given timeout.
+    #   use_bash: use bash to invoke the command because it uses specific bash functions or features.
+    #
+    # execute_shell_command($command, { remote => '<name of a remote that is defined in neurospaces-configuration>, } );
+    #
+    # These options can given to any of the functions that execute commands.
+}
+
+
+sub harness_single_command_completions
+{
+    my $complete_command_string = shift;
+
+    my $complete_arguments_array = shift;
+
+    my $completions_hash
+	= {
+	   "1._<your_completion_without_spaces_here>" => "explain_the_purpose_of_the_completion_here",
+	   "2._<another_completion_here>" => "the_numbers_preserve_the_order_for_this_example",
+	   "3._Don't_use_spaces_in_your_completions,_because_they_confuse_bash" => "further_explanation",
+	   "4._Look_at_the_completion_function_of_harness_single_command_completions_to_understand_how_it_works" => "further_explanation",
+	  };
+
+    # the follow logic uses bash completion as a help message when there are no arguments to complete
+    # allows to dynamically insert other completions when there are arguments to complete.
+
+    if (scalar @$complete_arguments_array > 2)
+    {
+	# insert your completions here as a hash when there are arguments to complete,
+	# the workflow engine will select the correct level in your hash of completins.
+	# bash will select those that apply to the current argument to be completed.
+
+	return {
+		aa => {
+		       12 => {
+			      cc => 1,
+			     },
+		       34 => {
+			      dd => 1,
+			     },
+		      },
+		bb => {
+		       56 => {
+			      ee => 1,
+			     },
+		       78 => {
+			      ff => 1,
+			     },
+		      },
+	       };
+    }
+    else
+    {
+	return $completions_hash;
+    }
+
+    return $completions_hash;
+}
+
+
+sub harness_single_command_help
+{
+    my $command = shift;
+
+    return "$command: an example of the invocation a single command.
+
+arguments:
+
+    force: command arguments can be parsed from @ARGV.
+";
+}
+
+
+# return success
+
+1;
+
+

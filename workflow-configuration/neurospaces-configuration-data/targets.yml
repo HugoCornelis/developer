@@ -4,6 +4,8 @@ targets:
     description: used for processing of target files that are produced by other targets
   docker:
     description: interaction with the docker build container
+  harness:
+    description: Commands useful for the development of neurospaces_harness.
   heccer:
     description: commands related to the Heccer compartmental solver
   ip_routing:
