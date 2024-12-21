@@ -1,3 +1,4 @@
 ---
 command_filenames:
   - neurospaces-commands
+  - neurospaces-commands-harness
