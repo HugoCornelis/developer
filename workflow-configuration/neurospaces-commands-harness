@@ -32,7 +32,7 @@ sub harness_test_perl_2_yaml
 
     my $conversion_commands
 	= [
-	   "neurospaces_harness --regex $old_test_pathname --dump-yaml-structured",
+	   "neurospaces_harness --regex $old_test_pathname --dump-file-structured-yaml",
 	   "echo The result of the conversion is found as",
 	   "echo",
 	   "echo     /tmp/tests/specifications/$new_test_pathname/summary.yml",
