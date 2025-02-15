@@ -17,9 +17,11 @@ package Command;
 
 sub harness_test_perl_2_yaml
 {
-    my $old_test_pathname = $ARGV[0];
+    my $arguments = shift;
 
-    my $replace = $ARGV[1] || '';
+    my $old_test_pathname = $arguments->[0];
+
+    my $replace = $arguments->[1] || '';
 
     if (! $old_test_pathname)
     {
@@ -71,6 +73,26 @@ sub harness_test_perl_2_yaml
 	execute_shell_command_array($replace_commands);
     }
 
+}
+
+
+sub harness_test_perl_2_yaml_help
+{
+    my $command = shift;
+
+    return "$command: convert a test module in perl to file-structured yaml in /tmp.
+
+This command is equivalent to:
+
+\$ neurospaces_harness --regex <test_pathname> --dump-file-structured-yaml
+
+with some extras.
+
+arguments:
+
+    ARGV[0]: The existing test pathname, note that this is processed as a regex.
+    ARGV[1]: 'replace' or any string to replace the existing test with its yaml version.
+";
 }
 
 
