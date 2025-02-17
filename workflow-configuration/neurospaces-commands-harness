@@ -21,11 +21,19 @@ sub harness_test_perl_2_yaml
 
     my $old_test_pathname = $arguments->[0];
 
-    my $replace = $arguments->[1] || '';
+    my $format = $arguments->[1] || 'json';
+
+    my $replace = $arguments->[2] || '';
 
     if (! $old_test_pathname)
     {
 	die "$0: *** Error: expected a single argument for the test_pathname.";
+    }
+
+    if ($format ne 'yaml'
+	and $format ne 'json')
+    {
+	die "$0: *** Error: format should be 'json' or 'yaml' (now it is '$format'.";
     }
 
     my $new_test_pathname = $old_test_pathname;
@@ -34,7 +42,7 @@ sub harness_test_perl_2_yaml
 
     my $conversion_commands
 	= [
-	   "neurospaces_harness --regex $old_test_pathname --dump-file-structured-yaml",
+	   "neurospaces_harness --regex $old_test_pathname --dump-file-structured-$format",
 	   "echo The result of the conversion is found as",
 	   "echo",
 	   "echo     /tmp/tests/specifications/$new_test_pathname/summary.yml",
@@ -80,9 +88,13 @@ sub harness_test_perl_2_yaml_help
 {
     my $command = shift;
 
-    return "$command: convert a test module in perl to file-structured yaml in /tmp.
+    return "$command: convert a test module in perl to file-structured json or yaml in /tmp.
 
-This command is equivalent to:
+For a format of 'json' this command is equivalent to:
+
+\$ neurospaces_harness --regex <test_pathname> --dump-file-structured-json
+
+For a format of 'yaml' this command is equivalent to:
 
 \$ neurospaces_harness --regex <test_pathname> --dump-file-structured-yaml
 
@@ -91,7 +103,8 @@ with some extras.
 arguments:
 
     ARGV[0]: The existing test pathname, note that this is processed as a regex.
-    ARGV[1]: 'replace' or any string to replace the existing test with its yaml version.
+    ARGV[1]: Either 'json' or 'yaml', the default is 'json'.
+    ARGV[2]: 'replace' or any string to replace the existing test with its yaml version.
 ";
 }
 
