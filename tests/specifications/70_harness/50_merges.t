@@ -8,7 +8,7 @@ my $test
     = {
        command_definitions => [
 			       {
-				command => 'cd ~/projects/developer/source/snapshots/master && neurospaces_harness --config-filename ./tests-merge.config --input-modules ./tests/to-be-merged/110_mid-level/ --input-modules ./tests/to-be-merged/111_low-level/ --show-command-tests',
+				command => 'cd ~/projects/developer/source/snapshots/master && neurospaces_harness --config-filename ./tests-merge.config --input-modules ./tests/to-be-merged/110_mid-level --input-modules ./tests/to-be-merged/111_low-level --show-command-tests',
 				command_tests => [
 						  {
 						   description => "Can we merge several partial test specifications and then run the tests they embed?",
@@ -21,7 +21,7 @@ description:
     name: developer-test-merge
     version: alpha
 selected:
-  low-level.t:
+  111_low-level.t:
     - command: 'ifconfig '
     - command: netstat -rn
 
@@ -36,7 +36,7 @@ No email sent.
 				description => "merging partial tests specifications and run them",
 			       },
 			      ],
-       description => "incomplete test specifications and merge test module",
+       description => "incomplete test specifications and merge of test modules",
        harnessing => {
 		      class => {
 				comment => 'Enter this container with "docker exec -it neurospaces_developer_package_test_container bash"',
