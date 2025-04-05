@@ -4,8 +4,6 @@ targets:
     description: used for processing of target files that are produced by other targets
   docker:
     description: interaction with the docker build container
-  harness:
-    description: Commands useful for the development of neurospaces_harness.
   heccer:
     description: commands related to the Heccer compartmental solver
   ip_routing:
@@ -16,5 +14,7 @@ targets:
     description: operations on the source code that is used for testing
   ssp:
     description: commands related to the SSP scheduler
+  vigilia:
+    description: Commands useful for the development of vigilia.
   wiki_gitlab:
     description: pulls the wiki pages from gitlab (and possibly other sources) and converts them PDF (or other formats)

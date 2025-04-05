@@ -76,7 +76,7 @@ sub heccer_build_manual
     my $commands
 	= [
 	   "cd $ENV{HOME}/projects/heccer/source/snapshots/master",
-	   "neurospaces_harness --tags manual --output-pdf --output-figures --verbose",
+	   "vigilia --tags manual --output-pdf --output-figures --verbose",
 	  ];
 
     my $build_tree
@@ -204,7 +204,7 @@ sub ssp_build_manual
     my $commands
 	= [
 	   "cd $ENV{HOME}/projects/ssp/source/snapshots/master",
-	   "neurospaces_harness --tags manual --output-pdf --output-figures --verbose",
+	   "vigilia --tags manual --output-pdf --output-figures --verbose",
 	  ];
 
     my $build_tree

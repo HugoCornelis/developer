@@ -22,14 +22,6 @@ my $all_packages = Neurospaces::Developer::packages_all();
 
 my $all_tools
     = {
-#        "tests/neurospaces_harness" => {
-# 				       description => "Searches test specifications and executes them.",
-# 				       source_package => 'model-container',
-# 				      },
-#        "tests/tests_2_html" => {
-# 				description => "Converts test specifications to html.",
-# 				source_package => 'model-container',
-# 			       },
       };
 
 

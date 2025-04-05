@@ -104,19 +104,6 @@ log file. I expect that I should have selected the packages etc before
 clicking install, but since this was not in the instructions I did not
 do and followed the alternative set of instructions.
 
-* neurospaces_harness
-Likely during initialization, the regression tester collects
-information about the target system.  One of the pieces of information
-is a profile of the C libraries, but some of them cannot be found on
-Simon's target PC.  This produces an error message similar to
-'/usr/libc* not found'.  This message is an annoyance to users and
-should be removed from the output.
-
-Additional information: I cannot remember the exact details of how the
-libraries are searched.  When errors are generated during the
-regression tests, the information about the target system is included
-in the test report.  During startup, the check for the
-
 * neurospaces_new_component
 ** still required when starting a new component on the server
 *** service neurospaces-servers stop

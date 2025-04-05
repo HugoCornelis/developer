@@ -188,7 +188,7 @@ command_definitions:
           
           options related to behavior of external applications:
               --environment               fills in the environment, can be given multiple times.
-                                          e.g. environment NEUROSPACES_HARNESS_OPTION_EMAIL=1 generates emails for tests that fail.
+                                          e.g. environment VIGILIA_OPTION_EMAIL=1 generates emails for tests that fail.
 
     description: help message
   - arguments: []
@@ -199,7 +199,7 @@ command_definitions:
     description: no options
   - arguments:
       - --environment
-      - NEUROSPACES_HARNESS_OPTION_EMAIL=1
+      - VIGILIA_OPTION_EMAIL=1
       - --environment
       - a=b
       - --help
@@ -209,7 +209,7 @@ command_definitions:
         read: |2
           
           environment=s:
-            - NEUROSPACES_HARNESS_OPTION_EMAIL=1
+            - VIGILIA_OPTION_EMAIL=1
             - a=b
     description: help message
   - arguments:

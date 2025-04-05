@@ -840,9 +840,9 @@ sub read_cmd_line
 
     # process environment options
 
-#     # tell neurospaces_harness if to send emails for this
+#     # tell vigilia if to send emails for this
 
-#     $ENV{NEUROSPACES_HARNESS_OPTION_EMAIL} = $option_neurospaces_harness_email;
+#     $ENV{VIGILIA_OPTION_EMAIL} = $option_vigilia_email;
 
     # build the environment for external applications
 
@@ -986,7 +986,7 @@ usual.
 
 options related to behavior of external applications:
     --environment               fills in the environment, can be given multiple times.
-                                e.g. environment NEUROSPACES_HARNESS_OPTION_EMAIL=1 generates emails for tests that fail.
+                                e.g. environment VIGILIA_OPTION_EMAIL=1 generates emails for tests that fail.
 
 ";
 
@@ -1117,7 +1117,7 @@ usual.
 
 options related to behavior of external applications:
     --environment               fills in the environment, can be given multiple times.
-                                e.g. environment NEUROSPACES_HARNESS_OPTION_EMAIL=1 generates emails for tests that fail.
+                                e.g. environment VIGILIA_OPTION_EMAIL=1 generates emails for tests that fail.
 
 ",
 

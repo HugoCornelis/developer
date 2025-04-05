@@ -15,7 +15,7 @@ our $global_technical_project_configuration;
 package Command;
 
 
-sub harness_test_perl_2_yaml
+sub vigilia_test_perl_2_yaml
 {
     my $arguments = shift;
 
@@ -42,7 +42,7 @@ sub harness_test_perl_2_yaml
 
     my $conversion_commands
 	= [
-	   "neurospaces_harness --regex $old_test_pathname --dump-file-structured-$format",
+	   "vigilia --regex $old_test_pathname --dump-file-structured-$format",
 	   "echo The result of the conversion is found as",
 	   "echo",
 	   "echo     /tmp/tests/specifications/$new_test_pathname/summary.yml",
@@ -55,7 +55,7 @@ sub harness_test_perl_2_yaml
 	(
 	 $conversion_commands,
 	 {
-	  allow_fail => 'if some of the tests fail, neurospaces_harness returns a failure code',
+	  allow_fail => 'if some of the tests fail, vigilia returns a failure code',
 	  quiet => 'for better visual output',
 	 },
 	);
@@ -84,7 +84,7 @@ sub harness_test_perl_2_yaml
 }
 
 
-sub harness_test_perl_2_yaml_help
+sub vigilia_test_perl_2_yaml_help
 {
     my $command = shift;
 
@@ -92,11 +92,11 @@ sub harness_test_perl_2_yaml_help
 
 For a format of 'json' this command is equivalent to:
 
-\$ neurospaces_harness --regex <test_pathname> --dump-file-structured-json
+\$ vigilia --regex <test_pathname> --dump-file-structured-json
 
 For a format of 'yaml' this command is equivalent to:
 
-\$ neurospaces_harness --regex <test_pathname> --dump-file-structured-yaml
+\$ vigilia --regex <test_pathname> --dump-file-structured-yaml
 
 with some extras.
 
@@ -109,7 +109,7 @@ arguments:
 }
 
 
-sub harness_single_command
+sub vigilia_single_command
 {
     my $force = $ARGV[0] || "";
 
@@ -132,7 +132,7 @@ sub harness_single_command
 }
 
 
-sub harness_single_command_completions
+sub vigilia_single_command_completions
 {
     my $complete_command_string = shift;
 
@@ -143,7 +143,7 @@ sub harness_single_command_completions
 	   "1._<your_completion_without_spaces_here>" => "explain_the_purpose_of_the_completion_here",
 	   "2._<another_completion_here>" => "the_numbers_preserve_the_order_for_this_example",
 	   "3._Don't_use_spaces_in_your_completions,_because_they_confuse_bash" => "further_explanation",
-	   "4._Look_at_the_completion_function_of_harness_single_command_completions_to_understand_how_it_works" => "further_explanation",
+	   "4._Look_at_the_completion_function_of_vigilia_single_command_completions_to_understand_how_it_works" => "further_explanation",
 	  };
 
     # the follow logic uses bash completion as a help message when there are no arguments to complete
@@ -183,7 +183,7 @@ sub harness_single_command_completions
 }
 
 
-sub harness_single_command_help
+sub vigilia_single_command_help
 {
     my $command = shift;
 

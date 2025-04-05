@@ -58,7 +58,7 @@ clean-local:
 dist-hook: 
 	$(srcdir)/install-sh -d $(distdir)/tests
 	$(srcdir)/install-sh -d $(distdir)/tests/html
-	( cd $(distdir)/tests && chmod -R u+w . && neurospaces_harness_2_html --introduction introduction.html )
+	( cd $(distdir)/tests && chmod -R u+w . && vigilia_2_html --introduction introduction.html )
 
 #install-data-local: neurospaces_cpan_modules
 
@@ -76,10 +76,10 @@ uninstall-local:
 
 test: check
 
-#TESTS = $(srcdir)/tests/neurospaces_harness
+#TESTS = $(srcdir)/tests/vigilia
 
 html-upload-prepare:
-	( cd tests && neurospaces_harness_2_html --introduction introduction.html )
+	( cd tests && vigilia_2_html --introduction introduction.html )
 	$(srcdir)/install-sh -d html
 	$(srcdir)/install-sh -d html/htdocs
 	$(srcdir)/install-sh -d html/htdocs/neurospaces_project

@@ -197,7 +197,7 @@ usual.
 
 options related to behavior of external applications:
     --environment               fills in the environment, can be given multiple times.
-                                e.g. environment NEUROSPACES_HARNESS_OPTION_EMAIL=1 generates emails for tests that fail.
+                                e.g. environment VIGILIA_OPTION_EMAIL=1 generates emails for tests that fail.
 
 ",
 						  },
@@ -219,7 +219,7 @@ options related to behavior of external applications:
 			       {
 				arguments => [
 					      '--environment',
-					      'NEUROSPACES_HARNESS_OPTION_EMAIL=1',
+					      'VIGILIA_OPTION_EMAIL=1',
 					      '--environment',
 					      'a=b',
 					      '--help',
@@ -230,7 +230,7 @@ options related to behavior of external applications:
 						   description => "Can we set environment variables ?",
 						   read => "
 environment=s:
-  - NEUROSPACES_HARNESS_OPTION_EMAIL=1
+  - VIGILIA_OPTION_EMAIL=1
   - a=b
 ",
 						  },
