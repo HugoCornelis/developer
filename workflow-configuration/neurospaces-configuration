@@ -23,6 +23,11 @@ my $configuration = {
 		      %$targets,
 		     };
 
+$configuration->{export_sh_variables}
+    = [
+       { SSP_PROJECT_DIRECTORY => "$ENV{HOME}/projects/ssp" },
+       { HOME_DIRECTORY => $ENV{HOME} },
+      ];
 
 my $usb_2_ethernet_interfaces
     = [
